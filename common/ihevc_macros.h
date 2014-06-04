@@ -39,8 +39,8 @@
 
 #define CLIP3(x, min, max) (((x) > max) ? max :(((x) < min)? min:(x)))
 
-#define MAX(x,y)    ((((WORD32)x) > ((WORD32)y)) ? ((WORD32)x) :((WORD32)y))
-#define MIN(x,y)    ((((WORD32)x) < ((WORD32)y)) ? ((WORD32)x) :((WORD32)y))
+#define MAX(x,y)    (((x) > (y)) ? (x) :(y))
+#define MIN(x,y)    (((x) < (y)) ? (x) :(y))
 #define SIGN(x)     ((x) >= 0 ? ((x)>0 ? 1: 0) : -1)
 #define ABS(x)      ((((WORD32)(x)) > 0)           ? (x) : -(x))
 

@@ -271,8 +271,9 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     WORD32 value;
     WORD32 i;
-    UNUSED(ps_pps);
+
     pred_wt_ofst_t *ps_wt_ofst = &ps_slice_hdr->s_wt_ofst;
+    UNUSED(ps_pps);
 
     UEV_PARSE("luma_log2_weight_denom", value, ps_bitstrm);
     ps_wt_ofst->i1_luma_log2_weight_denom = value;
@@ -1384,6 +1385,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                        ps_codec->i4_max_wd * ps_codec->i4_max_ht) ||
        (ps_sps->i2_pic_height_in_luma_samples > MAX(ps_codec->i4_max_wd, ps_codec->i4_max_ht)))
     {
+        ps_codec->i4_new_max_wd = ps_sps->i2_pic_width_in_luma_samples;
+        ps_codec->i4_new_max_ht = ps_sps->i2_pic_height_in_luma_samples;
         return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_DIMENSIONS;
     }
 

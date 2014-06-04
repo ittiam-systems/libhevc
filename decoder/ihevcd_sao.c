@@ -257,23 +257,23 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
                             if(CTZ(u4_no_loop_filter_flag))
                             {
                                 u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(u4_no_loop_filter_flag) * min_cu;
                             }
                             else
                             {
                                 for(row = 0; row < MIN(min_cu, sao_ht_luma - (i - 1) * min_cu); row++)
                                 {
-                                    for(col = 0; col < MIN(CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
+                                    for(col = 0; col < MIN((WORD32)CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
                                     {
                                         pu1_src_copy[row * src_strd + col] = pu1_src_tmp[row * tmp_strd + col];
                                     }
                                 }
 
                                 u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(~u4_no_loop_filter_flag) * min_cu;
                             }
                         }
@@ -335,23 +335,23 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
                             if(CTZ(u4_no_loop_filter_flag))
                             {
                                 u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(u4_no_loop_filter_flag) * min_cu;
                             }
                             else
                             {
                                 for(row = 0; row < MIN(min_cu, sao_ht_luma - (i - 1) * min_cu); row++)
                                 {
-                                    for(col = 0; col < MIN(CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
+                                    for(col = 0; col < MIN((WORD32)CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
                                     {
                                         pu1_src_tmp[row * src_strd + col] = pu1_src_copy[row * tmp_strd + col];
                                     }
                                 }
 
                                 u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(~u4_no_loop_filter_flag) * min_cu;
                             }
                         }
@@ -405,23 +405,23 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
                             if(CTZ(u4_no_loop_filter_flag))
                             {
                                 u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(u4_no_loop_filter_flag) * min_cu;
                             }
                             else
                             {
                                 for(row = 0; row < MIN(min_cu, sao_ht_chroma - (i - 1) * min_cu); row++)
                                 {
-                                    for(col = 0; col < MIN(CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
+                                    for(col = 0; col < MIN((WORD32)CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
                                     {
                                         pu1_src_copy[row * src_strd + col] = pu1_src_tmp[row * tmp_strd + col];
                                     }
                                 }
 
                                 u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(~u4_no_loop_filter_flag) * min_cu;
                             }
                         }
@@ -489,23 +489,23 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
                             if(CTZ(u4_no_loop_filter_flag))
                             {
                                 u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(u4_no_loop_filter_flag) * min_cu;
                             }
                             else
                             {
                                 for(row = 0; row < MIN(min_cu, sao_ht_chroma - (i - 1) * min_cu); row++)
                                 {
-                                    for(col = 0; col < MIN(CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
+                                    for(col = 0; col < MIN((WORD32)CTZ(~u4_no_loop_filter_flag) * min_cu, tmp_wd); col++)
                                     {
                                         pu1_src_tmp[row * src_strd + col] = pu1_src_copy[row * tmp_strd + col];
                                     }
                                 }
 
                                 u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
-                                pu1_src_tmp += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
-                                pu1_src_copy += MIN(CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_tmp += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
+                                pu1_src_copy += MIN((WORD32)CTZ(~u4_no_loop_filter_flag), tmp_wd);
                                 tmp_wd -= CTZ(~u4_no_loop_filter_flag) * min_cu;
                             }
                         }
@@ -669,8 +669,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_luma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -678,13 +678,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu; row++)
                             {
-                                for(col = 0; col < MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN((WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
                                 {
                                     pu1_src_backup_luma[row * backup_strd + col] = pu1_src_tmp_luma[row * src_strd + col];
                                 }
                             }
-                            pu1_src_tmp_luma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(~u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
@@ -748,8 +748,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -757,14 +757,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu / 2; row++)
                             {
-                                for(col = 0; col < MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
                                 {
                                     pu1_src_backup_chroma[row * backup_strd + col] = pu1_src_tmp_chroma[row * src_strd + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(~u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
@@ -3234,8 +3234,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_luma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -3243,13 +3243,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu; row++)
                             {
-                                for(col = 0; col < MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
                                 {
                                     pu1_src_tmp_luma[row * src_strd + col] = pu1_src_backup_luma[row * backup_strd + col];
                                 }
                             }
-                            pu1_src_tmp_luma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(~u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
@@ -3312,8 +3312,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN((CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -3321,14 +3321,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu / 2; row++)
                             {
-                                for(col = 0; col < MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
                                 {
                                     pu1_src_tmp_chroma[row * src_strd + col] = pu1_src_backup_chroma[row * backup_strd + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN((CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
                             tmp_wd -= CTZ(~u4_no_loop_filter_flag) << log2_min_cu;
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }

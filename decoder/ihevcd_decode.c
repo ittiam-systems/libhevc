@@ -188,6 +188,11 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         ps_dec_op->u4_pic_wd = ps_codec->i4_disp_wd;
         ps_dec_op->u4_pic_ht = ps_codec->i4_disp_ht;
     }
+    else if(ps_codec->i4_error_code == IHEVCD_UNSUPPORTED_DIMENSIONS)
+    {
+        ps_dec_op->u4_pic_wd = ps_codec->i4_new_max_wd;
+        ps_dec_op->u4_pic_ht = ps_codec->i4_new_max_ht;
+    }
     else
     {
         ps_dec_op->u4_pic_wd = 0;
@@ -553,7 +558,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         {
             WORD32 bytes_remaining = ps_codec->i4_bytes_remaining - nal_ofst;
 
-            bytes_remaining = MIN(bytes_remaining, ps_codec->u4_bitsbuf_size);
+            bytes_remaining = MIN((UWORD32)bytes_remaining, ps_codec->u4_bitsbuf_size);
             ihevcd_nal_remv_emuln_bytes(ps_codec->pu1_inp_bitsbuf + nal_ofst,
                                         ps_codec->pu1_bitsbuf,
                                         bytes_remaining,
@@ -599,8 +604,8 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             continue;
         }
 
-        if((IHEVCD_FAIL == ret) &&
-                        (ps_codec->i4_error_code == IVD_RES_CHANGED))
+        if(((IHEVCD_FAIL == ret) && (ps_codec->i4_error_code == IVD_RES_CHANGED)) ||
+           (IHEVCD_UNSUPPORTED_DIMENSIONS == ret))
         {
             break;
         }

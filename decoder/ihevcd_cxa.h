@@ -511,6 +511,16 @@ typedef struct {
      * ivd_ctl_getstatus_op_t
      */
     ivd_ctl_getstatus_op_t                  s_ivd_ctl_getstatus_op_t;
+
+    /**
+     * Height of the coding picture without cropping
+     */
+    UWORD32                  u4_coded_pic_ht;
+
+    /**
+     * Width of the coding picture without cropping
+     */
+    UWORD32                  u4_coded_pic_wd;
 }ihevcd_cxa_ctl_getstatus_op_t;
 
 

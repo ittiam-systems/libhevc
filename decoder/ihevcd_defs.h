@@ -115,6 +115,11 @@
  */
 #define MAX_PROCESS_THREADS MAX_NUM_CORES
 
+/** If num_cores is greater than MV_PRED_NUM_CORES_THRESHOLD, then mv pred and
+    boundary strength computation is done in process side instead of parse side.
+    This ensures thread that does parsing does minimal work */
+#define MV_PRED_NUM_CORES_THRESHOLD 2
+
 /*****************************************************************************/
 /* Profile and level restrictions                                            */
 /*****************************************************************************/
@@ -197,10 +202,6 @@
     m_scaling_mat_size += 6 * TRANS_SIZE_16 * TRANS_SIZE_16;                 \
     m_scaling_mat_size += 2 * TRANS_SIZE_32 * TRANS_SIZE_32;                 \
 }
-
-/** If num_cores is greater than MV_PRED_NUM_CORES_THRESHOLD, then mv pred and
-    boundary strength computation is done in process side instead of parse side */
-#define MV_PRED_NUM_CORES_THRESHOLD 4
 
 /**
  ***************************************************************************

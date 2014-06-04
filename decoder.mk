@@ -9,10 +9,8 @@ LOCAL_MODULE := libhevcdec
 
 LOCAL_MODULE_CLASS := STATIC_LIBRARIES
 
-
 LOCAL_CFLAGS += -D_LIB -DMULTICORE -fPIC
-#TODO -O3 is throwing up an error in aarch64 while linking
-LOCAL_CFLAGS += -O2 -DHM_10DOT0 -DANDROID
+LOCAL_CFLAGS += -O3 -DANDROID
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/decoder $(LOCAL_PATH)/common
 
@@ -51,7 +49,6 @@ libhevcd_srcs_c   +=  common/ithread.c
 
 
 libhevcd_srcs_c   +=  decoder/ihevcd_version.c
-libhevcd_srcs_c   +=  decoder/ihevcd_trace.c
 libhevcd_srcs_c   +=  decoder/ihevcd_api.c
 libhevcd_srcs_c   +=  decoder/ihevcd_decode.c
 libhevcd_srcs_c   +=  decoder/ihevcd_nal.c
@@ -77,9 +74,6 @@ libhevcd_srcs_c   +=  decoder/ihevcd_deblk.c
 libhevcd_srcs_c   +=  decoder/ihevcd_inter_pred.c
 libhevcd_srcs_c   +=  decoder/ihevcd_sao.c
 libhevcd_srcs_c   +=  decoder/ihevcd_ilf_padding.c
-libhevcd_srcs_c   +=  decoder/ihevcd_debug.c
-libhevcd_srcs_c   +=  decoder/ihevcd_ittiam_logo.c
-libhevcd_srcs_c   +=  decoder/ihevcd_statistics.c
 libhevcd_srcs_c   +=  decoder/ihevcd_fmt_conv.c
 
 LOCAL_SRC_FILES := $(libhevcd_srcs_c) $(libhevcd_srcs_asm)

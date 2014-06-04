@@ -110,7 +110,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     WORD32 qp_strd;
     UWORD32 *pu4_vert_bs, *pu4_horz_bs;
     UWORD32 *pu4_ctb_vert_bs, *pu4_ctb_horz_bs;
-    WORD32 vert_bs_strd, horz_bs_strd;
+    WORD32 bs_strd;
     WORD32 src_strd;
     UWORD8 *pu1_qp;
     UWORD16 *pu2_ctb_no_loop_filter_flag;
@@ -140,16 +140,16 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     /* strides are in units of number of bytes */
     /* ctb_size * ctb_size / 8 / 16 is the number of bytes needed per CTB */
-    vert_bs_strd = ps_sps->i2_pic_wd_in_ctb << (2 * log2_ctb_size - 7);
-    horz_bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+    bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+
     pu4_vert_bs = (UWORD32 *)((UWORD8 *)ps_deblk->s_bs_ctxt.pu4_pic_vert_bs +
                     (ps_deblk->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_deblk->i4_ctb_y * vert_bs_strd);
+                    ps_deblk->i4_ctb_y * bs_strd);
     pu4_ctb_vert_bs = pu4_vert_bs;
 
     pu4_horz_bs = (UWORD32 *)((UWORD8 *)ps_deblk->s_bs_ctxt.pu4_pic_horz_bs +
                     (ps_deblk->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_deblk->i4_ctb_y * horz_bs_strd);
+                    ps_deblk->i4_ctb_y * bs_strd);
     pu4_ctb_horz_bs = pu4_horz_bs;
 
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
@@ -160,7 +160,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     ctb_indx = ps_deblk->i4_ctb_x + ps_sps->i2_pic_wd_in_ctb * ps_deblk->i4_ctb_y;
     if(i4_is_last_ctb_y)
     {
-        pu4_vert_bs = (UWORD32 *)((UWORD8 *)pu4_vert_bs + vert_bs_strd);
+        pu4_vert_bs = (UWORD32 *)((UWORD8 *)pu4_vert_bs + bs_strd);
         pu4_ctb_vert_bs = pu4_vert_bs;
         /* ctb_size/8 is the number of edges per CTB
          * ctb_size/4 is the number of BS values needed per edge
@@ -246,7 +246,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         {
             WORD32 shift = 0;
 
-            /* downshift vert_bs by ctb_size/2 for each column
+            /*  downshift vert_bs by ctb_size/2 for each column
              *  shift = (col & ((MAX_CTB_SIZE >> log2_ctb_size) - 1)) << (log2_ctb_size - 1);
              *  which will reduce to the following assuming ctb size is one of 16, 32 and 64
              *  and deblocking is done on 8x8 grid
@@ -260,7 +260,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             if(ps_deblk->i4_ctb_y || i4_is_last_ctb_y)
             {
                 /* Picking the last BS of the previous CTB corresponding to the same column */
-                UWORD32 *pu4_vert_bs_top = (UWORD32 *)((UWORD8 *)pu4_vert_bs - vert_bs_strd);
+                UWORD32 *pu4_vert_bs_top = (UWORD32 *)((UWORD8 *)pu4_vert_bs - bs_strd);
                 UWORD32 u4_top_bs = (*pu4_vert_bs_top) >> (shift + (1 << (log2_ctb_size - 1)) - 2);
                 u4_bs |= u4_top_bs & 3;
             }
@@ -562,7 +562,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             if(ps_deblk->i4_ctb_y || i4_is_last_ctb_y)
             {
                 /* Picking the last BS of the previous CTB corresponding to the same column */
-                UWORD32 *pu4_vert_bs_top = (UWORD32 *)((UWORD8 *)pu4_vert_bs - vert_bs_strd);
+                UWORD32 *pu4_vert_bs_top = (UWORD32 *)((UWORD8 *)pu4_vert_bs - bs_strd);
                 UWORD32 u4_top_bs = (*pu4_vert_bs_top) >> ((1 << (log2_ctb_size - 1)) - 2);
                 u4_bs |= u4_top_bs & 3;
             }

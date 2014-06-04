@@ -891,14 +891,14 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            WORD32 vert_bs_strd = ps_sps->i2_pic_wd_in_ctb * (ctb_size * ctb_size / 8 / 16);
-                            WORD32 horz_bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) * (ctb_size * ctb_size / 8 / 16);
+                            WORD32 bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) * (ctb_size * ctb_size / 8 / 16);
+
                             UWORD32 *pu4_vert_bs = (UWORD32 *)((UWORD8 *)ps_proc->s_bs_ctxt.pu4_pic_vert_bs +
                                             ps_proc->i4_ctb_x * (ctb_size * ctb_size / 8 / 16) +
-                                            ps_proc->i4_ctb_y * vert_bs_strd);
+                                            ps_proc->i4_ctb_y * bs_strd);
                             UWORD32 *pu4_horz_bs = (UWORD32 *)((UWORD8 *)ps_proc->s_bs_ctxt.pu4_pic_horz_bs +
                                             ps_proc->i4_ctb_x * (ctb_size * ctb_size / 8 / 16) +
-                                            ps_proc->i4_ctb_y * horz_bs_strd);
+                                            ps_proc->i4_ctb_y * bs_strd);
 
                             memset(pu4_vert_bs, 0, (ctb_size / 8 + 1) * (ctb_size / 4) / 8 * 2);
                             memset(pu4_horz_bs, 0, (ctb_size / 8) * (ctb_size / 4) / 8 * 2);

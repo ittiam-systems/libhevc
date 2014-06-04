@@ -1057,8 +1057,10 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                                         IVD_IP_API_STRUCT_SIZE_INCORRECT;
                         return IV_FAIL;
                     }
-                    if(ps_op->s_ivd_ctl_getstatus_op_t.u4_size
-                                    != sizeof(ihevcd_cxa_ctl_getstatus_op_t))
+                    if((ps_op->s_ivd_ctl_getstatus_op_t.u4_size
+                                    != sizeof(ihevcd_cxa_ctl_getstatus_op_t)) &&
+                       (ps_op->s_ivd_ctl_getstatus_op_t.u4_size
+                                    != sizeof(ivd_ctl_getstatus_op_t)))
                     {
                         ps_op->s_ivd_ctl_getstatus_op_t.u4_error_code |= 1
                                         << IVD_UNSUPPORTEDPARAM;
@@ -2350,7 +2352,7 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
         WORD32 qp_size, num_8x8;
 
         /* Max Number of vertical edges */
-        vert_bs_size = max_wd_luma / 8 + MAX_CTB_SIZE / 8;
+        vert_bs_size = max_wd_luma / 8 + 2 * MAX_CTB_SIZE / 8;
 
         /* Max Number of horizontal edges - extra MAX_CTB_SIZE / 8 to handle the last 4 rows separately(shifted CTB processing) */
         vert_bs_size *= (max_ht_luma + MAX_CTB_SIZE) / MIN_TU_SIZE;
@@ -2715,6 +2717,9 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
     ps_codec->i4_max_wd = ALIGN64(ps_codec->i4_max_wd);
     ps_codec->i4_max_ht = ALIGN64(ps_codec->i4_max_ht);
 
+    ps_codec->i4_new_max_wd = ps_codec->i4_max_wd;
+    ps_codec->i4_new_max_ht = ps_codec->i4_max_ht;
+
     max_tile_cols = (ps_codec->i4_max_wd + MIN_TILE_WD - 1) / MIN_TILE_WD;
     max_tile_rows = (ps_codec->i4_max_ht + MIN_TILE_HT - 1) / MIN_TILE_HT;
 
@@ -3041,7 +3046,7 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
         WORD32 num_8x8;
 
         /* Max Number of vertical edges */
-        vert_bs_size = ps_codec->i4_max_wd / 8 + MAX_CTB_SIZE / 8;
+        vert_bs_size = ps_codec->i4_max_wd / 8 + 2 * MAX_CTB_SIZE / 8;
 
         /* Max Number of horizontal edges - extra MAX_CTB_SIZE / 8 to handle the last 4 rows separately(shifted CTB processing) */
         vert_bs_size *= (ps_codec->i4_max_ht + MAX_CTB_SIZE) / MIN_TU_SIZE;
@@ -3553,7 +3558,12 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     }
     else
     {
-        if(1 == ps_codec->i4_share_disp_buf)
+        if(0 == ps_codec->i4_share_disp_buf)
+        {
+            wd = ps_codec->i4_new_max_wd;
+            ht = ps_codec->i4_new_max_ht;
+        }
+        else
         {
             wd = ALIGN32(wd + PAD_WD);
             ht += PAD_HT;
@@ -3595,7 +3605,7 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
             ps_ctl_op->u4_num_disp_bufs = 2 * max_dpb_size;
 
             ps_ctl_op->u4_num_disp_bufs = MIN(ps_ctl_op->u4_num_disp_bufs,
-                            (ps_codec->i4_init_num_ref + ps_codec->i4_init_num_reorder + 1));
+                            (UWORD32)(ps_codec->i4_init_num_ref + ps_codec->i4_init_num_reorder + 1));
 
         }
 
@@ -3642,6 +3652,13 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     ps_ctl_op->e_content_type = IV_PROGRESSIVE;
     ps_ctl_op->e_output_chroma_format = ps_codec->e_chroma_fmt;
     ps_codec->i4_num_disp_bufs = ps_ctl_op->u4_num_disp_bufs;
+
+    if(ps_ctl_op->u4_size == sizeof(ihevcd_cxa_ctl_getstatus_op_t))
+    {
+        ihevcd_cxa_ctl_getstatus_op_t *ps_ext_ctl_op = (ihevcd_cxa_ctl_getstatus_op_t *)ps_ctl_op;
+        ps_ext_ctl_op->u4_coded_pic_wd = ps_codec->i4_wd;
+        ps_ext_ctl_op->u4_coded_pic_wd = ps_codec->i4_ht;
+    }
     return IV_SUCCESS;
 }
 /**
@@ -3768,7 +3785,7 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
             ps_ctl_op->u4_num_disp_bufs = 2 * max_dpb_size;
 
             ps_ctl_op->u4_num_disp_bufs = MIN(ps_ctl_op->u4_num_disp_bufs,
-                            (ps_codec->i4_init_num_ref + ps_codec->i4_init_num_reorder + 1));
+                            (UWORD32)(ps_codec->i4_init_num_ref + ps_codec->i4_init_num_reorder + 1));
 
         }
 

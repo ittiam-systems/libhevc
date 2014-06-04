@@ -3042,14 +3042,14 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 }
                 else
                 {
-                    WORD32 vert_bs_strd = ps_sps->i2_pic_wd_in_ctb * (ctb_size * ctb_size / 8 / 16);
-                    WORD32 horz_bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) * (ctb_size * ctb_size / 8 / 16);
+                    WORD32 bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) * (ctb_size * ctb_size / 8 / 16);
+
                     UWORD32 *pu4_vert_bs = (UWORD32 *)((UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs +
                                     ps_codec->s_parse.i4_ctb_x * (ctb_size * ctb_size / 8 / 16) +
-                                    ps_codec->s_parse.i4_ctb_y * vert_bs_strd);
+                                    ps_codec->s_parse.i4_ctb_y * bs_strd);
                     UWORD32 *pu4_horz_bs = (UWORD32 *)((UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs +
                                     ps_codec->s_parse.i4_ctb_x * (ctb_size * ctb_size / 8 / 16) +
-                                    ps_codec->s_parse.i4_ctb_y * horz_bs_strd);
+                                    ps_codec->s_parse.i4_ctb_y * bs_strd);
 
                     memset(pu4_vert_bs, 0, (ctb_size / 8 + 1) * (ctb_size / 4) / 8 * 2);
                     memset(pu4_horz_bs, 0, (ctb_size / 8) * (ctb_size / 4) / 8 * 2);
@@ -3351,7 +3351,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                     while(ctb_indx != ps_sps->i4_pic_size_in_ctb)
                     {
                         WORD32 parse_status = *(ps_codec->pu1_parse_map + ctb_indx);
-                        WORD32 proc_status = *(ps_codec->pu1_proc_map + ctb_indx) & 1;
+                        volatile WORD32 proc_status = *(ps_codec->pu1_proc_map + ctb_indx) & 1;
 
                         if(parse_status == proc_status)
                             ctb_indx++;

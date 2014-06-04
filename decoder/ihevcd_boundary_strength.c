@@ -213,8 +213,7 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
     tu_t *ps_tu;
     UWORD32 *pu4_vert_bs;
     UWORD32 *pu4_horz_bs;
-    WORD32 vert_bs_strd;
-    WORD32 horz_bs_strd;
+    WORD32 bs_strd;
     WORD32 vert_bs0_tmp;
     WORD32 horz_bs0_tmp;
     UWORD8 *pu1_qp;
@@ -243,14 +242,14 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
 
     /* strides are in units of number of bytes */
     /* ctb_size * ctb_size / 8 / 16 is the number of bytes needed per CTB */
-    vert_bs_strd = ps_sps->i2_pic_wd_in_ctb << (2 * log2_ctb_size - 7);
-    horz_bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+    bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+
     pu4_vert_bs = (UWORD32 *)((UWORD8 *)ps_bs_ctxt->pu4_pic_vert_bs +
                     (ps_bs_ctxt->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_bs_ctxt->i4_ctb_y * vert_bs_strd);
+                    ps_bs_ctxt->i4_ctb_y * bs_strd);
     pu4_horz_bs = (UWORD32 *)((UWORD8 *)ps_bs_ctxt->pu4_pic_horz_bs +
                     (ps_bs_ctxt->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_bs_ctxt->i4_ctb_y * horz_bs_strd);
+                    ps_bs_ctxt->i4_ctb_y * bs_strd);
 
     /* ctb_size/8 elements per CTB */
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
@@ -465,8 +464,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
 
     UWORD32 *pu4_vert_bs;
     UWORD32 *pu4_horz_bs;
-    WORD32 vert_bs_strd;
-    WORD32 horz_bs_strd;
+    WORD32 bs_strd;
     WORD32 vert_bs0_tmp;
     WORD32 horz_bs0_tmp;
     UWORD8 *pu1_qp;
@@ -490,14 +488,14 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
 
     /* strides are in units of number of bytes */
     /* ctb_size * ctb_size / 8 / 16 is the number of bytes needed per CTB */
-    vert_bs_strd = ps_sps->i2_pic_wd_in_ctb << (2 * log2_ctb_size - 7);
-    horz_bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+    bs_strd = (ps_sps->i2_pic_wd_in_ctb + 1) << (2 * log2_ctb_size - 7);
+
     pu4_vert_bs = (UWORD32 *)((UWORD8 *)ps_bs_ctxt->pu4_pic_vert_bs +
                     (ps_bs_ctxt->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_bs_ctxt->i4_ctb_y * vert_bs_strd);
+                    ps_bs_ctxt->i4_ctb_y * bs_strd);
     pu4_horz_bs = (UWORD32 *)((UWORD8 *)ps_bs_ctxt->pu4_pic_horz_bs +
                     (ps_bs_ctxt->i4_ctb_x << (2 * log2_ctb_size - 7)) +
-                    ps_bs_ctxt->i4_ctb_y * horz_bs_strd);
+                    ps_bs_ctxt->i4_ctb_y * bs_strd);
 
     vert_bs0_tmp = pu4_vert_bs[0] & (0xFFFFFFFF >> (sizeof(UWORD32) * 8 - ctb_size / 2));
     horz_bs0_tmp = pu4_horz_bs[0] & (0xFFFFFFFF >> (sizeof(UWORD32) * 8 - ctb_size / 2));
@@ -536,8 +534,8 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
     {
         pu4_horz_bs[0] |= horz_bs0_tmp;
     }
-    /* pu4_horz_bs[horz_bs_strd / 4] corresponds to pu4_horz_bs[0] of the bottom CTB */
-    *(UWORD32 *)((UWORD8 *)pu4_horz_bs + horz_bs_strd) = 0;
+    /* pu4_horz_bs[bs_strd / 4] corresponds to pu4_horz_bs[0] of the bottom CTB */
+    *(UWORD32 *)((UWORD8 *)pu4_horz_bs + bs_strd) = 0;
 
     cur_ctb_idx = ps_bs_ctxt->i4_ctb_x
                     + ps_bs_ctxt->i4_ctb_y * (ps_sps->i2_pic_wd_in_ctb);
@@ -672,7 +670,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
                 /* If end_pos_y corresponds to the bottom of the CTB, write to pu4_horz_bs[0] of the bottom CTB */
                 if(ctb_size / 8 == (end_pos_y >> 1))
                 {
-                    *(UWORD32 *)((UWORD8 *)pu4_horz_bs + horz_bs_strd) |= (u4_bs << (start_pos_x * 2));
+                    *(UWORD32 *)((UWORD8 *)pu4_horz_bs + bs_strd) |= (u4_bs << (start_pos_x * 2));
                 }
                 else
                 {

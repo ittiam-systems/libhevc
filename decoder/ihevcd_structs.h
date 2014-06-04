@@ -1752,6 +1752,21 @@ struct _codec_t
      */
     WORD32 i4_disp_strd;
 
+    /*
+     * In case stream width/height is greater than max_wd/max_ht used during init,
+     * it is stored in the following and in order to decode the current stream
+     * decoder has to be recreated with these dimensions.
+     */
+    /**
+     * Stream width if it is greater than i4_max_wd
+     */
+    WORD32 i4_new_max_wd;
+
+    /**
+     * Stream height if it is greater than i4_max_ht
+     */
+    WORD32 i4_new_max_ht;
+
     /**
      * Stride of reference buffers.
      * For shared mode even display buffer will use the same stride

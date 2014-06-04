@@ -52,12 +52,11 @@
                             ((x & 0x00ff0000) >> 8)    |   \
                             ((UWORD32)x >> 24);
 
-#define SHL(x,y) ((x) << (y))
-#define SHR(x,y) ((x) >> (y))
+#define SHL(x,y) (((y) < 32) ? ((x) << (y)) : 0)
+#define SHR(x,y) (((y) < 32) ? ((x) >> (y)) : 0)
 
 #define SHR_NEG(val,shift)  ((shift>0)?(val>>shift):(val<<(-shift)))
 #define SHL_NEG(val,shift)  ((shift<0)?(val>>(-shift)):(val<<shift))
-
 
 static inline UWORD32 CLZ(UWORD32 x)
 {

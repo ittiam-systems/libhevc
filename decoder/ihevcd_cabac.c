@@ -557,7 +557,7 @@ UWORD32 ihevcd_cabac_decode_bins_tunary(cab_ctxt_t *ps_cabac,
     do
     {
         WORD32 bin_index;
-        bin_index = ctxt_index + MIN((u4_sym >> ctxt_shift), ctxt_inc_max);
+        bin_index = ctxt_index + MIN((u4_sym >> ctxt_shift), (UWORD32)ctxt_inc_max);
         IHEVCD_CABAC_DECODE_BIN(bin, ps_cabac, ps_bitstrm,  bin_index);
         u4_sym++;
     }while(((WORD32)u4_sym < c_max) && bin);
