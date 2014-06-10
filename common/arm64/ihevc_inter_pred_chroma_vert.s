@@ -104,7 +104,7 @@
 ihevc_inter_pred_chroma_vert_av8:
 
     // stmfd sp!,{x4-x12,x14}        //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     mov         x15,x4 // pi1_coeff
@@ -142,21 +142,21 @@ ihevc_inter_pred_chroma_vert_av8:
 inner_loop_ht_2:                            //called when wd is multiple of 4 and ht is 4,2
 
     add         x6,x0,x2                    //pu1_src +src_strd
-    ld1         {v9.8b},[x6],x2             //loads pu1_src
+    ld1         {v17.8b},[x6],x2            //loads pu1_src
     subs        x5,x5,#8                    //2wd - 8
     ld1         {v5.8b},[x0],#8             //loads src
-    umull       v6.8h, v9.8b, v1.8b         //vmull_u8(vreinterpret_u8_u32(src_tmp2), coeffabs_1)
+    umull       v6.8h, v17.8b, v1.8b        //vmull_u8(vreinterpret_u8_u32(src_tmp2), coeffabs_1)
     ld1         {v4.8b},[x6],x2             //loads incremented src
     umlsl       v6.8h, v5.8b, v0.8b         //vmlsl_u8(mul_res1, vreinterpret_u8_u32(src_tmp1), coeffabs_0)
-    ld1         {v8.8b},[x6],x2             //loads incremented src
+    ld1         {v16.8b},[x6],x2            //loads incremented src
     umlal       v6.8h, v4.8b, v2.8b         //vmlal_u8(mul_res1, vreinterpret_u8_u32(src_tmp3), coeffabs_2)
     umull       v4.8h, v4.8b, v1.8b
-    umlsl       v6.8h, v8.8b, v3.8b
-    umlsl       v4.8h, v9.8b, v0.8b
-    ld1         {v10.8b},[x6]               //loads the incremented src
-    umlal       v4.8h, v8.8b, v2.8b
+    umlsl       v6.8h, v16.8b, v3.8b
+    umlsl       v4.8h, v17.8b, v0.8b
+    ld1         {v18.8b},[x6]               //loads the incremented src
+    umlal       v4.8h, v16.8b, v2.8b
     sqrshrun    v6.8b, v6.8h,#6             //shifts right
-    umlsl       v4.8h, v10.8b, v3.8b
+    umlsl       v4.8h, v18.8b, v3.8b
     add         x6,x1,x3                    //pu1_dst + dst_strd
     sqrshrun    v4.8b, v4.8h,#6             //shifts right
     st1         {v6.8b},[x1],#8             //stores the loaded value
@@ -240,7 +240,7 @@ prolog:
     add         x7,x1,x3                    //pu1_dst
     umlal       v30.8h, v6.8b, v2.8b
     umlsl       v30.8h, v7.8b, v3.8b
-    ld1         {v8.8b},[x6],x2             //load and increment
+    ld1         {v16.8b},[x6],x2            //load and increment
 
     umull       v28.8h, v6.8b, v1.8b        //mul_res 2
     add         x20,x0,x9                   //pu1_dst += 4*dst_strd - 2*wd
@@ -249,30 +249,30 @@ prolog:
     bic         x20,x10,#7                  //x5 ->wd
     csel        x5, x20, x5,le
     umlal       v28.8h, v7.8b, v2.8b
-    ld1         {v9.8b},[x6],x2
-    umlsl       v28.8h, v8.8b, v3.8b
+    ld1         {v17.8b},[x6],x2
+    umlsl       v28.8h, v16.8b, v3.8b
     sqrshrun    v30.8b, v30.8h,#6
 
-    ld1         {v10.8b},[x6],x2
+    ld1         {v18.8b},[x6],x2
     umull       v26.8h, v7.8b, v1.8b
     add         x6,x0,x2                    //pu1_src + src_strd
     umlsl       v26.8h, v6.8b, v0.8b
     st1         {v30.8b},[x1],#8            //stores the loaded value
-    umlal       v26.8h, v8.8b, v2.8b
+    umlal       v26.8h, v16.8b, v2.8b
     ld1         {v4.8b},[x0],#8             //loads the source
-    umlsl       v26.8h, v9.8b, v3.8b
+    umlsl       v26.8h, v17.8b, v3.8b
     sqrshrun    v28.8b, v28.8h,#6
 
     add         x20,x1,x8                   //pu1_src += 4*src_strd - 2*wd
     csel        x1, x20, x1,le
-    umull       v24.8h, v8.8b, v1.8b
+    umull       v24.8h, v16.8b, v1.8b
     ld1         {v5.8b},[x6],x2             //loads pu1_src
     umlsl       v24.8h, v7.8b, v0.8b
     subs        x12,x12,#4
     ld1         {v6.8b},[x6],x2             //load and increment
-    umlal       v24.8h, v9.8b, v2.8b
+    umlal       v24.8h, v17.8b, v2.8b
     ld1         {v7.8b},[x6],x2             //load and increment
-    umlsl       v24.8h, v10.8b, v3.8b
+    umlsl       v24.8h, v18.8b, v3.8b
 
     lsl         x11,x2,#2
     st1         {v28.8b},[x7],x3            //stores the loaded value
@@ -299,7 +299,7 @@ kernel_8:
     st1         {v26.8b},[x7],x3            //stores the loaded value
     sqrshrun    v24.8b, v24.8h,#6
 
-    ld1         {v8.8b},[x6],x2             //load and increment
+    ld1         {v16.8b},[x6],x2            //load and increment
 
     umull       v28.8h, v6.8b, v1.8b        //mul_res 2
     bic         x20,x10,#7                  //x5 ->wd
@@ -309,11 +309,11 @@ kernel_8:
 
     umlal       v28.8h, v7.8b, v2.8b
 
-    ld1         {v9.8b},[x6],x2
+    ld1         {v17.8b},[x6],x2
     sqrshrun    v30.8b, v30.8h,#6
 
-    umlsl       v28.8h, v8.8b, v3.8b
-    ld1         {v10.8b},[x6],x2
+    umlsl       v28.8h, v16.8b, v3.8b
+    ld1         {v18.8b},[x6],x2
     add         x7,x1,x3                    //pu1_dst
     umull       v26.8h, v7.8b, v1.8b
     add         x6,x0,x2                    //pu1_src + src_strd
@@ -325,16 +325,16 @@ kernel_8:
     umlsl       v26.8h, v6.8b, v0.8b
     ld1         {v4.8b},[x0],#8             //loads the source
 
-    umlal       v26.8h, v8.8b, v2.8b
+    umlal       v26.8h, v16.8b, v2.8b
     st1         {v30.8b},[x1],#8            //stores the loaded value
 
-    umlsl       v26.8h, v9.8b, v3.8b
+    umlsl       v26.8h, v17.8b, v3.8b
     ld1         {v5.8b},[x6],x2             //loads pu1_src
 
     add         x11,x11,x2
     sqrshrun    v28.8b, v28.8h,#6
 
-    umull       v24.8h, v8.8b, v1.8b
+    umull       v24.8h, v16.8b, v1.8b
     ld1         {v6.8b},[x6],x2             //load and increment
     add         x20,x1,x8                   //pu1_src += 4*src_strd - 2*wd
     csel        x1, x20, x1,le
@@ -348,10 +348,10 @@ kernel_8:
     umlsl       v24.8h, v7.8b, v0.8b
     subs        x12,x12,#4
 
-    umlal       v24.8h, v9.8b, v2.8b
+    umlal       v24.8h, v17.8b, v2.8b
     ld1         {v7.8b},[x6],x2             //load and increment
 
-    umlsl       v24.8h, v10.8b, v3.8b
+    umlsl       v24.8h, v18.8b, v3.8b
     st1         {v28.8b},[x7],x3            //stores the loaded value
     sqrshrun    v26.8b, v26.8h,#6
 
@@ -366,39 +366,39 @@ epilog:
     st1         {v26.8b},[x7],x3            //stores the loaded value
     sqrshrun    v24.8b, v24.8h,#6
 
-    ld1         {v8.8b},[x6],x2             //load and increment
+    ld1         {v16.8b},[x6],x2            //load and increment
     umull       v28.8h, v6.8b, v1.8b        //mul_res 2
     umlsl       v28.8h, v5.8b, v0.8b
     umlal       v28.8h, v7.8b, v2.8b
-    umlsl       v28.8h, v8.8b, v3.8b
+    umlsl       v28.8h, v16.8b, v3.8b
     st1         {v24.8b},[x7],x3            //stores the loaded value
     sqrshrun    v30.8b, v30.8h,#6
 
-    ld1         {v9.8b},[x6],x2
+    ld1         {v17.8b},[x6],x2
     umull       v26.8h, v7.8b, v1.8b
     add         x7,x1,x3                    //pu1_dst
     umlsl       v26.8h, v6.8b, v0.8b
     st1         {v30.8b},[x1],#8            //stores the loaded value
 
     sqrshrun    v28.8b, v28.8h,#6
-    umlal       v26.8h, v8.8b, v2.8b
-    ld1         {v10.8b},[x6],x2
-    umlsl       v26.8h, v9.8b, v3.8b
+    umlal       v26.8h, v16.8b, v2.8b
+    ld1         {v18.8b},[x6],x2
+    umlsl       v26.8h, v17.8b, v3.8b
 
-    umull       v24.8h, v8.8b, v1.8b
+    umull       v24.8h, v16.8b, v1.8b
     sqrshrun    v26.8b, v26.8h,#6
     st1         {v28.8b},[x7],x3            //stores the loaded value
     umlsl       v24.8h, v7.8b, v0.8b
-    umlal       v24.8h, v9.8b, v2.8b
+    umlal       v24.8h, v17.8b, v2.8b
     st1         {v26.8b},[x7],x3            //stores the loaded value
-    umlsl       v24.8h, v10.8b, v3.8b
+    umlsl       v24.8h, v18.8b, v3.8b
 
     sqrshrun    v24.8b, v24.8h,#6
     st1         {v24.8b},[x7],x3            //stores the loaded value
 end_loops:
     // ldmfd sp!,{x4-x12,x15}        //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

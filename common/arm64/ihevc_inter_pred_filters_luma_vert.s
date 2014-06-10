@@ -115,7 +115,7 @@
 ihevc_inter_pred_luma_vert_av8:
 
     // stmfd sp!, {x4-x12, x14}    //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     mov         x15,x4 // pi1_coeff
@@ -161,87 +161,87 @@ prolog:
     ld1         {v0.8b},[x0],#8             //src_tmp1 = vld1_u8(pu1_src_tmp)//
     subs        x4,x4,#8
     ld1         {v2.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umull       v8.8h, v1.8b, v23.8b        //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
+    umull       v19.8h, v1.8b, v23.8b       //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
     ld1         {v3.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
-    umlsl       v8.8h, v0.8b, v22.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
+    umlsl       v19.8h, v0.8b, v22.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
     ld1         {v4.8b},[x3],x2             //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlsl       v8.8h, v2.8b, v24.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
+    umlsl       v19.8h, v2.8b, v24.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
     ld1         {v5.8b},[x3],x2             //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlal       v8.8h, v3.8b, v25.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
+    umlal       v19.8h, v3.8b, v25.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
     ld1         {v6.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlal       v8.8h, v4.8b, v26.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
+    umlal       v19.8h, v4.8b, v26.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
     ld1         {v7.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
-    umlsl       v8.8h, v5.8b, v27.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
+    umlsl       v19.8h, v5.8b, v27.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
     ld1         {v16.8b},[x3],x2            //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlal       v8.8h, v6.8b, v28.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
+    umlal       v19.8h, v6.8b, v28.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
     ld1         {v17.8b},[x3],x2            //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlsl       v8.8h, v7.8b, v29.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
+    umlsl       v19.8h, v7.8b, v29.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
 
 
     ld1         {v18.8b},[x3],x2            //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umull       v10.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
+    umull       v20.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
 
     add         x20,x0,x8
     csel        x0, x20, x0,le
-    umlsl       v10.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
+    umlsl       v20.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
 
     bic         x20,x5,#7                   //x5 ->wd
     csel        x4, x20, x4,le
-    umlsl       v10.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
+    umlsl       v20.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
 
     prfm        PLDL1KEEP,[x3]
-    umlal       v10.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
+    umlal       v20.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
     add         x20,x3, x2
     prfm        PLDL1KEEP,[x20]
-    umlal       v10.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
+    umlal       v20.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
     add         x20,x3, x2, lsl #1
     prfm        PLDL1KEEP,[x20]
-    umlsl       v10.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
+    umlsl       v20.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
 
     add         x3, x3, x2
-    umlal       v10.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
+    umlal       v20.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
 
     add         x20,x3, x2, lsl #1
     prfm        PLDL1KEEP,[x20]
-    umlsl       v10.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
+    umlsl       v20.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
 
     add         x3,x0,x2                    //pu1_src_tmp += src_strd//
-    sqrshrun    v8.8b, v8.8h,#6             //sto_res = vqmovun_s16(sto_res_tmp)//
+    sqrshrun    v19.8b, v19.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
 
     ld1         {v1.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umull       v12.8h, v3.8b, v23.8b
+    umull       v21.8h, v3.8b, v23.8b
     ld1         {v0.8b},[x0],#8             //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlsl       v12.8h, v2.8b, v22.8b
+    umlsl       v21.8h, v2.8b, v22.8b
     ld1         {v2.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlsl       v12.8h, v4.8b, v24.8b
-    umlal       v12.8h, v5.8b, v25.8b
-    umlal       v12.8h, v6.8b, v26.8b
-    umlsl       v12.8h, v7.8b, v27.8b
-    umlal       v12.8h, v16.8b, v28.8b
-    umlsl       v12.8h, v17.8b, v29.8b
+    umlsl       v21.8h, v4.8b, v24.8b
+    umlal       v21.8h, v5.8b, v25.8b
+    umlal       v21.8h, v6.8b, v26.8b
+    umlsl       v21.8h, v7.8b, v27.8b
+    umlal       v21.8h, v16.8b, v28.8b
+    umlsl       v21.8h, v17.8b, v29.8b
     add         x14,x1,x6
-    st1         {v8.8b},[x1],#8             //vst1_u8(pu1_dst,sto_res)//
-    sqrshrun    v10.8b, v10.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
+    st1         {v19.8b},[x1],#8            //vst1_u8(pu1_dst,sto_res)//
+    sqrshrun    v20.8b, v20.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
     add         x20,x1,x9
     csel        x1, x20, x1,le
 
-    umull       v14.8h, v4.8b, v23.8b
+    umull       v30.8h, v4.8b, v23.8b
     subs        x7,x7,#4
-    umlsl       v14.8h, v3.8b, v22.8b
-    umlsl       v14.8h, v5.8b, v24.8b
-    umlal       v14.8h, v6.8b, v25.8b
+    umlsl       v30.8h, v3.8b, v22.8b
+    umlsl       v30.8h, v5.8b, v24.8b
+    umlal       v30.8h, v6.8b, v25.8b
     ld1         {v3.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
-    umlal       v14.8h, v7.8b, v26.8b
+    umlal       v30.8h, v7.8b, v26.8b
     ld1         {v4.8b},[x3],x2             //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlsl       v14.8h, v16.8b, v27.8b
+    umlsl       v30.8h, v16.8b, v27.8b
     ld1         {v5.8b},[x3],x2             //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlal       v14.8h, v17.8b, v28.8b
+    umlal       v30.8h, v17.8b, v28.8b
     ld1         {v6.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlsl       v14.8h, v18.8b, v29.8b
+    umlsl       v30.8h, v18.8b, v29.8b
     ld1         {v7.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
 
-    st1         {v10.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
-    sqrshrun    v12.8b, v12.8h,#6
+    st1         {v20.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
+    sqrshrun    v21.8b, v21.8h,#6
 
 
     blt         epilog_end                  //jumps to epilog_end
@@ -250,111 +250,111 @@ prolog:
 kernel_8:
 
     subs        x4,x4,#8
-    umull       v8.8h, v1.8b, v23.8b        //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
+    umull       v19.8h, v1.8b, v23.8b       //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
 
     add         x20,x0,x8
     csel        x0, x20, x0,le
-    umlsl       v8.8h, v0.8b, v22.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
+    umlsl       v19.8h, v0.8b, v22.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
 
     bic         x20,x5,#7                   //x5 ->wd
     csel        x4, x20, x4,le
-    umlsl       v8.8h, v2.8b, v24.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
+    umlsl       v19.8h, v2.8b, v24.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
 
     ld1         {v16.8b},[x3],x2            //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlal       v8.8h, v3.8b, v25.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
+    umlal       v19.8h, v3.8b, v25.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
 
     ld1         {v17.8b},[x3],x2            //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlal       v8.8h, v4.8b, v26.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
+    umlal       v19.8h, v4.8b, v26.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
 
     ld1         {v18.8b},[x3],x2            //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlsl       v8.8h, v5.8b, v27.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
+    umlsl       v19.8h, v5.8b, v27.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
 
-    umlal       v8.8h, v6.8b, v28.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
+    umlal       v19.8h, v6.8b, v28.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
 
-    umlsl       v8.8h, v7.8b, v29.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
-    st1         {v12.8b},[x14],x6
+    umlsl       v19.8h, v7.8b, v29.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
+    st1         {v21.8b},[x14],x6
 
 //    and            x11, x0, #31
-    sqrshrun    v14.8b, v14.8h,#6
+    sqrshrun    v30.8b, v30.8h,#6
 
     add         x3,x0,x2                    //pu1_src_tmp += src_strd//
-    umull       v10.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
+    umull       v20.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
 
     ld1         {v0.8b},[x0],#8             //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlsl       v10.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
+    umlsl       v20.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
 
-    umlsl       v10.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
+    umlsl       v20.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
 
     ld1         {v1.8b},[x3],x2             //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlal       v10.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
+    umlal       v20.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
 
-    st1         {v14.8b},[x14],x6
-    umlal       v10.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
+    st1         {v30.8b},[x14],x6
+    umlal       v20.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
 
     add         x14,x1,#0
-    umlsl       v10.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
+    umlsl       v20.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
 
     add         x1, x1, #8
-    umlal       v10.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
+    umlal       v20.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
 
-    umlsl       v10.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
+    umlsl       v20.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
 
     add         x20,x1,x9
     csel        x1, x20, x1,le
-    sqrshrun    v8.8b, v8.8h,#6             //sto_res = vqmovun_s16(sto_res_tmp)//
+    sqrshrun    v19.8b, v19.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
 
 //    cmp            x11, x10
-    umull       v12.8h, v3.8b, v23.8b
+    umull       v21.8h, v3.8b, v23.8b
 
     add         x10, x3, x2, lsl #3         // 10*strd - 8+2
-    umlsl       v12.8h, v2.8b, v22.8b
+    umlsl       v21.8h, v2.8b, v22.8b
 
     add         x10, x10, x2                // 11*strd
-    umlsl       v12.8h, v4.8b, v24.8b
+    umlsl       v21.8h, v4.8b, v24.8b
 
     ld1         {v2.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlal       v12.8h, v5.8b, v25.8b
+    umlal       v21.8h, v5.8b, v25.8b
 
-    umlal       v12.8h, v6.8b, v26.8b
-    st1         {v8.8b},[x14],x6            //vst1_u8(pu1_dst,sto_res)//
+    umlal       v21.8h, v6.8b, v26.8b
+    st1         {v19.8b},[x14],x6           //vst1_u8(pu1_dst,sto_res)//
 
     prfm        PLDL1KEEP,[x10]             //11+ 0
-    umlsl       v12.8h, v7.8b, v27.8b
+    umlsl       v21.8h, v7.8b, v27.8b
 
     add         x20,x10, x2
     prfm        PLDL1KEEP,[x20]             //11+ 1*strd
-    umlal       v12.8h, v16.8b, v28.8b
+    umlal       v21.8h, v16.8b, v28.8b
 
     add         x20,x10, x2, lsl #1
     prfm        PLDL1KEEP,[x20]             //11+ 2*strd
-    umlsl       v12.8h, v17.8b, v29.8b
+    umlsl       v21.8h, v17.8b, v29.8b
 
     add         x10, x10, x2                //12*strd
-    sqrshrun    v10.8b, v10.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
+    sqrshrun    v20.8b, v20.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
 
     add         x20,x10, x2, lsl #1
     prfm        PLDL1KEEP,[x20]             //11+ 3*strd
-    umull       v14.8h, v4.8b, v23.8b
+    umull       v30.8h, v4.8b, v23.8b
 
 //    mov            x10, x11
-    umlsl       v14.8h, v3.8b, v22.8b
+    umlsl       v30.8h, v3.8b, v22.8b
 
     subs        x7,x7,#4
-    umlsl       v14.8h, v5.8b, v24.8b
+    umlsl       v30.8h, v5.8b, v24.8b
 
-    umlal       v14.8h, v6.8b, v25.8b
+    umlal       v30.8h, v6.8b, v25.8b
     ld1         {v3.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
-    umlal       v14.8h, v7.8b, v26.8b
+    umlal       v30.8h, v7.8b, v26.8b
     ld1         {v4.8b},[x3],x2             //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umlsl       v14.8h, v16.8b, v27.8b
+    umlsl       v30.8h, v16.8b, v27.8b
     ld1         {v5.8b},[x3],x2             //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umlal       v14.8h, v17.8b, v28.8b
+    umlal       v30.8h, v17.8b, v28.8b
     ld1         {v6.8b},[x3],x2             //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umlsl       v14.8h, v18.8b, v29.8b
+    umlsl       v30.8h, v18.8b, v29.8b
     ld1         {v7.8b},[x3],x2             //src_tmp4 = vld1_u8(pu1_src_tmp)//
 
-    sqrshrun    v12.8b, v12.8h,#6
-    st1         {v10.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
+    sqrshrun    v21.8b, v21.8h,#6
+    st1         {v20.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
 
 
 
@@ -362,62 +362,62 @@ kernel_8:
 
 epilog:
 
-    umull       v8.8h, v1.8b, v23.8b        //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
-    umlsl       v8.8h, v0.8b, v22.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
-    umlsl       v8.8h, v2.8b, v24.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
-    umlal       v8.8h, v3.8b, v25.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
-    umlal       v8.8h, v4.8b, v26.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
-    umlsl       v8.8h, v5.8b, v27.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
-    umlal       v8.8h, v6.8b, v28.8b        //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
-    umlsl       v8.8h, v7.8b, v29.8b        //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
-    st1         {v12.8b},[x14],x6
+    umull       v19.8h, v1.8b, v23.8b       //mul_res1 = vmull_u8(src_tmp2, coeffabs_1)//
+    umlsl       v19.8h, v0.8b, v22.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp1, coeffabs_0)//
+    umlsl       v19.8h, v2.8b, v24.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp3, coeffabs_2)//
+    umlal       v19.8h, v3.8b, v25.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp4, coeffabs_3)//
+    umlal       v19.8h, v4.8b, v26.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp1, coeffabs_4)//
+    umlsl       v19.8h, v5.8b, v27.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp2, coeffabs_5)//
+    umlal       v19.8h, v6.8b, v28.8b       //mul_res1 = vmlal_u8(mul_res1, src_tmp3, coeffabs_6)//
+    umlsl       v19.8h, v7.8b, v29.8b       //mul_res1 = vmlsl_u8(mul_res1, src_tmp4, coeffabs_7)//
+    st1         {v21.8b},[x14],x6
 
-    sqrshrun    v14.8b, v14.8h,#6
+    sqrshrun    v30.8b, v30.8h,#6
 
     ld1         {v16.8b},[x3],x2            //src_tmp1 = vld1_u8(pu1_src_tmp)//
-    umull       v10.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
-    umlsl       v10.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
-    umlsl       v10.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
-    umlal       v10.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
-    umlal       v10.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
-    umlsl       v10.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
-    umlal       v10.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
-    umlsl       v10.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
-    st1         {v14.8b},[x14],x6
+    umull       v20.8h, v2.8b, v23.8b       //mul_res2 = vmull_u8(src_tmp3, coeffabs_1)//
+    umlsl       v20.8h, v1.8b, v22.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp2, coeffabs_0)//
+    umlsl       v20.8h, v3.8b, v24.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp4, coeffabs_2)//
+    umlal       v20.8h, v4.8b, v25.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp1, coeffabs_3)//
+    umlal       v20.8h, v5.8b, v26.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp2, coeffabs_4)//
+    umlsl       v20.8h, v6.8b, v27.8b       //mul_res2 = vmlsl_u8(mul_res2, src_tmp3, coeffabs_5)//
+    umlal       v20.8h, v7.8b, v28.8b       //mul_res2 = vmlal_u8(mul_res2, src_tmp4, coeffabs_6)//
+    umlsl       v20.8h, v16.8b, v29.8b      //mul_res2 = vmlsl_u8(mul_res2, src_tmp1, coeffabs_7)//
+    st1         {v30.8b},[x14],x6
 
-    sqrshrun    v8.8b, v8.8h,#6             //sto_res = vqmovun_s16(sto_res_tmp)//
+    sqrshrun    v19.8b, v19.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
 
     ld1         {v17.8b},[x3],x2            //src_tmp2 = vld1_u8(pu1_src_tmp)//
-    umull       v12.8h, v3.8b, v23.8b
-    umlsl       v12.8h, v2.8b, v22.8b
-    umlsl       v12.8h, v4.8b, v24.8b
-    umlal       v12.8h, v5.8b, v25.8b
-    umlal       v12.8h, v6.8b, v26.8b
-    umlsl       v12.8h, v7.8b, v27.8b
-    umlal       v12.8h, v16.8b, v28.8b
-    umlsl       v12.8h, v17.8b, v29.8b
+    umull       v21.8h, v3.8b, v23.8b
+    umlsl       v21.8h, v2.8b, v22.8b
+    umlsl       v21.8h, v4.8b, v24.8b
+    umlal       v21.8h, v5.8b, v25.8b
+    umlal       v21.8h, v6.8b, v26.8b
+    umlsl       v21.8h, v7.8b, v27.8b
+    umlal       v21.8h, v16.8b, v28.8b
+    umlsl       v21.8h, v17.8b, v29.8b
     add         x14,x1,x6
-    st1         {v8.8b},[x1],#8             //vst1_u8(pu1_dst,sto_res)//
-    sqrshrun    v10.8b, v10.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
+    st1         {v19.8b},[x1],#8            //vst1_u8(pu1_dst,sto_res)//
+    sqrshrun    v20.8b, v20.8h,#6           //sto_res = vqmovun_s16(sto_res_tmp)//
 
     ld1         {v18.8b},[x3],x2            //src_tmp3 = vld1_u8(pu1_src_tmp)//
-    umull       v14.8h, v4.8b, v23.8b
-    umlsl       v14.8h, v3.8b, v22.8b
-    umlsl       v14.8h, v5.8b, v24.8b
-    umlal       v14.8h, v6.8b, v25.8b
-    umlal       v14.8h, v7.8b, v26.8b
-    umlsl       v14.8h, v16.8b, v27.8b
-    umlal       v14.8h, v17.8b, v28.8b
-    umlsl       v14.8h, v18.8b, v29.8b
+    umull       v30.8h, v4.8b, v23.8b
+    umlsl       v30.8h, v3.8b, v22.8b
+    umlsl       v30.8h, v5.8b, v24.8b
+    umlal       v30.8h, v6.8b, v25.8b
+    umlal       v30.8h, v7.8b, v26.8b
+    umlsl       v30.8h, v16.8b, v27.8b
+    umlal       v30.8h, v17.8b, v28.8b
+    umlsl       v30.8h, v18.8b, v29.8b
 
-    st1         {v10.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
-    sqrshrun    v12.8b, v12.8h,#6
+    st1         {v20.8b},[x14],x6           //vst1_u8(pu1_dst_tmp,sto_res)//
+    sqrshrun    v21.8b, v21.8h,#6
 
 epilog_end:
-    st1         {v12.8b},[x14],x6
-    sqrshrun    v14.8b, v14.8h,#6
+    st1         {v21.8b},[x14],x6
+    sqrshrun    v30.8b, v30.8h,#6
 
-    st1         {v14.8b},[x14],x6
+    st1         {v30.8b},[x14],x6
 
 
 end_loops:
@@ -427,7 +427,7 @@ end_loops:
     // ldmeqfd sp!,{x4-x12,x15}    //reload the registers from sp
     bne         lbl409
     ldp         x19, x20,[sp], #16
-    pop_v_regs
+
     ret
 lbl409:
     mov         x5, #4
@@ -465,34 +465,34 @@ inner_loop_wd_4:
     ld1         {v7.s}[1],[x3],x2           //src_tmp4 = vld1_lane_u32((uint32_t *)pu1_src_tmp, src_tmp4, 1)//
     umlsl       v0.8h, v6.8b, v24.8b        //mul_res1 = vmlsl_u8(mul_res1, vreinterpret_u8_u32(src_tmp3), coeffabs_2)//
 
-    umull       v8.8h, v7.8b, v23.8b
+    umull       v19.8h, v7.8b, v23.8b
     dup         v4.2s, v7.2s[1]             //src_tmp1 = vdup_lane_u32(src_tmp4, 1)//
     umull       v2.8h, v7.8b, v25.8b        //mul_res2 = vmull_u8(vreinterpret_u8_u32(src_tmp4), coeffabs_3)//
     ld1         {v4.s}[1],[x3],x2           //src_tmp1 = vld1_lane_u32((uint32_t *)pu1_src_tmp, src_tmp1, 1)//
-    umlsl       v8.8h, v6.8b, v22.8b
+    umlsl       v19.8h, v6.8b, v22.8b
     umlal       v0.8h, v4.8b, v26.8b        //mul_res1 = vmlal_u8(mul_res1, vreinterpret_u8_u32(src_tmp1), coeffabs_4)//
 
     dup         v5.2s, v4.2s[1]             //src_tmp2 = vdup_lane_u32(src_tmp1, 1)//
-    umlsl       v8.8h, v4.8b, v24.8b
+    umlsl       v19.8h, v4.8b, v24.8b
     ld1         {v5.s}[1],[x3],x2           //src_tmp2 = vld1_lane_u32((uint32_t *)pu1_src_tmp, src_tmp2, 1)//
     umlsl       v2.8h, v5.8b, v27.8b        //mul_res2 = vmlsl_u8(mul_res2, vreinterpret_u8_u32(src_tmp2), coeffabs_5)//
 
     dup         v6.2s, v5.2s[1]             //src_tmp3 = vdup_lane_u32(src_tmp2, 1)//
-    umlal       v8.8h, v5.8b, v25.8b
+    umlal       v19.8h, v5.8b, v25.8b
     ld1         {v6.s}[1],[x3],x2           //src_tmp3 = vld1_lane_u32((uint32_t *)pu1_src_tmp, src_tmp3, 1)//
     umlal       v0.8h, v6.8b, v28.8b        //mul_res1 = vmlal_u8(mul_res1, vreinterpret_u8_u32(src_tmp3), coeffabs_6)//
 
     dup         v7.2s, v6.2s[1]             //src_tmp4 = vdup_lane_u32(src_tmp3, 1)//
-    umlal       v8.8h, v6.8b, v26.8b
+    umlal       v19.8h, v6.8b, v26.8b
     ld1         {v7.s}[1],[x3],x2           //src_tmp4 = vld1_lane_u32((uint32_t *)pu1_src_tmp, src_tmp4, 1)//
     umlsl       v2.8h, v7.8b, v29.8b        //mul_res2 = vmlsl_u8(mul_res2, vreinterpret_u8_u32(src_tmp4), coeffabs_7)//
 
     dup         v4.2s, v7.2s[1]
     add         v0.8h,  v0.8h ,  v2.8h      //mul_res1 = vaddq_u16(mul_res1, mul_res2)//
 
-    umlsl       v8.8h, v7.8b, v27.8b
+    umlsl       v19.8h, v7.8b, v27.8b
     ld1         {v4.s}[1],[x3],x2
-    umlal       v8.8h, v4.8b, v28.8b
+    umlal       v19.8h, v4.8b, v28.8b
     dup         v5.2s, v4.2s[1]
     sqrshrun    v0.8b, v0.8h,#6             //sto_res = vqmovun_s16(sto_res_tmp)//
 
@@ -500,13 +500,13 @@ inner_loop_wd_4:
     add         x3,x1,x6
     st1         {v0.s}[0],[x1]              //vst1_lane_u32((uint32_t *)pu1_dst, vreinterpret_u32_u8(sto_res), 0)//
 
-    umlsl       v8.8h, v5.8b, v29.8b
+    umlsl       v19.8h, v5.8b, v29.8b
     st1         {v0.s}[1],[x3],x6           //vst1_lane_u32((uint32_t *)pu1_dst_tmp, vreinterpret_u32_u8(sto_res), 1)//
-    sqrshrun    v8.8b, v8.8h,#6
+    sqrshrun    v19.8b, v19.8h,#6
 
-    st1         {v8.s}[0],[x3],x6
+    st1         {v19.s}[0],[x3],x6
     add         x1,x1,#4
-    st1         {v8.s}[1],[x3]
+    st1         {v19.s}[1],[x3]
     bgt         inner_loop_wd_4
 
 end_inner_loop_wd_4:
@@ -517,6 +517,6 @@ end_inner_loop_wd_4:
 
     // ldmfd sp!, {x4-x12, x15}    //reload the registers from sp
     ldp         x19, x20,[sp], #16
-    pop_v_regs
+
     ret
 

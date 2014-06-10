@@ -50,7 +50,8 @@ ihevc_deblk_luma_horz_av8:
     // stmfd sp!, {x3-x12,x14}
     sxtw        x5,w5
     sxtw        x6,w6
-    stp         d8,d9,[sp,#-16]!
+    stp         d8,d9,[sp,#-16]!            // Storing d9 using { sub sp,sp,#8; str d9,[sp] } is giving bus error.
+                                            // d8 is used as dummy register and stored along with d9 using stp. d8 is not used in the function.
     stp         d10,d11,[sp,#-16]!
     stp         d12,d13,[sp,#-16]!
     stp         d14,d15,[sp,#-16]!
@@ -212,11 +213,11 @@ l1.1564:
     neg         x19, x1
     ldrb        w7,[x0,x19]                 // has the -1 value
     dup         v22.2s,w2                   // -4 value
-    uaddw       v8.8h,  v6.8h ,  v27.8b
+    uaddw       v7.8h,  v6.8h ,  v27.8b
     ldrb        w3,[x0,#0]                  // x4 has the 0 value
     uqadd       v16.8b,  v27.8b ,  v1.8b
     and         x2,x2,#0xff
-    mul         v12.8h, v8.8h, v0.4h[0]
+    mul         v12.8h, v7.8h, v0.4h[0]
     ldr         w8, [x0,x10]                // has the 3 value
     uaddl       v10.8h,  v24.8b ,  v28.8b
     subs        x2,x2,x7
@@ -233,7 +234,7 @@ l1.1564:
 
     cmp         x8,x5,asr #3
     bge         l1.1840
-    uaddw       v14.8h,  v8.8h ,  v28.8b
+    uaddw       v14.8h,  v7.8h ,  v28.8b
     subs        x7,x3,x7
     umax        v4.8b,  v18.8b ,  v31.8b
     csneg       x7,x7,x7,pl
@@ -285,13 +286,13 @@ l1.1564:
     subs        x2,x2,x7
     umax        v3.8b,  v18.8b ,  v31.8b
     csneg       x2,x2,x2,pl
-    uaddw       v8.8h,  v6.8h ,  v26.8b
+    uaddw       v7.8h,  v6.8h ,  v26.8b
     add         x8,x8,x2
     uqadd       v30.8b,  v25.8b ,  v1.8b
     cmp         x8,x5,asr #3
     uqsub       v31.8b,  v25.8b ,  v1.8b
     bge         l1.1840
-    mul         v12.8h, v8.8h, v0.4h[0]
+    mul         v12.8h, v7.8h, v0.4h[0]
     subs        x7,x3,x7
     uqadd       v16.8b,  v24.8b ,  v1.8b
     csneg       x7,x7,x7,pl
@@ -303,7 +304,7 @@ l1.1564:
     add         x10, x10,#1
     rshrn       v20.8b, v12.8h,#3
     cmp         x7,x10,asr #1
-    uaddw       v14.8h,  v8.8h ,  v23.8b
+    uaddw       v14.8h,  v7.8h ,  v23.8b
     bge         l1.1840
     umin        v18.8b,  v20.8b ,  v30.8b
     mov         x2,#2
@@ -397,7 +398,7 @@ end_dep_deq_decision_horz:
     cmp         x2,#1
     uqsub       v31.8b,  v23.8b ,  v1.8b
     beq         l1.2408
-    uaddl       v8.8h,  v23.8b ,  v22.8b
+    uaddl       v7.8h,  v23.8b ,  v22.8b
     cmp         x5,#1
 
     bne         strong_filtering_p
@@ -412,10 +413,10 @@ strong_filtering_q:
 strong_filtering_p:
     umax        v5.8b,  v18.8b ,  v17.8b
     mov         x12,x0
-    mul         v8.8h, v8.8h, v0.4h[0]
+    mul         v7.8h, v7.8h, v0.4h[0]
     sub         x20,x1,#0
     neg         x11, x20
-    add         v16.8h,  v8.8h ,  v14.8h
+    add         v16.8h,  v7.8h ,  v14.8h
     add         x12,x12,x11
     rshrn       v19.8b, v16.8h,#3
     st1         {v2.s}[0],[x12],x11
@@ -431,7 +432,8 @@ l1.2404:
     ldp         d14,d15,[sp],#16
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
-    ldp         d8,d9,[sp],#16
+    ldp         d8,d9,[sp],#16              // Loading d9 using { ldr d9,[sp]; add sp,sp,#8 } is giving bus error.
+                                            // d8 is used as dummy register and loaded along with d9 using ldp. d8 is not used in the function.
     ret
 
     // x4=flag p
@@ -486,8 +488,8 @@ l1.2408:
     srshr       v10.8h, v10.8h,#4
     //   delta = ( 9 * (pu1_src[0] - pu1_src[-1]) - 3 * (pu1_src[1] - pu1_src[-2]) + 8 ) >> 4@
 
-    abs         v8.8h, v10.8h
-    xtn         v9.8b,  v8.8h
+    abs         v7.8h, v10.8h
+    xtn         v9.8b,  v7.8h
     // storing the absolute values of delta in d9
 
     sqxtn       v10.8b,  v10.8h
@@ -495,16 +497,16 @@ l1.2408:
 
 
     smin        v11.8b,  v10.8b ,  v30.8b
-    smax        v8.8b,  v31.8b ,  v11.8b    // d8 has the value  delta = clip3(delta, -tc, tc)//
+    smax        v7.8b,  v31.8b ,  v11.8b    // d8 has the value  delta = clip3(delta, -tc, tc)//
 
 
     uxtl        v6.8h, v25.8b
 
-    saddw       v4.8h,  v6.8h ,  v8.8b
+    saddw       v4.8h,  v6.8h ,  v7.8b
 
     sqxtun      v12.8b, v4.8h
     uxtl        v6.8h, v26.8b
-    ssubw       v4.8h,  v6.8h ,  v8.8b
+    ssubw       v4.8h,  v6.8h ,  v7.8b
     sqxtun      v13.8b, v4.8h
 
 
@@ -525,7 +527,7 @@ l1.2408:
     uaddl       v14.8h,  v23.8b ,  v25.8b
     rshrn       v14.8b, v14.8h,#1
     usubl       v14.8h,  v14.8b ,  v24.8b
-    saddw       v14.8h,  v14.8h ,  v8.8b
+    saddw       v14.8h,  v14.8h ,  v7.8b
     sqshrn      v14.8b, v14.8h,#1
     smin        v15.8b,  v14.8b ,  v0.8b
     smax        v14.8b,  v1.8b ,  v15.8b
@@ -558,7 +560,7 @@ l1.2724:
     uaddl       v14.8h,  v26.8b ,  v28.8b
     rshrn       v14.8b, v14.8h,#1
     usubl       v14.8h,  v14.8b ,  v27.8b
-    ssubw       v14.8h,  v14.8h ,  v8.8b
+    ssubw       v14.8h,  v14.8h ,  v7.8b
     sqshrn      v14.8b, v14.8h,#1
     smin        v15.8b,  v14.8b ,  v0.8b
     smax        v14.8b,  v1.8b ,  v15.8b
@@ -580,7 +582,8 @@ l1.2852:
     ldp         d14,d15,[sp],#16
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
-    ldp         d8,d9,[sp],#16
+    ldp         d8,d9,[sp],#16              // Loading d9 using { ldr d9,[sp]; add sp,sp,#8 } is giving bus error.
+                                            // d8 is used as dummy register and loaded along with d9 using ldp. d8 is not used in the function.
     ret
 
 

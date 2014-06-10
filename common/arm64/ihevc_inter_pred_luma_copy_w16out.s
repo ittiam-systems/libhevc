@@ -84,7 +84,7 @@
 ihevc_inter_pred_luma_copy_w16out_av8:
 
     // stmfd sp!, {x4-x12, x14}        //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     mov         x15,x4 // pi1_coeff
@@ -138,7 +138,7 @@ end_inner_loop_wd_4:
 end_loops:
     // ldmfd sp!,{x4-x12,x15}        //reload the registers from sp
     ldp         x19, x20,[sp], #16
-    pop_v_regs
+
 
     ret
 
@@ -159,14 +159,14 @@ core_loop_wd_8:
 prolog:
     add         x6,x0,x2                    //pu1_src_tmp += src_strd
     add         x10,x1,x5
-    ld1         {v8.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
-    ld1         {v10.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
-    ld1         {v12.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
-    ld1         {v14.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
-    uxtl        v16.8h, v8.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
-    uxtl        v18.8h, v10.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
-    uxtl        v20.8h, v12.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
-    uxtl        v22.8h, v14.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    ld1         {v1.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
+    ld1         {v3.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
+    ld1         {v5.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
+    ld1         {v7.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
+    uxtl        v16.8h, v1.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
+    uxtl        v18.8h, v3.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v20.8h, v5.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v22.8h, v7.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
     subs        x4,x4,#8                    //wd decrements by 8
     shl         v0.8h, v16.8h,#6            //vshlq_n_s16(tmp, 6)
     shl         v2.8h, v18.8h,#6            //vshlq_n_s16(tmp, 6)
@@ -175,10 +175,10 @@ prolog:
     add         x20,x0,x8
     csel        x0, x20, x0,le
     add         x6,x0,x2                    //pu1_src_tmp += src_strd
-    ld1         {v8.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
-    ld1         {v10.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
-    ld1         {v12.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
-    ld1         {v14.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
+    ld1         {v1.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
+    ld1         {v3.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
+    ld1         {v5.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
+    ld1         {v7.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
 
     st1         {v0.8h},[x1],#16            //vst1q_s16(pi2_dst_tmp, tmp)
     add         x20,x1,x11,lsl #1
@@ -196,15 +196,15 @@ prolog:
 outer_loop_wd_8:
 
     st1         {v2.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v16.8h, v8.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
+    uxtl        v16.8h, v1.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
 
     st1         {v4.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v18.8h, v10.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v18.8h, v3.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
 
     st1         {v6.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v20.8h, v12.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v20.8h, v5.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
 
-    uxtl        v22.8h, v14.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v22.8h, v7.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
 
     subs        x4,x4,#8                    //wd decrements by 8
     add         x20,x0,x8
@@ -212,16 +212,16 @@ outer_loop_wd_8:
 
     add         x6,x0,x2                    //pu1_src_tmp += src_strd
 
-    ld1         {v8.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
+    ld1         {v1.8b},[x0],#8             //vld1_u8(pu1_src_tmp)
     shl         v0.8h, v16.8h,#6            //vshlq_n_s16(tmp, 6)
 
-    ld1         {v10.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
+    ld1         {v3.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
     shl         v2.8h, v18.8h,#6            //vshlq_n_s16(tmp, 6)
 
-    ld1         {v12.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
+    ld1         {v5.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
     shl         v4.8h, v20.8h,#6            //vshlq_n_s16(tmp, 6)
 
-    ld1         {v14.8b},[x6],x2            //vld1_u8(pu1_src_tmp)
+    ld1         {v7.8b},[x6],x2             //vld1_u8(pu1_src_tmp)
     add         x10,x1,x5
 
     shl         v6.8h, v22.8h,#6            //vshlq_n_s16(tmp, 6)
@@ -238,15 +238,15 @@ outer_loop_wd_8:
 
 epilog:
     st1         {v2.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v16.8h, v8.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
+    uxtl        v16.8h, v1.8b               //vmovl_u8(vld1_u8(pu1_src_tmp))
 
     st1         {v4.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v18.8h, v10.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v18.8h, v3.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
 
     st1         {v6.8h},[x10],x5            //vst1q_s16(pi2_dst_tmp, tmp)
-    uxtl        v20.8h, v12.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v20.8h, v5.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
 
-    uxtl        v22.8h, v14.8b              //vmovl_u8(vld1_u8(pu1_src_tmp)
+    uxtl        v22.8h, v7.8b               //vmovl_u8(vld1_u8(pu1_src_tmp)
     //add          x6,x0,x2                //pu1_src_tmp += src_strd
 
     shl         v0.8h, v16.8h,#6            //vshlq_n_s16(tmp, 6)
@@ -264,7 +264,7 @@ epilog_end:
 
     // ldmfd sp!,{x4-x12,x15}        //reload the registers from sp
     ldp         x19, x20,[sp], #16
-    pop_v_regs
+
     ret
 
 

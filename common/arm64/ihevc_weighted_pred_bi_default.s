@@ -122,7 +122,7 @@ ihevc_weighted_pred_bi_default_av8:
     ldr         w9,[sp,#8]
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
     stp         x21, x22,[sp,#-16]!
 
@@ -195,11 +195,11 @@ core_loop_4:
     ld1         {v6.4h},[x0],#8             //load and increment the pi2_src1
     add         x14,x2,x5                   //pu1_dst_tmp = pu1_dst + dst_strd
     ld1         {v7.4h},[x1],#8             //load and increment the pi2_src2
-    ld1         {v8.4h},[x11],x3            //load and increment the pi2_src1 ii iteration
+    ld1         {v1.4h},[x11],x3            //load and increment the pi2_src1 ii iteration
     sqadd       v18.4h,v6.4h,v7.4h
     sqadd       v18.4h,v18.4h,v0.4h         //vaddq_s32(i4_tmp1_t1, tmp_lvl_shift_t)
-    ld1         {v9.4h},[x12],x4            //load and increment the pi2_src2 ii iteration
-    sqadd       v20.4h,v8.4h,v9.4h          //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2)
+    ld1         {v3.4h},[x12],x4            //load and increment the pi2_src2 ii iteration
+    sqadd       v20.4h,v1.4h,v3.4h          //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2)
     sqadd       v19.4h,v20.4h,v0.4h         //vaddq_s32(i4_tmp2_t1, tmp_lvl_shift_t)
     mov         v18.d[1],v19.d[0]
     sqshrun     v20.8b, v18.8h,#7
@@ -250,11 +250,11 @@ core_loop_chroma_4x2:
     ld1         {v6.4h},[x0],#8             //load and increment the pi2_src1
     add         x14,x2,x5                   //pu1_dst_tmp = pu1_dst + dst_strd
     ld1         {v7.4h},[x1],#8             //load and increment the pi2_src2
-    ld1         {v8.4h},[x11],x3            //load and increment the pi2_src1 ii iteration
+    ld1         {v1.4h},[x11],x3            //load and increment the pi2_src1 ii iteration
     sqadd       v18.4h,v6.4h,v7.4h
     sqadd       v18.4h,v18.4h,v0.4h         //vaddq_s32(i4_tmp1_t1, tmp_lvl_shift_t)
-    ld1         {v9.4h},[x12],x4            //load and increment the pi2_src2 ii iteration
-    sqadd       v20.4h,v8.4h,v9.4h          //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2)
+    ld1         {v3.4h},[x12],x4            //load and increment the pi2_src2 ii iteration
+    sqadd       v20.4h,v1.4h,v3.4h          //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2)
     sqadd       v19.4h,v20.4h,v0.4h         //vaddq_s32(i4_tmp2_t1, tmp_lvl_shift_t)
     mov         v18.d[1],v19.d[0]
     sqshrun     v20.8b, v18.8h,#7
@@ -301,17 +301,17 @@ core_loop_8:
     ld1         { v18.8h},[x12],x4          //load and increment the pi2_src2 iii iteration
     sqadd       v22.8h,v22.8h,v0.8h         //vaddq_s32(i4_tmp2_t1, tmp_lvl_shift_t)
     sqshrun     v20.8b, v24.8h,#7
-    ld1         { v12.8h},[x11],x3          //load and increment the pi2_src1 iv iteration
+    ld1         { v17.8h},[x11],x3          //load and increment the pi2_src1 iv iteration
     sqadd       v30.8h,v16.8h,v18.8h
     sqshrun     v21.8b, v22.8h,#7
-    ld1         { v14.8h},[x12],x4          //load and increment the pi2_src2 iv iteration
+    ld1         { v29.8h},[x12],x4          //load and increment the pi2_src2 iv iteration
     sqadd       v30.8h,v30.8h,v0.8h         //vaddq_s32(i4_tmp1_t1, tmp_lvl_shift_t) iii iteration
     st1         {v20.2s},[x2],#8            //store pu1_dst i iteration
-    sqadd       v8.8h,v12.8h,v14.8h         //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2) iv iteration
+    sqadd       v1.8h,v17.8h,v29.8h         //vaddq_s32(i4_tmp2_t1, i4_tmp2_t2) iv iteration
     st1         {v21.2s},[x14],x5           //store pu1_dst ii iteration
-    sqadd       v8.8h,v8.8h,v0.8h
+    sqadd       v1.8h,v1.8h,v0.8h
     sqshrun     v30.8b, v30.8h,#7
-    sqshrun     v31.8b, v8.8h,#7
+    sqshrun     v31.8b, v1.8h,#7
     add         x11,x0,x3                   //pi2_src_tmp1 = pi2_src1 + 2*src_strd1(2* because pi1_src is a 16 bit pointer)
     add         x12,x1,x4                   //pi2_src_tmp2 = pi2_src2 + 2*src_strd2(2* because pi2_src is a 16 bit pointer)
     st1         {v30.2s},[x14],x5           //store pu1_dst iii iteration                                                //vaddq_s32(i4_tmp2_t1, tmp_lvl_shift_t) iv iteratio
@@ -413,40 +413,40 @@ prolog_16:
 
     ld1         { v2.8h},[x0],#16           //load and increment the pi2_src1
     ld1         { v4.8h},[x1],#16           //load and increment the pi2_src2
-    ld1         { v10.8h},[x0],x11          //load and increment the pi2_src1
-    ld1         { v12.8h},[x1],x11          //load and increment the pi2_src2
+    ld1         { v5.8h},[x0],x11           //load and increment the pi2_src1
+    ld1         { v17.8h},[x1],x11          //load and increment the pi2_src2
     ld1         { v6.8h},[x0],#16           //load and increment the pi2_src1 ii iteration
     subs        x9,x9,#16
-    ld1         { v8.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
+    ld1         { v1.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
     sub         x20,x8,#2
     csel        x8, x20, x8,eq
     sqadd       v22.8h,v2.8h,v4.8h
-    ld1         { v14.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
-    sqadd       v28.8h,v10.8h,v12.8h
+    ld1         { v29.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
+    sqadd       v28.8h,v5.8h,v17.8h
     ld1         { v16.8h},[x1],x12          //load and increment the pi2_src2 ii iteration
     add         x20,x0,x7
     csel        x0, x20, x0,eq
     add         x20,x1,x7
     csel        x1, x20, x1,eq
-    sqadd       v24.8h,v6.8h,v8.8h
+    sqadd       v24.8h,v6.8h,v1.8h
     ld1         { v2.8h},[x0],#16
-    sqadd       v26.8h,v14.8h,v16.8h
+    sqadd       v26.8h,v29.8h,v16.8h
 // if the input is chroma with 8x2 block size
     cmp         x8,#0
     beq         epilog_16
 
     ld1         { v4.8h},[x1],#16           //load and increment the pi2_src2
     sqadd       v22.8h,v22.8h,v0.8h
-    ld1         { v10.8h},[x0],x11          //load and increment the pi2_src1
+    ld1         { v5.8h},[x0],x11           //load and increment the pi2_src1
     sqadd       v28.8h,v28.8h,v0.8h
-    ld1         { v12.8h},[x1],x11          //load and increment the pi2_src2
+    ld1         { v17.8h},[x1],x11          //load and increment the pi2_src2
     sqadd       v24.8h,v24.8h,v0.8h
     ld1         { v6.8h},[x0],#16           //load and increment the pi2_src1 ii iteration
     sqadd       v30.8h,v26.8h,v0.8h
     sqshrun     v20.8b, v22.8h,#7
-    ld1         { v8.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
+    ld1         { v1.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
     sqshrun     v21.8b, v28.8h,#7
-    ld1         { v14.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
+    ld1         { v29.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
     sqshrun     v26.8b, v24.8h,#7
     ld1         { v16.8h},[x1],x12          //load and increment the pi2_src2 ii iteration
     sqshrun     v27.8b, v30.8h,#7
@@ -463,15 +463,15 @@ core_loop_16:
     mov         v20.d[1],v21.d[0]
     mov         v26.d[1],v27.d[0]
     st1         { v20.4s},[x2],x5
-    sqadd       v28.8h,v10.8h,v12.8h
+    sqadd       v28.8h,v5.8h,v17.8h
     st1         { v26.4s},[x2],x10
     add         x20,x2,x14
     csel        x2, x20, x2,eq
-    sqadd       v24.8h,v6.8h,v8.8h
+    sqadd       v24.8h,v6.8h,v1.8h
     subs        x9,x9,#16
     add         x20,x0,x7
     csel        x0, x20, x0,eq
-    sqadd       v26.8h,v14.8h,v16.8h
+    sqadd       v26.8h,v29.8h,v16.8h
 
     add         x20,x1,x7
     csel        x1, x20, x1,eq
@@ -487,15 +487,15 @@ core_loop_16:
     sqadd       v28.8h,v28.8h,v0.8h
     ld1         { v4.8h},[x1],#16           //load and increment the pi2_src2
     sqadd       v24.8h,v24.8h,v0.8h
-    ld1         { v10.8h},[x0],x11          //load and increment the pi2_src1
+    ld1         { v5.8h},[x0],x11           //load and increment the pi2_src1
     sqadd       v30.8h,v26.8h,v0.8h
-    ld1         { v12.8h},[x1],x11          //load and increment the pi2_src2
+    ld1         { v17.8h},[x1],x11          //load and increment the pi2_src2
     sqshrun     v20.8b, v22.8h,#7
     ld1         { v6.8h},[x0],#16           //load and increment the pi2_src1 ii iteration
     sqshrun     v21.8b, v28.8h,#7
-    ld1         { v8.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
+    ld1         { v1.8h},[x1],#16           //load and increment the pi2_src2 ii iteration
     sqshrun     v26.8b, v24.8h,#7
-    ld1         { v14.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
+    ld1         { v29.8h},[x0],x12          //load and increment the pi2_src1 ii iteration
     sqshrun     v27.8b, v30.8h,#7
     ld1         { v16.8h},[x1],x12          //load and increment the pi2_src2 ii iteration
 
@@ -533,7 +533,7 @@ end_loops:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

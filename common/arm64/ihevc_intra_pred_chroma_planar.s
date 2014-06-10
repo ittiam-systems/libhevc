@@ -106,7 +106,11 @@
 ihevc_intra_pred_chroma_planar_av8:
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
-    push_v_regs
+
+    stp         d10,d11,[sp,#-16]!
+    stp         d12,d13,[sp,#-16]!
+    stp         d8,d14,[sp,#-16]!           // Storing d14 using { sub sp,sp,#8; str d14,[sp] } is giving bus error.
+                                            // d8 is used as dummy register and stored along with d14 using stp. d8 is not used in the function.
     stp         x19, x20,[sp,#-16]!
 
     adrp        x11, :got:gau1_ihevc_planar_factor //loads table of coeffs
@@ -165,13 +169,13 @@ ihevc_intra_pred_chroma_planar_av8:
     mov         x10,x6
 tf_sz_8_16:
     ld1         {v10.8b, v11.8b}, [x14],#16 //load src[2nt+1+col]
-    ld1         {v8.8b},[x12],#8
-    mov         v9.8b, v8.8b
-    zip1        v29.8b, v8.8b, v9.8b
-    zip2        v9.8b, v8.8b, v9.8b
-    mov         v8.d[0], v29.d[0]
-    sub         v30.8b,  v2.8b ,  v8.8b     //[nt-1-col]
-    sub         v31.8b,  v2.8b ,  v9.8b
+    ld1         {v17.8b},[x12],#8
+    mov         v25.8b, v17.8b
+    zip1        v29.8b, v17.8b, v25.8b
+    zip2        v25.8b, v17.8b, v25.8b
+    mov         v17.d[0], v29.d[0]
+    sub         v30.8b,  v2.8b ,  v17.8b    //[nt-1-col]
+    sub         v31.8b,  v2.8b ,  v25.8b
 
 
 
@@ -185,7 +189,7 @@ loop_sz_8_16:
     sxtw        x11,w11
     umlal       v12.8h, v6.8b, v10.8b       //(nt-1-row)    *    src[2nt+1+col]
     dup         v4.4h,w7                    //src[2nt-1-row]
-    umlal       v12.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
+    umlal       v12.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
     dup         v3.4h,w11                   //src[2nt-1-row]
     umlal       v12.8h, v30.8b, v4.8b       //(nt-1-col)    *    src[2nt-1-row]
 
@@ -200,14 +204,14 @@ loop_sz_8_16:
 
     umlal       v28.8h, v31.8b, v4.8b
     sub         v19.8b,  v6.8b ,  v7.8b     //[nt-1-row]--
-    umlal       v28.8h, v9.8b, v1.8b
+    umlal       v28.8h, v25.8b, v1.8b
     dup         v4.4h,w7                    //src[2nt-1-row]
 
     umull       v26.8h, v18.8b, v0.8b       //(row+1)    *    src[nt-1]
     add         v12.8h,  v12.8h ,  v16.8h   //add (nt)
     umlal       v26.8h, v19.8b, v10.8b      //(nt-1-row)    *    src[2nt+1+col]
     sshl        v12.8h, v12.8h, v14.8h      //shr
-    umlal       v26.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
+    umlal       v26.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
     add         v28.8h,  v28.8h ,  v16.8h
     umlal       v26.8h, v30.8b, v3.8b       //(nt-1-col)    *    src[2nt-1-row]
     sshl        v28.8h, v28.8h, v14.8h
@@ -220,7 +224,7 @@ loop_sz_8_16:
     add         v5.8b,  v18.8b ,  v7.8b     //row++ [(row+1)++]
     umlal       v24.8h, v19.8b, v11.8b
     sub         v6.8b,  v19.8b ,  v7.8b     //[nt-1-row]--
-    umlal       v24.8h, v9.8b, v1.8b
+    umlal       v24.8h, v25.8b, v1.8b
     xtn         v12.8b,  v12.8h
     umlal       v24.8h, v31.8b, v3.8b
     xtn         v13.8b,  v28.8h
@@ -233,7 +237,7 @@ loop_sz_8_16:
     sshl        v26.8h, v26.8h, v14.8h      //shr
     umlal       v22.8h, v6.8b, v10.8b       //(nt-1-row)    *    src[2nt+1+col]
     st1         {v12.2s, v13.2s}, [x2], x3
-    umlal       v22.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
+    umlal       v22.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
     add         v24.8h,  v24.8h ,  v16.8h
     umlal       v22.8h, v30.8b, v4.8b       //(nt-1-col)    *    src[2nt-1-row]
     sshl        v24.8h, v24.8h, v14.8h
@@ -246,7 +250,7 @@ loop_sz_8_16:
 
     ldr         w11,  [x6], #-2             //src[2nt-1-row] (dec to take into account row)
     sxtw        x11,w11
-    umlal       v20.8h, v9.8b, v1.8b
+    umlal       v20.8h, v25.8b, v1.8b
     dup         v3.4h,w11                   //src[2nt-1-row]
     add         v22.8h,  v22.8h ,  v16.8h   //add (nt)
 
@@ -255,7 +259,7 @@ loop_sz_8_16:
     umlal       v12.8h, v19.8b, v10.8b      //(nt-1-row)    *    src[2nt+1+col]
     xtn         v27.8b,  v24.8h
 
-    umlal       v12.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
+    umlal       v12.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
     sshl        v22.8h, v22.8h, v14.8h      //shr
 
     umlal       v12.8h, v30.8b, v3.8b       //(nt-1-col)    *    src[2nt-1-row]
@@ -268,7 +272,7 @@ loop_sz_8_16:
     add         v5.8b,  v18.8b ,  v7.8b     //row++ [(row+1)++]
 
     sub         v6.8b,  v19.8b ,  v7.8b     //[nt-1-row]--
-    umlal       v28.8h, v9.8b, v1.8b
+    umlal       v28.8h, v25.8b, v1.8b
 
     umlal       v28.8h, v31.8b, v3.8b
     sshl        v20.8h, v20.8h, v14.8h
@@ -319,13 +323,13 @@ loop_sz_8_16:
     add         x2,x2,#16
 
     ld1         {v10.8b, v11.8b}, [x14],#16 //load src[2nt+1+col]
-    ld1         {v8.8b},[x12],#8
-    mov         v9.8b, v8.8b
-    zip1        v29.8b, v8.8b, v9.8b
-    zip2        v9.8b, v8.8b, v9.8b
-    mov         v8.d[0], v29.d[0]
-    sub         v30.8b,  v2.8b ,  v8.8b     //[nt-1-col]
-    sub         v31.8b,  v2.8b ,  v9.8b
+    ld1         {v17.8b},[x12],#8
+    mov         v25.8b, v17.8b
+    zip1        v29.8b, v17.8b, v25.8b
+    zip2        v25.8b, v17.8b, v25.8b
+    mov         v17.d[0], v29.d[0]
+    sub         v30.8b,  v2.8b ,  v17.8b    //[nt-1-col]
+    sub         v31.8b,  v2.8b ,  v25.8b
 
     beq         loop_sz_8_16
 
@@ -333,23 +337,23 @@ loop_sz_8_16:
 
 tf_sz_4:
     ld1         {v10.8b},[x14]              //load src[2nt+1+col]
-    ld1         {v8.8b},[x12], x10          //load 8 coeffs [col+1]
-    mov         v9.8b, v8.8b
-    zip1        v29.8b, v8.8b, v9.8b
-    zip2        v9.8b, v8.8b, v9.8b
-    mov         v8.d[0], v29.d[0]
+    ld1         {v17.8b},[x12], x10         //load 8 coeffs [col+1]
+    mov         v25.8b, v17.8b
+    zip1        v29.8b, v17.8b, v25.8b
+    zip2        v25.8b, v17.8b, v25.8b
+    mov         v17.d[0], v29.d[0]
 loop_sz_4:
     //mov        x10, #4                @reduce inc to #4 for 4x4
     ldr         w7,  [x6], #-2              //src[2nt-1-row] (dec to take into account row)
     sxtw        x7,w7
     dup         v4.4h,w7                    //src[2nt-1-row]
 
-    sub         v9.8b,  v2.8b ,  v8.8b      //[nt-1-col]
+    sub         v25.8b,  v2.8b ,  v17.8b    //[nt-1-col]
 
     umull       v12.8h, v5.8b, v0.8b        //(row+1)    *    src[nt-1]
     umlal       v12.8h, v6.8b, v10.8b       //(nt-1-row)    *    src[2nt+1+col]
-    umlal       v12.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
-    umlal       v12.8h, v9.8b, v4.8b        //(nt-1-col)    *    src[2nt-1-row]
+    umlal       v12.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
+    umlal       v12.8h, v25.8b, v4.8b       //(nt-1-col)    *    src[2nt-1-row]
 //    vadd.i16    q6, q6, q8            @add (nt)
 //    vshl.s16     q6, q6, q7            @shr
 //    vmovn.i16     d12, q6
@@ -364,9 +368,12 @@ loop_sz_4:
     bne         loop_sz_4
 
 end_loop:
-    // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
+    // ldmfd sp!,{x4-x12,x15}                   //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+    ldp         d8,d14,[sp],#16             // Loading d14 using { ldr d14,[sp]; add sp,sp,#8 } is giving bus error.
+                                            // d8 is used as dummy register and loaded along with d14 using ldp. d8 is not used in the function.
+    ldp         d12,d13,[sp],#16
+    ldp         d10,d11,[sp],#16
     ret
 
 

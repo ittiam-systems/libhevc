@@ -105,7 +105,7 @@
 ihevc_intra_pred_luma_mode2_av8:
 
     // stmfd sp!, {x4-x12, x14}    //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     mov         x8,#-2
@@ -138,20 +138,20 @@ prologue_cpy_32:
     ld1         {v7.8b},[x10],x8
     add         x7,x6,x3
 
-    rev64       v8.8b,  v0.8b
-    rev64       v9.8b,  v1.8b
+    rev64       v16.8b,  v0.8b
+    rev64       v17.8b,  v1.8b
     lsl         x5, x3, #2
 
-    rev64       v10.8b,  v2.8b
-    rev64       v11.8b,  v3.8b
+    rev64       v18.8b,  v2.8b
+    rev64       v19.8b,  v3.8b
     add         x9,x7,x3
 
-    rev64       v12.8b,  v4.8b
+    rev64       v20.8b,  v4.8b
     subs        x1,x1,#8
 
-    rev64       v13.8b,  v5.8b
-    rev64       v14.8b,  v6.8b
-    rev64       v15.8b,  v7.8b
+    rev64       v21.8b,  v5.8b
+    rev64       v22.8b,  v6.8b
+    rev64       v23.8b,  v7.8b
     add         x14,x9,x3
 
     beq         epilogue_mode2
@@ -160,24 +160,24 @@ prologue_cpy_32:
 
 kernel_mode2:
 
-    st1         {v8.8b},[x6],x5
-    st1         {v9.8b},[x7],x5
+    st1         {v16.8b},[x6],x5
+    st1         {v17.8b},[x7],x5
     subs        x11,x11,#8
 
-    st1         {v10.8b},[x9],x5
+    st1         {v18.8b},[x9],x5
     add         x20,x2,#8
     csel        x2, x20, x2,gt
 
-    st1         {v11.8b},[x14],x5
-    st1         {v12.8b},[x6],x5
+    st1         {v19.8b},[x14],x5
+    st1         {v20.8b},[x6],x5
     csel        x11, x4, x11,le
 
-    st1         {v13.8b},[x7],x5
-    st1         {v14.8b},[x9],x5
+    st1         {v21.8b},[x7],x5
+    st1         {v22.8b},[x9],x5
     add         x20, x2, x3, lsl #2
     csel        x2, x20, x2,le
 
-    st1         {v15.8b},[x14],x5
+    st1         {v23.8b},[x14],x5
     ld1         {v0.8b},[x0],x8
     sub         x14,x4,#8
 
@@ -201,42 +201,42 @@ kernel_mode2:
     add         x20, x0, x4
     csel        x0, x20, x0,le
 
-    rev64       v8.8b,  v0.8b
+    rev64       v16.8b,  v0.8b
     add         x7, x6, x3
 
-    rev64       v9.8b,  v1.8b
+    rev64       v17.8b,  v1.8b
     sub         x20, x0, #8
     csel        x0, x20, x0,le
 
-    rev64       v10.8b,  v2.8b
+    rev64       v18.8b,  v2.8b
     csel        x12, x4, x12,le
 
-    rev64       v11.8b,  v3.8b
+    rev64       v19.8b,  v3.8b
     add         x9, x7, x3
 
-    rev64       v12.8b,  v4.8b
+    rev64       v20.8b,  v4.8b
     add         x10,x0,#-1
 
-    rev64       v13.8b,  v5.8b
+    rev64       v21.8b,  v5.8b
     subs        x1, x1, #8
 
-    rev64       v14.8b,  v6.8b
+    rev64       v22.8b,  v6.8b
     add         x14, x9, x3
 
-    rev64       v15.8b,  v7.8b
+    rev64       v23.8b,  v7.8b
 
     bne         kernel_mode2
 
 epilogue_mode2:
 
-    st1         {v8.8b},[x6],x5
-    st1         {v9.8b},[x7],x5
-    st1         {v10.8b},[x9],x5
-    st1         {v11.8b},[x14],x5
-    st1         {v12.8b},[x6],x5
-    st1         {v13.8b},[x7],x5
-    st1         {v14.8b},[x9],x5
-    st1         {v15.8b},[x14],x5
+    st1         {v16.8b},[x6],x5
+    st1         {v17.8b},[x7],x5
+    st1         {v18.8b},[x9],x5
+    st1         {v19.8b},[x14],x5
+    st1         {v20.8b},[x6],x5
+    st1         {v21.8b},[x7],x5
+    st1         {v22.8b},[x9],x5
+    st1         {v23.8b},[x14],x5
 
     b           end_func
 
@@ -269,7 +269,7 @@ mode2_4:
 end_func:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

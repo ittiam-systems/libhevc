@@ -97,7 +97,7 @@
 ihevc_intra_pred_luma_horz_av8:
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     //ldr          x5,[sp,#44]                        @loads mode
@@ -126,7 +126,7 @@ core_loop_32:
     st1         { v2.16b},[x2],x3           //store in 1st row 0-16 columns
     st1         { v2.16b},[x9],x3           //store in 1st row 16-32 columns
 
-    dup         v8.16b, v0.16b[12]
+    dup         v1.16b, v0.16b[12]
     st1         { v4.16b},[x2],x3
     st1         { v4.16b},[x9],x3
 
@@ -135,14 +135,14 @@ core_loop_32:
     st1         { v6.16b},[x9],x3
 
     dup         v4.16b, v0.16b[10]
-    st1         { v8.16b},[x2],x3
-    st1         { v8.16b},[x9],x3
+    st1         { v1.16b},[x2],x3
+    st1         { v1.16b},[x9],x3
 
     dup         v6.16b, v0.16b[9]
     st1         { v2.16b},[x2],x3
     st1         { v2.16b},[x9],x3
 
-    dup         v8.16b, v0.16b[8]
+    dup         v1.16b, v0.16b[8]
     st1         { v4.16b},[x2],x3
     st1         { v4.16b},[x9],x3
 
@@ -151,14 +151,14 @@ core_loop_32:
     st1         { v6.16b},[x9],x3
 
     dup         v4.16b, v0.8b[6]
-    st1         { v8.16b},[x2],x3
-    st1         { v8.16b},[x9],x3
+    st1         { v1.16b},[x2],x3
+    st1         { v1.16b},[x9],x3
 
     dup         v6.16b, v0.8b[5]
     st1         { v2.16b},[x2],x3
     st1         { v2.16b},[x9],x3
 
-    dup         v8.16b, v0.8b[4]
+    dup         v1.16b, v0.8b[4]
     st1         { v4.16b},[x2],x3
     st1         { v4.16b},[x9],x3
 
@@ -167,15 +167,15 @@ core_loop_32:
     st1         { v6.16b},[x9],x3
 
     dup         v4.16b, v0.8b[2]
-    st1         { v8.16b},[x2],x3
-    st1         { v8.16b},[x9],x3
+    st1         { v1.16b},[x2],x3
+    st1         { v1.16b},[x9],x3
 
     dup         v6.16b, v0.8b[1]
     st1         { v2.16b},[x2],x3
     st1         { v2.16b},[x9],x3
     sub         x12,x12,#16                 //move to 16th value pointer
 
-    dup         v8.16b, v0.8b[0]
+    dup         v1.16b, v0.8b[0]
     st1         { v4.16b},[x2],x3
     st1         { v4.16b},[x9],x3
 
@@ -183,12 +183,12 @@ core_loop_32:
     st1         { v6.16b},[x2],x3
     st1         { v6.16b},[x9],x3
 
-    st1         { v8.16b},[x2],x3
-    st1         { v8.16b},[x9],x3
+    st1         { v1.16b},[x2],x3
+    st1         { v1.16b},[x9],x3
     bgt         core_loop_32
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
     b           end_func
 
@@ -214,18 +214,18 @@ core_loop_16:
     dup         v6.16b, v0.16b[12]
     sqadd       v22.8h,  v26.8h ,  v24.8h
 
-    dup         v8.16b, v0.16b[11]
+    dup         v1.16b, v0.16b[11]
     sqxtun      v22.8b, v22.8h
 
     st1         {v22.8b},[x2],#8
 
-    dup         v10.16b, v0.16b[10]
+    dup         v18.16b, v0.16b[10]
     usubl       v24.8h, v31.8b, v28.8b
 
-    dup         v12.16b, v0.16b[9]
+    dup         v19.16b, v0.16b[9]
     sshr        v24.8h, v24.8h,#1
 
-    dup         v14.16b, v0.16b[8]
+    dup         v20.16b, v0.16b[8]
     sqadd       v22.8h,  v26.8h ,  v24.8h
 
     dup         v16.16b, v0.8b[7]
@@ -238,37 +238,37 @@ core_loop_16:
 
     st1         { v4.16b},[x2],x3
     st1         { v6.16b},[x2],x3
-    st1         { v8.16b},[x2],x3
+    st1         { v1.16b},[x2],x3
 
     dup         v2.16b, v0.8b[6]
-    st1         { v10.16b},[x2],x3
+    st1         { v18.16b},[x2],x3
 
     dup         v4.16b, v0.8b[5]
-    st1         { v12.16b},[x2],x3
+    st1         { v19.16b},[x2],x3
 
     dup         v6.16b, v0.8b[4]
-    st1         { v14.16b},[x2],x3
+    st1         { v20.16b},[x2],x3
 
-    dup         v8.16b, v0.8b[3]
+    dup         v1.16b, v0.8b[3]
     st1         { v16.16b},[x2],x3
 
-    dup         v10.16b, v0.8b[2]
+    dup         v18.16b, v0.8b[2]
     st1         { v2.16b},[x2],x3
 
-    dup         v12.16b, v0.8b[1]
+    dup         v19.16b, v0.8b[1]
     st1         { v4.16b},[x2],x3
 
-    dup         v14.16b, v0.8b[0]
+    dup         v20.16b, v0.8b[0]
     st1         { v6.16b},[x2],x3
 
-    st1         { v8.16b},[x2],x3
-    st1         { v10.16b},[x2],x3
-    st1         { v12.16b},[x2],x3
-    st1         { v14.16b},[x2],x3
+    st1         { v1.16b},[x2],x3
+    st1         { v18.16b},[x2],x3
+    st1         { v19.16b},[x2],x3
+    st1         { v20.16b},[x2],x3
 
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
     b           end_func
 
@@ -302,19 +302,19 @@ core_loop_8:
     st1         {v22.8b},[x2],x3
     st1         {v3.8b},[x2],x3
 
-    dup         v8.8b, v0.8b[1]
+    dup         v1.8b, v0.8b[1]
     st1         {v4.8b},[x2],x3
     st1         {v5.8b},[x2],x3
 
-    dup         v9.8b, v0.8b[0]
+    dup         v17.8b, v0.8b[0]
     st1         {v6.8b},[x2],x3
     st1         {v7.8b},[x2],x3
 
-    st1         {v8.8b},[x2],x3
-    st1         {v9.8b},[x2],x3
+    st1         {v1.8b},[x2],x3
+    st1         {v17.8b},[x2],x3
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
     b           end_func
 
@@ -349,7 +349,7 @@ core_loop_4:
 
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 end_func:
 

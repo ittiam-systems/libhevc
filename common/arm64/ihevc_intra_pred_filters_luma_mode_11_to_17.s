@@ -105,7 +105,9 @@
 ihevc_intra_pred_luma_mode_11_to_17_av8:
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
-    push_v_regs
+
+    stp         d12,d13,[sp,#-16]!
+    stp         d14,d15,[sp,#-16]!
     stp         x19, x20,[sp,#-16]!
 
     adrp        x7,  :got:gai4_ihevc_ang_table
@@ -287,60 +289,60 @@ prologue_8_16_32:
     mov         x0, #32
     dup         v28.8b,w0
 
-    sqxtn       v8.8b,  v22.8h
+    sqxtn       v19.8b,  v22.8h
 
     and         v6.8b,  v6.8b ,  v29.8b     //fract values in d1/ idx values in d0
 
     mov         x0, #1
     dup         v27.8b,w0                   //row value inc or reset accordingly
 
-    add         v8.8b,  v8.8b ,  v27.8b     //ref_main_idx (add row)
-    sub         v8.8b,  v8.8b ,  v26.8b     //ref_main_idx (row 0)
-    add         v9.8b,  v8.8b ,  v2.8b      //ref_main_idx + 1 (row 0)
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 0)
+    add         v19.8b,  v19.8b ,  v27.8b   //ref_main_idx (add row)
+    sub         v19.8b,  v19.8b ,  v26.8b   //ref_main_idx (row 0)
+    add         v21.8b,  v19.8b ,  v2.8b    //ref_main_idx + 1 (row 0)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 0)
     sub         v7.8b,  v28.8b ,  v6.8b     //32-fract
 
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 0)
-    add         v4.8b,  v8.8b ,  v2.8b      //ref_main_idx (row 1)
-    add         v5.8b,  v9.8b ,  v2.8b      //ref_main_idx + 1 (row 1)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 0)
+    add         v4.8b,  v19.8b ,  v2.8b     //ref_main_idx (row 1)
+    add         v5.8b,  v21.8b ,  v2.8b     //ref_main_idx + 1 (row 1)
 
     tbl         v16.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 1)
     umull       v24.8h, v12.8b, v7.8b       //mul (row 0)
     umlal       v24.8h, v13.8b, v6.8b       //mul (row 0)
 
     tbl         v17.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 1)
-    add         v8.8b,  v8.8b ,  v3.8b      //ref_main_idx (row 2)
-    add         v9.8b,  v9.8b ,  v3.8b      //ref_main_idx + 1 (row 2)
+    add         v19.8b,  v19.8b ,  v3.8b    //ref_main_idx (row 2)
+    add         v21.8b,  v21.8b ,  v3.8b    //ref_main_idx + 1 (row 2)
 
     rshrn       v24.8b, v24.8h,#5           //round shft (row 0)
 
-    tbl         v14.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 2)
+    tbl         v14.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 2)
     umull       v22.8h, v16.8b, v7.8b       //mul (row 1)
     umlal       v22.8h, v17.8b, v6.8b       //mul (row 1)
 
-    tbl         v15.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 2)
+    tbl         v15.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 2)
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 3)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 3)
 
     st1         {v24.8b},[x2], x3           //st (row 0)
     rshrn       v22.8b, v22.8h,#5           //round shft (row 1)
 
-    tbl         v10.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 3)
+    tbl         v23.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 3)
     umull       v20.8h, v14.8b, v7.8b       //mul (row 2)
     umlal       v20.8h, v15.8b, v6.8b       //mul (row 2)
 
-    tbl         v11.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 3)
-    add         v8.8b,  v8.8b ,  v3.8b      //ref_main_idx (row 4)
-    add         v9.8b,  v9.8b ,  v3.8b      //ref_main_idx + 1 (row 4)
+    tbl         v25.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 3)
+    add         v19.8b,  v19.8b ,  v3.8b    //ref_main_idx (row 4)
+    add         v21.8b,  v21.8b ,  v3.8b    //ref_main_idx + 1 (row 4)
 
     st1         {v22.8b},[x2], x3           //st (row 1)
     rshrn       v20.8b, v20.8h,#5           //round shft (row 2)
 
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 4)
-    umull       v18.8h, v10.8b, v7.8b       //mul (row 3)
-    umlal       v18.8h, v11.8b, v6.8b       //mul (row 3)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 4)
+    umull       v18.8h, v23.8b, v7.8b       //mul (row 3)
+    umlal       v18.8h, v25.8b, v6.8b       //mul (row 3)
 
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 4)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 4)
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 5)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 5)
 
@@ -352,30 +354,30 @@ prologue_8_16_32:
     umlal       v24.8h, v13.8b, v6.8b       //mul (row 4)
 
     tbl         v17.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 5)
-    add         v8.8b,  v8.8b ,  v3.8b      //ref_main_idx (row 6)
-    add         v9.8b,  v9.8b ,  v3.8b      //ref_main_idx + 1 (row 6)
+    add         v19.8b,  v19.8b ,  v3.8b    //ref_main_idx (row 6)
+    add         v21.8b,  v21.8b ,  v3.8b    //ref_main_idx + 1 (row 6)
 
     st1         {v18.8b},[x2], x3           //st (row 3)
     rshrn       v24.8b, v24.8h,#5           //round shft (row 4)
 
-    tbl         v14.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 6)
+    tbl         v14.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 6)
     umull       v22.8h, v16.8b, v7.8b       //mul (row 5)
     umlal       v22.8h, v17.8b, v6.8b       //mul (row 5)
 
-    tbl         v15.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 6)
+    tbl         v15.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 6)
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 7)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 7)
 
     st1         {v24.8b},[x2], x3           //st (row 4)
     rshrn       v22.8b, v22.8h,#5           //round shft (row 5)
 
-    tbl         v10.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
+    tbl         v23.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
     umull       v20.8h, v14.8b, v7.8b       //mul (row 6)
     umlal       v20.8h, v15.8b, v6.8b       //mul (row 6)
 
-    tbl         v11.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
-    umull       v18.8h, v10.8b, v7.8b       //mul (row 7)
-    umlal       v18.8h, v11.8b, v6.8b       //mul (row 7)
+    tbl         v25.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
+    umull       v18.8h, v23.8b, v7.8b       //mul (row 7)
+    umlal       v18.8h, v25.8b, v6.8b       //mul (row 7)
 
     st1         {v22.8b},[x2], x3           //st (row 5)
     rshrn       v20.8b, v20.8h,#5           //round shft (row 6)
@@ -410,31 +412,31 @@ lbl390:
     mov         x5,x2
     ld1         {v31.8b},[x14],#8
     smull       v12.8h, v30.8b, v31.8b      //(col+1)*intra_pred_angle [0:7](col)
-    xtn         v10.8b,  v12.8h
+    xtn         v23.8b,  v12.8h
     sshr        v12.8h, v12.8h,#5
-    sqxtn       v11.8b,  v12.8h
+    sqxtn       v25.8b,  v12.8h
     dup         v27.8b,w0                   //row value inc or reset accordingly
     ldr         w9,  [x8]
     sxtw        x9,w9
     add         x9, x0, x9
     sub         x9, x9, #1
     dup         v26.8b,w9
-    add         v8.8b,  v27.8b ,  v11.8b    //ref_main_idx (add row)
+    add         v19.8b,  v27.8b ,  v25.8b   //ref_main_idx (add row)
 
     sub         x4,x4,#8
 
 kernel_8_16_32:
 
-    sub         v8.8b,  v8.8b ,  v26.8b     //ref_main_idx
-    mov         v26.8b, v10.8b
+    sub         v19.8b,  v19.8b ,  v26.8b   //ref_main_idx
+    mov         v26.8b, v23.8b
 
     subs        x11, x11, #8
     add         x6, x1, x9
-    tbl         v10.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
-    add         v9.8b,  v2.8b ,  v8.8b      //ref_main_idx + 1
+    tbl         v23.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
+    add         v21.8b,  v2.8b ,  v19.8b    //ref_main_idx + 1
 
     umull       v20.8h, v14.8b, v7.8b       //mul (row 6)
-    tbl         v11.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
+    tbl         v25.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
     umlal       v20.8h, v15.8b, v6.8b       //mul (row 6)
 
     add         x20, x0, #8
@@ -453,14 +455,14 @@ lbl429:
     csel        x8, x12, x8,le
     dup         v27.8b,w0                   //row value inc or reset accordingly
 
-    add         v4.8b,  v2.8b ,  v8.8b      //ref_main_idx (row 1)
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 0)
-    add         v5.8b,  v2.8b ,  v9.8b      //ref_main_idx + 1 (row 1)
+    add         v4.8b,  v2.8b ,  v19.8b     //ref_main_idx (row 1)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 0)
+    add         v5.8b,  v2.8b ,  v21.8b     //ref_main_idx + 1 (row 1)
 
 
-    umull       v18.8h, v10.8b, v7.8b       //mul (row 7)
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 0)
-    umlal       v18.8h, v11.8b, v6.8b       //mul (row 7)
+    umull       v18.8h, v23.8b, v7.8b       //mul (row 7)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 0)
+    umlal       v18.8h, v25.8b, v6.8b       //mul (row 7)
 
     ld1         {v31.8b},[x14],#8
     and         v6.8b,  v29.8b ,  v26.8b    //fract values in d1/ idx values in d0
@@ -468,9 +470,9 @@ lbl429:
     st1         {v24.8b},[x5], x3           //(from previous loop)st (row 5)
     rshrn       v20.8b, v20.8h,#5           //(from previous loop)round shft (row 6)
 
-    add         v8.8b,  v3.8b ,  v8.8b      //ref_main_idx (row 2)
+    add         v19.8b,  v3.8b ,  v19.8b    //ref_main_idx (row 2)
     tbl         v16.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 1)
-    add         v9.8b,  v3.8b ,  v9.8b      //ref_main_idx + 1 (row 2)
+    add         v21.8b,  v3.8b ,  v21.8b    //ref_main_idx + 1 (row 2)
 
     add         x20, x4, #8
     csel        x11, x20, x11,le
@@ -486,22 +488,22 @@ lbl429:
     rshrn       v18.8b, v18.8h,#5           //(from previous loop)round shft (row 7)
 
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 3)
-    tbl         v14.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 2)
+    tbl         v14.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 2)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 3)
 
     umull       v22.8h, v16.8b, v7.8b       //mul (row 1)
-    tbl         v15.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 2)
+    tbl         v15.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 2)
     umlal       v22.8h, v17.8b, v6.8b       //mul (row 1)
 
     rshrn       v24.8b, v24.8h,#5           //round shft (row 0)
     st1         {v18.8b},[x5], x3           //(from previous loop)st (row 7)
 
-    add         v8.8b,  v8.8b ,  v3.8b      //ref_main_idx (row 4)
-    tbl         v10.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 3)
-    add         v9.8b,  v9.8b ,  v3.8b      //ref_main_idx + 1 (row 4)
+    add         v19.8b,  v19.8b ,  v3.8b    //ref_main_idx (row 4)
+    tbl         v23.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 3)
+    add         v21.8b,  v21.8b ,  v3.8b    //ref_main_idx + 1 (row 4)
 
     umull       v20.8h, v14.8b, v7.8b       //mul (row 2)
-    tbl         v11.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 3)
+    tbl         v25.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 3)
     umlal       v20.8h, v15.8b, v6.8b       //mul (row 2)
 
     smull       v14.8h, v30.8b, v31.8b      //(col+1)*intra_pred_angle [0:7](col)
@@ -513,22 +515,22 @@ lbl429:
     rshrn       v22.8b, v22.8h,#5           //round shft (row 1)
 
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 5)
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 4)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 4)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 5)
 
-    umull       v18.8h, v10.8b, v7.8b       //mul (row 3)
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 4)
-    umlal       v18.8h, v11.8b, v6.8b       //mul (row 3)
+    umull       v18.8h, v23.8b, v7.8b       //mul (row 3)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 4)
+    umlal       v18.8h, v25.8b, v6.8b       //mul (row 3)
 
     st1         {v22.8b},[x2], x3           //st (row 1)
     rshrn       v20.8b, v20.8h,#5           //round shft (row 2)
 
-    xtn         v10.8b,  v14.8h
+    xtn         v23.8b,  v14.8h
     sshr        v14.8h, v14.8h,#5
 
-    add         v8.8b,  v8.8b ,  v3.8b      //ref_main_idx (row 6)
+    add         v19.8b,  v19.8b ,  v3.8b    //ref_main_idx (row 6)
     tbl         v16.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 5)
-    add         v9.8b,  v9.8b ,  v3.8b      //ref_main_idx + 1 (row 6)
+    add         v21.8b,  v21.8b ,  v3.8b    //ref_main_idx + 1 (row 6)
 
     umull       v24.8h, v12.8b, v7.8b       //mul (row 4)
     tbl         v17.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 5)
@@ -538,17 +540,17 @@ lbl429:
     rshrn       v18.8b, v18.8h,#5           //round shft (row 3)
 
     sub         x9, x9, #1
-    sqxtn       v11.8b,  v14.8h
+    sqxtn       v25.8b,  v14.8h
 
     add         v4.8b,  v4.8b ,  v3.8b      //ref_main_idx (row 7)
-    tbl         v14.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 6)
+    tbl         v14.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 6)
     add         v5.8b,  v5.8b ,  v3.8b      //ref_main_idx + 1 (row 7)
 
     umull       v22.8h, v16.8b, v7.8b       //mul (row 5)
-    tbl         v15.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 6)
+    tbl         v15.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 6)
     umlal       v22.8h, v17.8b, v6.8b       //mul (row 5)
 
-    add         v8.8b,  v27.8b ,  v11.8b    //ref_main_idx (add row)
+    add         v19.8b,  v27.8b ,  v25.8b   //ref_main_idx (add row)
     dup         v26.8b,w9
 
     st1         {v18.8b},[x2], x3           //st (row 3)
@@ -566,17 +568,17 @@ lbl429:
     bne         kernel_8_16_32
 epil_8_16_32:
 
-    tbl         v10.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
+    tbl         v23.8b, {v0.16b},v4.8b      //load from ref_main_idx (row 7)
 
     umull       v20.8h, v14.8b, v7.8b       //mul (row 6)
-    tbl         v11.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
+    tbl         v25.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 7)
     umlal       v20.8h, v15.8b, v6.8b       //mul (row 6)
 
     st1         {v24.8b},[x5], x3           //st (row 4)
     rshrn       v24.8b, v22.8h,#5           //round shft (row 5)
 
-    umull       v18.8h, v10.8b, v7.8b       //mul (row 7)
-    umlal       v18.8h, v11.8b, v6.8b       //mul (row 7)
+    umull       v18.8h, v23.8b, v7.8b       //mul (row 7)
+    umlal       v18.8h, v25.8b, v6.8b       //mul (row 7)
 
     st1         {v24.8b},[x5], x3           //(from previous loop)st (row 5)
     rshrn       v20.8b, v20.8h,#5           //(from previous loop)round shft (row 6)
@@ -628,38 +630,38 @@ sz_4_proc:
     dup         v28.8b,w1
 
     sshr        v22.8h, v22.8h,#5
-    sqxtn       v8.8b,  v22.8h
+    sqxtn       v19.8b,  v22.8h
 
     and         v6.8b,  v6.8b ,  v29.8b     //fract values in d1/ idx values in d0
     sub         v7.8b,  v28.8b ,  v6.8b     //32-fract
 
-    add         v8.8b,  v8.8b ,  v2.8b      //ref_main_idx (add 1)
-    sub         v8.8b,  v8.8b ,  v26.8b     //ref_main_idx
-    add         v9.8b,  v8.8b ,  v2.8b      //ref_main_idx + 1
+    add         v19.8b,  v19.8b ,  v2.8b    //ref_main_idx (add 1)
+    sub         v19.8b,  v19.8b ,  v26.8b   //ref_main_idx
+    add         v21.8b,  v19.8b ,  v2.8b    //ref_main_idx + 1
 
-    add         v4.8b,  v8.8b ,  v2.8b      //row 1 ref_main_idx
-    add         v5.8b,  v9.8b ,  v2.8b
+    add         v4.8b,  v19.8b ,  v2.8b     //row 1 ref_main_idx
+    add         v5.8b,  v21.8b ,  v2.8b
 
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx (row 0)
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 0)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx (row 0)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 0)
 
 
     umull       v24.8h, v12.8b, v7.8b       //mul (row 0)
     tbl         v16.8b, {v0.16b},v4.8b      //load from ref_main_idx    (row 1)
     umlal       v24.8h, v13.8b, v6.8b       //mul (row 0)
 
-    add         v8.8b,  v8.8b ,  v3.8b      //idx (row 2)
+    add         v19.8b,  v19.8b ,  v3.8b    //idx (row 2)
     tbl         v17.8b, {v0.16b},v5.8b      //load from ref_main_idx + 1 (row 1)
-    add         v9.8b,  v9.8b ,  v3.8b      //idx+1 (row 2)
+    add         v21.8b,  v21.8b ,  v3.8b    //idx+1 (row 2)
 
     umull       v22.8h, v16.8b, v7.8b       //mul (row 1)
-    tbl         v12.8b, {v0.16b},v8.8b      //load from ref_main_idx    (row 2)
+    tbl         v12.8b, {v0.16b},v19.8b     //load from ref_main_idx    (row 2)
     umlal       v22.8h, v17.8b, v6.8b       //mul (row 1)
 
     rshrn       v24.8b, v24.8h,#5           //round shift (row 0)
 
     add         v4.8b,  v4.8b ,  v3.8b      //idx (row 3)
-    tbl         v13.8b, {v0.16b},v9.8b      //load from ref_main_idx + 1 (row 2)
+    tbl         v13.8b, {v0.16b},v21.8b     //load from ref_main_idx + 1 (row 2)
     add         v5.8b,  v5.8b ,  v3.8b      //idx+1 (row 3)
 
     umull       v20.8h, v12.8b, v7.8b       //mul (row 2)
@@ -687,7 +689,8 @@ end_func:
     add         sp, sp, #132
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+    ldp         d14,d15,[sp],#16
+    ldp         d12,d13,[sp],#16
     ret
 
 

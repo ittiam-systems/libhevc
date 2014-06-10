@@ -105,7 +105,7 @@
 ihevc_intra_pred_chroma_mode_18_34_av8:
 
     // stmfd sp!, {x4-x12, x14}    //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
 
@@ -141,14 +141,14 @@ kernel:
     st1         {v4.8b, v5.8b},[x10],x3
     ld1         {v6.8b, v7.8b},[x8],x6
     st1         {v6.8b, v7.8b},[x10],x3
-    ld1         {v8.8b, v9.8b},[x8],x6
-    st1         {v8.8b, v9.8b},[x10],x3
-    ld1         {v10.8b, v11.8b},[x8],x6
-    st1         {v10.8b, v11.8b},[x10],x3
-    ld1         {v12.8b, v13.8b},[x8],x6
-    st1         {v12.8b, v13.8b},[x10],x3
-    ld1         {v14.8b, v15.8b},[x8],x6
-    st1         {v14.8b, v15.8b},[x10],x3
+    ld1         {v16.8b, v17.8b},[x8],x6
+    st1         {v16.8b, v17.8b},[x10],x3
+    ld1         {v18.8b, v19.8b},[x8],x6
+    st1         {v18.8b, v19.8b},[x10],x3
+    ld1         {v20.8b, v21.8b},[x8],x6
+    st1         {v20.8b, v21.8b},[x10],x3
+    ld1         {v22.8b, v23.8b},[x8],x6
+    st1         {v22.8b, v23.8b},[x10],x3
 
     subs        x12,x12,#8
     bne         kernel
@@ -188,7 +188,7 @@ mode2_4:
 end_func:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

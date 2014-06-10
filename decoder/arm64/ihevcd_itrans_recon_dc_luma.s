@@ -59,7 +59,7 @@ ihevcd_itrans_recon_dc_luma_av8:
 
 
 
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
     sxth        x5,w5
 
@@ -120,8 +120,8 @@ col_loop:
 
     ld1         {v6.8b},[x7],x2
     ld1         {v7.8b},[x7],x2
-    ld1         {v8.8b},[x7],x2
-    ld1         {v9.8b},[x7]
+    ld1         {v1.8b},[x7],x2
+    ld1         {v17.8b},[x7]
 
     add         x0,x0,#8
 
@@ -132,8 +132,8 @@ col_loop:
     uaddw       v24.8h,  v0.8h ,  v5.8b
     uaddw       v22.8h,  v0.8h ,  v6.8b
     uaddw       v20.8h,  v0.8h ,  v7.8b
-    uaddw       v18.8h,  v0.8h ,  v8.8b
-    uaddw       v16.8h,  v0.8h ,  v9.8b
+    uaddw       v18.8h,  v0.8h ,  v1.8b
+    uaddw       v16.8h,  v0.8h ,  v17.8b
 
     mov         x11,x1
     sqxtun      v2.8b, v30.8h
@@ -142,8 +142,8 @@ col_loop:
     sqxtun      v5.8b, v24.8h
     sqxtun      v6.8b, v22.8h
     sqxtun      v7.8b, v20.8h
-    sqxtun      v8.8b, v18.8h
-    sqxtun      v9.8b, v16.8h
+    sqxtun      v1.8b, v18.8h
+    sqxtun      v17.8b, v16.8h
 
 
     st1         {v2.2s},[x11],x3
@@ -152,8 +152,8 @@ col_loop:
     st1         {v5.2s},[x11],x3
     st1         {v6.2s},[x11],x3
     st1         {v7.2s},[x11],x3
-    st1         {v8.2s},[x11],x3
-    st1         {v9.2s},[x11]
+    st1         {v1.2s},[x11],x3
+    st1         {v17.2s},[x11]
 
     add         x1,x1,#8
 
@@ -206,7 +206,7 @@ col_loop_4:
 
 end_loops:
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

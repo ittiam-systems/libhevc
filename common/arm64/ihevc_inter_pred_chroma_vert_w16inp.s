@@ -104,7 +104,7 @@
 ihevc_inter_pred_chroma_vert_w16inp_av8:
 
     // stmfd sp!, {x4-x12, x14}                    //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     mov         x15,x4 // pi1_coeff
@@ -120,10 +120,10 @@ ihevc_inter_pred_chroma_vert_w16inp_av8:
     sxtl        v0.8h, v0.8b                //long the value
 
     tst         x6,#3                       //checks wd  == 2
-    dup         v12.4h, v0.4h[0]            //coeff_0
-    dup         v13.4h, v0.4h[1]            //coeff_1
-    dup         v14.4h, v0.4h[2]            //coeff_2
-    dup         v15.4h, v0.4h[3]            //coeff_3
+    dup         v16.4h, v0.4h[0]            //coeff_0
+    dup         v17.4h, v0.4h[1]            //coeff_1
+    dup         v18.4h, v0.4h[2]            //coeff_2
+    dup         v19.4h, v0.4h[3]            //coeff_3
 
     bgt         core_loop_ht_2              //jumps to loop handles wd 2
 
@@ -141,22 +141,22 @@ core_loop_ht_2:
 inner_loop_ht_2:
     add         x0,x4,x2                    //increments pi2_src
     ld1         {v0.4h},[x4],#8             //loads pu1_src
-    smull       v0.4s, v0.4h, v12.4h        //vmull_s16(src_tmp1, coeff_0)
+    smull       v0.4s, v0.4h, v16.4h        //vmull_s16(src_tmp1, coeff_0)
     subs        x12,x12,#8                  //2wd + 8
     ld1         {v2.4h},[x0],x2             //loads pi2_src
-    smull       v8.4s, v2.4h, v12.4h        //vmull_s16(src_tmp2, coeff_0)
+    smull       v7.4s, v2.4h, v16.4h        //vmull_s16(src_tmp2, coeff_0)
     ld1         {v3.4h},[x0],x2             //loads pi2_src
-    smlal       v0.4s, v2.4h, v13.4h
+    smlal       v0.4s, v2.4h, v17.4h
     ld1         {v6.4h},[x0],x2
-    smlal       v8.4s, v3.4h, v13.4h
+    smlal       v7.4s, v3.4h, v17.4h
     ld1         {v2.4h},[x0]
     add         x7,x1,x3                    //pu1_dst + dst_strd
-    smlal       v0.4s, v3.4h, v14.4h
-    smlal       v8.4s, v6.4h, v14.4h
-    smlal       v0.4s, v6.4h, v15.4h
-    smlal       v8.4s, v2.4h, v15.4h
+    smlal       v0.4s, v3.4h, v18.4h
+    smlal       v7.4s, v6.4h, v18.4h
+    smlal       v0.4s, v6.4h, v19.4h
+    smlal       v7.4s, v2.4h, v19.4h
     sqshrn      v0.4h, v0.4s,#6             //right shift
-    sqshrn      v30.4h, v8.4s,#6            //right shift
+    sqshrn      v30.4h, v7.4s,#6            //right shift
     sqrshrun    v0.8b, v0.8h,#6             //rounding shift
     sqrshrun    v30.8b, v30.8h,#6           //rounding shift
     st1         {v0.s}[0],[x1],#4           //stores the loaded value
@@ -189,45 +189,45 @@ prolog:
     ld1         {v1.4h},[x0],x2             //loads pi2_src
     subs        x11,x11,#4
     ld1         {v2.4h},[x0],x2             //loads pi2_src
-    smull       v30.4s, v0.4h, v12.4h       //vmull_s16(src_tmp1, coeff_0)
+    smull       v30.4s, v0.4h, v16.4h       //vmull_s16(src_tmp1, coeff_0)
     ld1         {v3.4h},[x0],x2
-    smlal       v30.4s, v1.4h, v13.4h
-    smlal       v30.4s, v2.4h, v14.4h
+    smlal       v30.4s, v1.4h, v17.4h
+    smlal       v30.4s, v2.4h, v18.4h
     add         x9,x1,x3                    //pu1_dst + dst_strd
-    smlal       v30.4s, v3.4h, v15.4h
+    smlal       v30.4s, v3.4h, v19.4h
 
     ld1         {v4.4h},[x0],x2
-    smull       v28.4s, v1.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v28.4s, v1.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     add         x20,x4,x8
     csel        x4, x20, x4,le
-    smlal       v28.4s, v2.4h, v13.4h
+    smlal       v28.4s, v2.4h, v17.4h
     ld1         {v5.4h},[x0],x2
-    smlal       v28.4s, v3.4h, v14.4h
+    smlal       v28.4s, v3.4h, v18.4h
     ld1         {v6.4h},[x0],x2
-    smlal       v28.4s, v4.4h, v15.4h
+    smlal       v28.4s, v4.4h, v19.4h
     lsl         x20,x6,#1
     csel        x11, x20, x11,le
 
     sqshrn      v30.4h, v30.4s,#6           //right shift
 
-    smull       v26.4s, v2.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     add         x0,x4,x2
-    smlal       v26.4s, v3.4h, v13.4h
-    smlal       v26.4s, v4.4h, v14.4h
+    smlal       v26.4s, v3.4h, v17.4h
+    smlal       v26.4s, v4.4h, v18.4h
     ld1         {v0.4h},[x4],#8             //loads pu1_src
-    smlal       v26.4s, v5.4h, v15.4h
+    smlal       v26.4s, v5.4h, v19.4h
 
     sqrshrun    v30.8b, v30.8h,#6           //rounding shift
     sqshrn      v28.4h, v28.4s,#6           //right shift
 
     ld1         {v1.4h},[x0],x2             //loads pi2_src
-    smull       v24.4s, v3.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     st1         {v30.s}[0],[x1],#4          //stores the loaded value
-    smlal       v24.4s, v4.4h, v13.4h
+    smlal       v24.4s, v4.4h, v17.4h
     ld1         {v2.4h},[x0],x2             //loads pi2_src
-    smlal       v24.4s, v5.4h, v14.4h
+    smlal       v24.4s, v5.4h, v18.4h
     ld1         {v3.4h},[x0],x2
-    smlal       v24.4s, v6.4h, v15.4h
+    smlal       v24.4s, v6.4h, v19.4h
     add         x20,x1,x14
     csel        x1, x20, x1,le
 
@@ -238,21 +238,21 @@ prolog:
     beq         epilog                      //jumps to epilog
 
 kernel_4:
-    smull       v30.4s, v0.4h, v12.4h       //vmull_s16(src_tmp1, coeff_0)
+    smull       v30.4s, v0.4h, v16.4h       //vmull_s16(src_tmp1, coeff_0)
     subs        x11,x11,#4
-    smlal       v30.4s, v1.4h, v13.4h
+    smlal       v30.4s, v1.4h, v17.4h
     st1         {v28.s}[0],[x9],x3          //stores the loaded value
-    smlal       v30.4s, v2.4h, v14.4h
-    smlal       v30.4s, v3.4h, v15.4h
+    smlal       v30.4s, v2.4h, v18.4h
+    smlal       v30.4s, v3.4h, v19.4h
 
     sqshrn      v24.4h, v24.4s,#6           //right shift
     sqrshrun    v26.8b, v26.8h,#6           //rounding shift
 
     ld1         {v4.4h},[x0],x2
-    smull       v28.4s, v1.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
-    smlal       v28.4s, v2.4h, v13.4h
-    smlal       v28.4s, v3.4h, v14.4h
-    smlal       v28.4s, v4.4h, v15.4h
+    smull       v28.4s, v1.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
+    smlal       v28.4s, v2.4h, v17.4h
+    smlal       v28.4s, v3.4h, v18.4h
+    smlal       v28.4s, v4.4h, v19.4h
     st1         {v26.s}[0],[x9],x3          //stores the loaded value
     add         x20,x4,x8
     csel        x4, x20, x4,le
@@ -263,28 +263,28 @@ kernel_4:
     sqrshrun    v24.8b, v24.8h,#6           //rounding shift
 
     ld1         {v5.4h},[x0],x2
-    smull       v26.4s, v2.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     ld1         {v6.4h},[x0],x2
-    smlal       v26.4s, v3.4h, v13.4h
+    smlal       v26.4s, v3.4h, v17.4h
     st1         {v24.s}[0],[x9]             //stores the loaded value
     add         x0,x4,x2
-    smlal       v26.4s, v4.4h, v14.4h
+    smlal       v26.4s, v4.4h, v18.4h
     ld1         {v0.4h},[x4],#8             //loads pu1_src
-    smlal       v26.4s, v5.4h, v15.4h
+    smlal       v26.4s, v5.4h, v19.4h
 
     sqshrn      v28.4h, v28.4s,#6           //right shift
     sqrshrun    v30.8b, v30.8h,#6           //rounding shift
 
     ld1         {v1.4h},[x0],x2             //loads pi2_src
-    smull       v24.4s, v3.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     add         x9,x1,x3                    //pu1_dst + dst_strd
     ld1         {v2.4h},[x0],x2             //loads pi2_src
-    smlal       v24.4s, v4.4h, v13.4h
+    smlal       v24.4s, v4.4h, v17.4h
     ld1         {v3.4h},[x0],x2
-    smlal       v24.4s, v5.4h, v14.4h
+    smlal       v24.4s, v5.4h, v18.4h
 
     st1         {v30.s}[0],[x1],#4          //stores the loaded value
-    smlal       v24.4s, v6.4h, v15.4h
+    smlal       v24.4s, v6.4h, v19.4h
 
     sqshrn      v26.4h, v26.4s,#6           //right shift
     sqrshrun    v28.8b, v28.8h,#6           //rounding shift
@@ -296,41 +296,41 @@ kernel_4:
     bgt         kernel_4                    //jumps to kernel_4
 
 epilog:
-    smull       v30.4s, v0.4h, v12.4h       //vmull_s16(src_tmp1, coeff_0)
+    smull       v30.4s, v0.4h, v16.4h       //vmull_s16(src_tmp1, coeff_0)
     st1         {v28.s}[0],[x9],x3          //stores the loaded value
-    smlal       v30.4s, v1.4h, v13.4h
-    smlal       v30.4s, v2.4h, v14.4h
-    smlal       v30.4s, v3.4h, v15.4h
+    smlal       v30.4s, v1.4h, v17.4h
+    smlal       v30.4s, v2.4h, v18.4h
+    smlal       v30.4s, v3.4h, v19.4h
 
     sqshrn      v24.4h, v24.4s,#6           //right shift
     sqrshrun    v26.8b, v26.8h,#6           //rounding shift
 
-    smull       v28.4s, v1.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v28.4s, v1.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     ld1         {v4.4h},[x0],x2
-    smlal       v28.4s, v2.4h, v13.4h
+    smlal       v28.4s, v2.4h, v17.4h
     st1         {v26.s}[0],[x9],x3          //stores the loaded value
-    smlal       v28.4s, v3.4h, v14.4h
-    smlal       v28.4s, v4.4h, v15.4h
+    smlal       v28.4s, v3.4h, v18.4h
+    smlal       v28.4s, v4.4h, v19.4h
 
     sqshrn      v30.4h, v30.4s,#6           //right shift
     sqrshrun    v24.8b, v24.8h,#6           //rounding shift
 
-    smull       v26.4s, v2.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
+    smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     ld1         {v5.4h},[x0],x2
-    smlal       v26.4s, v3.4h, v13.4h
-    smlal       v26.4s, v4.4h, v14.4h
-    smlal       v26.4s, v5.4h, v15.4h
+    smlal       v26.4s, v3.4h, v17.4h
+    smlal       v26.4s, v4.4h, v18.4h
+    smlal       v26.4s, v5.4h, v19.4h
 
     sqshrn      v28.4h, v28.4s,#6           //right shift
     sqrshrun    v30.8b, v30.8h,#6           //rounding shift
 
     st1         {v24.s}[0],[x9]             //stores the loaded value
-    smull       v24.4s, v3.4h, v12.4h       //vmull_s16(src_tmp2, coeff_0)
-    smlal       v24.4s, v4.4h, v13.4h
+    smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
+    smlal       v24.4s, v4.4h, v17.4h
     add         x9,x1,x3                    //pu1_dst + dst_strd
     ld1         {v6.4h},[x0],x2
-    smlal       v24.4s, v5.4h, v14.4h
-    smlal       v24.4s, v6.4h, v15.4h
+    smlal       v24.4s, v5.4h, v18.4h
+    smlal       v24.4s, v6.4h, v19.4h
     st1         {v30.s}[0],[x1],#4          //stores the loaded value
 
     sqrshrun    v28.8b, v28.8h,#6           //rounding shift
@@ -348,7 +348,7 @@ epilog:
 end_loops:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

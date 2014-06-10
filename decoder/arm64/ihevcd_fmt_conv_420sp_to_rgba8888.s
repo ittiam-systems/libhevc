@@ -91,7 +91,10 @@ ihevcd_fmt_conv_420sp_to_rgba8888_av8:
 
     //// push the registers on the stack
     // STMFD sp!,{x4-x12,x14}
-    push_v_regs
+
+    stp         d12,d14,[sp,#-16]!
+    stp         d8,d15,[sp,#-16]!           // Storing d15 using { sub sp,sp,#8; str d15,[sp] } is giving bus error.
+                                            // d8 is used as dummy register and stored along with d15 using stp. d8 is not used in the function.
     stp         x19, x20,[sp,#-16]!
 
 
@@ -194,8 +197,8 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP:
     prfm        PLDL1KEEP,[x1]
 
     ////NEED TO MULTIPLY WITH Q2,Q3 WITH CO-EEFICIENTS
-    sMULL       v8.4s, v4.4h, v0.4h[3]      ////(U-128)*C4 FOR B
-    sMULL2      v10.4s, v4.8h, v0.4h[3]     ////(U-128)*C4 FOR B
+    sMULL       v5.4s, v4.4h, v0.4h[3]      ////(U-128)*C4 FOR B
+    sMULL2      v7.4s, v4.8h, v0.4h[3]      ////(U-128)*C4 FOR B
 
     sMULL       v20.4s, v6.4h, v0.4h[0]     ////(V-128)*C1 FOR R
     sMULL2      v22.4s, v6.8h, v0.4h[0]     ////(V-128)*C1 FOR R
@@ -206,13 +209,13 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP:
     sMLAL2      v14.4s, v6.8h, v0.4h[2]     ////Q7 = (U-128)*C2 + (V-128)*C3
 
     ////NARROW RIGHT SHIFT BY 13 FOR R&B
-    sqshrn      v8.4h, v8.4s,#13            ////D8 = (U-128)*C4>>13 4 16-BIT VALUES
-    sqshrn2     v8.8h, v10.4s,#13           ////D9 = (U-128)*C4>>13 4 16-BIT VALUES
+    sqshrn      v5.4h, v5.4s,#13            ////D8 = (U-128)*C4>>13 4 16-BIT VALUES
+    sqshrn2     v5.8h, v7.4s,#13            ////D9 = (U-128)*C4>>13 4 16-BIT VALUES
     ////Q4 - WEIGHT FOR B
 
     ////NARROW RIGHT SHIFT BY 13 FOR R&B
-    sqshrn      v10.4h, v20.4s,#13          ////D10 = (V-128)*C1>>13 4 16-BIT VALUES
-    sqshrn2     v10.8h, v22.4s,#13          ////D11 = (V-128)*C1>>13 4 16-BIT VALUES
+    sqshrn      v7.4h, v20.4s,#13           ////D10 = (V-128)*C1>>13 4 16-BIT VALUES
+    sqshrn2     v7.8h, v22.4s,#13           ////D11 = (V-128)*C1>>13 4 16-BIT VALUES
     ////Q5 - WEIGHT FOR R
 
     ////NARROW RIGHT SHIFT BY 13 FOR G
@@ -220,12 +223,12 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP:
     sqshrn2     v12.8h, v14.4s,#13          ////D13 = [(U-128)*C2 + (V-128)*C3]>>13 4 16-BIT VALUES
     ////Q6 - WEIGHT FOR G
 
-    UADDW       v14.8h,  v8.8h ,  v30.8b    ////Q7 - HAS Y + B
-    UADDW       v16.8h,  v10.8h ,  v30.8b   ////Q8 - HAS Y + R
+    UADDW       v14.8h,  v5.8h ,  v30.8b    ////Q7 - HAS Y + B
+    UADDW       v16.8h,  v7.8h ,  v30.8b    ////Q8 - HAS Y + R
     UADDW       v18.8h,  v12.8h ,  v30.8b   ////Q9 - HAS Y + G
 
-    UADDW       v20.8h,  v8.8h ,  v31.8b    ////Q10 - HAS Y + B
-    UADDW       v22.8h,  v10.8h ,  v31.8b   ////Q11 - HAS Y + R
+    UADDW       v20.8h,  v5.8h ,  v31.8b    ////Q10 - HAS Y + B
+    UADDW       v22.8h,  v7.8h ,  v31.8b    ////Q11 - HAS Y + R
     UADDW       v24.8h,  v12.8h ,  v31.8b   ////Q12 - HAS Y + G
 
     sqxtun      v14.8b, v14.8h
@@ -276,12 +279,12 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP:
 
     ////D14-D20 - TOALLY HAVE 16 VALUES
     ////WE NEED TO SHIFT R,G,B VALUES TO GET 5BIT,6BIT AND 5BIT COMBINATIONS
-    UADDW       v14.8h,  v8.8h ,  v28.8b    ////Q7 - HAS Y + B
-    UADDW       v16.8h,  v10.8h ,  v28.8b   ////Q2 - HAS Y + R
+    UADDW       v14.8h,  v5.8h ,  v28.8b    ////Q7 - HAS Y + B
+    UADDW       v16.8h,  v7.8h ,  v28.8b    ////Q2 - HAS Y + R
     UADDW       v18.8h,  v12.8h ,  v28.8b   ////Q3 - HAS Y + G
 
-    UADDW       v20.8h,  v8.8h ,  v29.8b    ////Q10 - HAS Y + B
-    UADDW       v22.8h,  v10.8h ,  v29.8b   ////Q11 - HAS Y + R
+    UADDW       v20.8h,  v5.8h ,  v29.8b    ////Q10 - HAS Y + B
+    UADDW       v22.8h,  v7.8h ,  v29.8b    ////Q11 - HAS Y + R
     UADDW       v24.8h,  v12.8h ,  v29.8b   ////Q12 - HAS Y + G
 
     ////COMPUTE THE ACTUAL RGB VALUES,WE CAN DO TWO ROWS AT A TIME
@@ -357,8 +360,8 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP_SKIP:
 
 
     ////NEED TO MULTIPLY WITH Q2,Q3 WITH CO-EEFICIENTS
-    sMULL       v8.4s, v4.4h, v0.4h[3]      ////(U-128)*C4 FOR B
-    sMULL2      v10.4s, v4.8h, v0.4h[3]     ////(U-128)*C4 FOR B
+    sMULL       v5.4s, v4.4h, v0.4h[3]      ////(U-128)*C4 FOR B
+    sMULL2      v7.4s, v4.8h, v0.4h[3]      ////(U-128)*C4 FOR B
 
     sMULL       v20.4s, v6.4h, v0.4h[0]     ////(V-128)*C1 FOR R
     sMULL2      v22.4s, v6.8h, v0.4h[0]     ////(V-128)*C1 FOR R
@@ -369,13 +372,13 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP_SKIP:
     sMLAL2      v14.4s, v6.8h, v0.4h[2]     ////Q7 = (U-128)*C2 + (V-128)*C3
 
     ////NARROW RIGHT SHIFT BY 13 FOR R&B
-    sqshrn      v8.4h, v8.4s,#13            ////D8 = (U-128)*C4>>13 4 16-BIT VALUES
-    sqshrn2     v8.8h, v10.4s,#13           ////D9 = (U-128)*C4>>13 4 16-BIT VALUES
+    sqshrn      v5.4h, v5.4s,#13            ////D8 = (U-128)*C4>>13 4 16-BIT VALUES
+    sqshrn2     v5.8h, v7.4s,#13            ////D9 = (U-128)*C4>>13 4 16-BIT VALUES
     ////Q4 - WEIGHT FOR B
 
     ////NARROW RIGHT SHIFT BY 13 FOR R&B
-    sqshrn      v10.4h, v20.4s,#13          ////D10 = (V-128)*C1>>13 4 16-BIT VALUES
-    sqshrn2     v10.8h, v22.4s,#13          ////D11 = (V-128)*C1>>13 4 16-BIT VALUES
+    sqshrn      v7.4h, v20.4s,#13           ////D10 = (V-128)*C1>>13 4 16-BIT VALUES
+    sqshrn2     v7.8h, v22.4s,#13           ////D11 = (V-128)*C1>>13 4 16-BIT VALUES
     ////Q5 - WEIGHT FOR R
 
     ////NARROW RIGHT SHIFT BY 13 FOR G
@@ -383,12 +386,12 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP_SKIP:
     sqshrn2     v12.8h, v14.4s,#13          ////D13 = [(U-128)*C2 + (V-128)*C3]>>13 4 16-BIT VALUES
     ////Q6 - WEIGHT FOR G
 
-    UADDW       v14.8h,  v8.8h ,  v30.8b    ////Q7 - HAS Y + B
-    UADDW       v16.8h,  v10.8h ,  v30.8b   ////Q8 - HAS Y + R
+    UADDW       v14.8h,  v5.8h ,  v30.8b    ////Q7 - HAS Y + B
+    UADDW       v16.8h,  v7.8h ,  v30.8b    ////Q8 - HAS Y + R
     UADDW       v18.8h,  v12.8h ,  v30.8b   ////Q9 - HAS Y + G
 
-    UADDW       v20.8h,  v8.8h ,  v31.8b    ////Q10 - HAS Y + B
-    UADDW       v22.8h,  v10.8h ,  v31.8b   ////Q11 - HAS Y + R
+    UADDW       v20.8h,  v5.8h ,  v31.8b    ////Q10 - HAS Y + B
+    UADDW       v22.8h,  v7.8h ,  v31.8b    ////Q11 - HAS Y + R
     UADDW       v24.8h,  v12.8h ,  v31.8b   ////Q12 - HAS Y + G
 
     sqxtun      v14.8b, v14.8h
@@ -439,12 +442,12 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP_SKIP:
 
     ////D14-D20 - TOALLY HAVE 16 VALUES
     ////WE NEED TO SHIFT R,G,B VALUES TO GET 5BIT,6BIT AND 5BIT COMBINATIONS
-    UADDW       v14.8h,  v8.8h ,  v28.8b    ////Q7 - HAS Y + B
-    UADDW       v16.8h,  v10.8h ,  v28.8b   ////Q2 - HAS Y + R
+    UADDW       v14.8h,  v5.8h ,  v28.8b    ////Q7 - HAS Y + B
+    UADDW       v16.8h,  v7.8h ,  v28.8b    ////Q2 - HAS Y + R
     UADDW       v18.8h,  v12.8h ,  v28.8b   ////Q3 - HAS Y + G
 
-    UADDW       v20.8h,  v8.8h ,  v29.8b    ////Q10 - HAS Y + B
-    UADDW       v22.8h,  v10.8h ,  v29.8b   ////Q11 - HAS Y + R
+    UADDW       v20.8h,  v5.8h ,  v29.8b    ////Q10 - HAS Y + B
+    UADDW       v22.8h,  v7.8h ,  v29.8b    ////Q11 - HAS Y + R
     UADDW       v24.8h,  v12.8h ,  v29.8b   ////Q12 - HAS Y + G
 
     sqxtun      v14.8b, v14.8h
@@ -513,7 +516,9 @@ LABEL_YUV420SP_TO_RGB8888_WIDTH_LOOP_SKIP:
     ////POP THE REGISTERS
     // LDMFD sp!,{x4-x12,PC}
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+    ldp         d8,d15,[sp],#16             // Loading d15 using { ldr d15,[sp]; add sp,sp,#8 } is giving bus error.
+                                            // d8 is used as dummy register and loaded along with d15 using ldp. d8 is not used in the function.
+    ldp         d12,d14,[sp],#16
     ret
 
 

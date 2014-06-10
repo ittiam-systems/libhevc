@@ -104,7 +104,7 @@
 ihevc_intra_pred_luma_dc_av8:
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
 
@@ -128,14 +128,14 @@ ihevc_intra_pred_luma_dc_av8:
     add         x8, x7, #1                  //&src[2nt+1]
     mvn         x5, x5
     add         x5, x5, #1
-    dup         v8.2s,w5
+    dup         v7.2s,w5
 
     ldrb        w14, [x8]
     sxtw        x14,w14
-    shl         d8, d8,#32
+    shl         d7, d7,#32
 
     sub         x9, x7, #1                  //&src[2nt-1]
-    sshr        d8, d8,#32
+    sshr        d7, d7,#32
 
     mov         x7, x8                      //x7 also stores 2nt+1
 
@@ -192,7 +192,7 @@ core_loop_add:
 
 epil_add_loop:
 
-    sshl        d9, d6, d8                  //(dc_val) shr by log2nt+1
+    sshl        d18, d6, d7                 //(dc_val) shr by log2nt+1
     cmp         x4, #32
 
     mov         v28.s[0], w14
@@ -200,25 +200,25 @@ epil_add_loop:
     mov         x20,#128
     csel        x6, x20, x6,eq
 
-    dup         v16.8b, v9.8b[0]            //dc_val
-    shl         d13, d9,#1                  //2*dc
+    dup         v16.8b, v18.8b[0]           //dc_val
+    shl         d25, d18,#1                 //2*dc
 
     beq         prologue_cpy_32
 
-    add         d14,  d13 ,  d28            //src[2nt+1]+2+src[2nt-1]+2dc_val
+    add         d27,  d25 ,  d28            //src[2nt+1]+2+src[2nt-1]+2dc_val
     mov         x20,#0
     csel        x6, x20, x6,ne              //nt
 
-    ushr        v15.4h, v14.4h,#2           //final dst[0]'s value in d15[0]
+    ushr        v29.4h, v27.4h,#2           //final dst[0]'s value in d15[0]
     csel        x10, x4, x10,ne
 
-    add         d11,  d13 ,  d9             //3*dc
+    add         d23,  d25 ,  d18            //3*dc
     sub         x12, x3, x3, lsl #3         //-7*strd
 
-    add         d11,  d11 ,  d17            //3*dc + 2
+    add         d23,  d23 ,  d17            //3*dc + 2
     add         x12, x12, #8                //offset after one 8x8 block (-7*strd + 8)
 
-    dup         v24.8h, v11.4h[0]           //3*dc + 2 (moved to all lanes)
+    dup         v24.8h, v23.4h[0]           //3*dc + 2 (moved to all lanes)
     sub         x0, x3, x4                  //strd - nt
 
 prologue_col:
@@ -248,7 +248,7 @@ prologue_col:
     movi        d19, #0x00000000000000ff    //
     sqshrun     v3.8b, v22.8h,#2            //rows shx2 movn (prol)
 
-    bsl         v19.8b,  v15.8b ,  v2.8b    //first row with dst[0]
+    bsl         v19.8b,  v29.8b ,  v2.8b    //first row with dst[0]
     add         v26.8h,  v26.8h ,  v24.8h   //col 8::15 add 3dc+2 (prol extra)
 
     rev64       v3.8b,  v3.8b
@@ -445,23 +445,23 @@ dc_4:
     mov         v28.s[1], w5                //src[2nt+1]+2+src[2nt-1] moved to d28
     add         d6,  d6 ,  d5               //accumulate all inp into d6 (end for nt==8)
 
-    sshl        d9, d6, d8                  //(dc_val) shr by log2nt+1
+    sshl        d18, d6, d7                 //(dc_val) shr by log2nt+1
     mov         x8, x7                      //&src[2nt+1]
 
-    shl         d13, d9,#1                  //2*dc
+    shl         d25, d18,#1                 //2*dc
     sub         x9, x9, #3                  //&src[2nt-1-row]
 
-    dup         v16.8b, v9.8b[0]            //dc_val
-    add         d14,  d13 ,  d28            //src[2nt+1]+2+src[2nt-1]+2dc_val
+    dup         v16.8b, v18.8b[0]           //dc_val
+    add         d27,  d25 ,  d28            //src[2nt+1]+2+src[2nt-1]+2dc_val
 
-    ushr        v15.4h, v14.4h,#2           //final dst[0]'s value in d15[0]
+    ushr        v29.4h, v27.4h,#2           //final dst[0]'s value in d15[0]
     sub         x12, x3, x3, lsl #2         //-3*strd
-    add         d11,  d13 ,  d9             //3*dc
+    add         d23,  d25 ,  d18            //3*dc
 
-    add         d11,  d11 ,  d17            //3*dc + 2
+    add         d23,  d23 ,  d17            //3*dc + 2
     add         x12, x12, #4                //offset after one 4x4 block (-3*strd + 4)
 
-    dup         v24.8h, v11.4h[0]           //3*dc + 2 (moved to all lanes)
+    dup         v24.8h, v23.4h[0]           //3*dc + 2 (moved to all lanes)
     sub         x0, x3, x4                  //strd - nt
 
 
@@ -482,7 +482,7 @@ dc_4:
     sqshrun     v3.8b, v22.8h,#2            //rows shx2 movn (prol)
 
 
-    bsl         v19.8b,  v15.8b ,  v2.8b    //first row with dst[0]
+    bsl         v19.8b,  v29.8b ,  v2.8b    //first row with dst[0]
 
     rev64       v3.8b,  v3.8b
 
@@ -510,7 +510,7 @@ epilogue_end:
 end_func:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

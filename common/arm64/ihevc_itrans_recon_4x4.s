@@ -119,7 +119,7 @@
 ihevc_itrans_recon_4x4_av8:
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     adrp        x8, :got:g_ai2_ihevc_trans_4_transpose
@@ -142,21 +142,21 @@ ihevc_itrans_recon_4x4_av8:
     // first stage computation starts
     smull       v6.4s, v1.4h, v4.4h[1]      //83 * pi2_src[1]
     smlal       v6.4s, v3.4h, v4.4h[3]      //o[0] = 83 * pi2_src[1] + 36 * pi2_src[3]
-    smull       v8.4s, v1.4h, v4.4h[3]      //36 * pi2_src[1]
+    smull       v5.4s, v1.4h, v4.4h[3]      //36 * pi2_src[1]
     ld1         {v22.s}[0],[x2],x5
-    smlsl       v8.4s, v3.4h, v4.4h[1]      //o[1] = 36 * pi2_src[1] - 83 * pi2_src[3]
+    smlsl       v5.4s, v3.4h, v4.4h[1]      //o[1] = 36 * pi2_src[1] - 83 * pi2_src[3]
 
-    saddl       v10.4s, v0.4h, v2.4h        //pi2_src[0] + pi2_src[2]
-    ssubl       v12.4s, v0.4h, v2.4h        //pi2_src[0] - pi2_src[2]
-    shl         v10.4s, v10.4s,#6           //e[0] = 64*(pi2_src[0] + pi2_src[2])
-    shl         v12.4s, v12.4s,#6           //e[1] = 64*(pi2_src[0] - pi2_src[2])
+    saddl       v7.4s, v0.4h, v2.4h         //pi2_src[0] + pi2_src[2]
+    ssubl       v17.4s, v0.4h, v2.4h        //pi2_src[0] - pi2_src[2]
+    shl         v7.4s, v7.4s,#6             //e[0] = 64*(pi2_src[0] + pi2_src[2])
+    shl         v17.4s, v17.4s,#6           //e[1] = 64*(pi2_src[0] - pi2_src[2])
 
-    add         v14.4s,  v10.4s ,  v6.4s    //((e[0] + o[0] )
-    add         v16.4s,  v12.4s ,  v8.4s    //((e[1] + o[1])
-    sub         v18.4s,  v12.4s ,  v8.4s    //((e[1] - o[1])
-    sub         v20.4s,  v10.4s ,  v6.4s    //((e[0] - o[0])
+    add         v19.4s,  v7.4s ,  v6.4s     //((e[0] + o[0] )
+    add         v16.4s,  v17.4s ,  v5.4s    //((e[1] + o[1])
+    sub         v18.4s,  v17.4s ,  v5.4s    //((e[1] - o[1])
+    sub         v20.4s,  v7.4s ,  v6.4s     //((e[0] - o[0])
 
-    sqrshrn     v28.4h, v14.4s,#shift_stage1_idct //pi2_out[0] = clip_s16((e[0] + o[0] + add)>>shift) )
+    sqrshrn     v28.4h, v19.4s,#shift_stage1_idct //pi2_out[0] = clip_s16((e[0] + o[0] + add)>>shift) )
     sqrshrn     v29.4h, v16.4s,#shift_stage1_idct //pi2_out[1] = clip_s16((e[1] + o[1] + add)>>shift) )
     sqrshrn     v30.4h, v18.4s,#shift_stage1_idct //pi2_out[2] = clip_s16((e[0] - o[0] + add)>>shift) )
     sqrshrn     v31.4h, v20.4s,#shift_stage1_idct //pi2_out[3] = clip_s16((e[0] - o[0] + add)>>shift) )
@@ -176,22 +176,22 @@ ihevc_itrans_recon_4x4_av8:
     smull       v6.4s, v1.4h, v4.4h[1]      //83 * pi2_src[1]
     ld1         {v22.s}[1],[x2],x5
     smlal       v6.4s, v3.4h, v4.4h[3]      //o[0] = 83 * pi2_src[1] + 36 * pi2_src[3]
-    smull       v8.4s, v1.4h, v4.4h[3]      //36 * pi2_src[1]
-    smlsl       v8.4s, v3.4h, v4.4h[1]      //o[1] = 36 * pi2_src[1] - 83 * pi2_src[3]
+    smull       v5.4s, v1.4h, v4.4h[3]      //36 * pi2_src[1]
+    smlsl       v5.4s, v3.4h, v4.4h[1]      //o[1] = 36 * pi2_src[1] - 83 * pi2_src[3]
     ld1         {v23.s}[0],[x2],x5
 
-    saddl       v10.4s, v0.4h, v2.4h        //pi2_src[0] + pi2_src[2]
-    ssubl       v12.4s, v0.4h, v2.4h        //pi2_src[0] - pi2_src[2]
-    shl         v10.4s, v10.4s,#6           //e[0] = 64*(pi2_src[0] + pi2_src[2])
-    shl         v12.4s, v12.4s,#6           //e[1] = 64*(pi2_src[0] - pi2_src[2])
+    saddl       v7.4s, v0.4h, v2.4h         //pi2_src[0] + pi2_src[2]
+    ssubl       v17.4s, v0.4h, v2.4h        //pi2_src[0] - pi2_src[2]
+    shl         v7.4s, v7.4s,#6             //e[0] = 64*(pi2_src[0] + pi2_src[2])
+    shl         v17.4s, v17.4s,#6           //e[1] = 64*(pi2_src[0] - pi2_src[2])
 
 
-    add         v14.4s,  v10.4s ,  v6.4s    //((e[0] + o[0] )
-    add         v16.4s,  v12.4s ,  v8.4s    //((e[1] + o[1])
-    sub         v18.4s,  v12.4s ,  v8.4s    //((e[1] - o[1])
-    sub         v20.4s,  v10.4s ,  v6.4s    //((e[0] - o[0])
+    add         v19.4s,  v7.4s ,  v6.4s     //((e[0] + o[0] )
+    add         v16.4s,  v17.4s ,  v5.4s    //((e[1] + o[1])
+    sub         v18.4s,  v17.4s ,  v5.4s    //((e[1] - o[1])
+    sub         v20.4s,  v7.4s ,  v6.4s     //((e[0] - o[0])
 
-    sqrshrn     v28.4h, v14.4s,#shift_stage2_idct //pi2_out[0] = clip_s16((e[0] + o[0] + add)>>shift) )
+    sqrshrn     v28.4h, v19.4s,#shift_stage2_idct //pi2_out[0] = clip_s16((e[0] + o[0] + add)>>shift) )
     sqrshrn     v29.4h, v16.4s,#shift_stage2_idct //pi2_out[1] = clip_s16((e[1] + o[1] + add)>>shift) )
     sqrshrn     v30.4h, v18.4s,#shift_stage2_idct //pi2_out[2] = clip_s16((e[0] - o[0] + add)>>shift) )
     sqrshrn     v31.4h, v20.4s,#shift_stage2_idct //pi2_out[3] = clip_s16((e[0] - o[0] + add)>>shift) )
@@ -228,7 +228,7 @@ ihevc_itrans_recon_4x4_av8:
 
     // ldmfd sp!,{x4-x12,x15}                //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

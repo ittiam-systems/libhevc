@@ -76,7 +76,10 @@ ihevc_sao_band_offset_luma_av8:
 
     LDR         w8,[sp]                     //Loads ht
 
-    push_v_regs
+
+    stp         d13,d14,[sp,#-16]!
+    stp         d8,d15,[sp,#-16]!           // Storing d15 using { sub sp,sp,#8; str d15,[sp] } is giving bus error.
+                                            // d8 is used as dummy register and stored along with d15 using stp. d8 is not used in the function.
     stp         x19, x20,[sp,#-16]!
 
     MOV         x9,x8                       //Move the ht to x9 for loop counter
@@ -127,7 +130,7 @@ SRC_TOP_LOOP:                               //wd is always multiple of 8
     ADD         v7.8b,  v3.8b ,  v31.8b     //band_table.val[2] = vadd_u8(band_table.val[2], band_pos)
 
     dup         v27.8b, v30.8b[3]           //vdup_n_u8(pi1_sao_offset[3])
-    ADD         v8.8b,  v4.8b ,  v31.8b     //band_table.val[3] = vadd_u8(band_table.val[3], band_pos)
+    ADD         v21.8b,  v4.8b ,  v31.8b    //band_table.val[3] = vadd_u8(band_table.val[3], band_pos)
 
     dup         v26.8b, v30.8b[4]           //vdup_n_u8(pi1_sao_offset[4])
     ADD         v1.8b,  v5.8b ,  v29.8b     //band_table.val[0] = vadd_u8(band_table.val[0], vdup_n_u8(pi1_sao_offset[1]))
@@ -138,52 +141,52 @@ SRC_TOP_LOOP:                               //wd is always multiple of 8
     CMP         x5,#28
     ADD         v3.8b,  v7.8b ,  v27.8b     //band_table.val[2] = vadd_u8(band_table.val[2], vdup_n_u8(pi1_sao_offset[3]))
 
-    ADD         v4.8b,  v8.8b ,  v26.8b     //band_table.val[3] = vadd_u8(band_table.val[3], vdup_n_u8(pi1_sao_offset[4]))
+    ADD         v4.8b,  v21.8b ,  v26.8b    //band_table.val[3] = vadd_u8(band_table.val[3], vdup_n_u8(pi1_sao_offset[4]))
     BLT         SAO_BAND_POS_0
 
 SAO_BAND_POS_28:                            //case 28
 
-    cmhs        v12.8b,  v29.8b ,  v4.8b    //vcle_u8(band_table.val[3], vdup_n_u8(16))
+    cmhs        v25.8b,  v29.8b ,  v4.8b    //vcle_u8(band_table.val[3], vdup_n_u8(16))
 
     BNE         SAO_BAND_POS_29
-    ORR         v4.8b,  v4.8b ,  v12.8b     //band_table.val[3] = vorr_u8(band_table.val[3], au1_cmp)
+    ORR         v4.8b,  v4.8b ,  v25.8b     //band_table.val[3] = vorr_u8(band_table.val[3], au1_cmp)
     B           SWITCH_BREAK
 
 SAO_BAND_POS_29:                            //case 29
     CMP         x5,#29
-    cmhs        v11.8b,  v29.8b ,  v3.8b    //vcle_u8(band_table.val[2], vdup_n_u8(16))
+    cmhs        v24.8b,  v29.8b ,  v3.8b    //vcle_u8(band_table.val[2], vdup_n_u8(16))
 
     BNE         SAO_BAND_POS_30
-    ORR         v3.8b,  v3.8b ,  v11.8b     //band_table.val[2] = vorr_u8(band_table.val[2], au1_cmp)
+    ORR         v3.8b,  v3.8b ,  v24.8b     //band_table.val[2] = vorr_u8(band_table.val[2], au1_cmp)
 
-    AND         v4.8b,  v4.8b ,  v12.8b     //band_table.val[3] = vand_u8(band_table.val[3], au1_cmp)
+    AND         v4.8b,  v4.8b ,  v25.8b     //band_table.val[3] = vand_u8(band_table.val[3], au1_cmp)
     B           SWITCH_BREAK
 
 SAO_BAND_POS_30:                            //case 30
     CMP         x5,#30
-    cmhs        v10.8b,  v29.8b ,  v2.8b    //vcle_u8(band_table.val[1], vdup_n_u8(16))
+    cmhs        v23.8b,  v29.8b ,  v2.8b    //vcle_u8(band_table.val[1], vdup_n_u8(16))
 
     BNE         SAO_BAND_POS_31
-    ORR         v2.8b,  v2.8b ,  v10.8b     //band_table.val[1] = vorr_u8(band_table.val[1], au1_cmp)
+    ORR         v2.8b,  v2.8b ,  v23.8b     //band_table.val[1] = vorr_u8(band_table.val[1], au1_cmp)
 
-    AND         v3.8b,  v3.8b ,  v11.8b     //band_table.val[2] = vand_u8(band_table.val[2], au1_cmp)
+    AND         v3.8b,  v3.8b ,  v24.8b     //band_table.val[2] = vand_u8(band_table.val[2], au1_cmp)
     B           SWITCH_BREAK
 
 SAO_BAND_POS_31:                            //case 31
     CMP         x5,#31
     BNE         SWITCH_BREAK
 
-    cmhs        v9.8b,  v29.8b ,  v1.8b     //vcle_u8(band_table.val[0], vdup_n_u8(16))
-    ORR         v1.8b,  v1.8b ,  v9.8b      //band_table.val[0] = vorr_u8(band_table.val[0], au1_cmp)
+    cmhs        v22.8b,  v29.8b ,  v1.8b    //vcle_u8(band_table.val[0], vdup_n_u8(16))
+    ORR         v1.8b,  v1.8b ,  v22.8b     //band_table.val[0] = vorr_u8(band_table.val[0], au1_cmp)
 
-    AND         v2.8b,  v2.8b ,  v10.8b     //band_table.val[1] = vand_u8(band_table.val[1], au1_cmp)
+    AND         v2.8b,  v2.8b ,  v23.8b     //band_table.val[1] = vand_u8(band_table.val[1], au1_cmp)
 
 SAO_BAND_POS_0:
     CMP         x5,#0                       //case 0
     BNE         SWITCH_BREAK
 
-    cmhs        v9.8b,  v29.8b ,  v1.8b     //vcle_u8(band_table.val[0], vdup_n_u8(16))
-    AND         v1.8b,  v1.8b ,  v9.8b      //band_table.val[0] = vand_u8(band_table.val[0], au1_cmp)
+    cmhs        v22.8b,  v29.8b ,  v1.8b    //vcle_u8(band_table.val[0], vdup_n_u8(16))
+    AND         v1.8b,  v1.8b ,  v22.8b     //band_table.val[0] = vand_u8(band_table.val[0], au1_cmp)
 
 SWITCH_BREAK:
 
@@ -236,9 +239,11 @@ HEIGHT_LOOP:
     ADD         x0,x0,#8
     BNE         SWITCH_BREAK_1
 
-    // LDMFD sp!,{x4-x12,x15}              //Reload the registers from SP
+    // LDMFD sp!,{x4-x12,x15}               //Reload the registers from SP
     ldp         x19, x20,[sp], #16
-    pop_v_regs
+    ldp         d8,d15,[sp],#16             // Loading d15 using { ldr d15,[sp]; add sp,sp,#8 } is giving bus error.
+                                            // d8 is used as dummy register and loaded along with d15 using ldp. d8 is not used in the function.
+    ldp         d13,d14,[sp],#16
     ret
 
 

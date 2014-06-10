@@ -107,7 +107,7 @@
 ihevc_intra_pred_luma_planar_av8:
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
 
     adrp        x11, :got:gau1_ihevc_planar_factor //loads table of coeffs
@@ -116,8 +116,8 @@ ihevc_intra_pred_luma_planar_av8:
     clz         w5,w4
     sub         x20, x5, #32
     neg         x5, x20
-    dup         v14.8h,w5
-    neg         v14.8h, v14.8h              //shr value (so vneg)
+    dup         v29.8h,w5
+    neg         v29.8h, v29.8h              //shr value (so vneg)
     dup         v2.8b,w4                    //nt
     dup         v16.8h,w4                   //nt
 
@@ -175,22 +175,22 @@ tf_sz_8_16_32:
 
 col_loop_8_16_32:
 
-    ld1         {v8.8b},[x12]               //(1-8)load 8 coeffs [col+1]
-    dup         v12.8h,w4                   //(1)
+    ld1         {v17.8b},[x12]              //(1-8)load 8 coeffs [col+1]
+    dup         v27.8h,w4                   //(1)
     ld1         {v4.8b},[x6]                //(1-8)src[2nt-1-row]
-    sub         v9.8b,  v2.8b ,  v8.8b      //(1-8)[nt-1-col]
+    sub         v19.8b,  v2.8b ,  v17.8b    //(1-8)[nt-1-col]
 
 
-    umlal       v12.8h, v5.8b, v0.8b        //(1)(row+1)    *    src[nt-1]
+    umlal       v27.8h, v5.8b, v0.8b        //(1)(row+1)    *    src[nt-1]
 
     ld1         {v3.8b},[x14]               //(1-8)load 8 src[2nt+1+col]
-    umlal       v12.8h, v8.8b, v1.8b        //(1)(col+1)    *    src[3nt+1]
+    umlal       v27.8h, v17.8b, v1.8b       //(1)(col+1)    *    src[3nt+1]
 
     dup         v20.8b, v4.8b[7]            //(1)
-    umlal       v12.8h, v6.8b, v3.8b        //(1)(nt-1-row)    *    src[2nt+1+col]
+    umlal       v27.8h, v6.8b, v3.8b        //(1)(nt-1-row)    *    src[2nt+1+col]
 
     dup         v21.8b, v4.8b[6]            //(2)
-    umlal       v12.8h, v9.8b, v20.8b       //(1)(nt-1-col)    *    src[2nt-1-row]
+    umlal       v27.8h, v19.8b, v20.8b      //(1)(nt-1-col)    *    src[2nt-1-row]
 
     dup         v30.8h,w4                   //(2)
     add         v5.8b,  v5.8b ,  v7.8b      //(1)
@@ -201,46 +201,46 @@ col_loop_8_16_32:
     umlal       v30.8h, v5.8b, v0.8b        //(2)
 
     dup         v28.8h,w4                   //(3)
-    umlal       v30.8h, v8.8b, v1.8b        //(2)
+    umlal       v30.8h, v17.8b, v1.8b       //(2)
 
     umlal       v30.8h, v6.8b, v3.8b        //(2)
-    umlal       v30.8h, v9.8b, v21.8b       //(2)
+    umlal       v30.8h, v19.8b, v21.8b      //(2)
 
-    sshl        v12.8h, v12.8h, v14.8h      //(1)shr
+    sshl        v27.8h, v27.8h, v29.8h      //(1)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(2)
     sub         v6.8b,  v6.8b ,  v7.8b      //(2)
 
-    xtn         v12.8b,  v12.8h             //(1)
+    xtn         v27.8b,  v27.8h             //(1)
     umlal       v28.8h, v5.8b, v0.8b        //(3)
 
     dup         v23.8b, v4.8b[4]            //(4)
-    umlal       v28.8h, v8.8b, v1.8b        //(3)
+    umlal       v28.8h, v17.8b, v1.8b       //(3)
 
-    dup         v10.8h,w4                   //(4)
+    dup         v25.8h,w4                   //(4)
     umlal       v28.8h, v6.8b, v3.8b        //(3)
 
-    st1         {v12.8b},[x2], x3           //(1)str 8 values
-    umlal       v28.8h, v9.8b, v22.8b       //(3)
+    st1         {v27.8b},[x2], x3           //(1)str 8 values
+    umlal       v28.8h, v19.8b, v22.8b      //(3)
 
-    sshl        v30.8h, v30.8h, v14.8h      //(2)shr
+    sshl        v30.8h, v30.8h, v29.8h      //(2)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(3)
     sub         v6.8b,  v6.8b ,  v7.8b      //(3)
 
     xtn         v30.8b,  v30.8h             //(2)
-    umlal       v10.8h, v5.8b, v0.8b        //(4)
+    umlal       v25.8h, v5.8b, v0.8b        //(4)
 
     dup         v20.8b, v4.8b[3]            //(5)
-    umlal       v10.8h, v8.8b, v1.8b        //(4)
+    umlal       v25.8h, v17.8b, v1.8b       //(4)
 
     dup         v16.8h,w4                   //(5)
-    umlal       v10.8h, v6.8b, v3.8b        //(4)
+    umlal       v25.8h, v6.8b, v3.8b        //(4)
 
     st1         {v30.8b},[x2], x3           //(2)str 8 values
-    umlal       v10.8h, v9.8b, v23.8b       //(4)
+    umlal       v25.8h, v19.8b, v23.8b      //(4)
 
-    sshl        v28.8h, v28.8h, v14.8h      //(3)shr
+    sshl        v28.8h, v28.8h, v29.8h      //(3)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(4)
     sub         v6.8b,  v6.8b ,  v7.8b      //(4)
@@ -249,31 +249,31 @@ col_loop_8_16_32:
     umlal       v16.8h, v5.8b, v0.8b        //(5)
 
     dup         v21.8b, v4.8b[2]            //(6)
-    umlal       v16.8h, v8.8b, v1.8b        //(5)
+    umlal       v16.8h, v17.8b, v1.8b       //(5)
 
     dup         v18.8h,w4                   //(6)
     umlal       v16.8h, v6.8b, v3.8b        //(5)
 
     st1         {v28.8b},[x2], x3           //(3)str 8 values
-    umlal       v16.8h, v9.8b, v20.8b       //(5)
+    umlal       v16.8h, v19.8b, v20.8b      //(5)
 
-    sshl        v10.8h, v10.8h, v14.8h      //(4)shr
+    sshl        v25.8h, v25.8h, v29.8h      //(4)shr
     add         v5.8b,  v5.8b ,  v7.8b      //(5)
     sub         v6.8b,  v6.8b ,  v7.8b      //(5)
 
-    xtn         v10.8b,  v10.8h             //(4)
+    xtn         v25.8b,  v25.8h             //(4)
     umlal       v18.8h, v5.8b, v0.8b        //(6)
 
     dup         v22.8b, v4.8b[1]            //(7)
-    umlal       v18.8h, v8.8b, v1.8b        //(6)
+    umlal       v18.8h, v17.8b, v1.8b       //(6)
 
     dup         v26.8h,w4                   //(7)
     umlal       v18.8h, v6.8b, v3.8b        //(6)
 
-    st1         {v10.8b},[x2], x3           //(4)str 8 values
-    umlal       v18.8h, v9.8b, v21.8b       //(6)
+    st1         {v25.8b},[x2], x3           //(4)str 8 values
+    umlal       v18.8h, v19.8b, v21.8b      //(6)
 
-    sshl        v16.8h, v16.8h, v14.8h      //(5)shr
+    sshl        v16.8h, v16.8h, v29.8h      //(5)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(6)
     sub         v6.8b,  v6.8b ,  v7.8b      //(6)
@@ -282,15 +282,15 @@ col_loop_8_16_32:
     umlal       v26.8h, v5.8b, v0.8b        //(7)
 
     dup         v23.8b, v4.8b[0]            //(8)
-    umlal       v26.8h, v8.8b, v1.8b        //(7)
+    umlal       v26.8h, v17.8b, v1.8b       //(7)
 
     dup         v24.8h,w4                   //(8)
     umlal       v26.8h, v6.8b, v3.8b        //(7)
 
     st1         {v16.8b},[x2], x3           //(5)str 8 values
-    umlal       v26.8h, v9.8b, v22.8b       //(7)
+    umlal       v26.8h, v19.8b, v22.8b      //(7)
 
-    sshl        v18.8h, v18.8h, v14.8h      //(6)shr
+    sshl        v18.8h, v18.8h, v29.8h      //(6)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(7)
     sub         v6.8b,  v6.8b ,  v7.8b      //(7)
@@ -299,14 +299,14 @@ col_loop_8_16_32:
     umlal       v24.8h, v5.8b, v0.8b        //(8)
 
 
-    umlal       v24.8h, v8.8b, v1.8b        //(8)
+    umlal       v24.8h, v17.8b, v1.8b       //(8)
 
     umlal       v24.8h, v6.8b, v3.8b        //(8)
 
     st1         {v18.8b},[x2], x3           //(6)str 8 values
-    umlal       v24.8h, v9.8b, v23.8b       //(8)
+    umlal       v24.8h, v19.8b, v23.8b      //(8)
 
-    sshl        v26.8h, v26.8h, v14.8h      //(7)shr
+    sshl        v26.8h, v26.8h, v29.8h      //(7)shr
 
     subs        x7, x7, #8
 
@@ -322,7 +322,7 @@ col_loop_8_16_32:
     csel        x12, x20, x12,le
 
     csel        x14, x0, x14,le             //x14 reset
-    ld1         {v8.8b},[x12]               //(1n)(1-8)load 8 coeffs [col+1]
+    ld1         {v17.8b},[x12]              //(1n)(1-8)load 8 coeffs [col+1]
 
     sub         x20, x6, #8                 //for next set of rows
     csel        x6, x20, x6,le
@@ -330,12 +330,12 @@ col_loop_8_16_32:
 
     add         x20, x5, #8
     csel        x5, x20, x5,le
-    dup         v12.8h,w4                   //(1n)(1)
+    dup         v27.8h,w4                   //(1n)(1)
 
     ld1         {v5.8b},[x5]
 
     ld1         {v4.8b},[x6]                //(1n)(1-8)src[2nt-1-row]
-    sub         v9.8b,  v2.8b ,  v8.8b      //(1n)(1-8)[nt-1-col]
+    sub         v19.8b,  v2.8b ,  v17.8b    //(1n)(1-8)[nt-1-col]
 
     dup         v20.8b, v4.8b[7]            //(1n)(1)
     sub         v6.8b,  v2.8b ,  v5.8b
@@ -345,19 +345,19 @@ col_loop_8_16_32:
 kernel_plnr:
 
     cmp         x1, #0                      // (cond loop)
-    sshl        v24.8h, v24.8h, v14.8h      //(8)shr
+    sshl        v24.8h, v24.8h, v29.8h      //(8)shr
 
     xtn         v26.8b,  v26.8h             //(7)
-    umlal       v12.8h, v5.8b, v0.8b        //(1)(row+1)    *    src[nt-1]
+    umlal       v27.8h, v5.8b, v0.8b        //(1)(row+1)    *    src[nt-1]
 
     xtn         v24.8b,  v24.8h             //(8)
-    umlal       v12.8h, v8.8b, v1.8b        //(1)(col+1)    *    src[3nt+1]
+    umlal       v27.8h, v17.8b, v1.8b       //(1)(col+1)    *    src[3nt+1]
 
     dup         v21.8b, v4.8b[6]            //(2)
-    umlal       v12.8h, v6.8b, v3.8b        //(1)(nt-1-row)    *    src[2nt+1+col]
+    umlal       v27.8h, v6.8b, v3.8b        //(1)(nt-1-row)    *    src[2nt+1+col]
 
     dup         v30.8h,w4                   //(2)
-    umlal       v12.8h, v9.8b, v20.8b       //(1)(nt-1-col)    *    src[2nt-1-row]
+    umlal       v27.8h, v19.8b, v20.8b      //(1)(nt-1-col)    *    src[2nt-1-row]
 
     st1         {v26.8b},[x2], x3           //(7)str 8 values
     add         v5.8b,  v5.8b ,  v7.8b      //(1)
@@ -371,15 +371,15 @@ kernel_plnr:
 
     sub         x20, x2, x10                //else go to next set of rows, dst - (nt-8) (cond loop)
     csel        x2, x20, x2,le
-    umlal       v30.8h, v8.8b, v1.8b        //(2)
+    umlal       v30.8h, v17.8b, v1.8b       //(2)
 
     dup         v22.8b, v4.8b[5]            //(3)
     umlal       v30.8h, v6.8b, v3.8b        //(2)
 
     dup         v28.8h,w4                   //(3)
-    umlal       v30.8h, v9.8b, v21.8b       //(2)
+    umlal       v30.8h, v19.8b, v21.8b      //(2)
 
-    sshl        v12.8h, v12.8h, v14.8h      //(1)shr
+    sshl        v27.8h, v27.8h, v29.8h      //(1)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(2)
     csel        x1, x4, x1,le               //nt reloaded (refresh the value)    (cond loop)
@@ -387,37 +387,37 @@ kernel_plnr:
     sub         v6.8b,  v6.8b ,  v7.8b      //(2)
     subs        x1, x1, #8                  //row counter (loop)
 
-    xtn         v12.8b,  v12.8h             //(1)
+    xtn         v27.8b,  v27.8h             //(1)
     umlal       v28.8h, v5.8b, v0.8b        //(3)
 
     dup         v23.8b, v4.8b[4]            //(4)
-    umlal       v28.8h, v8.8b, v1.8b        //(3)
+    umlal       v28.8h, v17.8b, v1.8b       //(3)
 
-    dup         v10.8h,w4                   //(4)
+    dup         v25.8h,w4                   //(4)
     umlal       v28.8h, v6.8b, v3.8b        //(3)
 
-    st1         {v12.8b},[x2], x3           //(1)str 8 values
-    umlal       v28.8h, v9.8b, v22.8b       //(3)
+    st1         {v27.8b},[x2], x3           //(1)str 8 values
+    umlal       v28.8h, v19.8b, v22.8b      //(3)
 
-    sshl        v30.8h, v30.8h, v14.8h      //(2)shr
+    sshl        v30.8h, v30.8h, v29.8h      //(2)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(3)
 
     sub         v6.8b,  v6.8b ,  v7.8b      //(3)
 
     xtn         v30.8b,  v30.8h             //(2)
-    umlal       v10.8h, v5.8b, v0.8b        //(4)
+    umlal       v25.8h, v5.8b, v0.8b        //(4)
 
     dup         v20.8b, v4.8b[3]            //(5)
-    umlal       v10.8h, v8.8b, v1.8b        //(4)
+    umlal       v25.8h, v17.8b, v1.8b       //(4)
 
     dup         v16.8h,w4                   //(5)
-    umlal       v10.8h, v6.8b, v3.8b        //(4)
+    umlal       v25.8h, v6.8b, v3.8b        //(4)
 
     st1         {v30.8b},[x2], x3           //(2)str 8 values
-    umlal       v10.8h, v9.8b, v23.8b       //(4)
+    umlal       v25.8h, v19.8b, v23.8b      //(4)
 
-    sshl        v28.8h, v28.8h, v14.8h      //(3)shr
+    sshl        v28.8h, v28.8h, v29.8h      //(3)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(4)
 
@@ -427,17 +427,17 @@ kernel_plnr:
     umlal       v16.8h, v5.8b, v0.8b        //(5)
 
     dup         v21.8b, v4.8b[2]            //(6)
-    umlal       v16.8h, v8.8b, v1.8b        //(5)
+    umlal       v16.8h, v17.8b, v1.8b       //(5)
 
     dup         v18.8h,w4                   //(6)
     umlal       v16.8h, v6.8b, v3.8b        //(5)
 
     st1         {v28.8b},[x2], x3           //(3)str 8 values
-    umlal       v16.8h, v9.8b, v20.8b       //(5)
+    umlal       v16.8h, v19.8b, v20.8b      //(5)
 
     add         x20, x11, #1                //x12 reset (cond loop)
     csel        x12, x20, x12,le
-    sshl        v10.8h, v10.8h, v14.8h      //(4)shr
+    sshl        v25.8h, v25.8h, v29.8h      //(4)shr
 
     add         x20, x12, #8                //col inc (cond loop)
     csel        x12, x20, x12,gt
@@ -447,20 +447,20 @@ kernel_plnr:
     csel        x14, x20, x14,gt
     sub         v6.8b,  v6.8b ,  v7.8b      //(5)
 
-    xtn         v10.8b,  v10.8h             //(4)
+    xtn         v25.8b,  v25.8h             //(4)
     umlal       v18.8h, v5.8b, v0.8b        //(6)
 
     dup         v22.8b, v4.8b[1]            //(7)
-    umlal       v18.8h, v8.8b, v1.8b        //(6)
+    umlal       v18.8h, v17.8b, v1.8b       //(6)
 
     dup         v26.8h,w4                   //(7)
     umlal       v18.8h, v6.8b, v3.8b        //(6)
 
-    st1         {v10.8b},[x2], x3           //(4)str 8 values
-    umlal       v18.8h, v9.8b, v21.8b       //(6)
+    st1         {v25.8b},[x2], x3           //(4)str 8 values
+    umlal       v18.8h, v19.8b, v21.8b      //(6)
 
     csel        x14, x0, x14,le             //x14 reset (cond loop)
-    sshl        v16.8h, v16.8h, v14.8h      //(5)shr
+    sshl        v16.8h, v16.8h, v29.8h      //(5)shr
 
     sub         x20, x6, #8                 //for next set of rows (cond loop)
     csel        x6, x20, x6,le
@@ -474,16 +474,16 @@ kernel_plnr:
     umlal       v26.8h, v5.8b, v0.8b        //(7)
 
     dup         v23.8b, v4.8b[0]            //(8)
-    umlal       v26.8h, v8.8b, v1.8b        //(7)
+    umlal       v26.8h, v17.8b, v1.8b       //(7)
 
     dup         v24.8h,w4                   //(8)
     umlal       v26.8h, v6.8b, v3.8b        //(7)
 
     st1         {v16.8b},[x2], x3           //(5)str 8 values
-    umlal       v26.8h, v9.8b, v22.8b       //(7)
+    umlal       v26.8h, v19.8b, v22.8b      //(7)
 
     ld1         {v4.8b},[x6]                //(1n)(1-8)src[2nt-1-row]
-    sshl        v18.8h, v18.8h, v14.8h      //(6)shr
+    sshl        v18.8h, v18.8h, v29.8h      //(6)shr
 
     add         v5.8b,  v5.8b ,  v7.8b      //(7)
 
@@ -493,24 +493,24 @@ kernel_plnr:
     umlal       v24.8h, v5.8b, v0.8b        //(8)
 
     ld1         {v5.8b},[x5]                //(row+1 value)
-    umlal       v24.8h, v8.8b, v1.8b        //(8)
+    umlal       v24.8h, v17.8b, v1.8b       //(8)
 
     dup         v20.8b, v4.8b[7]            //(1n)(1)
     umlal       v24.8h, v6.8b, v3.8b        //(8)
 
     st1         {v18.8b},[x2], x3           //(6)str 8 values
-    umlal       v24.8h, v9.8b, v23.8b       //(8)
+    umlal       v24.8h, v19.8b, v23.8b      //(8)
 
-    ld1         {v8.8b},[x12]               //(1n)(1-8)load 8 coeffs [col+1]
+    ld1         {v17.8b},[x12]              //(1n)(1-8)load 8 coeffs [col+1]
     sub         v6.8b,  v2.8b ,  v5.8b      //(nt-1-row) value
 
     subs        x7, x7, #8                  //col counter
 
     ld1         {v3.8b},[x14]               //(1n)(1-8)load 8 src[2nt+1+col]
-    sshl        v26.8h, v26.8h, v14.8h      //(7)shr
+    sshl        v26.8h, v26.8h, v29.8h      //(7)shr
 
-    dup         v12.8h,w4                   //(1n)(1)
-    sub         v9.8b,  v2.8b ,  v8.8b      //(1n)(1-8)[nt-1-col]
+    dup         v27.8h,w4                   //(1n)(1)
+    sub         v19.8b,  v2.8b ,  v17.8b    //(1n)(1-8)[nt-1-col]
 
     bne         kernel_plnr
 
@@ -519,7 +519,7 @@ epilog:
     xtn         v26.8b,  v26.8h             //(7)
     st1         {v26.8b},[x2], x3           //(7)str 8 values
 
-    sshl        v24.8h, v24.8h, v14.8h      //(8)shr
+    sshl        v24.8h, v24.8h, v29.8h      //(8)shr
     xtn         v24.8b,  v24.8h             //(8)
     st1         {v24.8b},[x2], x3           //(8)str 8 values
 
@@ -528,25 +528,25 @@ epilog:
     beq         end_loop
 
 tf_sz_4:
-    ld1         {v10.8b},[x14]              //load src[2nt+1+col]
-    ld1         {v8.8b},[x12], x10          //load 8 coeffs [col+1]
+    ld1         {v25.8b},[x14]              //load src[2nt+1+col]
+    ld1         {v17.8b},[x12], x10         //load 8 coeffs [col+1]
 loop_sz_4:
     mov         x10, #4                     //reduce inc to #4 for 4x4
     ldr         w7,  [x6], #-1              //src[2nt-1-row] (dec to take into account row)
     sxtw        x7,w7
     dup         v4.8b,w7                    //src[2nt-1-row]
 
-    sub         v9.8b,  v2.8b ,  v8.8b      //[nt-1-col]
+    sub         v19.8b,  v2.8b ,  v17.8b    //[nt-1-col]
 
-    umull       v12.8h, v5.8b, v0.8b        //(row+1)    *    src[nt-1]
-    umlal       v12.8h, v6.8b, v10.8b       //(nt-1-row)    *    src[2nt+1+col]
-    umlal       v12.8h, v8.8b, v1.8b        //(col+1)    *    src[3nt+1]
-    umlal       v12.8h, v9.8b, v4.8b        //(nt-1-col)    *    src[2nt-1-row]
+    umull       v27.8h, v5.8b, v0.8b        //(row+1)    *    src[nt-1]
+    umlal       v27.8h, v6.8b, v25.8b       //(nt-1-row)    *    src[2nt+1+col]
+    umlal       v27.8h, v17.8b, v1.8b       //(col+1)    *    src[3nt+1]
+    umlal       v27.8h, v19.8b, v4.8b       //(nt-1-col)    *    src[2nt-1-row]
 //    vadd.i16    q6, q6, q8            @add (nt)
 //    vshl.s16     q6, q6, q7            @shr
 //    vmovn.i16     d12, q6
-    rshrn       v12.8b, v12.8h,#3
-    st1         {v12.s}[0],[x2], x3
+    rshrn       v27.8b, v27.8h,#3
+    st1         {v27.s}[0],[x2], x3
 
     add         v5.8b,  v5.8b ,  v7.8b      //row++ [(row+1)++]
     sub         v6.8b,  v6.8b ,  v7.8b      //[nt-1-row]--
@@ -557,7 +557,7 @@ loop_sz_4:
 end_loop:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

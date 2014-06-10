@@ -77,7 +77,7 @@ ihevc_sao_edge_offset_class3_chroma_av8:
     ldr         w10,[sp,#16]
     ldr         w11,[sp,#24]
 
-    push_v_regs
+
     // STMFD sp!, {x4-x12, x14}            //stack stores the values of the arguments
     stp         x19, x20,[sp,#-16]!
     stp         x21, x22,[sp,#-16]!
@@ -310,7 +310,7 @@ PU1_AVAIL_2_LOOP_END:
     LDR         x2, [x2, #:got_lo12:gi1_table_edge_idx]
 
     //VLD1.8        D6,[x6]                        @edge_idx_tbl = vld1_s8(gi1_table_edge_idx)
-    movi        v8.16b, #0xFF               //au1_mask = vdupq_n_s8(-1)
+    movi        v1.16b, #0xFF               //au1_mask = vdupq_n_s8(-1)
     MOV         x6,x7                       //move wd to x6 loop_count
 
     CMP         x7,#16                      //Compare wd with 16
@@ -328,20 +328,20 @@ WIDTH_LOOP_16:
     MOV         x20,#-1
     csel        x8, x20, x8,NE
 
-    mov         v8.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
     LDRB        w11,[x5,#2]                 //pu1_avail[2]
 
     CMP         x6,#16                      //if(col == 16)
-    mov         v8.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
 
     BNE         SKIP_AU1_MASK_VAL
     LDRB        w8,[x5,#1]                  //pu1_avail[1]
-    mov         v8.16b[14], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
-    mov         v8.16b[15], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.16b[14], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.16b[15], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
 
 SKIP_AU1_MASK_VAL:
     CMP         x11,#0
-    LD1         {v12.16b},[x0]              //pu1_cur_row = vld1q_u8(pu1_src)
+    LD1         {v5.16b},[x0]               //pu1_cur_row = vld1q_u8(pu1_src)
     //LD1 {v13.8b},[x0]                        //pu1_cur_row = vld1q_u8(pu1_src)
     //SUB x0, x0,#8
     ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
@@ -352,21 +352,21 @@ SKIP_AU1_MASK_VAL:
     csel        x8, x3, x8,NE
 
     ADD         x8,x8,#2                    //pu1_src - src_strd + 2
-    LD1         {v10.16b},[x8]              //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
+    LD1         {v3.16b},[x8]               //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //LD1 {v11.8b},[x8]                        //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //SUB x8, x8,#8
     ADD         x3,x3,#16
 
     mov         w4, w25                     //Loads ht
-    cmhi        v14.16b,  v12.16b ,  v10.16b //vcgtq_u8(pu1_cur_row, pu1_top_row)
+    cmhi        v17.16b,  v5.16b ,  v3.16b  //vcgtq_u8(pu1_cur_row, pu1_top_row)
     mov         w7, w24                     //Loads wd
 
     SUB         x7,x7,x6                    //(wd - col)
-    cmhi        v16.16b,  v10.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_top_row)
+    cmhi        v16.16b,  v3.16b ,  v5.16b  //vcltq_u8(pu1_cur_row, pu1_top_row)
     ADD         x7,x7,#14                   //15 + (wd - col)
 
     mov         x8, x26                     //Loads *pu1_src
-    SUB         v14.16b,  v16.16b ,  v14.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
+    SUB         v17.16b,  v16.16b ,  v17.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
     ADD         x7,x8,x7                    //pu1_src[0 * src_strd + 15 + (wd - col)]
 
 AU1_SRC_LEFT_LOOP:
@@ -418,29 +418,29 @@ AU1_SRC_LEFT_LOOP:
 
     movn        x20,#0
     csel        x9, x20, x9,LT              //I
-    mov         v14.16b[14], w8             //I sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    mov         v17.16b[14], w8             //I sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
     MOV         x20,#1
     csel        x9, x20, x9,GT              //I SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
 
-    mov         v14.16b[15], w9             //I sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    mov         v17.16b[15], w9             //I sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
 
 SIGN_UP_CHANGE_DONE:
     LD1         {v28.8b},[x2]               //edge_idx_tbl = vld1_s8(gi1_table_edge_idx)
-    cmhi        v20.16b,  v12.16b ,  v18.16b //I vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v20.16b,  v5.16b ,  v18.16b //I vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
 
-    cmhi        v22.16b,  v18.16b ,  v12.16b //I vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v22.16b,  v18.16b ,  v5.16b //I vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
     SUB         v22.16b,  v22.16b ,  v20.16b //I sign_down = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
 
-    ADD         v18.16b,  v0.16b ,  v14.16b //I edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v18.16b,  v0.16b ,  v17.16b //I edge_idx = vaddq_s8(const_2, sign_up)
     ADD         v18.16b,  v18.16b ,  v22.16b //I edge_idx = vaddq_s8(edge_idx, sign_down)
     TBL         v18.16b, {v28.16b},v18.16b  //I vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
-    NEG         v14.16b, v22.16b            //I sign_up = vnegq_s8(sign_down)
+    NEG         v17.16b, v22.16b            //I sign_up = vnegq_s8(sign_down)
 
     //TBL v19.8b, {v28.16b},v19.8b                //I vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
-    EXT         v14.16b,  v14.16b ,  v14.16b,#2 //I sign_up = vextq_s8(sign_up, sign_up, 2)
+    EXT         v17.16b,  v17.16b ,  v17.16b,#2 //I sign_up = vextq_s8(sign_up, sign_up, 2)
 
-    Uxtl        v20.8h, v12.8b              //I pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
-    AND         v18.16b,  v18.16b ,  v8.16b //I edge_idx = vandq_s8(edge_idx, au1_mask)
+    Uxtl        v20.8h, v5.8b               //I pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
+    AND         v18.16b,  v18.16b ,  v1.16b //I edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v19.d[0],v18.d[1]
 
     UZP1        v31.8b, v18.8b, v19.8b
@@ -452,13 +452,13 @@ SIGN_UP_CHANGE_DONE:
     ZIP2        v23.8b, v22.8b, v23.8b      //I
     mov         v22.8b,v31.8b
 
-    Uxtl2       v18.8h, v12.16b             //I pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
+    Uxtl2       v18.8h, v5.16b              //I pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
     SADDW       v20.8h,  v20.8h ,  v22.8b   //I pi2_tmp_cur_row.val[0] = vaddw_s8(pi2_tmp_cur_row.val[0], offset)
 
     SMAX        v20.8h,  v20.8h ,  v2.8h    //I pi2_tmp_cur_row.val[0] = vmaxq_s16(pi2_tmp_cur_row.val[0], const_min_clip)
     UMIN        v20.8h,  v20.8h ,  v4.8h    //I pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vminq_u16(vreinterpretq_u16_s16(pi2_tmp_cur_row.val[0]), const_max_clip))
 
-    mov         v12.16b, v16.16b            //I pu1_cur_row = pu1_next_row
+    mov         v5.16b, v16.16b             //I pu1_cur_row = pu1_next_row
     SADDW       v18.8h,  v18.8h ,  v23.8b   //I pi2_tmp_cur_row.val[1] = vaddw_s8(pi2_tmp_cur_row.val[1], offset)
 
     SUB         x7,x7,#1                    //I Decrement the ht_tmp loop count by 1
@@ -507,18 +507,18 @@ PU1_SRC_LOOP:
     csel        x10, x20, x10,GT            //II SIGN(pu1_src_cpy[14] - pu1_src_cpy[16 - src_strd])
 
     CMP         x8,#0                       //II
-    mov         v14.8b[14], w10             //II sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    mov         v17.8b[14], w10             //II sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
     movn        x20,#0
     csel        x8, x20, x8,LT              //II
 
     MOV         x20,#1
     csel        x8, x20, x8,GT              //II SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
     SUB         x10,x12,x7                  //III ht_tmp - row
-    mov         v14.8b[15], w8              //II sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    mov         v17.8b[15], w8              //II sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
     ADD         x11,x14,x10,LSL #1          //III pu1_src_left_cpy[(ht_tmp - row) * 2]
 
     CMP         x7,#1                       //III
-    cmhi        v22.16b,  v12.16b ,  v28.16b //II vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v22.16b,  v5.16b ,  v28.16b //II vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
     BNE         NEXT_ROW_POINTER_ASSIGNED_2 //III
 
     mov         x5, x21                     //III Loads pu1_avail
@@ -529,7 +529,7 @@ PU1_SRC_LOOP:
 
 NEXT_ROW_POINTER_ASSIGNED_2:
     LDRH        w5,[x11,#2]                 //III
-    cmhi        v24.16b,  v28.16b ,  v12.16b //II vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v24.16b,  v28.16b ,  v5.16b //II vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
     ADD         x11,x0,x1                   //III
 
     LDRB        w9,[x11,#14]                //III pu1_src_cpy[14]
@@ -545,7 +545,7 @@ NEXT_ROW_POINTER_ASSIGNED_2:
     SUB         x10,x8,x10                  //III pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
 
     CMP         x9,#0                       //III
-    ADD         v26.16b,  v0.16b ,  v14.16b //II edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v26.16b,  v0.16b ,  v17.16b //II edge_idx = vaddq_s8(const_2, sign_up)
     movn        x20,#0
     csel        x9, x20, x9,LT              //III
 
@@ -554,22 +554,22 @@ NEXT_ROW_POINTER_ASSIGNED_2:
     ADD         v26.16b,  v26.16b ,  v24.16b //II edge_idx = vaddq_s8(edge_idx, sign_down)
     CMP         x10,#0                      //III
 
-    NEG         v14.16b, v24.16b            //II sign_up = vnegq_s8(sign_down)
+    NEG         v17.16b, v24.16b            //II sign_up = vnegq_s8(sign_down)
     TBL         v26.16b, {v21.16b},v26.16b  //II vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
     movn        x20,#0
     csel        x10, x20, x10,LT            //III
     MOV         x20,#1
     csel        x10, x20, x10,GT            //III SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
 
-    EXT         v14.16b,  v14.16b ,  v14.16b,#2 //II sign_up = vextq_s8(sign_up, sign_up, 2)
+    EXT         v17.16b,  v17.16b ,  v17.16b,#2 //II sign_up = vextq_s8(sign_up, sign_up, 2)
     //TBL v27.8b, {v21.16b},v27.8b                //II vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
     cmhi        v22.16b,  v16.16b ,  v18.16b //III vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
 
-    mov         v14.16b[14], w9             //III sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
-    AND         v26.16b,  v26.16b ,  v8.16b //II edge_idx = vandq_s8(edge_idx, au1_mask)
+    mov         v17.16b[14], w9             //III sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    AND         v26.16b,  v26.16b ,  v1.16b //II edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v27.d[0],v26.d[1]
 
-    mov         v14.16b[15], w10            //III sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    mov         v17.16b[15], w10            //III sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
     UZP1        v31.8b, v26.8b, v27.8b
     UZP2        v27.8b, v26.8b, v27.8b      //II
     mov         v26.8b,v31.8b
@@ -578,7 +578,7 @@ NEXT_ROW_POINTER_ASSIGNED_2:
     TBL         v24.8b, {v6.16b},v26.8b     //II
     SUB         v22.16b,  v20.16b ,  v22.16b //III sign_down = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
 
-    ADD         v18.16b,  v0.16b ,  v14.16b //III edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v18.16b,  v0.16b ,  v17.16b //III edge_idx = vaddq_s8(const_2, sign_up)
     TBL         v25.8b, {v7.16b},v27.8b     //II
     ADD         v18.16b,  v18.16b ,  v22.16b //III edge_idx = vaddq_s8(edge_idx, sign_down)
 
@@ -587,16 +587,16 @@ NEXT_ROW_POINTER_ASSIGNED_2:
     ZIP2        v25.8b, v24.8b, v25.8b      //II
     mov         v24.8b,v31.8b
 
-    Uxtl        v28.8h, v12.8b              //II pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
+    Uxtl        v28.8h, v5.8b               //II pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
     TBL         v18.16b, {v20.16b},v18.16b  //III vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
-    NEG         v14.16b, v22.16b            //III sign_up = vnegq_s8(sign_down)
+    NEG         v17.16b, v22.16b            //III sign_up = vnegq_s8(sign_down)
 
     SADDW       v28.8h,  v28.8h ,  v24.8b   //II pi2_tmp_cur_row.val[0] = vaddw_s8(pi2_tmp_cur_row.val[0], offset)
     //TBL v19.8b, {v20.16b},v19.8b                //III vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
-    EXT         v14.16b,  v14.16b ,  v14.16b,#2 //III sign_up = vextq_s8(sign_up, sign_up, 2)
+    EXT         v17.16b,  v17.16b ,  v17.16b,#2 //III sign_up = vextq_s8(sign_up, sign_up, 2)
 
-    Uxtl2       v26.8h, v12.16b             //II pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
-    AND         v18.16b,  v18.16b ,  v8.16b //III edge_idx = vandq_s8(edge_idx, au1_mask)
+    Uxtl2       v26.8h, v5.16b              //II pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
+    AND         v18.16b,  v18.16b ,  v1.16b //III edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v19.d[0],v18.d[1]
 
     Uxtl        v20.8h, v16.8b              //III pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
@@ -620,7 +620,7 @@ NEXT_ROW_POINTER_ASSIGNED_2:
     xtn         v28.8b,  v28.8h             //II vmovn_s16(pi2_tmp_cur_row.val[0])
     SADDW       v20.8h,  v20.8h ,  v22.8b   //III pi2_tmp_cur_row.val[0] = vaddw_s8(pi2_tmp_cur_row.val[0], offset)
 
-    mov         v12.16b, v30.16b            //III pu1_cur_row = pu1_next_row
+    mov         v5.16b, v30.16b             //III pu1_cur_row = pu1_next_row
     UMIN        v26.8h,  v26.8h ,  v4.8h    //II pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vminq_u16(vreinterpretq_u16_s16(pi2_tmp_cur_row.val[1]), const_max_clip))
 
     SUB         x7,x7,#1                    //III Decrement the ht_tmp loop count by 1
@@ -682,27 +682,27 @@ NEXT_ROW_POINTER_ASSIGNED_3:
     csel        x8, x20, x8,GT              //SIGN(pu1_src_cpy[14] - pu1_src_cpy[16 - src_strd])
 
     CMP         x10,#0
-    mov         v14.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    mov         v17.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
     movn        x20,#0
     csel        x10, x20, x10,LT
 
     MOV         x20,#1
     csel        x10, x20, x10,GT            //SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
-    mov         v14.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
-    cmhi        v20.16b,  v12.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
+    mov         v17.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    cmhi        v20.16b,  v5.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
 
-    cmhi        v22.16b,  v18.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v22.16b,  v18.16b ,  v5.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
     SUB         v22.16b,  v22.16b ,  v20.16b //sign_down = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
 
-    ADD         v18.16b,  v0.16b ,  v14.16b //edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v18.16b,  v0.16b ,  v17.16b //edge_idx = vaddq_s8(const_2, sign_up)
     ADD         v18.16b,  v18.16b ,  v22.16b //edge_idx = vaddq_s8(edge_idx, sign_down)
     TBL         v18.16b, {v28.16b},v18.16b  //vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
     //TBL v19.8b, {v28.16b},v19.8b                //vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
 
-    AND         v18.16b,  v18.16b ,  v8.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
+    AND         v18.16b,  v18.16b ,  v1.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v19.d[0],v18.d[1]
 
-    Uxtl        v20.8h, v12.8b              //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
+    Uxtl        v20.8h, v5.8b               //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
     UZP1        v31.8b, v18.8b, v19.8b
     UZP2        v19.8b, v18.8b, v19.8b
     mov         v18.8b,v31.8b
@@ -710,7 +710,7 @@ NEXT_ROW_POINTER_ASSIGNED_3:
     TBL         v22.8b, {v6.16b},v18.8b
     TBL         v23.8b, {v7.16b},v19.8b
 
-    Uxtl2       v18.8h, v12.16b             //pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
+    Uxtl2       v18.8h, v5.16b              //pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
     ZIP1        v31.8b, v22.8b, v23.8b
     ZIP2        v23.8b, v22.8b, v23.8b
     mov         v22.8b,v31.8b
@@ -762,15 +762,15 @@ WD_16_HT_4_LOOP:
     csel        w8,w20,w8,EQ
     MOV         x20,#-1
     csel        x8, x20, x8,NE
-    mov         v8.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
 
     CMP         x6,#16                      //if(col == 16)
-    mov         v8.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
 
     BNE         SKIP_AU1_MASK_VAL_WD_16_HT_4
     LDRB        w8,[x5,#1]                  //pu1_avail[1]
-    mov         v8.16b[14], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
-    mov         v8.16b[15], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.16b[14], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.16b[15], w8              //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
 
 SKIP_AU1_MASK_VAL_WD_16_HT_4:
     LDRB        w11,[x5,#2]                 //pu1_avail[2]
@@ -779,27 +779,27 @@ SKIP_AU1_MASK_VAL_WD_16_HT_4:
 
     CMP         x11,#0
     csel        x8, x3, x8,NE
-    LD1         {v12.16b},[x0]              //pu1_cur_row = vld1q_u8(pu1_src)
+    LD1         {v5.16b},[x0]               //pu1_cur_row = vld1q_u8(pu1_src)
     //LD1 {v13.8b},[x0]                        //pu1_cur_row = vld1q_u8(pu1_src)
     //SUB x0, x0,#8
     ADD         x8,x8,#2                    //pu1_src - src_strd + 2
 
     ADD         x3,x3,#16
-    LD1         {v10.16b},[x8]              //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
+    LD1         {v3.16b},[x8]               //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //LD1 {v11.8b},[x8]                        //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //SUB x8, x8,#8
     ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
 
     mov         w4, w25                     //Loads ht
-    cmhi        v14.16b,  v12.16b ,  v10.16b //vcgtq_u8(pu1_cur_row, pu1_top_row)
+    cmhi        v17.16b,  v5.16b ,  v3.16b  //vcgtq_u8(pu1_cur_row, pu1_top_row)
     mov         w7, w24                     //Loads wd
 
     SUB         x7,x7,x6                    //(wd - col)
-    cmhi        v16.16b,  v10.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_top_row)
+    cmhi        v16.16b,  v3.16b ,  v5.16b  //vcltq_u8(pu1_cur_row, pu1_top_row)
     ADD         x7,x7,#14                   //15 + (wd - col)
 
     mov         x8, x26                     //Loads *pu1_src
-    SUB         v14.16b,  v16.16b ,  v14.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
+    SUB         v17.16b,  v16.16b ,  v17.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
     ADD         x7,x8,x7                    //pu1_src[0 * src_strd + 15 + (wd - col)]
 
 AU1_SRC_LEFT_LOOP_WD_16_HT_4:
@@ -864,33 +864,33 @@ SIGN_UP_CHANGE_WD_16_HT_4:
     csel        x8, x20, x8,GT              //SIGN(pu1_src_cpy[14] - pu1_src_cpy[16 - src_strd])
 
     CMP         x10,#0
-    mov         v14.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    mov         v17.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
     movn        x20,#0
     csel        x10, x20, x10,LT
 
     MOV         x20,#1
     csel        x10, x20, x10,GT            //SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
-    mov         v14.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    mov         v17.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
 
 SIGN_UP_CHANGE_DONE_WD_16_HT_4:
     LD1         {v20.8b},[x2]               //edge_idx_tbl = vld1_s8(gi1_table_edge_idx)
-    cmhi        v22.16b,  v12.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v22.16b,  v5.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
 
-    cmhi        v24.16b,  v18.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v24.16b,  v18.16b ,  v5.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
     SUB         v24.16b,  v24.16b ,  v22.16b //sign_down = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
 
-    ADD         v26.16b,  v0.16b ,  v14.16b //edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v26.16b,  v0.16b ,  v17.16b //edge_idx = vaddq_s8(const_2, sign_up)
     ADD         v26.16b,  v26.16b ,  v24.16b //edge_idx = vaddq_s8(edge_idx, sign_down)
 
     mov         v20.d[1],v20.d[0]
-    NEG         v14.16b, v24.16b            //sign_up = vnegq_s8(sign_down)
+    NEG         v17.16b, v24.16b            //sign_up = vnegq_s8(sign_down)
     TBL         v26.16b, {v20.16b},v26.16b  //vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
 
     //TBL v27.8b, {v20.16b},v27.8b                //vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
-    EXT         v14.16b,  v14.16b ,  v14.16b,#2 //sign_up = vextq_s8(sign_up, sign_up, 2)
+    EXT         v17.16b,  v17.16b ,  v17.16b,#2 //sign_up = vextq_s8(sign_up, sign_up, 2)
 
-    Uxtl        v28.8h, v12.8b              //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
-    AND         v26.16b,  v26.16b ,  v8.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
+    Uxtl        v28.8h, v5.8b               //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
+    AND         v26.16b,  v26.16b ,  v1.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v27.d[0],v26.d[1]
 
     UZP1        v31.8b, v26.8b, v27.8b
@@ -902,13 +902,13 @@ SIGN_UP_CHANGE_DONE_WD_16_HT_4:
     ZIP2        v25.8b, v24.8b, v25.8b
     mov         v24.8b,v31.8b
 
-    Uxtl2       v30.8h, v12.16b             //pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
+    Uxtl2       v30.8h, v5.16b              //pi2_tmp_cur_row.val[1] = vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(pu1_cur_row)))
     SADDW       v28.8h,  v28.8h ,  v24.8b   //pi2_tmp_cur_row.val[0] = vaddw_s8(pi2_tmp_cur_row.val[0], offset)
 
     SMAX        v28.8h,  v28.8h ,  v2.8h    //pi2_tmp_cur_row.val[0] = vmaxq_s16(pi2_tmp_cur_row.val[0], const_min_clip)
     UMIN        v28.8h,  v28.8h ,  v4.8h    //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vminq_u16(vreinterpretq_u16_s16(pi2_tmp_cur_row.val[0]), const_max_clip))
 
-    mov         v12.16b, v16.16b            //pu1_cur_row = pu1_next_row
+    mov         v5.16b, v16.16b             //pu1_cur_row = pu1_next_row
     SADDW       v30.8h,  v30.8h ,  v25.8b   //pi2_tmp_cur_row.val[1] = vaddw_s8(pi2_tmp_cur_row.val[1], offset)
 
     SMAX        v30.8h,  v30.8h ,  v2.8h    //pi2_tmp_cur_row.val[1] = vmaxq_s16(pi2_tmp_cur_row.val[1], const_min_clip)
@@ -949,24 +949,24 @@ WIDTH_RESIDUE:
     LDRB        w11,[x5,#1]                 //pu1_avail[1]
 
     LDRB        w9,[x5,#2]                  //pu1_avail[2]
-    mov         v8.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[0], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
     CMP         x9,#0
 
     SUB         x20,x0,x1                   //pu1_src - src_strd
     csel        x10, x20, x10,EQ
-    mov         v8.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
+    mov         v1.8b[1], w8                //au1_mask = vsetq_lane_s8(-1, au1_mask, 0)
     csel        x10, x3, x10,NE
 
     ADD         x10,x10,#2                  //pu1_src - src_strd + 2
-    mov         v8.8b[6], w11               //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.8b[6], w11               //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
     ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
 
     mov         w4, w25                     //Loads ht
-    mov         v8.8b[7], w11               //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
+    mov         v1.8b[7], w11               //au1_mask = vsetq_lane_s8(pu1_avail[1], au1_mask, 15)
     mov         w7, w24                     //Loads wd
 
     mov         x8, x26                     //Loads *pu1_src
-    LD1         {v10.16b},[x10]             //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
+    LD1         {v3.16b},[x10]              //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //LD1 {v11.8b},[x10]                    //pu1_top_row = vld1q_u8(pu1_src - src_strd + 2)
     //SUB x10, x10,#8
     SUB         x7,x7,#2                    //(wd - 2)
@@ -980,15 +980,15 @@ AU1_SRC_LEFT_LOOP_RESIDUE:
     SUBS        x4,x4,#1                    //decrement the loop count
     BNE         AU1_SRC_LEFT_LOOP_RESIDUE
 
-    LD1         {v12.16b},[x0]              //pu1_cur_row = vld1q_u8(pu1_src)
+    LD1         {v5.16b},[x0]               //pu1_cur_row = vld1q_u8(pu1_src)
     //LD1 {v13.8b},[x0]                        //pu1_cur_row = vld1q_u8(pu1_src)
     //SUB x0, x0,#8
 
     movi        v18.16b, #0
-    cmhi        v14.16b,  v12.16b ,  v10.16b //vcgtq_u8(pu1_cur_row, pu1_top_row)
+    cmhi        v17.16b,  v5.16b ,  v3.16b  //vcgtq_u8(pu1_cur_row, pu1_top_row)
 
-    cmhi        v16.16b,  v10.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_top_row)
-    SUB         v14.16b,  v16.16b ,  v14.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
+    cmhi        v16.16b,  v3.16b ,  v5.16b  //vcltq_u8(pu1_cur_row, pu1_top_row)
+    SUB         v17.16b,  v16.16b ,  v17.16b //sign_up = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
     MOV         x7,x12                      //row count, move ht_tmp to x7
 
 PU1_SRC_LOOP_RESIDUE:
@@ -1047,33 +1047,33 @@ SIGN_UP_CHANGE_RESIDUE:
     csel        x8, x20, x8,GT              //SIGN(pu1_src_cpy[14] - pu1_src_cpy[16 - src_strd])
 
     CMP         x10,#0
-    mov         v14.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
+    mov         v17.16b[14], w8             //sign_up = sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[14] -pu1_src_cpy[16 - src_strd]), sign_up, 0)
     movn        x20,#0
     csel        x10, x20, x10,LT
 
     MOV         x20,#1
     csel        x10, x20, x10,GT            //SIGN(pu1_src_cpy[15] - pu1_src_cpy[17 - src_strd]
-    mov         v14.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
+    mov         v17.16b[15], w10            //sign_up = vsetq_lane_s8(SIGN(pu1_src_cpy[15] -pu1_src_cpy[17 - src_strd]), sign_up, 1)
 
 SIGN_UP_CHANGE_DONE_RESIDUE:
     LD1         {v20.8b},[x2]               //edge_idx_tbl = vld1_s8(gi1_table_edge_idx)
-    cmhi        v22.16b,  v12.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v22.16b,  v5.16b ,  v18.16b //vcgtq_u8(pu1_cur_row, pu1_next_row_tmp)
 
-    cmhi        v24.16b,  v18.16b ,  v12.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
+    cmhi        v24.16b,  v18.16b ,  v5.16b //vcltq_u8(pu1_cur_row, pu1_next_row_tmp)
     SUB         v24.16b,  v24.16b ,  v22.16b //sign_down = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
 
-    ADD         v26.16b,  v0.16b ,  v14.16b //edge_idx = vaddq_s8(const_2, sign_up)
+    ADD         v26.16b,  v0.16b ,  v17.16b //edge_idx = vaddq_s8(const_2, sign_up)
     ADD         v26.16b,  v26.16b ,  v24.16b //edge_idx = vaddq_s8(edge_idx, sign_down)
 
     mov         v20.d[1],v20.d[0]
-    NEG         v14.16b, v24.16b            //sign_up = vnegq_s8(sign_down)
+    NEG         v17.16b, v24.16b            //sign_up = vnegq_s8(sign_down)
     TBL         v26.16b, {v20.16b},v26.16b  //vtbl1_s8(edge_idx_tbl, vget_low_s8(edge_idx))
 
     //TBL v27.8b, {v20.16b},v27.8b                //vtbl1_s8(edge_idx_tbl, vget_high_s8(edge_idx))
-    EXT         v14.16b,  v14.16b ,  v14.16b,#2 //sign_up = vextq_s8(sign_up, sign_up, 14)
+    EXT         v17.16b,  v17.16b ,  v17.16b,#2 //sign_up = vextq_s8(sign_up, sign_up, 14)
 
-    Uxtl        v28.8h, v12.8b              //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
-    AND         v26.16b,  v26.16b ,  v8.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
+    Uxtl        v28.8h, v5.8b               //pi2_tmp_cur_row.val[0] = vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(pu1_cur_row)))
+    AND         v26.16b,  v26.16b ,  v1.16b //edge_idx = vandq_s8(edge_idx, au1_mask)
     mov         v27.d[0],v26.d[1]
 
     UZP1        v31.8b, v26.8b, v27.8b
@@ -1085,7 +1085,7 @@ SIGN_UP_CHANGE_DONE_RESIDUE:
     ZIP2        v25.8b, v24.8b, v25.8b
     mov         v24.8b,v31.8b
 
-    mov         v12.16b, v16.16b            //pu1_cur_row = pu1_next_row
+    mov         v5.16b, v16.16b             //pu1_cur_row = pu1_next_row
     SADDW       v28.8h,  v28.8h ,  v24.8b   //pi2_tmp_cur_row.val[0] = vaddw_s8(pi2_tmp_cur_row.val[0], offset)
 
     SMAX        v28.8h,  v28.8h ,  v2.8h    //pi2_tmp_cur_row.val[0] = vmaxq_s16(pi2_tmp_cur_row.val[0], const_min_clip)
@@ -1148,7 +1148,7 @@ END_LOOPS:
     ldp         x23, x24,[sp],#16
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 

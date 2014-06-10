@@ -129,7 +129,7 @@ ihevc_weighted_pred_uni_av8:
     ldr         w9,[sp,#8]
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
-    push_v_regs
+
     stp         x19, x20,[sp,#-16]!
     stp         x21, x22,[sp,#-16]!
 
@@ -175,37 +175,37 @@ core_loop:
     smull       v4.4s, v1.4h, v0.4h[0]      //vmull_n_s16(pi2_src_val1, (int16_t) wgt0)
 
     add         v4.4s,  v4.4s ,  v30.4s     //vaddq_s32(i4_tmp1_t, tmp_lvl_shift_t)
-    ld1         {v8.4h},[x5],x2             //load and increment the pi2_src iii iteration
+    ld1         {v3.4h},[x5],x2             //load and increment the pi2_src iii iteration
 
     smull       v6.4s, v2.4h, v0.4h[0]      //vmull_n_s16(pi2_src_val2, (int16_t) wgt0) ii iteration
-    ld1         {v9.4h},[x5],x2             //load and increment the pi2_src_tmp iv iteration
+    ld1         {v5.4h},[x5],x2             //load and increment the pi2_src_tmp iv iteration
 
     sshl        v4.4s,v4.4s,v28.4s
     //vshl.s32    q2,q2,q14                    //vshlq_s32(i4_tmp1_t, tmp_shift_t)
     add         v6.4s,  v6.4s ,  v30.4s     //vaddq_s32(i4_tmp2_t, tmp_lvl_shift_t) ii iteration
 
-    smull       v10.4s, v8.4h, v0.4h[0]     //vmull_n_s16(pi2_src_val1, (int16_t) wgt0) iii iteration
+    smull       v7.4s, v3.4h, v0.4h[0]      //vmull_n_s16(pi2_src_val1, (int16_t) wgt0) iii iteration
     sqxtun      v4.4h, v4.4s                //vqmovun_s32(sto_res_tmp1)
 
-    add         v10.4s,  v10.4s ,  v30.4s   //vaddq_s32(i4_tmp1_t, tmp_lvl_shift_t) iii iteration
+    add         v7.4s,  v7.4s ,  v30.4s     //vaddq_s32(i4_tmp1_t, tmp_lvl_shift_t) iii iteration
     //mov v5, v4                        //vcombine_u16(sto_res_tmp2, sto_res_tmp2)
 
     sshl        v6.4s,v6.4s,v28.4s
     //vshl.s32    q3,q3,q14                    //vshlq_s32(i4_tmp2_t, tmp_shift_t) ii iteration
 
-    smull       v12.4s, v9.4h, v0.4h[0]     //vmull_n_s16(pi2_src_val2, (int16_t) wgt0) iv iteration
+    smull       v16.4s, v5.4h, v0.4h[0]     //vmull_n_s16(pi2_src_val2, (int16_t) wgt0) iv iteration
     uqxtn       v4.8b,  v4.8h               //vqmovn_u16(sto_res_tmp3)
 
-    sshl        v10.4s,v10.4s,v28.4s
+    sshl        v7.4s,v7.4s,v28.4s
     //vshl.s32    q5,q5,q14                    //vshlq_s32(i4_tmp1_t, tmp_shift_t) iii iteration
     sqxtun      v6.4h, v6.4s                //vqmovun_s32(sto_res_tmp1) ii iteration
 
-    add         v12.4s,  v12.4s ,  v30.4s   //vaddq_s32(i4_tmp2_t, tmp_lvl_shift_t) iv iteration
+    add         v16.4s,  v16.4s ,  v30.4s   //vaddq_s32(i4_tmp2_t, tmp_lvl_shift_t) iv iteration
     //mov v7, v6                        //vcombine_u16(sto_res_tmp2, sto_res_tmp2) ii iteration
 
-    sqxtun      v10.4h, v10.4s              //vqmovun_s32(sto_res_tmp1) iii iteration
+    sqxtun      v7.4h, v7.4s                //vqmovun_s32(sto_res_tmp1) iii iteration
 
-    sshl        v12.4s,v12.4s,v28.4s
+    sshl        v16.4s,v16.4s,v28.4s
     //vshl.s32    q6,q6,q14                    //vshlq_s32(i4_tmp2_t, tmp_shift_t) iv iteration
     st1         {v4.s}[0],[x1],#4           //store pu1_dst i iteration
     //mov v11, v10                        //vcombine_u16(sto_res_tmp2, sto_res_tmp2) iii iteration
@@ -213,15 +213,15 @@ core_loop:
     uqxtn       v6.8b,  v6.8h               //vqmovn_u16(sto_res_tmp3) ii iteration
     st1         {v6.s}[0],[x6],x3           //store pu1_dst ii iteration
 
-    uqxtn       v10.8b,  v10.8h             //vqmovn_u16(sto_res_tmp3) iii iteration
-    sqxtun      v12.4h, v12.4s              //vqmovun_s32(sto_res_tmp1) iv iteration
+    uqxtn       v7.8b,  v7.8h               //vqmovn_u16(sto_res_tmp3) iii iteration
+    sqxtun      v16.4h, v16.4s              //vqmovun_s32(sto_res_tmp1) iv iteration
 
     //mov v13, v12                        //vcombine_u16(sto_res_tmp2, sto_res_tmp2) iv iteration
-    st1         {v10.s}[0],[x6],x3          //store pu1_dst i iteration iii iteration
-    uqxtn       v12.8b,  v12.8h             //vqmovn_u16(sto_res_tmp3) iv iteration
+    st1         {v7.s}[0],[x6],x3           //store pu1_dst i iteration iii iteration
+    uqxtn       v16.8b,  v16.8h             //vqmovn_u16(sto_res_tmp3) iv iteration
 
     subs        x9,x9,#4                    //decrement wd by 4 and check for 0
-    st1         {v12.s}[0],[x6],x3          //store pu1_dst iv iteration
+    st1         {v16.s}[0],[x6],x3          //store pu1_dst iv iteration
     bgt         core_loop                   //if greater than 0 repeat the core loop again
 
 end_core_loop:
@@ -239,7 +239,7 @@ end_loops:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
-    pop_v_regs
+
     ret
 
 
