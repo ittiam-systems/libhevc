@@ -74,9 +74,6 @@
 #include "ihevcd_intra_pred_mode_prediction.h"
 #include "ihevcd_common_tables.h"
 #include "ihevcd_process_slice.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 #include "ihevcd_debug.h"
 #include "ihevcd_get_mv.h"
 #include "ihevcd_boundary_strength.h"
@@ -2191,11 +2188,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     WORD32 slice_start_ctb_idx;
     WORD32 tile_start_ctb_idx;
 
-#ifdef GPU_BUILD
-    WORD32 total_ctb_cnt = 0;
-    proc_job_t s_job;
-    gpu_ctxt_t *ps_gpu = &ps_codec->s_gpu_ctxt;
-#endif
 
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base;
     ps_pps = ps_codec->s_parse.ps_pps_base;
@@ -2472,7 +2464,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         if(0 == ps_codec->s_parse.i4_ctb_tile_x)
         {
 
-#ifndef GPU_BUILD
             if(1 < ps_codec->i4_num_cores)
             {
                 proc_job_t s_job;
@@ -2490,13 +2481,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                     return ret;
             }
             else
-#endif
             {
-#ifdef GPU_BUILD
-                process_ctxt_t *ps_proc = &ps_codec->as_process[(ps_codec->i4_num_cores == 1) ? 1 : (ps_codec->i4_num_cores - 1)];
-#else
                 process_ctxt_t *ps_proc = &ps_codec->as_process[0];
-#endif
                 WORD32 tu_coeff_data_ofst = (UWORD8 *)ps_codec->s_parse.pv_tu_coeff_data -
                                 (UWORD8 *)ps_codec->s_parse.pv_pic_tu_coeff_data;
 
@@ -2510,12 +2496,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 ps_proc->i4_ctb_y   = ps_codec->s_parse.i4_ctb_y;
                 ps_proc->i4_cur_slice_idx = ps_codec->s_parse.i4_cur_slice_idx;
 
-#ifdef GPU_BUILD
-                ps_proc->ps_slice_hdr = ps_slice_hdr;
-                ps_gpu->ai4_tu_coeff_data_ofst[ps_codec->s_parse.i4_ctb_tile_y] = tu_coeff_data_ofst;
-
-                ps_gpu->ai4_cur_slice_idx[ps_codec->s_parse.i4_ctb_tile_y] = ps_codec->s_parse.i4_cur_slice_idx;
-#endif
                 ihevcd_init_proc_ctxt(ps_proc, tu_coeff_data_ofst);
             }
         }
@@ -3167,7 +3147,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 end_of_slice_flag = 1;
         }
 
-#ifndef GPU_BUILD
         /* If the codec is running in single core mode
          * then call process function for current CTB
          */
@@ -3178,93 +3157,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             ps_proc->i4_ctb_cnt = ps_proc->ps_tile->u2_wd;
             ihevcd_process(ps_proc);
         }
-#else
-        /* Now call the function that will popluated mc data for the
-         * current ctb.
-         */
-        if(ps_codec->u4_gpu_enabled) // == ps_codec->i4_num_cores)
-        {
-            process_ctxt_t *ps_proc = &ps_codec->as_process[(ps_codec->i4_num_cores == 1) ? 1 : (ps_codec->i4_num_cores - 1)];
-            WORD32 nctb_mc = 1;
-            WORD32 cur_ctb_idx;
-            WORD32 cur_pu_idx;
-            //ps_proc->i4_ctb_cnt = ihevcd_nctb_cnt(ps_codec, ps_sps);
-            //ihevcd_process(ps_proc);
-            cur_ctb_idx = ps_proc->i4_ctb_x + ps_proc->i4_ctb_y * (ps_sps->i2_pic_wd_in_ctb);
-            cur_pu_idx = ps_proc->pu4_pic_pu_idx[cur_ctb_idx];
-            ps_proc->ps_pu = &ps_proc->ps_pic_pu[cur_pu_idx];
-            ps_proc->ps_slice_hdr = ps_slice_hdr;
-
-            if(ISLICE != ps_slice_hdr->i1_slice_type)
-                ihevcd_gpu_mc_populate_data_nctb(ps_proc, nctb_mc);
-
-            ps_proc->i4_ctb_x      += nctb_mc;
-            ps_proc->i4_ctb_cnt    -= nctb_mc;
-            ps_proc->i4_ctb_tile_x += nctb_mc;
-        }
-
-        total_ctb_cnt++;
-        ps_gpu->i4_curr_grain_ctb_cnt++;
-        if(1)
-        {
-
-            if(ps_gpu->i4_curr_grain_ctb_cnt == ps_gpu->ai4_ctbs_in_grain[ps_gpu->i4_curr_grain_idx])
-            {
-                process_ctxt_t *ps_proc = &ps_codec->as_process[(ps_codec->i4_num_cores == 1) ? 1 : (ps_codec->i4_num_cores - 1)];
-
-                if(ps_codec->u4_gpu_enabled)
-                    ihevcd_gpu_mc_execute(ps_proc);
-
-
-#if 1
-                if(1 < ps_codec->i4_num_cores)
-                {
-                    IHEVCD_ERROR_T ret;
-                    WORD32 i, cnt = ps_gpu->ai4_grain_ht_in_ctb[ps_gpu->i4_curr_grain_idx];
-                    WORD32 ctb_y_idx = 0;
-
-                    for(i = 0; i < ps_gpu->i4_curr_grain_idx; i++)
-                        ctb_y_idx += ps_gpu->ai4_grain_ht_in_ctb[i];
-
-                    if(ps_gpu->i4_curr_grain_idx == 0)
-                        cnt--;
-                    else if(ps_gpu->i4_curr_grain_idx == (GRANULARITY - 1))
-                        cnt++;
-
-                    if(ps_gpu->i4_curr_grain_idx != 0)
-                        ctb_y_idx--;
-
-                    for(i = 0; i < cnt; i++)
-                    {
-                        s_job.i4_cmd    = CMD_PROCESS;
-                        s_job.i2_ctb_cnt = (WORD16)ps_sps->i2_pic_wd_in_ctb;
-                        s_job.i2_ctb_x = 0; //(WORD16)ps_codec->s_parse.i4_ctb_tile_x;
-                        s_job.i2_ctb_y = (WORD16)ctb_y_idx;
-                        s_job.i2_slice_idx = (WORD16)ps_codec->s_parse.i4_cur_slice_idx;
-                        s_job.i4_tu_coeff_data_ofst = ps_gpu->ai4_tu_coeff_data_ofst[ctb_y_idx];
-                        s_job.i2_granularity_idx = ps_gpu->i4_curr_grain_idx;
-                        s_job.i2_slice_idx = (WORD16)ps_gpu->ai4_cur_slice_idx[ctb_y_idx];
-
-                        printf("Queued ctb y row %d\n", ctb_y_idx);
-
-                        if((i == 0) && (ps_codec->u4_gpu_enabled))
-                            s_job.i2_wait = 1;
-                        else
-                            s_job.i2_wait = 0;
-
-                        ret = ihevcd_jobq_queue(ps_codec->s_parse.pv_proc_jobq, &s_job, sizeof(proc_job_t), 1);
-                        ASSERT(ret == IHEVC_SUCCESS);
-                        ctb_y_idx++;
-
-                    }
-                }
-#endif
-                ps_gpu->i4_curr_grain_ctb_cnt = 0;
-                ps_gpu->i4_curr_grain_idx++;
-
-            }
-        }
-#endif
 
         /* If the bytes for the current slice are exhausted
          * set end_of_slice flag to 1
@@ -3286,54 +3178,13 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     /* Increment the slice index for parsing next slice */
     if(0 == end_of_pic)
     {
-#ifdef GPU_BUILD
-        // TODO GPU : The following logic needs different implementation.
-#endif
         while(1)
         {
 
             WORD32 parse_slice_idx;
-#ifdef GPU_BUILD
-            WORD32 min_proc_slice_idx;
-            WORD32 proc_idx = (ps_codec->u4_parsing_view * 2) + (ps_codec->i4_num_cores - 1);
-            /* Identify the min slice index currently in use by processing threads */
-            min_proc_slice_idx = ps_codec->as_process[proc_idx].i4_cur_slice_idx;
-#endif
             parse_slice_idx = ps_codec->s_parse.i4_cur_slice_idx;
             parse_slice_idx++;
 
-#if 0
-            for(i = 1; i < (ps_codec->i4_num_cores - 1); i++)
-            {
-                if(ps_codec->as_process[i].i4_cur_slice_idx
-                                < min_proc_slice_idx)
-                    min_proc_slice_idx =
-                                    ps_codec->as_process[i].i4_cur_slice_idx;
-
-
-            }
-
-
-            /* If MAX slice header count is reached, then reset the parsing slice idx to zero */
-            if(parse_slice_idx == MAX_SLICE_HDR_CNT)
-            {
-                parse_slice_idx = 0;
-            }
-
-            /* If parse_slice_idx and min_proc_slice_idx are different then break */
-            if(parse_slice_idx != min_proc_slice_idx)
-            {
-                ps_codec->s_parse.i4_cur_slice_idx = parse_slice_idx;
-                break;
-            }
-            else
-            {
-                /* If Processing threads are still using the slice where parsing thread
-                 * has to write next slice data, wait for processing threads to consume that slice
-                 */
-                ithread_yield();
-            }
-#else
             {
                 /* If the next slice header is not initialized, update cur_slice_idx and break */
                 if((1 == ps_codec->i4_num_cores) || (0 != (parse_slice_idx & (MAX_SLICE_HDR_CNT - 1))))
@@ -3345,7 +3196,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 /* If the next slice header is initialised, wait for the parsed slices to be processed */
                 else
                 {
-#ifndef GPU_BUILD
                     WORD32 ctb_indx = 0;
 
                     while(ctb_indx != ps_sps->i4_pic_size_in_ctb)
@@ -3358,114 +3208,14 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                     }
                     ps_codec->s_parse.i4_cur_slice_idx = parse_slice_idx;
                     break;
-#else
-                    printf("\nFix this code for multiCore multi-Slice\n");
-                    exit(-1);
-#endif
                 }
 
             }
-#endif
         }
 
     }
     else
     {
-#ifdef GPU_BUILD
-        if(1 == ps_codec->i4_num_cores)
-        {
-
-            if(!ps_pps->i1_tiles_enabled_flag)
-            {
-                process_ctxt_t *ps_proc = &ps_codec->as_process[ps_codec->i4_num_cores - 1];
-                WORD32 i;
-                WORD32 tu_coeff_data_ofst = 0;
-                ps_proc->i4_ctb_cnt = total_ctb_cnt;
-                ps_proc->i4_ctb_x   = 0; //ps_codec->s_parse.i4_ctb_tile_x;
-                ps_proc->i4_ctb_y   = 0; //ps_codec->s_parse.i4_ctb_tile_y;
-                ps_proc->i4_cur_slice_idx = ps_gpu->ai4_cur_slice_idx[0]; //ps_codec->s_parse.i4_cur_slice_idx;
-
-                for(i = 0; i < GRANULARITY; i++)
-                {
-                    ps_proc->i4_ctb_cnt = ps_gpu->ai4_ctbs_in_grain[i];
-                    total_ctb_cnt -= ps_gpu->ai4_ctbs_in_grain[i];
-
-//                  if(i == 0)
-//                  {
-//                      ps_proc->i4_ctb_cnt -= ps_sps->i2_pic_wd_in_ctb;
-//                      total_ctb_cnt += ps_sps->i2_pic_wd_in_ctb;
-//                  }
-//                  else if(i == (GRANULARITY - 1))
-//                  {
-//                      ps_proc->i4_ctb_cnt += ps_sps->i2_pic_wd_in_ctb;
-//                      //total_ctb_cnt -= ps_sps->i2_pic_wd_in_ctb;
-//                  }
-
-                    // TODO GPU : Buggy don't wait for I-slice.
-                    if(ps_codec->u4_gpu_enabled)
-                    {
-                        ihevcd_gpu_mc_wait(ps_proc, i);
-                    }
-
-                    //printf("Calling ihevcd_init_proc_ctxt ps_proc->i4_ctb_cnt = %d\n", ps_proc->i4_ctb_cnt);
-
-                    ihevcd_init_proc_ctxt(ps_proc, tu_coeff_data_ofst);
-                    //printf("ihevcd_process\n");
-                    ihevcd_process(ps_proc);
-                    tu_coeff_data_ofst  = (UWORD8 *)ps_proc->pv_tu_coeff_data - (UWORD8 *)ps_proc->pv_pic_tu_coeff_data;
-                }
-
-
-            }
-            else
-            {
-                process_ctxt_t *ps_proc = &ps_codec->as_process[ps_codec->i4_num_cores - 1];
-                WORD32 i, j, k, l;
-                WORD32 tu_coeff_data_ofst = 0;
-                tile_t *ps_tile = ps_pps->ps_tile;
-
-
-                // ps_proc->i4_cur_slice_idx = ps_gpu->ai4_cur_slice_idx[0];//ps_codec->s_parse.i4_cur_slice_idx;
-                ps_proc->i4_cur_slice_idx = 0;
-
-                i = 0;
-                printf("Processing tile\n");
-                for(j = 0; j < ps_pps->i1_num_tile_rows; j++)
-                {
-                    if(ps_gpu->ai4_grain_pos_y[i] == ps_tile->u1_pos_y)
-                    {
-                        // TODO GPU : Buggy don't wait for I-slice.
-                        if(ps_codec->u4_gpu_enabled)
-                        {
-                            ihevcd_gpu_mc_wait(ps_proc, i);
-                        }
-                        i++;
-
-                    }
-                    for(k = 0; k < ps_pps->i1_num_tile_columns; k++)
-                    {
-                        ps_proc->i4_ctb_x   = ps_tile->u1_pos_x;
-                        ps_proc->i4_ctb_y   = ps_tile->u1_pos_y;
-
-//                      ps_proc->i4_cur_slice_idx = *(ps_codec->s_parse.pu1_slice_idx + ps_proc->i4_ctb_x + ps_proc->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb );
-                        for(l = 0; l < ps_tile->u2_ht; l++)
-                        {
-                            ps_proc->i4_ctb_cnt = ps_tile->u2_wd; //* ps_tile->u2_ht;
-
-                            ihevcd_init_proc_ctxt(ps_proc, tu_coeff_data_ofst);
-                            //printf("ihevcd_process\n");
-                            ihevcd_process(ps_proc);
-                            tu_coeff_data_ofst  = (UWORD8 *)ps_proc->pv_tu_coeff_data - (UWORD8 *)ps_proc->pv_pic_tu_coeff_data;
-                        }
-                        ps_tile++;
-                    }
-                }
-
-
-
-            }
-        }
-#endif
 #if FRAME_ILF_PAD
         if(FRAME_ILF_PAD && 1 == ps_codec->i4_num_cores)
         {

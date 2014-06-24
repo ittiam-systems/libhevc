@@ -70,9 +70,6 @@
 #include "ihevcd_bitstream.h"
 #include "ihevcd_parse_headers.h"
 #include "ihevcd_ref_list.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 
 #define COPY_DEFAULT_SCALING_LIST(pi2_scaling_mat)                                                                                      \
 {                                                                                                                                       \
@@ -117,123 +114,6 @@
 
 /* Function declarations */
 
-#if 0
-/**
-*******************************************************************************
-*
-* @brief
-*  Parses VPS operation point
-*
-* @par   Description
-* Parses VPS operation point as per section 7.3.5
-*
-* @param[out] ps_vps
-*  Pointer to VPS structure
-*
-* @param[in] ps_bitstrm
-*  Pointer to bitstream structure
-*
-* @param[in] ops_idx
-*  Operating point index
-*
-* @returns Error code from IHEVCD_ERROR_T
-*
-* @remarks
-*
-*******************************************************************************
-*/
-
-IHEVCD_ERROR_T ihevcd_operation_point_set( vps_t *ps_vps, bitstrm_t *ps_bitstrm, WORD32 ops_idx)
-{
-    WORD32 i;
-    WORD32 value;
-    IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    for( i = 0; i <= ps_vps->i1_vps_max_nuh_reserved_zero_layer_id; i++ )
-    {
-        BITS_PARSE("list_entry_l0[ i ]", value, ps_bitstrm, 1);
-        //ps_vps->ai1_layer_id_included_flag[ops_idx][i] = value;
-
-    }
-    return ret;
-}
-
-/**
-*******************************************************************************
-*
-* @brief
-*  Parses pic_lismod_t (picture list mod syntax)  Section:7.3.8.3 Reference
-* picture list mod syntax
-*
-* @par Description:
-*  Parse pict list mod synt and update pic_lismod_t struct
-*
-* @param[in] ps_codec
-*  Pointer to codec context
-*
-* @returns  Error code from IHEVCD_ERROR_T
-*
-* @remarks
-*
-*
-*******************************************************************************
-*/
-
-WORD32 ihevcd_ref_pic_list_modification(bitstrm_t *ps_bitstrm,
-                                        slice_header_t *ps_slice_hdr,
-                                        WORD32 num_poc_total_curr)
-{
-    WORD32 ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    WORD32 value;
-    WORD32 i;
-    rplm_t *ps_rplm;
-    WORD32 num_bits_list_entry;
-
-    ps_rplm = &(ps_slice_hdr->s_rplm);
-
-    /* Calculate Ceil(Log2(num_poc_total_curr)) */
-    {
-        num_bits_list_entry = 32 - CLZ(num_poc_total_curr);
-        /* Check if num_poc_total_curr is power of 2 */
-        if(0 == (num_poc_total_curr & (num_poc_total_curr - 1)))
-        {
-            num_bits_list_entry--;
-        }
-    }
-
-    if(ps_slice_hdr->i1_slice_type  == PSLICE || ps_slice_hdr->i1_slice_type  == BSLICE)
-    {
-        BITS_PARSE("ref_pic_list_modification_flag_l0", value, ps_bitstrm, 1);
-        ps_rplm->i1_ref_pic_list_modification_flag_l0 = value;
-
-        if(ps_rplm->i1_ref_pic_list_modification_flag_l0)
-            for(i = 0; i < ps_slice_hdr->i1_num_ref_idx_l0_active; i++)
-            {
-                BITS_PARSE("list_entry_l0", value, ps_bitstrm, num_bits_list_entry);
-                ps_rplm->i1_list_entry_l0[i] = value;
-
-                ps_rplm->i1_list_entry_l0[i] = CLIP3(ps_rplm->i1_list_entry_l0[i], 0, num_poc_total_curr - 1);
-            }
-    }
-
-    if(ps_slice_hdr->i1_slice_type  == BSLICE)
-    {
-        BITS_PARSE("ref_pic_list_modification_flag_l1", value, ps_bitstrm, 1);
-        ps_rplm->i1_ref_pic_list_modification_flag_l1 = value;
-
-        if(ps_rplm->i1_ref_pic_list_modification_flag_l1)
-            for(i = 0; i < ps_slice_hdr->i1_num_ref_idx_l1_active; i++)
-            {
-                BITS_PARSE("list_entry_l1", value, ps_bitstrm, num_bits_list_entry);
-                ps_rplm->i1_list_entry_l1[i] = value;
-
-                ps_rplm->i1_list_entry_l1[i] = CLIP3(ps_rplm->i1_list_entry_l1[i], 0, num_poc_total_curr - 1);
-            }
-
-    }
-
-    return ret;
-}
-#endif
 /**
 *******************************************************************************
 *
@@ -1207,9 +1087,6 @@ IHEVCD_ERROR_T ihevcd_parse_vps(codec_t *ps_codec)
     WORD32 vps_id;
     vps_t *ps_vps;
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
-#if 0
-    WORD32 j;
-#endif
     BITS_PARSE("vps_video_parameter_set_id", value, ps_bitstrm, 4);
     vps_id = value;
 
@@ -2021,10 +1898,6 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     BITS_PARSE("slice_header_extension_present_flag", value, ps_bitstrm, 1);
     ps_pps->i1_slice_header_extension_present_flag = value;
     /* Not present in HM */
-#if 0
-    BITS_PARSE("slice_extension_present_flag", value, ps_bitstrm, 1);
-    ps_pps->i1_slice_extension_present_flag = value;
-#endif
     BITS_PARSE("pps_extension_flag", value, ps_bitstrm, 1);
 
     ps_codec->i4_pps_done = 1;
@@ -2086,36 +1959,6 @@ IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     UNUSED(ps_codec);
-#if 0
-
-    sei_message( )
-    {
-        payloadType = 0
-        while( next_bits(8) == 0xFF )
-        {
-            ff_byte  /* equal to 0xFF */
-            payloadType += 255
-        }
-
-        BITS_PARSE("last_payload_type_byte", value, ps_bitstrm, 1);
-        ps_sei->i1_last_payload_type_byte = value;
-
-        payloadType += last_payload_type_byte
-        payloadSize = 0
-        while(next_bits(8) == 0xFF)
-        {
-            ff_byte  /* equal to 0xFF */
-            payloadSize += 255
-        }
-
-        BITS_PARSE("last_payload_size_byte", value, ps_bitstrm, 1);
-        ps_sei->i1_last_payload_size_byte = value;
-
-        payloadSize += last_payload_size_byte
-        sei_payload( payloadType, payloadSize )
-    }
-
-#endif
     return ret;
 }
 
@@ -2142,19 +1985,6 @@ WORD32 ihevcd_parse_aud(codec_t *ps_codec)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     UNUSED(ps_codec);
-#if 0
-
-    access_unit_delimiter_rbsp( )
-    {
-
-        BITS_PARSE("pic_type", value, ps_bitstrm, 3);
-        ps_sei->i1_pic_type = value;
-
-        rbsp_trailing_bits( )
-    }
-
-
-#endif
     return ret;
 }
 

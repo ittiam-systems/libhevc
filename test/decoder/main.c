@@ -195,9 +195,6 @@ typedef struct
     WORD32 i4_degrade_type;
     WORD32 i4_degrade_pics;
     UWORD32 u4_num_cores;
-#ifdef GPU_BUILD
-    UWORD32 u4_gpu_enable_diable;
-#endif
     UWORD32 disp_delay;
     WORD32 trace_enable;
     CHAR ac_trace_fname[STRLENGTH];
@@ -264,9 +261,6 @@ typedef enum
     NUM_CORES,
 
     SHARE_DISPLAY_BUF,
-#ifdef GPU_BUILD
-    ENABLE_GPU,
-#endif
     LOOPBACK,
     DISPLAY,
     FULLSCREEN,
@@ -336,10 +330,6 @@ static const argument_t argument_mapping[] =
         "Enable full screen (Only for GDL and SDL)\n" },
     { "--", "--fps",      FPS,
         "FPS to be used for display \n" },
-#ifdef GPU_BUILD
-    { "--",  "--enable_gpu",       ENABLE_GPU,
-        "Enable shared display buffer mode\n" },
-#endif
     { "-i",  "--trace",                   TRACE,
         "Trace file\n" },
     { "--", "--max_wd",      MAX_WD,
@@ -1313,11 +1303,6 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
             sscanf(value, "%s", ps_app_ctx->ac_piclen_fname);
             break;
 
-#ifdef GPU_BUILD
-        case ENABLE_GPU:
-            sscanf(value, "%d", &ps_app_ctx->u4_gpu_enable_diable);
-            break;
-#endif
         case INVALID:
         default:
             printf("Ignoring argument :  %s\n", argument);
@@ -1876,9 +1861,6 @@ int main(WORD32 argc, CHAR *argv[])
     s_app_ctx.paused        = 0;
     //s_app_ctx.u4_output_present = 0;
 
-#ifdef GPU_BUILD
-    s_app_ctx.u4_gpu_enable_diable = 0;
-#endif
     s_app_ctx.get_stride = &default_get_stride;
 
     s_app_ctx.get_color_fmt = &default_get_color_fmt;
@@ -2350,34 +2332,6 @@ int main(WORD32 argc, CHAR *argv[])
 
     }
 
-#ifdef GPU_BUILD
-    /*************************************************************************/
-    /* Enalbe/Disalbe GPU                                                    */
-    /*************************************************************************/
-    {
-
-        ihevcd_cxa_ctl_gpu_enable_diable_ip_t s_ctl_gpu_cnl_ip;
-        ihevcd_cxa_ctl_gpu_enable_diable_op_t s_ctl_gpu_cnl_op;
-
-        s_ctl_gpu_cnl_ip.e_cmd = IVD_CMD_VIDEO_CTL;
-        s_ctl_gpu_cnl_ip.e_sub_cmd = IHEVCD_CXA_CMD_CTL_GPU_ENABLE_DISABLE;
-        s_ctl_gpu_cnl_ip.u4_gpu_enable_diable = s_app_ctx.u4_gpu_enable_diable;
-        s_ctl_gpu_cnl_ip.u4_size =
-                        sizeof(ihevcd_cxa_ctl_gpu_enable_diable_ip_t);
-        s_ctl_gpu_cnl_op.u4_size =
-                        sizeof(ihevcd_cxa_ctl_gpu_enable_diable_op_t);
-
-        ret = ivd_cxa_api_function(codec_obj, (void *)&s_ctl_gpu_cnl_ip,
-                                   (void *)&s_ctl_gpu_cnl_op);
-        if(ret != IV_SUCCESS)
-        {
-            sprintf(ac_error_str, "\nError enalbing/disabling GPU");
-            //codec_exit(ac_error_str);
-
-        }
-
-    }
-#endif
 
     /*****************************************************************************/
     /*   Decode header to get width and height and buffer sizes                  */

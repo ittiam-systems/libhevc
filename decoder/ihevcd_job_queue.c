@@ -168,12 +168,8 @@ IHEVCD_ERROR_T ihevcd_jobq_yield(jobq_t *ps_jobq)
     rettmp = ihevcd_jobq_unlock(ps_jobq);
     RETURN_IF((rettmp != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), rettmp);
 
-#ifdef GPU_CIRCULAR_QUEUE
-    usleep(1000);
-#else
     //NOP(1024 * 8);
     ithread_yield();
-#endif
 
     rettmp = ihevcd_jobq_lock(ps_jobq);
     RETURN_IF((rettmp != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), rettmp);
@@ -256,9 +252,6 @@ void* ihevcd_jobq_init(void *pv_buf, WORD32 buf_size)
     ps_jobq->pv_buf_rd = pu1_buf;
     ps_jobq->pv_buf_end = pu1_buf + buf_size;
     ps_jobq->i4_terminate = 0;
-#ifdef GPU_CIRCULAR_QUEUE
-    ps_jobq->i4_wrapped_around = 0;
-#endif
 
 
     return ps_jobq;
@@ -290,9 +283,6 @@ IHEVCD_ERROR_T ihevcd_jobq_reset(jobq_t *ps_jobq)
     ps_jobq->pv_buf_wr      = ps_jobq->pv_buf_base;
     ps_jobq->pv_buf_rd      = ps_jobq->pv_buf_base;
     ps_jobq->i4_terminate   = 0;
-#ifdef GPU_CIRCULAR_QUEUE
-    ps_jobq->i4_wrapped_around = 0;
-#endif
     ret = ihevcd_jobq_unlock(ps_jobq);
     RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
 
@@ -410,27 +400,6 @@ IHEVCD_ERROR_T ihevcd_jobq_queue(jobq_t *ps_jobq, void *pv_job, WORD32 job_size,
     RETURN_IF((rettmp != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), rettmp);
 
     pu1_buf = (UWORD8 *)ps_jobq->pv_buf_wr;
-#ifdef GPU_CIRCULAR_QUEUE
-    if((UWORD8 *)ps_jobq->pv_buf_end > (pu1_buf + job_size))
-    {
-        memcpy(ps_jobq->pv_buf_wr, pv_job, job_size);
-        ps_jobq->pv_buf_wr = (UWORD8 *)ps_jobq->pv_buf_wr + job_size;
-
-    }
-    else
-    {
-        /* Handle wrap around case */
-        /* Wait for pv_buf_rd to consume first job_size number of bytes
-         * from the beginning of job queue
-         */
-        //ret = (IHEVCD_ERROR_T)IHEVCD_FAIL;
-        ps_jobq->pv_buf_wr = ps_jobq->pv_buf_base;
-        memcpy(ps_jobq->pv_buf_wr, pv_job, job_size);
-        ps_jobq->pv_buf_wr = (UWORD8 *)ps_jobq->pv_buf_wr + job_size;
-        //printf("Queue wrapped around\n");
-        ps_jobq->i4_wrapped_around = 1;
-    }
-#else
     if((UWORD8 *)ps_jobq->pv_buf_end >= (pu1_buf + job_size))
     {
         memcpy(ps_jobq->pv_buf_wr, pv_job, job_size);
@@ -445,7 +414,6 @@ IHEVCD_ERROR_T ihevcd_jobq_queue(jobq_t *ps_jobq, void *pv_job, WORD32 job_size,
          */
         ret = (IHEVCD_ERROR_T)IHEVCD_FAIL;
     }
-#endif
 
     ps_jobq->i4_terminate = 0;
 
@@ -494,51 +462,6 @@ IHEVCD_ERROR_T ihevcd_jobq_dequeue(jobq_t *ps_jobq, void *pv_job, WORD32 job_siz
 
     rettmp = ihevcd_jobq_lock(ps_jobq);
     RETURN_IF((rettmp != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), rettmp);
-#ifdef GPU_CIRCULAR_QUEUE
-    if(((UWORD8 *)ps_jobq->pv_buf_end <= (ps_jobq->pv_buf_rd + job_size)) &&
-                    (ps_jobq->i4_wrapped_around == 1))
-    {
-        ps_jobq->pv_buf_rd = ps_jobq->pv_buf_base;
-        ps_jobq->i4_wrapped_around = 0;
-        //printf("DeQueue wrapped around\n");
-    }
-
-    pu1_buf = (UWORD8 *)ps_jobq->pv_buf_rd;
-
-    while(1)
-    {
-        pu1_buf = (UWORD8 *)ps_jobq->pv_buf_rd;
-        if(((UWORD8 *)ps_jobq->pv_buf_wr >= (pu1_buf + job_size)) ||
-                        (ps_jobq->i4_wrapped_around == 1))
-        {
-            memcpy(pv_job, ps_jobq->pv_buf_rd, job_size);
-            ps_jobq->pv_buf_rd = (UWORD8 *)ps_jobq->pv_buf_rd + job_size;
-            ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-            break;
-        }
-        else
-        {
-            /* If all the entries have been dequeued, then break and return */
-            if(1 == ps_jobq->i4_terminate)
-            {
-                ret = (IHEVCD_ERROR_T)IHEVCD_FAIL;
-                break;
-            }
-
-            if(1 == blocking)
-            {
-                ihevcd_jobq_yield(ps_jobq);
-            }
-            else
-            {
-                /* If there is no job available,
-                 * and this is non blocking call then return fail */
-                ret = (IHEVCD_ERROR_T)IHEVCD_FAIL;
-                break;
-            }
-        }
-    }
-#else
     pu1_buf = (UWORD8 *)ps_jobq->pv_buf_rd;
 
 
@@ -585,7 +508,6 @@ IHEVCD_ERROR_T ihevcd_jobq_dequeue(jobq_t *ps_jobq, void *pv_job, WORD32 job_siz
          */
         ret = (IHEVCD_ERROR_T)IHEVCD_FAIL;
     }
-#endif
     rettmp = ihevcd_jobq_unlock(ps_jobq);
     RETURN_IF((rettmp != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), rettmp);
 

@@ -794,12 +794,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 status = 1;
                 for(ctb_in_row = 0; (WORD32)ctb_in_row < ps_sps->i2_pic_wd_in_ctb; ctb_in_row++)
                 {
-#ifdef GPU_BUILD
-                    //TODO GPU : Later define it for ARM only version as well
-                    pu1_buf = (ps_proc->pu1_proc_map + idx);
-#else
                     pu1_buf = (ps_codec->pu1_proc_map + idx + ctb_in_row);
-#endif
                     status &= *pu1_buf;
                 }
 
@@ -827,20 +822,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                                                                           ps_codec->i4_disp_strd,
                                                                           ps_codec->i4_disp_strd);
         }
-#if 0
-        else if(IV_YUV_420SP_VU == ps_codec->e_chroma_fmt)
-        {
-
-            ihevcd_fmt_conv_420sp_to_420sp_swap_uv(pu1_y_src, pu1_uv_src,
-                                                   pu1_y_dst_tmp, pu1_uv_dst_tmp,
-                                                   ps_codec->i4_disp_wd,
-                                                   num_rows,
-                                                   ps_codec->i4_strd,
-                                                   ps_codec->i4_strd,
-                                                   ps_codec->i4_disp_strd,
-                                                   ps_codec->i4_disp_strd);
-        }
-#endif
         else if(IV_YUV_420P == ps_codec->e_chroma_fmt)
         {
 

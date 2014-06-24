@@ -50,7 +50,7 @@
 
 #endif //DEBUG_CODEC
 
-#if 1
+#ifndef ASSERT_EXIT
 
 #define ASSERT(x) assert((x))
 //#define ASSERT(x) ihevcd_debug_assert((x))

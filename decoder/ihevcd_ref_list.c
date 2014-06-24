@@ -489,43 +489,6 @@ WORD32 ihevcd_ref_list(codec_t *ps_codec, pps_t *ps_pps, sps_t *ps_sps, slice_he
     }
 
     DEBUG_PRINT_REF_LIST_POCS(i4_pic_order_cnt_val, ps_slice_hdr, ps_dpb_mgr, u4_num_st_curr_before, u4_num_st_curr_after, u4_num_st_foll, u4_num_lt_curr, u4_num_lt_foll, ai4_poc_st_curr_before, ai4_poc_st_curr_after, ai4_poc_st_foll, ai4_poc_lt_curr, ai4_poc_lt_foll);
-#ifndef GPU_BUILD
-    /* Buffers that are still marked as UNUSED_FOR_REF are released from dpb (internally dpb calls release from pic buf manager)*/
-    for(i = 0; i < MAX_DPB_BUFS; i++)
-    {
-        if((ps_dpb_mgr->as_dpb_info[i].ps_pic_buf) && (UNUSED_FOR_REF == ps_dpb_mgr->as_dpb_info[i].ps_pic_buf->u1_used_as_ref))
-        {
-            pic_buf_t *ps_pic_buf = ps_dpb_mgr->as_dpb_info[i].ps_pic_buf;
-            mv_buf_t *ps_mv_buf;
-
-            /* Long term index is set to MAX_DPB_BUFS to ensure it is not added as LT */
-            ihevc_dpb_mgr_del_ref(ps_dpb_mgr, (buf_mgr_t *)ps_codec->pv_pic_buf_mgr, ps_pic_buf->i4_abs_poc);
-
-
-            /* Find buffer id of the MV bank corresponding to the buffer being freed (Buffer with POC of u4_abs_poc) */
-            ps_mv_buf = (mv_buf_t *)ps_codec->ps_mv_buf;
-            for(i = 0; i < BUF_MGR_MAX_CNT; i++)
-            {
-                if(ps_mv_buf->i4_abs_poc == ps_pic_buf->i4_abs_poc)
-                {
-                    ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_mv_buf_mgr, i, BUF_MGR_REF);
-                    break;
-                }
-                ps_mv_buf++;
-            }
-        }
-
-    }
-#endif
-
-    return IHEVCD_SUCCESS;
-}
-#ifdef GPU_BUILD
-void ihevcd_free_ref_mv_buffers(codec_t *ps_codec)
-{
-    WORD32 i;
-    dpb_mgr_t *ps_dpb_mgr = ps_codec->pv_dpb_mgr;
-    // TODO
     /* Buffers that are still marked as UNUSED_FOR_REF are released from dpb (internally dpb calls release from pic buf manager)*/
     for(i = 0; i < MAX_DPB_BUFS; i++)
     {
@@ -555,4 +518,3 @@ void ihevcd_free_ref_mv_buffers(codec_t *ps_codec)
 
     return IHEVCD_SUCCESS;
 }
-#endif

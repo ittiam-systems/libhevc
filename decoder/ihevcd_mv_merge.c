@@ -766,7 +766,6 @@ void ihevcd_mv_merge(mv_ctxt_t *ps_mv_ctxt,
     /***********************************************************/
     /*          Collocated MV prediction                       */
     /***********************************************************/
-#if 1
     {
         mv_t as_mv_col[2];
         WORD32 avail_col_flag[2] = { 0 }, x_col, y_col;
@@ -821,7 +820,6 @@ void ihevcd_mv_merge(mv_ctxt_t *ps_mv_ctxt,
         }
 
     }
-#endif
     {
         WORD32 slice_type;
 

@@ -162,22 +162,6 @@ typedef struct
      * TU coefficient data offset for the current job
      */
     WORD32 i4_tu_coeff_data_ofst;
-#ifdef GPU_BUILD
-    /**
-     * OpenCL Granularity
-     */
-    WORD16 i2_granularity_idx;
-
-    /**
-     * Index to the process context
-     */
-    //WORD16 i2_proc_idx;
-
-    /**
-     * GPU Wait or NOT
-     */
-    WORD16 i2_wait;
-#endif
 }proc_job_t;
 /**
  * Structure to represent a MV Bank buffer
@@ -544,13 +528,6 @@ typedef struct
     /* Specifies if the chroma format is yuv420sp_vu */
     WORD32 is_chroma_yuv420sp_vu;
 
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    /**
-     * Pointer to base slice header structure
-     */
-    slice_header_t *ps_slice_hdr_base;
-#endif
 }deblk_ctxt_t;
 
 typedef struct
@@ -1570,79 +1547,11 @@ typedef struct
      * Variable to store the next ctb count to compute tu idx
      */
     WORD32 i4_next_tu_ctb_cnt;
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    /** Process status: one byte per CTB */
-    UWORD8 *pu1_proc_map;
-#endif
-#ifdef GPU_BUILD
-    UWORD32 u4_gpu_inter_flag;
-#endif
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    /**
-     * Pointer to base slice header structure
-     */
-    slice_header_t *ps_slice_hdr_base;
-#endif
     /**
      * Number of ctb's to process in one loop
      */
     WORD32 i4_nctb;
 }process_ctxt_t;
-#ifdef GPU_BUILD
-typedef struct
-{
-    /** Pointer to private GPU memory */
-    void *pv_gpu_priv;
-
-    /**
-     * Array that contains the no of ctbs in each grain of the frame.
-     * Right now maximum no of grains in frame hardcoded to 16.
-     */
-    WORD32 ai4_ctbs_in_grain[16];
-
-    /**
-     * Array that contains the height of each grain of the frame in ctbs.
-     * Right now maximum no of grains in frame hardcoded to 16.
-     */
-    WORD32 ai4_grain_ht_in_ctb[16];
-
-    /**
-     * Array that contains the X position of each grain in the current
-     * frame in CTB units
-     */
-    WORD32 ai4_grain_pos_y[16];
-
-    /**
-     * Variables to store maximum extend of motion vectors in for the current grain.
-     */
-    //WORD32 i4_max_pu_y;
-    //WORD32 i4_max_pu_x;
-
-    /**
-     * Parameter that holds current grain index.
-     */
-    WORD32 i4_curr_grain_idx;
-
-    /**
-     * Arry to store coefficient offsets for each ctb row.
-     * Currently allocated for frame width of 4096(ctb size 16 * 256).
-     */
-    WORD32 ai4_tu_coeff_data_ofst[256];
-
-    /**
-     * Arry to store slice id for at the beginning of each ctb row.
-     * Currently allocated for frame width of 4096(ctb size 16 * 256).
-     */
-    WORD32 ai4_cur_slice_idx[256];
-
-    /**
-     * Variable to keep track of no of ctbs parsed in the current frame grain.
-     */
-    WORD32 i4_curr_grain_ctb_cnt;
-}gpu_ctxt_t;
-#endif
 
 typedef void (*pf_inter_pred)(void *,
                               void *,
@@ -1996,11 +1905,7 @@ struct _codec_t
     /**
      * Pointer to hold TU data for a set of CTBs or a picture
      */
-#ifndef GPU_BUILD
     void *pv_tu_data;
-#else
-    void *apv_tu_data[2];
-#endif
     /**
      * Holds mem records passed during init.
      * This will be used to return the mem records during retrieve call
@@ -2021,27 +1926,15 @@ struct _codec_t
     UWORD8 *pu1_parse_map;
 
     /** Process status: one byte per CTB */
-#ifndef GPU_BUILD
     UWORD8 *pu1_proc_map;
-#else
-    UWORD8 *apu1_proc_map[2];
-#endif
     /**
      * Current pictures intra mode map at 8x8 level
      */
-#ifndef GPU_BUILD
     UWORD8 *pu1_pic_intra_flag;
-#else
-    UWORD8 *apu1_pic_intra_flag[2];
-#endif
     /**
      * Current pictures loop filter flag map at 8x8 level
      */
-#ifndef GPU_BUILD
     UWORD8 *pu1_pic_no_loop_filter_flag;
-#else
-    UWORD8 *apu1_pic_no_loop_filter_flag[2];
-#endif
     /**
      * MV Bank buffer manager
      */
@@ -2136,11 +2029,7 @@ struct _codec_t
     /**
      * Pointer to base of slice header structure array
      */
-#ifndef GPU_BUILD
     slice_header_t *ps_slice_hdr_base;
-#else
-    slice_header_t *aps_slice_hdr_base[2];
-#endif
     /**
      * Pointer to base of entry point offsets in a frame
      */
@@ -2220,52 +2109,6 @@ struct _codec_t
 
     /** Mask used to change MVs to full pel when configured to run in reduced complexity mode */
     WORD32 i4_mv_frac_mask;
-#ifdef GPU_BUILD
-    /* Two bits per edge.
-    Stored in format. BS[15] | BS[14] | .. |BS[0]*/
-    UWORD32 *apu4_pic_vert_bs[2];
-
-    /**
-     * Horizontal Boundary strength
-     */
-
-    /* Two bits per edge.
-    Stored in format. BS[15] | BS[14] | .. |BS[0]*/
-    UWORD32 *apu4_pic_horz_bs[2];
-
-    /**
-     * Flags to indicate if QP is constant through out a CTB - 1 bit for each CTB
-     * The bits are packed from LSB to MSB
-     * To get the flag corresponding to CTB with (ctb_x, ctb_y), use
-     *      pu4_qp_const_in_ctb[(ctb_x + pic_wd_in_ctb * ctb_y) >> 3] & (1 << ((ctb_x + pic_wd_in_ctb * ctb_y) & 7))
-     */
-    UWORD8 *apu1_pic_qp_const_in_ctb[2];
-
-    /**
-     *  Qp array stored for each 8x8 pixels
-     */
-    UWORD8  *apu1_pic_qp[2];
-
-    /**
-     * Pointer to frame level sao_t for the current frame being parsed
-     */
-    sao_t *aps_pic_sao[2];
-
-    /* GPU context structure */
-    gpu_ctxt_t s_gpu_ctxt;
-
-    /* Flag to switch bw MC on GPU and CPU dynamically */
-    UWORD32 u4_gpu_enabled;
-
-    /* Variable to store the view(ping or pong) for parsing */
-    UWORD32 u4_parsing_view;
-
-    /*
-     * Set the flag to remember to add the frame for flushing
-     * call is a flush call.
-     */
-    UWORD32 u4_add_last_frame;
-#endif
     /**  Funtion pointers for inter_pred leaf level functions */
     pf_inter_pred apf_inter_pred[22];
 

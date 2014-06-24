@@ -374,9 +374,6 @@ WORD32 ihevcd_get_intra_nbr_flag(process_ctxt_t *ps_proc,
     u1_top_lt_avail = (pu4_intra_nbr_avail[1 + cur_y - 1]
                     >> (31 - (1 + cur_x - 1))) & 1;
 
-#if DEBUG_PRINT_IQ_IT_RECON
-    printf(" Before constrained intra pred. BL:%d,L:%d,T:%d,TR:%d,TL:%d\n", u1_bot_lt_avail, u1_left_avail, u1_top_avail, u1_top_rt_avail, u1_top_lt_avail);
-#endif
     x_cur = ps_proc->i4_ctb_x * ctb_size + cur_x * MIN_TU_SIZE;
     y_cur = ps_proc->i4_ctb_y * ctb_size + cur_y * MIN_TU_SIZE;
 
@@ -517,9 +514,6 @@ WORD32 ihevcd_get_intra_nbr_flag(process_ctxt_t *ps_proc,
     /*    Top-Left | Top-Right | Top | Left | Bottom-Left
      *      1         4         4     4         4
      */
-#if DEBUG_PRINT_IQ_IT_RECON
-    printf(" After constrained intra pred. BL:%d,L:%d,T:%d,TR:%d,TL:%d\n", bot_left, left, top, top_right, top_left);
-#endif
 
     /*
      nbr_flags = (top_left << 16) | (gau4_ihevcd_4_bit_reverse[top_right] << 12) | (gau4_ihevcd_4_bit_reverse[top] << 8) | (gau4_ihevcd_4_bit_reverse[left] << 4)
@@ -528,77 +522,10 @@ WORD32 ihevcd_get_intra_nbr_flag(process_ctxt_t *ps_proc,
     nbr_flags = (top_left << 16) | (top_right << 12) | (top << 8) | (gau4_ihevcd_4_bit_reverse[left] << 4)
                     | gau4_ihevcd_4_bit_reverse[bot_left];
 
-#if DEBUG_PRINT_IQ_IT_RECON
-    printf("\n Luma nbr flags = %d", nbr_flags);
-#endif
 
     return nbr_flags;
 
 }
-#if 0
-void ihevcd_itrans_recon_one_coeff(WORD16 *pi2_tmp,
-                                   UWORD8 *pu1_pred,
-                                   UWORD8 *pu1_dst,
-                                   WORD32 pred_strd,
-                                   WORD32 dst_strd,
-                                   WORD32 log2_trans_size,
-                                   TRANSFORM_TYPE trans_type,
-                                   WORD32 coeff_x,
-                                   WORD32 coeff_y,
-                                   WORD16 i2_coeff_value,
-                                   WORD32 is_luma)
-{
-    WORD32 x, y;
-    WORD32 row, col;
-    WORD32 add, shift;
-    WORD32 quant_out;
-    WORD32 trans_size;
-    WORD16 *pi2_trans_table;
-    WORD32 trans_table_idx;
-    WORD32 itrans_out;
-    WORD32 col_mult = (is_luma == 1) ? 1 : 2;
-
-    x = coeff_x;
-    y = coeff_y;
-    trans_size = (1 << log2_trans_size);
-
-    if(DST_4x4 == trans_type)
-    {
-        trans_table_idx = 0;
-    }
-    else
-    {
-        trans_table_idx = log2_trans_size - 2 + 1;
-    }
-    pi2_trans_table = (WORD16 *)g_ai2_ihevc_trans_tables[trans_table_idx];
-
-    quant_out = i2_coeff_value;
-
-    shift = IT_SHIFT_STAGE_1;
-    add = 1 << (shift - 1);
-    /* Multiply trans tables values in yth row with quant_out and store in temporary buffer*/
-    for(col = 0; col < trans_size; col++)
-    {
-        pi2_tmp[col] = CLIP_S16(
-                        (quant_out * pi2_trans_table[y * trans_size + col ] + add) >> shift);
-    }
-
-    shift = IT_SHIFT_STAGE_2;
-    add = 1 << (shift - 1);
-
-    /* Multiply trans tables values in xth row with each value in temerory buffer */
-    for(row = 0; row < trans_size; row++)
-    {
-        for(col = 0; col < trans_size; col++)
-        {
-            itrans_out = CLIP_S16(
-                            (pi2_tmp[row] * pi2_trans_table[x * trans_size+ col ] + add)
-                                            >> shift);
-            pu1_dst[row * dst_strd + col * col_mult] = CLIP_U8( (pu1_pred[row * pred_strd + col * col_mult] + itrans_out));
-        }
-    }
-}
-#endif
 
 WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 {
@@ -777,11 +704,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
             intra_flag &= (1 << ((tu_abs_x >> 3) % 8));
         }
 
-#if DEBUG_PRINT_IQ_IT_RECON
-        printf("\n tu_x = %d", tu_x);
-        printf("\n tu_y = %d", tu_y);
-#endif
-
         u1_luma_pred_mode = ps_tu->b6_luma_intra_mode;
         u1_chroma_pred_mode = ps_tu->b3_chroma_intra_mode_idx;
 
@@ -920,11 +842,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                         &zero_rows, &coeff_type,
                                         &i2_coeff_value);
                     }
-
-#if DEBUG_PRINT_IQ_IT_RECON
-                    printf("\nLuma Coeff \n");
-                    print_coeff(pi2_src, trans_size);
-#endif
                 }
                 else /* UV interleaved */
                 {
@@ -1002,10 +919,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                         &zero_rows, &coeff_type,
                                         &i2_coeff_value);
                     }
-#if DEBUG_PRINT_IQ_IT_RECON
-                    printf("\nChroma Coeff U \n");
-                    print_coeff(pi2_src, trans_size);
-#endif
 
                     transform_skip_flag_v = pu1_tu_coeff_data[1] & 1;
                     if(1 == u1_cbf_v)
@@ -1074,10 +987,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                         /* call the intra prediction function */
                         ps_codec->apf_intra_pred_luma[luma_pred_func_idx](au1_ref_sub_out, 1, pu1_pred, pred_strd, trans_size, u1_luma_pred_mode);
-#if DEBUG_PRINT_IQ_IT_RECON
-                        printf("\n Luma Pred mode = %d, qp = %d\n", u1_luma_pred_mode, qp_div * 6 + qp_rem);
-                        print_dst(pu1_pred, pred_strd, trans_size, 1);
-#endif
                     }
                     else
                     {
@@ -1099,9 +1008,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             chroma_nbr_flags |= (luma_nbr_flags_4x4[2] & 0x0000F);
                         }
 
-#if DEBUG_PRINT_IQ_IT_RECON
-                        printf("\n Chroma nbr flags = %d", chroma_nbr_flags);
-#endif
                         /* Initializing nbr pointers */
                         pu1_top = pu1_pred_orig - pic_strd;
                         pu1_left = pu1_pred_orig - 2;
@@ -1140,10 +1046,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                         /* call the intra prediction function */
                         ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](au1_ref_sub_out, 1, pu1_pred_orig, pred_strd, trans_size, u1_chroma_pred_mode);
-#if DEBUG_PRINT_IQ_IT_RECON
-                        printf("\n Chroma U Pred mode = %d,qp = %d \n", u1_chroma_pred_mode, qp_div * 6 + qp_rem);
-                        print_dst(pu1_pred_orig, pred_strd, trans_size, 0);
-#endif
                     }
                 }
 
@@ -1185,20 +1087,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
                     }
                 }
-#if DEBUG_PRINT_IQ_IT_RECON
-                printf("\n Recon data \n");
-                print_dst(pu1_dst, dst_strd, trans_size, !c_idx);
-#endif
                 /* IQ, IT and Recon for V */
                 if(c_idx != 0)
                 {
-#if DEBUG_PRINT_IQ_IT_RECON
-                    printf("\nChroma Coeff V \n");
-                    print_coeff(pi2_src_v, trans_size);
-                    printf("\n Chroma V Pred mode = %d,qp = %d \n",
-                           u1_chroma_pred_mode, qp_div_v * 6 + qp_rem_v);
-                    print_dst(pu1_pred + 1, dst_strd, trans_size, 0);
-#endif
                     if(1 == u1_cbf_v)
                     {
                         if(ps_tu->b1_transquant_bypass || transform_skip_flag_v)
@@ -1237,10 +1128,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                         }
                     }
-#if DEBUG_PRINT_IQ_IT_RECON
-                    printf("\n Recon data \n");
-                    print_dst(pu1_dst + 1, dst_strd, trans_size, 0);
-#endif
                 }
             }
 

@@ -56,9 +56,6 @@
 #endif
 
 
-#if 0
-#include <sys/syscall.h>
-#endif
 
 
 #ifdef X86_MSVC

@@ -73,10 +73,8 @@
 #define PROFILE_DISABLE_PROCESS_CTB() return;
 /* When processing is disabled, no point in format converion as well */
 #define PROFILE_DISABLE_FMT_CONV() return 0;
-#define PROFILE_DIS_PROCESS_CTB_SET_NOOUTPUT() ps_dec_op->u4_output_present = 0;
 #else
 #define PROFILE_DISABLE_PROCESS_CTB() ;
-#define PROFILE_DIS_PROCESS_CTB_SET_NOOUTPUT() ;
 #define PROFILE_DISABLE_FMT_CONV();
 #endif
 

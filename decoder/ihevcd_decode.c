@@ -228,7 +228,6 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         pic_buf_t *ps_disp_buf = ps_codec->ps_disp_buf;
 
         ps_dec_op->u4_output_present = 1;
-        PROFILE_DIS_PROCESS_CTB_SET_NOOUTPUT();
         ps_dec_op->u4_ts = ps_disp_buf->u4_ts;
         if((ps_codec->i4_flush_mode == 0) && (ps_codec->s_parse.i4_end_of_frame == 0))
             ps_dec_op->u4_output_present = 0;
@@ -710,13 +709,6 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
                 if(CMD_PROCESS == s_job.i4_cmd)
                 {
                     ihevcd_init_proc_ctxt(ps_proc, s_job.i4_tu_coeff_data_ofst);
-#ifdef GPU_BUILD
-                    if(s_job.i2_wait)
-                    {
-                        ihevcd_gpu_mc_wait(ps_proc, s_job.i2_granularity_idx);
-                    }
-
-#endif
 
                     ihevcd_process(ps_proc);
                 }
@@ -769,23 +761,6 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             ps_codec->s_fmt_conv.i4_cur_row += ps_codec->s_fmt_conv.i4_num_rows;
 
         }
-#ifdef GPU_BUILD
-        {
-            /*
-             * Add the buffer to the display buffer. Free mv buffer.
-             */
-            {
-
-                ihevc_disp_mgr_add(ps_codec->pv_disp_buf_mgr,
-                                   ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
-                                   ps_codec->as_process[proc_idx].ps_slice_hdr->i4_abs_pic_order_cnt,
-                                   ps_codec->as_process[proc_idx].ps_cur_pic);
-            }
-            ihevcd_free_ref_mv_buffers(ps_codec);
-            ihevcd_gpu_mc_pic_deinit(ps_codec);
-
-        }
-#endif
 
 
         DEBUG_DUMP_MV_MAP(ps_codec);

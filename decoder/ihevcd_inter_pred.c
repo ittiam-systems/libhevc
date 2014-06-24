@@ -226,17 +226,6 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         ps_pps->i1_weighted_bipred_flag;
         bi_pred = (ps_pu->b2_pred_mode == PRED_BI);
 
-#ifdef GPU_BUILD
-        if(ps_proc->u4_gpu_inter_flag == 1)
-        {
-            /* Only 16x16 PUs have been implemented on opencl device */
-            if((pu_wd % 16 == 0) && (pu_ht % 16 == 0) && (weighted_pred == 0))
-            {
-                //printf("Skipping Inter\n");
-                continue;
-            }
-        }
-#endif
         if(ps_pu->b2_pred_mode != PRED_L1)
         {
             pic_buf_t *ps_pic_buf_l0;

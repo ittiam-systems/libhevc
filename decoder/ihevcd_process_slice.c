@@ -86,9 +86,6 @@
 #include "ihevcd_boundary_strength.h"
 #include "ihevcd_deblk.h"
 #include "ihevcd_fmt_conv.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 #include "ihevcd_sao.h"
 #include "ihevcd_profile.h"
 
@@ -144,12 +141,7 @@ void ihevcd_proc_map_check(process_ctxt_t *ps_proc, proc_type_t proc_type, WORD3
                             idx += ps_tile->u1_pos_x;
                             idx += ((ps_proc->i4_ctb_y - 1)
                                             * ps_sps->i2_pic_wd_in_ctb);
-#ifdef GPU_BUILD
-                            //TODO GPU : Later define it for ARM only version as well
-                            pu1_buf = (ps_proc->pu1_proc_map + idx);
-#else
                             pu1_buf = (ps_codec->pu1_proc_map + idx);
-#endif
                             status = *pu1_buf & bit_mask;
                         }
                     }
@@ -164,12 +156,7 @@ void ihevcd_proc_map_check(process_ctxt_t *ps_proc, proc_type_t proc_type, WORD3
                     {
                         x_pos   = ps_tile->u1_pos_x + ps_proc->i4_ctb_tile_x - 1;
                         idx     = x_pos + (ps_proc->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb);
-#ifdef GPU_BUILD
-                        //TODO GPU : Later define it for ARM only version as well
-                        pu1_buf = (ps_proc->pu1_proc_map + idx);
-#else
                         pu1_buf = (ps_codec->pu1_proc_map + idx);
-#endif
                         status  = *pu1_buf & bit_mask;
                     }
 
@@ -178,12 +165,7 @@ void ihevcd_proc_map_check(process_ctxt_t *ps_proc, proc_type_t proc_type, WORD3
                     {
                         x_pos   = ps_tile->u1_pos_x + ps_proc->i4_ctb_tile_x - 1;
                         idx     = x_pos + ((ps_proc->i4_ctb_y - 1) * ps_sps->i2_pic_wd_in_ctb);
-#ifdef GPU_BUILD
-                        //TODO GPU : Later define it for ARM only version as well
-                        pu1_buf = (ps_proc->pu1_proc_map + idx);
-#else
                         pu1_buf = (ps_codec->pu1_proc_map + idx);
-#endif
                         status  = *pu1_buf & bit_mask;
                     }
                 }
@@ -226,12 +208,7 @@ void ihevcd_proc_map_update(process_ctxt_t *ps_proc, proc_type_t proc_type, WORD
             UWORD8 *pu1_buf;
             idx = (ps_proc->i4_ctb_x + i);
             idx += ((ps_proc->i4_ctb_y) * ps_sps->i2_pic_wd_in_ctb);
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            pu1_buf = (ps_proc->pu1_proc_map + idx);
-#else
             pu1_buf = (ps_codec->pu1_proc_map + idx);
-#endif
             *pu1_buf = *pu1_buf | bit_mask;
         }
     }
@@ -245,12 +222,7 @@ void ihevcd_slice_hdr_update(process_ctxt_t *ps_proc)
      *  if a new slice begins at the middle of a row since proc_init is invoked only at the beginning of each row */
     if(!((ps_proc->i4_ctb_x == 0) && (ps_proc->i4_ctb_y == 0)))
     {
-#ifdef GPU_BUILD
-        //TODO GPU : Later define it for ARM only version as well
-        slice_header_t *ps_slice_hdr_next = ps_proc->ps_slice_hdr_base + ((ps_proc->i4_cur_slice_idx + 1) & (MAX_SLICE_HDR_CNT - 1));
-#else
         slice_header_t *ps_slice_hdr_next = ps_proc->ps_codec->ps_slice_hdr_base + ((ps_proc->i4_cur_slice_idx + 1) & (MAX_SLICE_HDR_CNT - 1));
-#endif
 
         if((ps_slice_hdr_next->i2_ctb_x == ps_proc->i4_ctb_x)
                         && (ps_slice_hdr_next->i2_ctb_y == ps_proc->i4_ctb_y))
@@ -436,37 +408,6 @@ void ihevcd_ctb_avail_update(process_ctxt_t *ps_proc)
     }
 
 
-#if 0
-    if((((0 == ps_proc->i4_ctb_slice_x)
-         && (0 == ps_proc->i4_ctb_slice_y))
-        || (0 == ps_proc->i4_ctb_tile_x)))
-    {
-        ps_proc->u1_left_ctb_avail = 0;
-        ps_proc->u1_top_lt_ctb_avail = 0;
-    }
-    if((0 == ps_proc->i4_ctb_slice_y) || (0 == ps_proc->i4_ctb_tile_y))
-    {
-        ps_proc->u1_top_ctb_avail = 0;
-        ps_proc->u1_top_lt_ctb_avail = 0;
-        ps_proc->u1_top_rt_ctb_avail = 0;
-    }
-    /* Image boundaries */
-    if(ps_proc->i4_ctb_x == 0)
-    {
-        ps_proc->u1_left_ctb_avail = 0;
-        ps_proc->u1_top_lt_ctb_avail = 0;
-    }
-    if(ps_proc->i4_ctb_x == (ps_sps->i2_pic_wd_in_ctb - 1))
-    {
-        ps_proc->u1_top_rt_ctb_avail = 0;
-    }
-    if(ps_proc->i4_ctb_y == 0)
-    {
-        ps_proc->u1_top_ctb_avail = 0;
-        ps_proc->u1_top_lt_ctb_avail = 0;
-        ps_proc->u1_top_rt_ctb_avail = 0;
-    }
-#endif
     {
         WORD32 next_ctb_idx;
         next_ctb_idx = cur_ctb_idx + 1;
@@ -634,9 +575,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
         {
             num_ctb = ps_proc->i4_ctb_cnt;
         }
-#ifdef GPU_BUILD
-        num_ctb = MIN(num_ctb, (ps_proc->ps_tile->u2_wd - ps_proc->i4_ctb_tile_x));
-#endif
         num_ctb_tmp = num_ctb;
 
         while(num_ctb_tmp)
@@ -656,14 +594,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                         volatile UWORD8 *pu1_buf;
                         volatile WORD32 status;
                         status = 1;
-#ifdef GPU_BUILD
-                        /* If GPU is enabled, don't check for the status of parsing
-                         * since processing starts after waiting for MC which means
-                         * parsing is done.*/
-                        //TODO GPU : Also remove the flag being updated in parsing
-#endif
                         /* Check if all dependencies for the next nCTBs are met */
-#ifndef GPU_BUILD
                         /* Check if the next nCTBs are parsed */
                         if(ps_proc->i4_check_parse_status)
                         {
@@ -672,7 +603,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             pu1_buf = (ps_codec->pu1_parse_map + idx);
                             status = *pu1_buf;
                         }
-#endif
 
                         if(status)
                             break;
@@ -934,12 +864,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
 
         if(cur_slice_idx != ps_proc->i4_cur_slice_idx)
         {
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_proc->ps_slice_hdr = ps_proc->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#else
             ps_proc->ps_slice_hdr = ps_codec->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#endif
             ps_proc->i4_cur_slice_idx = cur_slice_idx;
         }
         /* Restore the saved variables  */
@@ -1029,12 +954,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                 ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
                                 + ps_proc->i4_ctb_x * ctb_size
                                 + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
-#if DEBUG_PRINT_IQ_IT_RECON
-                printf("\nCTB x=%d, y=%d", ps_proc->i4_ctb_x, ps_proc->i4_ctb_y);
-                printf("\n CTB size= %d,CTB level availability: L=%d,TL=%d,TR=%d,T=%d",
-                       ctb_size, ps_proc->u1_left_ctb_avail, ps_proc->u1_top_lt_ctb_avail, ps_proc->u1_top_rt_ctb_avail,
-                       ps_proc->u1_top_ctb_avail);
-#endif
 
                 ihevcd_iquant_itrans_recon_ctb(ps_proc);
             }
@@ -1065,12 +984,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
 
         if(cur_slice_idx != ps_proc->i4_cur_slice_idx)
         {
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_proc->ps_slice_hdr = ps_proc->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#else
             ps_proc->ps_slice_hdr = ps_codec->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#endif
             ps_proc->i4_cur_slice_idx = cur_slice_idx;
         }
         /* Restore the saved variables  */
@@ -1179,12 +1093,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
 
         if(cur_slice_idx != ps_proc->i4_cur_slice_idx)
         {
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_proc->ps_slice_hdr = ps_proc->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#else
             ps_proc->ps_slice_hdr = ps_codec->ps_slice_hdr_base + ((cur_slice_idx)&(MAX_SLICE_HDR_CNT - 1));
-#endif
             ps_proc->i4_cur_slice_idx = cur_slice_idx;
         }
         /* Restore the saved variables  */
@@ -1463,12 +1372,7 @@ void ihevcd_init_proc_ctxt(process_ctxt_t *ps_proc, WORD32 tu_coeff_data_ofst)
 
     ps_codec = ps_proc->ps_codec;
 
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    ps_slice_hdr = ps_proc->ps_slice_hdr_base + ((ps_proc->i4_cur_slice_idx) & (MAX_SLICE_HDR_CNT - 1));
-#else
     ps_slice_hdr = ps_codec->ps_slice_hdr_base + ((ps_proc->i4_cur_slice_idx) & (MAX_SLICE_HDR_CNT - 1));
-#endif
     ps_proc->ps_slice_hdr = ps_slice_hdr;
     ps_proc->ps_pps = ps_codec->ps_pps_base + ps_slice_hdr->i1_pps_id;
     ps_pps = ps_proc->ps_pps;
@@ -1662,9 +1566,6 @@ void ihevcd_init_proc_ctxt(process_ctxt_t *ps_proc, WORD32 tu_coeff_data_ofst)
 }
 void ihevcd_process_thread(process_ctxt_t *ps_proc)
 {
-#ifdef GPU_BUILD
-    codec_t *ps_codec = ps_proc->ps_codec;
-#endif
     {
         ithread_set_affinity(ps_proc->i4_id + 1);
     }
@@ -1688,23 +1589,6 @@ void ihevcd_process_thread(process_ctxt_t *ps_proc)
         if(CMD_PROCESS == s_job.i4_cmd)
         {
             ihevcd_init_proc_ctxt(ps_proc, s_job.i4_tu_coeff_data_ofst);
-#ifdef GPU_BUILD
-            if(1) //g_enable_gpu == 1)
-            {
-
-                if(s_job.i2_wait)
-                {
-                    //long long start_time, stop_time;
-                    //start_time = itGetUs();
-                    //printf("Before MC wait\n");
-                    ihevcd_gpu_mc_wait(ps_proc, s_job.i2_granularity_idx);
-                    //printf("After MC wait\n");
-                    //stop_time = itGetUs();
-                    //printf("CL Wait time time = %lld us\n", (stop_time - start_time));
-                }
-
-            }
-#endif
             ihevcd_process(ps_proc);
         }
         else if(CMD_FMTCONV == s_job.i4_cmd)

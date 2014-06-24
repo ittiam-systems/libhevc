@@ -74,9 +74,6 @@
 #include "ihevcd_trace.h"
 #include "ihevcd_process_slice.h"
 #include "ihevcd_job_queue.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 #define MAX_DPB_PIC_BUF 6
 
 /* Function declarations */
@@ -775,20 +772,11 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
     ps_codec->s_parse.i4_error_code = IHEVCD_SUCCESS;
     ps_sps = ps_codec->s_parse.ps_sps;
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base + (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
-#else
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
-#endif
     /* If parse_pic_init is called, then slice data is present in the input bitstrea stream */
     ps_codec->i4_pic_present = 1;
 
     /* Memset picture level intra map and transquant bypass map to zero */
-#ifdef GPU_BUILD
-    ps_codec->s_parse.pu1_pic_intra_flag = ps_codec->apu1_pic_intra_flag[ps_codec->u4_parsing_view];
-    ps_codec->s_parse.pu1_pic_no_loop_filter_flag = ps_codec->apu1_pic_no_loop_filter_flag[ps_codec->u4_parsing_view];
-#endif
     num_min_cu = ((ps_sps->i2_pic_height_in_luma_samples + 7) / 8) * ((ps_sps->i2_pic_width_in_luma_samples + 63) / 64);
     memset(ps_codec->s_parse.pu1_pic_intra_flag, 0, num_min_cu);
     memset(ps_codec->s_parse.pu1_pic_no_loop_filter_flag, 0, num_min_cu);
@@ -815,18 +803,9 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
         for(slice_idx = slice_start_idx; slice_idx < MAX_SLICE_HDR_CNT; slice_idx++)
         {
-#ifdef GPU_BUILD
-            slice_header_t *ps_slice_hdr_tmp = ps_codec->aps_slice_hdr_base[0] + slice_idx;
-            ps_slice_hdr_tmp->i2_ctb_x = -1;
-            ps_slice_hdr_tmp->i2_ctb_y = -1;
-            ps_slice_hdr_tmp = ps_codec->aps_slice_hdr_base[1] + slice_idx;
-            ps_slice_hdr_tmp->i2_ctb_x = -1;
-            ps_slice_hdr_tmp->i2_ctb_y = -1;
-#else
             slice_header_t *ps_slice_hdr_tmp = ps_codec->ps_slice_hdr_base + slice_idx;
             ps_slice_hdr_tmp->i2_ctb_x = -1;
             ps_slice_hdr_tmp->i2_ctb_y = -1;
-#endif
 
         }
     }
@@ -954,12 +933,10 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     ps_codec->s_parse.ps_pic_pu      = ps_mv_buf->ps_pic_pu;
     ps_codec->s_parse.pu4_pic_pu_idx = ps_mv_buf->pu4_pic_pu_idx;
     ps_codec->s_parse.pu1_slice_idx = (UWORD16 *)ps_mv_buf->pu1_pic_slice_map;
-#ifndef GPU_BUILD
     for(i = 0; i < MAX_PROCESS_THREADS; i++)
     {
         ps_codec->as_process[i].pu1_slice_idx = (UWORD16 *)ps_mv_buf->pu1_pic_slice_map;
     }
-#endif
     ps_codec->s_parse.pu1_pu_map = ps_codec->s_parse.pu1_pic_pu_map;
     ps_codec->s_parse.ps_pu = ps_codec->s_parse.ps_pic_pu;
 
@@ -979,11 +956,7 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         ctb_min_tu_cnt = ctb_luma_min_tu_cnt + ctb_chroma_min_tu_cnt;
 
         num_ctb = pic_size / (MIN_CTB_SIZE * MIN_CTB_SIZE);
-#ifdef GPU_BUILD
-        pu1_buf  = (UWORD8 *)ps_codec->apv_tu_data[ps_codec->u4_parsing_view];
-#else
         pu1_buf  = (UWORD8 *)ps_codec->pv_tu_data;
-#endif
         ps_codec->s_parse.pu4_pic_tu_idx = (UWORD32 *)pu1_buf;
         pu1_buf += (num_ctb + 1) * sizeof(WORD32);
 
@@ -1017,9 +990,7 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
         memset(ps_codec->pu1_parse_map, 0, num_ctb);
 
-#ifndef GPU_BUILD
         memset(ps_codec->pu1_proc_map, 0, num_ctb);
-#endif
     }
 
 
@@ -1106,27 +1077,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
     {
         WORD32 i;
-#ifdef GPU_BUILD
-        gpu_ctxt_t *ps_gpu = &ps_codec->s_gpu_ctxt;
-        ps_gpu->i4_curr_grain_ctb_cnt = 0;
-        ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs = ps_codec->apu4_pic_vert_bs[ps_codec->u4_parsing_view];
-        ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs = ps_codec->apu4_pic_horz_bs[ps_codec->u4_parsing_view];
-        ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp = ps_codec->apu1_pic_qp[ps_codec->u4_parsing_view];
-        ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb = ps_codec->apu1_pic_qp_const_in_ctb[ps_codec->u4_parsing_view];
-
-        ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu4_pic_vert_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs;
-        ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu4_pic_horz_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs;
-        ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp;
-        ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb;
-
-        ps_codec->s_parse.s_deblk_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->apu1_pic_no_loop_filter_flag[ps_codec->u4_parsing_view];
-        ps_codec->s_parse.s_sao_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->apu1_pic_no_loop_filter_flag[ps_codec->u4_parsing_view];
-
-        ps_codec->s_parse.s_deblk_ctxt.ps_slice_hdr_base = ps_codec->s_parse.ps_slice_hdr_base;
-
-        ps_codec->s_parse.ps_pic_sao            = (sao_t *)ps_codec->aps_pic_sao[ps_codec->u4_parsing_view];
-        ps_codec->s_parse.s_sao_ctxt.ps_pic_sao = (sao_t *)ps_codec->aps_pic_sao[ps_codec->u4_parsing_view];
-#endif
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].pu4_pic_pu_idx = ps_codec->s_parse.pu4_pic_pu_idx;
@@ -1166,44 +1116,12 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             ps_codec->as_process[i].s_bs_ctxt.pu4_pic_tu_idx = ps_codec->as_process[i].pu4_pic_tu_idx;
             ps_codec->as_process[i].s_bs_ctxt.pu4_pic_pu_idx = ps_codec->as_process[i].pu4_pic_pu_idx;
             ps_codec->as_process[i].s_bs_ctxt.ps_pic_pu = ps_codec->as_process[i].ps_pic_pu;
-#ifdef GPU_BUILD
-            ps_codec->as_process[i].u4_gpu_inter_flag = ps_codec->u4_gpu_enabled;
-            ps_codec->as_process[i].s_bs_ctxt.pu4_pic_vert_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs;
-            ps_codec->as_process[i].s_bs_ctxt.pu4_pic_horz_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs;
-            ps_codec->as_process[i].s_bs_ctxt.pu1_pic_qp = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp;
-            ps_codec->as_process[i].s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb;
-
-            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pu4_pic_vert_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs;
-            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pu4_pic_horz_bs = (UWORD32 *)ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs;
-            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp;
-            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb;
-            ps_codec->as_process[i].pu1_proc_map = ps_codec->apu1_proc_map[ps_codec->u4_parsing_view];
-
-            ps_codec->as_process[i].pu1_slice_idx = (UWORD16 *)ps_mv_buf->pu1_pic_slice_map;
-
-#else
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_codec->as_process[i].pu1_proc_map = ps_codec->pu1_proc_map;
-#endif
-#endif
             ps_codec->as_process[i].s_deblk_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->s_parse.pu1_pic_no_loop_filter_flag;
             ps_codec->as_process[i].s_deblk_ctxt.pu1_cur_pic_luma = pu1_cur_pic_luma;
             ps_codec->as_process[i].s_deblk_ctxt.pu1_cur_pic_chroma = pu1_cur_pic_chroma;
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_codec->as_process[i].s_deblk_ctxt.ps_slice_hdr_base = ps_codec->s_parse.ps_slice_hdr_base;
-#endif
             ps_codec->as_process[i].s_sao_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->s_parse.pu1_pic_no_loop_filter_flag;
             ps_codec->as_process[i].s_sao_ctxt.pu1_cur_pic_luma = pu1_cur_pic_luma;
             ps_codec->as_process[i].s_sao_ctxt.pu1_cur_pic_chroma = pu1_cur_pic_chroma;
-#ifdef GPU_BUILD
-            //TODO GPU : Later define it for ARM only version as well
-            ps_codec->as_process[i].s_sao_ctxt.ps_slice_hdr_base = ps_codec->s_parse.ps_slice_hdr_base;
-            ps_codec->as_process[i].ps_slice_hdr_base = ps_codec->s_parse.ps_slice_hdr_base;
-
-            ps_codec->as_process[i].s_sao_ctxt.ps_pic_sao = ps_codec->s_parse.ps_pic_sao;
-#endif
             if(i < (ps_codec->i4_num_cores - 1))
             {
                 ithread_create(ps_codec->apv_process_thread_handle[i], NULL,
@@ -1217,15 +1135,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             }
 
         }
-#ifdef GPU_BUILD
-        memset(ps_codec->apu1_proc_map[ps_codec->u4_parsing_view], 0, ps_sps->i4_pic_size_in_ctb);
-#else
-#ifdef GPU_BUILD
-        //TODO GPU : Later define it for ARM only version as well
-        // and remove from above.
-        memset(ps_codec->pu1_proc_map, 0, ps_sps->i4_pic_size_in_ctb);
-#endif
-#endif
         ps_codec->s_parse.s_deblk_ctxt.pu1_cur_pic_luma = pu1_cur_pic_luma;
         ps_codec->s_parse.s_deblk_ctxt.pu1_cur_pic_chroma = pu1_cur_pic_chroma;
 
@@ -1241,7 +1150,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
      * returned, which requires a status check to ensure that the current row is reconstructed before copying.
      */
     /* Add current picture to display manager */
-#ifndef GPU_BUILD
     {
         WORD32 abs_poc;
         slice_header_t *ps_slice_hdr;
@@ -1252,17 +1160,10 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
                            abs_poc,
                            ps_codec->as_process[0].ps_cur_pic);
     }
-#endif
     ps_codec->ps_disp_buf = NULL;
     /* Get picture to be displayed if number of pictures decoded is more than max allowed reorder */
     /* Since the current will be decoded, check is fore >= instead of > */
-#ifdef GPU_BUILD
-    //TODO OPENCL delay this by one frame
-    //TODO GPU : Should it be just +1
-    if(((WORD32)(ps_codec->u4_pic_cnt - ps_codec->u4_disp_cnt) >= (ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1]+2)) ||
-#else
     if(((WORD32)(ps_codec->u4_pic_cnt - ps_codec->u4_disp_cnt) >= ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1]) ||
-#endif
        ((WORD32)(ps_codec->u4_pic_cnt - ps_codec->u4_disp_cnt) >= ps_codec->i4_init_num_reorder))
 
     {
@@ -1307,10 +1208,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         }
     }
 
-#ifdef GPU_BUILD
-    /* Pic init for Opencl device */
-    ihevcd_gpu_mc_pic_init(ps_codec);
-#endif
 
     return ret;
 }

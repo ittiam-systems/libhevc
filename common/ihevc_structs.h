@@ -951,24 +951,6 @@ typedef struct
 /* N Inter PUs                                                           */
 /*************************************************************************/
 
-#if 0
-
-/*************************************************************************/
-/* Keeping the following as arrays instead of pointers helps in          */
-/* reducing number of redirections and hence faster access to the        */
-/* data. But the downside is this results in unused memory holes         */
-/* after each array, since the allocation is for worst case but          */
-/* number of valid CU, TU and PU will be much lesser than worst case.    */
-/* Since the holes are three per CTB, it should not be so much of a      */
-/* problem.                                                              */
-/*************************************************************************/
-
-/* CU level information */
-/* TODO: If there is not much data that is stored at CU level, then the
- following will be removed */
-cu_t as_cu[MAX_CU_IN_CTB];
-
-#endif
 
 /**
  * Structure giving information about the tile
@@ -2808,73 +2790,13 @@ typedef struct
 
     UWORD8 u1_parse_data_init_done;
 
+    /**
+     * Temporal ID in NAL header
+     */
+    WORD32 u4_nuh_temporal_id;
 }slice_header_t;
 
 
-#if 0
-
-typedef struct
-{
-
-    /* scaling_list_pred_mode_flag */
-    WORD8 i1_scaling_list_pred_mode_flag;
-
-    /* scaling_list_pred_matrix_id_delta */
-    WORD8 i1_scaling_list_pred_matrix_id_delta;
-
-}sld_t;
-
-typedef struct
-{
-    /* scaling_list_dc_coef_minus8[ sizeID - 2 ][ matrixID ] */
-    WORD8 i1_scaling_list_dc_coef[ sizeID - 2 ][ matrixID ];
-
-    /* scaling_list_delta_coef */
-    WORD8 i1_scaling_list_delta_coef;
-
-}slm_t;
-
-typedef struct
-{
-
-    /* last_payload_type_byte */
-    UWORD8 i1_last_payload_type_byte;
-
-    /* last_payload_size_byte */
-    UWORD8 last_payload_size_byte;
-}sei_t;
-
-typedef struct
-{
-    /* pic_type*/
-    WORD8 pic_type;
-}aud_t;
-
-typedef struct
-{
-    /* slice_extention_flag */
-    WORD8 i1_slice_extention_flag;
-
-    /* slice_extension_data_flag */
-    WORD8 i1_slice_extension_data_flag;
-
-}slr_t;
-
-typedef struct
-{
-    /* op_num_layer_id_values_minus1[ opIdx ] */
-    WORD8 i1_op_num_layer_id_values_minus1[VPS_MAX_HRD_PARAMS];
-
-    /* op_layer_id[ opIdx ][ i ] */
-    WORD8 i1_op_layer_id[VPS_MAX_HRD_PARAMS][VPS_MAX_OP_LAYERS];
-}op_point_t;
-
-
-typedef struct
-{
-}sds_t;
-
-#endif
 
 
 

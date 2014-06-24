@@ -56,10 +56,6 @@ typedef struct
 
     /** Flag to indicate jobq has to be terminated */
     WORD32 i4_terminate;
-#ifdef GPU_CIRCULAR_QUEUE
-    /** Flag to indicate jobq wrap around */
-    WORD32 i4_wrapped_around;
-#endif
 }jobq_t;
 
 WORD32 ihevcd_jobq_ctxt_size(void);

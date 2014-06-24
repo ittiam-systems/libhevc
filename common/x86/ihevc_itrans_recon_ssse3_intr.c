@@ -1822,7 +1822,6 @@ void ihevc_itrans_recon_8x8_ssse3(WORD16 *pi2_src,
 
         /* ee0 is present in the registers m_temp_reg_10 and m_temp_reg_11 */
         /* ee1 is present in the registers m_temp_reg_12 and m_temp_reg_13 */
-#if 1
         if(!check_row_stage_1)
         {
             /* ee0 is present in the registers m_temp_reg_10 and m_temp_reg_11 */
@@ -2098,7 +2097,6 @@ void ihevc_itrans_recon_8x8_ssse3(WORD16 *pi2_src,
         }
         else
         {
-#endif
 
             /* ee0 is present in the registers m_temp_reg_10 and m_temp_reg_11 */
             /* ee1 is present in the registers m_temp_reg_12 and m_temp_reg_13 */

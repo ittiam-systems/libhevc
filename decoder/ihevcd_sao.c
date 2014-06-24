@@ -587,12 +587,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << log2_ctb_size);
     src_strd = ps_sao_ctxt->ps_codec->i4_strd;
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    ps_slice_hdr_base = ps_sao_ctxt->ps_slice_hdr_base;
-#else
     ps_slice_hdr_base = ps_sao_ctxt->ps_codec->ps_slice_hdr_base;
-#endif
     ps_slice_hdr = ps_slice_hdr_base + (ps_sao_ctxt->i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
 
     pu1_slice_idx = ps_sao_ctxt->pu1_slice_idx;

@@ -191,7 +191,6 @@ void ihevcd_scale_collocated_mv(mv_t *ps_mv,
     ps_mv->i2_mvy = CLIP_S16(mvy);
 }
 
-#if 1
 #define CHECK_NBR_MV_ST(pi4_avail_flag, cur_ref_poc, u1_nbr_pred_flag, nbr_ref_poc,         \
                         ps_mv, ps_nbr_mv )                                                  \
 {                                                                                           \
@@ -222,39 +221,7 @@ void ihevcd_scale_collocated_mv(mv_t *ps_mv,
     }                                                                                        \
 }
 
-#else
 
-void CHECK_NBR_MV_ST(WORD32 *pi4_avail_flag, WORD32 cur_ref_poc, UWORD8 u1_nbr_pred_flag, WORD32 nbr_ref_poc,
-                     mv_t *ps_mv, mv_t *ps_nbr_mv )
-{
-    if((u1_nbr_pred_flag) && (cur_ref_poc == nbr_ref_poc))
-    {
-        *pi4_avail_flag = 1;
-        *ps_mv = *ps_nbr_mv;
-    }
-}
-void CHECK_NBR_MV_LT(WORD32 *pi4_avail_flag, UWORD8 u1_cur_ref_lt, WORD32 cur_poc, WORD32 cur_ref_poc,
-                     UWORD8 u1_nbr_pred_flag, UWORD8 u1_nbr_ref_lt, WORD32 nbr_ref_poc,
-                     mv_t *ps_mv, mv_t *ps_nbr_mv )
-{
-    WORD32 cur_lt, nbr_lt;
-    cur_lt = (LONG_TERM_REF == u1_cur_ref_lt);
-    nbr_lt = (LONG_TERM_REF == u1_nbr_ref_lt);
-
-    if((u1_nbr_pred_flag) && (cur_lt == nbr_lt))
-    {
-        *pi4_avail_flag = 1;
-        *ps_mv = *ps_nbr_mv;
-        if(SHORT_TERM_REF == u1_nbr_ref_lt)
-        {
-            ihevcd_scale_mv(ps_mv, cur_ref_poc, nbr_ref_poc,
-                            cur_poc);
-        }
-    }
-}
-#endif
-
-#if 1
 void GET_MV_NBR_ST(ref_list_t **ps_ref_pic_list, WORD32 *pi4_avail_flag, pic_buf_t *ps_cur_pic_buf_lx, pu_t **aps_nbr_pu, mv_t *ps_mv, WORD32 num_nbrs, WORD32 lx)
 {
     WORD32 i, nbr_pred_lx;
@@ -341,95 +308,6 @@ void GET_MV_NBR_LT(ref_list_t **ps_ref_pic_list, slice_header_t *ps_slice_hdr, W
         }
     }
 }
-#else
-
-#define GET_MV_NBR_ST(ps_ref_pic_list, pi4_avail_flag, ps_cur_pic_buf_lx, aps_nbr_pu, ps_mv, num_nbrs, lx) \
-{                                                                                                                                                                                \
-    WORD32 i, nbr_pred_lx;                                                                                                                                                       \
-    pic_buf_t *ps_nbr_pic_buf_lx;                                                                                                                                                \
-    /* Short Term */                                                                                                                                                             \
-    /* L0 */                                                                                                                                                                     \
-    if(0 == lx)                                                                                                                                                                  \
-    {                                                                                                                                                                            \
-        for(i=0; i< num_nbrs; i++)                                                                                                                                               \
-        {                                                                                                                                                                        \
-            nbr_pred_lx = (PRED_L1 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[0][aps_nbr_pu[i]->mv.i1_l0_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_ST(pi4_avail_flag, ps_cur_pic_buf_lx->i4_abs_poc, nbr_pred_lx ,                                                                                         \
-                            ps_nbr_pic_buf_lx->i4_abs_poc,ps_mv, &aps_nbr_pu[i]->mv.s_l0_mv );                                                                                   \
-                            nbr_pred_lx = (PRED_L0 != aps_nbr_pu[i]->b2_pred_mode);                                                                                              \
-                                                                                                                                                                                 \
-            nbr_pred_lx = (PRED_L0 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[1][aps_nbr_pu[i]->mv.i1_l1_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_ST(pi4_avail_flag, ps_cur_pic_buf_lx->i4_abs_poc, nbr_pred_lx,                                                                                          \
-                            ps_nbr_pic_buf_lx->i4_abs_poc,ps_mv, &aps_nbr_pu[i]->mv.s_l1_mv );                                                                                   \
-        }                                                                                                                                                                        \
-    }                                                                                                                                                                            \
-    /* L1 */                                                                                                                                                                     \
-    else                                                                                                                                                                         \
-    {                                                                                                                                                                            \
-        for(i=0; i< num_nbrs; i++)                                                                                                                                               \
-        {                                                                                                                                                                        \
-            nbr_pred_lx = (PRED_L0 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[1][aps_nbr_pu[i]->mv.i1_l1_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_ST(pi4_avail_flag, ps_cur_pic_buf_lx->i4_abs_poc, nbr_pred_lx,                                                                                          \
-                            ps_nbr_pic_buf_lx->i4_abs_poc,ps_mv, &aps_nbr_pu[i]->mv.s_l1_mv );                                                                                   \
-                                                                                                                                                                                 \
-            nbr_pred_lx = (PRED_L1 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[0][aps_nbr_pu[i]->mv.i1_l0_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_ST(pi4_avail_flag, ps_cur_pic_buf_lx->i4_abs_poc, nbr_pred_lx,                                                                                          \
-                            ps_nbr_pic_buf_lx->i4_abs_poc,ps_mv, &aps_nbr_pu[i]->mv.s_l0_mv );                                                                                   \
-        }                                                                                                                                                                        \
-    }                                                                                                                                                                            \
-}
-
-#define GET_MV_NBR_LT(ps_ref_pic_list, ps_slice_hdr, pi4_avail_flag, ps_cur_pic_buf_lx, aps_nbr_pu, ps_mv, num_nbrs, lx)                                              \
-{                                                                                                                                                                                \
-    WORD32 i, nbr_pred_lx;                                                                                                                                                       \
-    pic_buf_t *ps_nbr_pic_buf_lx;                                                                                                                                                \
-    /* Long Term*/                                                                                                                                                               \
-    /* L0 */                                                                                                                                                                     \
-    if(0 == lx)                                                                                                                                                                  \
-    {                                                                                                                                                                            \
-        for(i=0; i< num_nbrs; i++)                                                                                                                                               \
-        {                                                                                                                                                                        \
-            nbr_pred_lx = (PRED_L1 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[0][aps_nbr_pu[i]->mv.i1_l0_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_LT(pi4_avail_flag,ps_cur_pic_buf_lx->u1_used_as_ref, ps_slice_hdr->i4_abs_pic_order_cnt, ps_cur_pic_buf_lx->i4_abs_poc,                                 \
-                            nbr_pred_lx,                                                                                                                                         \
-                            ps_nbr_pic_buf_lx->u1_used_as_ref, ps_nbr_pic_buf_lx->i4_abs_poc,                                                                                    \
-                            ps_mv, &aps_nbr_pu[i]->mv.s_l0_mv);                                                                                                                  \
-                                                                                                                                                                                 \
-            nbr_pred_lx = (PRED_L0 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[1][aps_nbr_pu[i]->mv.i1_l1_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_LT(pi4_avail_flag,ps_cur_pic_buf_lx->u1_used_as_ref, ps_slice_hdr->i4_abs_pic_order_cnt, ps_cur_pic_buf_lx->i4_abs_poc,                                 \
-                            nbr_pred_lx,                                                                                                                                         \
-                            ps_nbr_pic_buf_lx->u1_used_as_ref, ps_nbr_pic_buf_lx->i4_abs_poc,                                                                                    \
-                            ps_mv, &aps_nbr_pu[i]->mv.s_l1_mv);                                                                                                                  \
-        }                                                                                                                                                                        \
-    }                                                                                                                                                                            \
-    /* L1 */                                                                                                                                                                     \
-    else                                                                                                                                                                         \
-    {                                                                                                                                                                            \
-        for(i=0; i< num_nbrs; i++)                                                                                                                                               \
-        {                                                                                                                                                                        \
-            nbr_pred_lx = (PRED_L0 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[1][aps_nbr_pu[i]->mv.i1_l1_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_LT(pi4_avail_flag,ps_cur_pic_buf_lx->u1_used_as_ref, ps_slice_hdr->i4_abs_pic_order_cnt, ps_cur_pic_buf_lx->i4_abs_poc,                                 \
-                            nbr_pred_lx,                                                                                                                                         \
-                            ps_nbr_pic_buf_lx->u1_used_as_ref, ps_nbr_pic_buf_lx->i4_abs_poc,                                                                                    \
-                            ps_mv, &aps_nbr_pu[i]->mv.s_l1_mv);                                                                                                                  \
-                                                                                                                                                                                 \
-            nbr_pred_lx = (PRED_L1 != aps_nbr_pu[i]->b2_pred_mode);                                                                                                              \
-            ps_nbr_pic_buf_lx = (pic_buf_t*)((ps_ref_pic_list[0][aps_nbr_pu[i]->mv.i1_l0_ref_idx].pv_pic_buf));                                                                  \
-            CHECK_NBR_MV_LT(pi4_avail_flag,ps_cur_pic_buf_lx->u1_used_as_ref, ps_slice_hdr->i4_abs_pic_order_cnt, ps_cur_pic_buf_lx->i4_abs_poc,                                 \
-                            nbr_pred_lx,                                                                                                                                         \
-                            ps_nbr_pic_buf_lx->u1_used_as_ref, ps_nbr_pic_buf_lx->i4_abs_poc,                                                                                    \
-                            ps_mv, &aps_nbr_pu[i]->mv.s_l0_mv);                                                                                                                  \
-        }                                                                                                                                                                        \
-    }                                                                                                                                                                            \
-}
-#endif
 /**
  *******************************************************************************
  *
@@ -791,7 +669,6 @@ void ihevcd_mv_pred(mv_ctxt_t *ps_mv_ctxt,
         /***********************************************************/
         /*          Collocated MV prediction                       */
         /***********************************************************/
-#if 1
         if((2 != num_l0_mvp_cand) || (2 != num_l1_mvp_cand))
         {
             mv_t as_mv_col[2], s_mv_col_l0, s_mv_col_l1;
@@ -858,7 +735,6 @@ void ihevcd_mv_pred(mv_ctxt_t *ps_mv_ctxt,
             if(l0_done_flag && l1_done_flag)
                 return;
         }
-#endif
 
         if(0 == l0_done_flag)
         {

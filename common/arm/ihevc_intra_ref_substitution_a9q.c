@@ -444,7 +444,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             top = (nbr_flags & 0x100) >> 8;
             tp_right = (nbr_flags & 0x1000) >> 12;
 
-#if 1
             /* Else fill the corresponding samples */
             if(tp_left)
                 pu1_dst[two_nt] = *pu1_top_left;
@@ -491,7 +490,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             {
                 ihevc_memset_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
-#endif
             next = 1;
 
             /* If bottom -left is not available, reverse substitution process*/
@@ -557,7 +555,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                             + ((nbr_flags & 0x3000) >> 6)
                             + ((nbr_flags & 0x10000) >> 8);
 
-#if 1
             /* Else fill the corresponding samples */
             if(nbr_flags & 0x10000)
                 pu1_dst[two_nt] = *pu1_top_left;
@@ -602,7 +599,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             {
                 ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
-#endif
             /* compute trailing zeors based on nbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
@@ -670,7 +666,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
 
         if(nt == 32)
         {
-#if 1
             /* Else fill the corresponding samples */
             if(nbr_flags & 0x10000)
                 pu1_dst[two_nt] = *pu1_top_left;
@@ -715,7 +710,6 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             {
                 ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
-#endif
             /* compute trailing ones based on mbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {

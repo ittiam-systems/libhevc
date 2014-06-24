@@ -1089,19 +1089,6 @@ typedef struct {
     UWORD8 au1_cpb_cnt_minus1[6];
 }ihevcd_cxa_ctl_get_vui_params_op_t;
 
-#ifdef GPU_BUILD
-typedef struct {
-    UWORD32                                     u4_size;
-    IVD_API_COMMAND_TYPE_T                      e_cmd;
-    IVD_CONTROL_API_COMMAND_TYPE_T              e_sub_cmd;
-    UWORD32                                     u4_gpu_enable_diable; // 1 - Enable 0 - Diable
-}ihevcd_cxa_ctl_gpu_enable_diable_ip_t;
-
-typedef struct {
-    UWORD32                                     u4_size;
-    UWORD32                                     u4_error_code;
-}ihevcd_cxa_ctl_gpu_enable_diable_op_t;
-#endif
 #ifdef __cplusplus
 } /* closing brace for extern "C" */
 #endif

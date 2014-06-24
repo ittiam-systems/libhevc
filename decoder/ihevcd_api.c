@@ -90,9 +90,6 @@
 #include "ihevcd_utils.h"
 #include "ihevcd_decode.h"
 #include "ihevcd_job_queue.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 #include "ihevcd_statistics.h"
 
 /*****************************************************************************/
@@ -192,14 +189,6 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                 return IV_FAIL;
             }
 
-#if 0
-            if(ps_handle->pv_fxns != ihevcd_cxa_api_function)
-            {
-                *(pu4_api_op + 1) |= 1 << IVD_UNSUPPORTEDPARAM;
-                *(pu4_api_op + 1) |= IVD_INVALID_HANDLE_NULL;
-                return IV_FAIL;
-            }
-#endif
 
             if(ps_handle->pv_codec_handle == NULL)
             {
@@ -1344,35 +1333,6 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
 
                     break;
                 }
-#ifdef GPU_BUILD
-                case IHEVCD_CXA_CMD_CTL_GPU_ENABLE_DISABLE:
-                {
-                    ihevcd_cxa_ctl_gpu_enable_diable_ip_t *ps_ip;
-                    ihevcd_cxa_ctl_gpu_enable_diable_op_t *ps_op;
-
-                    ps_ip = (ihevcd_cxa_ctl_gpu_enable_diable_ip_t *)pv_api_ip;
-                    ps_op = (ihevcd_cxa_ctl_gpu_enable_diable_op_t *)pv_api_op;
-
-                    if(ps_ip->u4_size
-                                    != sizeof(ihevcd_cxa_ctl_gpu_enable_diable_ip_t))
-                    {
-                        ps_op->u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
-                        ps_op->u4_error_code |=
-                                        IVD_IP_API_STRUCT_SIZE_INCORRECT;
-                        return IV_FAIL;
-                    }
-
-                    if(ps_op->u4_size
-                                    != sizeof(ihevcd_cxa_ctl_gpu_enable_diable_op_t))
-                    {
-                        ps_op->u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
-                        ps_op->u4_error_code |=
-                                        IVD_OP_API_STRUCT_SIZE_INCORRECT;
-                        return IV_FAIL;
-                    }
-                    break;
-                }
-#endif
                 default:
                     *(pu4_api_op + 1) |= 1 << IVD_UNSUPPORTEDPARAM;
                     *(pu4_api_op + 1) |= IVD_UNSUPPORTED_API_CMD;
@@ -1572,20 +1532,6 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     /* Set ref chroma format by default to 420SP UV interleaved */
     ps_codec->e_ref_chroma_fmt = IV_YUV_420SP_UV;
 
-#ifdef GPU_BUILD
-#ifndef FRAME_STAGGER_ONLY
-    /* Flag to switch bw MC on GPU and CPU. GPU disabled functionality
-     * not tested. Later move the flag to dynamic parameters.
-     * By default disable GPU. App has to enable GPU thro CNT call.
-     */
-    ps_codec->u4_gpu_enabled = 0;
-#else
-    ps_codec->u4_gpu_enabled = 0;
-#endif
-
-    ps_codec->u4_parsing_view = 0;
-
-#endif
     /* If the codec is in shared mode and required format is 420 SP VU interleaved then change
      * reference buffers chroma format
      */
@@ -1963,11 +1909,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
      */
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_TU_DATA];
     ps_mem_rec->u4_mem_size = ihevcd_get_tu_data_size(max_wd_luma * max_ht_luma);
-#ifdef GPU_BUILD
-    /* For ping-pong view */
-    ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-    ps_mem_rec->u4_mem_size = ps_mem_rec->u4_mem_size * 2;
-#endif
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_TU_DATA,
                     ps_mem_rec->u4_mem_size);
 
@@ -1987,10 +1928,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
      * it is allocated for BUF_MGR_MAX_CNT entries
      */
     ps_mem_rec->u4_mem_size += BUF_MGR_MAX_CNT * sizeof(mv_buf_t);
-#ifdef GPU_BUILD
-    /* Request one extra since release is delayed by one frame.*/
-    ps_mem_rec->u4_mem_size += sizeof(mv_buf_t);
-#endif
 
     {
         /* Allocate for pu_map, pu_t and pic_pu_idx for each MV bank */
@@ -2006,13 +1943,8 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
          */
         WORD32 lvl_idx = ihevcd_get_lvl_idx(level);
         WORD32 max_luma_samples = gai4_ihevc_max_luma_pic_size[lvl_idx];
-#ifdef GPU_BUILD
-        ps_mem_rec->u4_mem_size += (max_dpb_size + 2) *
-                        ihevcd_get_pic_mv_bank_size(max_luma_samples);
-#else
         ps_mem_rec->u4_mem_size += (max_dpb_size + 1) *
                         ihevcd_get_pic_mv_bank_size(max_luma_samples);
-#endif
         DEBUG("\nMemory record Id %d = %d \n", MEM_REC_MVBANK,
                         ps_mem_rec->u4_mem_size);
     }
@@ -2034,11 +1966,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_SLICE_HDR];
     ps_mem_rec->u4_mem_size = MAX_SLICE_HDR_CNT * sizeof(slice_header_t);
-#ifdef GPU_BUILD
-    /* OpenCL ping pong buffer */
-    ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-    ps_mem_rec->u4_mem_size *= 2;
-#endif
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_SLICE_HDR,
                     ps_mem_rec->u4_mem_size);
 
@@ -2121,10 +2048,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
     /* 1 bit per 8x8 */
     ps_mem_rec->u4_mem_size = (max_wd_luma / MIN_CU_SIZE) * (max_ht_luma / MIN_CU_SIZE) / 8;
-#ifdef GPU_BUILD
-    ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-    ps_mem_rec->u4_mem_size = ps_mem_rec->u4_mem_size * 2;
-#endif
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_INTRA_FLAG,
                   ps_mem_rec->u4_mem_size);
 
@@ -2134,10 +2057,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
     /* 1 bit per 8x8 */
     /* Extra row and column are allocated for easy processing of top and left blocks while loop filtering */
     ps_mem_rec->u4_mem_size = ((max_wd_luma + 64) / MIN_CU_SIZE) * ((max_ht_luma + 64) / MIN_CU_SIZE) / 8;
-#ifdef GPU_BUILD
-    ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-    ps_mem_rec->u4_mem_size = ps_mem_rec->u4_mem_size * 2;
-#endif
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_TRANSQUANT_BYPASS_FLAG,
                   ps_mem_rec->u4_mem_size);
 
@@ -2163,9 +2082,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
         /* One format convert/frame copy job per row of CTBs for non-shared mode*/
         num_jobs  += max_ctb_rows;
 
-#ifdef GPU_BUILD
-        num_jobs *= 2;
-#endif
 
         job_queue_size = ihevcd_jobq_ctxt_size();
         job_queue_size += num_jobs * sizeof(proc_job_t);
@@ -2182,11 +2098,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_PROC_MAP];
     ps_mem_rec->u4_mem_size = max_ctb_cnt;
-#ifdef GPU_BUILD
-    /* OpenCL PING PONG buffer */
-    ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-    ps_mem_rec->u4_mem_size *= 2;
-#endif
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_PROC_MAP,
                     ps_mem_rec->u4_mem_size);
 
@@ -2247,43 +2158,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
         size *= MAX_PROCESS_THREADS;
 
 
-#ifdef GPU_SAO_PING_PONG
-        /* To hold SAO left buffer for luma */
-        sao_size += sizeof(UWORD8) * (MAX(max_ht_luma, max_wd_luma)) * 2;
-
-        /* To hold SAO left buffer for chroma */
-        sao_size += sizeof(UWORD8) * (MAX(max_ht_luma, max_wd_luma)) * 2;
-
-        /* To hold SAO top buffer for luma */
-        sao_size += sizeof(UWORD8) * max_wd_luma * 2;
-
-        /* To hold SAO top buffer for chroma */
-        sao_size += sizeof(UWORD8) * max_wd_luma * 2;
-
-        /* To hold SAO top left luma pixel value for last output ctb in a row*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2;
-
-        /* To hold SAO top left chroma pixel value last output ctb in a row*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2 * 2;
-
-        /* To hold SAO top left pixel luma for current ctb - column array*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2;
-
-        /* To hold SAO top left pixel chroma for current ctb-column array*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2 * 2;
-
-        /* To hold SAO top right pixel luma pixel value last output ctb in a row*/
-        sao_size += sizeof(UWORD8) * max_ctb_cols * 2;
-
-        /* To hold SAO top right pixel chroma pixel value last output ctb in a row*/
-        sao_size += sizeof(UWORD8) * max_ctb_cols * 2 * 2;
-
-        /*To hold SAO botton bottom left pixels for luma*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2;
-
-        /*To hold SAO botton bottom left pixels for luma*/
-        sao_size += sizeof(UWORD8) * max_ctb_rows * 2 * 2;
-#else
         /* To hold SAO left buffer for luma */
         sao_size += sizeof(UWORD8) * (MAX(max_ht_luma, max_wd_luma));
 
@@ -2319,7 +2193,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
         /*To hold SAO botton bottom left pixels for luma*/
         sao_size += sizeof(UWORD8) * max_ctb_rows * 2;
-#endif
         sao_size = ALIGN64(sao_size);
         size += sao_size;
         ps_mem_rec->u4_mem_size = size;
@@ -2401,10 +2274,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
         size += qp_const_flag_size;
 
         ps_mem_rec->u4_mem_size = size;
-#ifdef GPU_BUILD
-        ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-        ps_mem_rec->u4_mem_size = ps_mem_rec->u4_mem_size * 2;
-#endif
     }
 
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_BS_QP,
@@ -2421,10 +2290,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
         size *= sizeof(UWORD16);
         ps_mem_rec->u4_mem_size = size;
-#ifdef GPU_BUILD
-        ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-        ps_mem_rec->u4_mem_size = ps_mem_rec->u4_mem_size * 2;
-#endif
     }
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_TILE_IDX,
                     ps_mem_rec->u4_mem_size);
@@ -2441,25 +2306,12 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
 
         /* MAX number of CTBs in a column */
         size *= max_ht_luma / MIN_CTB_SIZE;
-#ifdef GPU_BUILD
-        ps_mem_rec->u4_mem_size = ALIGN128(ps_mem_rec->u4_mem_size);
-        ps_mem_rec->u4_mem_size = size * 2;
-#else
         ps_mem_rec->u4_mem_size = size;
-#endif
     }
 
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_SAO,
                     ps_mem_rec->u4_mem_size);
 
-#ifdef GPU_BUILD
-    /* Memory record for GPU context */
-    ps_mem_rec = &ps_mem_rec_base[MEM_REC_GPU];
-    ps_mem_rec->u4_mem_size = ihevcd_gpu_get_ctxt_size();
-
-    DEBUG("\nMemory record Id %d = %d \n", MEM_REC_GPU,
-                    ps_mem_rec->u4_mem_size);
-#endif
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_REF_PIC];
 
@@ -2484,10 +2336,6 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
     if(0 == share_disp_buf)
     {
         UWORD32 num_reorder_frames_local = num_reorder_frames;
-#ifdef GPU_BUILD
-        // TODO GPU : Increment only if multicore.
-        num_reorder_frames_local += 1;
-#endif
         /* Note: Number of luma samples is not max_wd * max_ht here, instead it is
          * set to maximum number of luma samples allowed at the given level.
          * This is done to ensure that any stream with width and height lesser
@@ -2734,12 +2582,7 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
     ps_codec->u4_bitsbuf_size = ps_mem_rec->u4_mem_size;
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_TU_DATA];
-#ifdef GPU_BUILD
-    ps_codec->apv_tu_data[0] = ps_mem_rec->pv_base;
-    ps_codec->apv_tu_data[1] = (void *)((UWORD8 *)ps_codec->apv_tu_data[0] + (ps_mem_rec->u4_mem_size / 2));
-#else
     ps_codec->pv_tu_data = ps_mem_rec->pv_base;
-#endif
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_MVBANK];
     ps_codec->pv_mv_buf_mgr = ps_mem_rec->pv_base;
     ps_codec->pv_mv_bank_buf_base = (UWORD8 *)ps_codec->pv_mv_buf_mgr + sizeof(buf_mgr_t);
@@ -2760,13 +2603,8 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
     ps_codec->s_parse.ps_pps_base = ps_codec->ps_pps_base;
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_SLICE_HDR];
-#ifdef GPU_BUILD
-    ps_codec->aps_slice_hdr_base[0] = (slice_header_t *)ps_mem_rec->pv_base;
-    ps_codec->aps_slice_hdr_base[1] = (slice_header_t *)ps_mem_rec->pv_base + MAX_SLICE_HDR_CNT;
-#else
     ps_codec->ps_slice_hdr_base = (slice_header_t *)ps_mem_rec->pv_base;
     ps_codec->s_parse.ps_slice_hdr_base = ps_codec->ps_slice_hdr_base;
-#endif
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_TILE];
     ps_codec->ps_tile = (tile_t *)ps_mem_rec->pv_base;
@@ -2791,26 +2629,12 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_INTRA_FLAG];
 
-#ifdef GPU_BUILD
-    ps_codec->apu1_pic_intra_flag[0] = ps_mem_rec->pv_base;
-    ps_codec->apu1_pic_intra_flag[1] = ps_codec->apu1_pic_intra_flag[0] + (ps_mem_rec->u4_mem_size / 2);
-#else
     memset(ps_mem_rec->pv_base, 0, (ps_codec->i4_max_wd / MIN_CU_SIZE) * (ps_codec->i4_max_ht / MIN_CU_SIZE) / 8);
 
     ps_codec->pu1_pic_intra_flag = (UWORD8 *)ps_mem_rec->pv_base;
     ps_codec->s_parse.pu1_pic_intra_flag = ps_codec->pu1_pic_intra_flag;
-#endif
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_TRANSQUANT_BYPASS_FLAG];
 
-#ifdef GPU_BUILD
-    {
-        WORD32 loop_filter_strd = (ps_codec->i4_max_wd + 63) >> 6;
-
-        /* The offset is added for easy processing of top and left blocks while loop filtering */
-        ps_codec->apu1_pic_no_loop_filter_flag[0] = (UWORD8 *)ps_mem_rec->pv_base + loop_filter_strd + 1;
-        ps_codec->apu1_pic_no_loop_filter_flag[1] = (UWORD8 *)ps_mem_rec->pv_base + (ps_mem_rec->u4_mem_size / 2) + loop_filter_strd + 1;
-    }
-#else
     {
         WORD32 loop_filter_size = ((ps_codec->i4_max_wd  + 64) / MIN_CU_SIZE) * ((ps_codec->i4_max_ht + 64) / MIN_CU_SIZE) / 8;
         WORD32 loop_filter_strd = (ps_codec->i4_max_wd + 63) >> 6;
@@ -2823,7 +2647,6 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
         ps_codec->s_parse.s_deblk_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->pu1_pic_no_loop_filter_flag;
         ps_codec->s_parse.s_sao_ctxt.pu1_pic_no_loop_filter_flag = ps_codec->pu1_pic_no_loop_filter_flag;
     }
-#endif
 
     /* Initialize pointers in PPS structures */
     {
@@ -2870,13 +2693,7 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
     ps_codec->pu1_parse_map = (UWORD8 *)ps_mem_rec->pv_base;
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_PROC_MAP];
-#ifdef GPU_BUILD
-    memset(ps_mem_rec->pv_base, 0, ps_mem_rec->u4_mem_size);
-    ps_codec->apu1_proc_map[0] = (UWORD8 *)ps_mem_rec->pv_base;
-    ps_codec->apu1_proc_map[1] = (UWORD8 *)ps_mem_rec->pv_base + (ps_mem_rec->u4_mem_size / 2);
-#else
     ps_codec->pu1_proc_map = (UWORD8 *)ps_mem_rec->pv_base;
-#endif
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_DISP_MGR];
     ps_codec->pv_disp_buf_mgr = ps_mem_rec->pv_base;
 
@@ -3081,7 +2898,6 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
         /* QP changes at CU level - So store at 8x8 level */
         num_8x8 = (ps_codec->i4_max_ht * ps_codec->i4_max_wd) / (MIN_CU_SIZE * MIN_CU_SIZE);
         qp_size = num_8x8;
-#ifndef GPU_BUILD
         memset(pu1_buf, 0, vert_bs_size + horz_bs_size + qp_size + qp_const_flag_size);
 
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
@@ -3108,32 +2924,6 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
 
             pu1_buf -= (vert_bs_size + horz_bs_size + qp_size + qp_const_flag_size);
         }
-#endif
-#ifdef GPU_BUILD
-        ps_codec->apu4_pic_vert_bs[0] = (UWORD32 *)pu1_buf;
-        pu1_buf += vert_bs_size;
-
-        ps_codec->apu4_pic_horz_bs[0] = (UWORD32 *)pu1_buf;
-        pu1_buf += horz_bs_size;
-
-        ps_codec->apu1_pic_qp[0] = (UWORD8 *)pu1_buf;
-        pu1_buf += qp_size;
-
-        ps_codec->apu1_pic_qp_const_in_ctb[0] = (UWORD8 *)pu1_buf;
-        pu1_buf += qp_const_flag_size;
-
-        ps_codec->apu4_pic_vert_bs[1] = (UWORD32 *)pu1_buf;
-        pu1_buf += vert_bs_size;
-
-        ps_codec->apu4_pic_horz_bs[1] = (UWORD32 *)pu1_buf;
-        pu1_buf += horz_bs_size;
-
-        ps_codec->apu1_pic_qp[1] = (UWORD8 *)pu1_buf;
-        pu1_buf += qp_size;
-
-        ps_codec->apu1_pic_qp_const_in_ctb[1] = (UWORD8 *)pu1_buf;
-        pu1_buf += qp_const_flag_size;
-#else
         ps_codec->s_parse.s_bs_ctxt.pu4_pic_vert_bs = (UWORD32 *)pu1_buf;
         pu1_buf += vert_bs_size;
 
@@ -3145,68 +2935,29 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
 
         ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)pu1_buf;
         pu1_buf += qp_const_flag_size;
-#endif
 
     }
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_TILE_IDX];
     {
-#ifdef GPU_BUILD
-        UWORD8 *pu1_buf = (UWORD8 *)ps_mem_rec->pv_base;
-        for(i = 0; i < 2; i++)
-        {
-            ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pu1_buf;
-        }
-
-        pu1_buf += ps_mem_rec->u4_mem_size / 2;
-
-        for(i = 2; i < 4; i++)
-        {
-            ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pu1_buf;
-        }
-#else
         UWORD8 *pu1_buf = (UWORD8 *)ps_mem_rec->pv_base;
 
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pu1_buf + ps_codec->i4_max_wd / MIN_CTB_SIZE /* Offset 1 row */;
         }
-#endif
     }
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_SAO];
-#ifdef GPU_BUILD
-    memset(ps_mem_rec->pv_base, 0, ps_mem_rec->u4_mem_size);
-    ps_codec->aps_pic_sao[0] = (sao_t *)ps_mem_rec->pv_base;
-    ps_codec->aps_pic_sao[1] = (sao_t *)((UWORD32)ps_mem_rec->pv_base + ps_mem_rec->u4_mem_size / 2);
-#else
     ps_codec->s_parse.ps_pic_sao = (sao_t *)ps_mem_rec->pv_base;
     ps_codec->s_parse.s_sao_ctxt.ps_pic_sao = (sao_t *)ps_mem_rec->pv_base;
     for(i = 0; i < MAX_PROCESS_THREADS; i++)
     {
         ps_codec->as_process[i].s_sao_ctxt.ps_pic_sao = ps_codec->s_parse.ps_pic_sao;
     }
-#endif
-#ifdef GPU_BUILD
-    ps_mem_rec = &ps_mem_rec_base[MEM_REC_GPU];
-    ps_codec->s_gpu_ctxt.pv_gpu_priv = ps_mem_rec->pv_base;
-
-
-    /* Initialize opencl device */
-    /* Call GPU init before codec init so that reference frame buf could be allocated */
-    status = ihevcd_gpu_mc_init(ps_codec);
-    RETURN_IF((status == IV_FAIL), IV_FAIL);
-#endif
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_REF_PIC];
-#if defined(GPU_BUILD) && !defined(FRAME_STAGGER_ONLY)
-    ps_codec->pv_pic_buf_mgr = ihevcd_gpu_alloc_ref_buf(ps_codec,
-                                                        ps_mem_rec->u4_mem_alignment,
-                                                        ps_mem_rec->u4_mem_size);
-    RETURN_IF((ps_codec->pv_pic_buf_mgr == NULL), IV_FAIL);
-#else
     ps_codec->pv_pic_buf_mgr = ps_mem_rec->pv_base;
-#endif
     ps_codec->pv_pic_buf_base = (UWORD8 *)ps_codec->pv_pic_buf_mgr + sizeof(buf_mgr_t);
     ps_codec->i4_total_pic_buf_size = ps_mem_rec->u4_mem_size - sizeof(buf_mgr_t);
 
@@ -3281,10 +3032,6 @@ WORD32 ihevcd_retrieve_memrec(iv_obj_t *ps_codec_obj,
     dec_clr_ip = (iv_retrieve_mem_rec_ip_t *)pv_api_ip;
     dec_clr_op = (iv_retrieve_mem_rec_op_t *)pv_api_op;
     ps_codec = (codec_t *)(ps_codec_obj->pv_codec_handle);
-#ifdef GPU_BUILD
-    ihevcd_gpu_mc_deinit(&ps_codec->s_gpu_ctxt);
-
-#endif
 
     if(ps_codec->i4_init_done != 1)
     {
@@ -4182,13 +3929,6 @@ WORD32 ihevcd_get_frame_dimensions(iv_obj_t *ps_codec_obj,
     {
         y_offset = PAD_TOP;
         x_offset = PAD_LEFT;
-#if 0
-        if((NULL != ps_codec->ps_seqParams) && (1 == (ps_codec->ps_seqParams->u1_is_valid)) && (0 != ps_codec->u2_crop_offset_y))
-        {
-            y_offset += ps_codec->u2_crop_offset_y / ps_codec->i4_strd;
-            x_offset += ps_codec->u2_crop_offset_y % ps_codec->i4_strd;
-        }
-#endif
     }
 
     ps_op->u4_disp_wd[0] = disp_wd;
@@ -4486,51 +4226,6 @@ WORD32 ihevcd_set_num_cores(iv_obj_t *ps_codec_obj,
     ps_op->u4_error_code = 0;
     return IV_SUCCESS;
 }
-#ifdef GPU_BUILD
-/**
-*******************************************************************************
-*
-* @brief
-*  Enables or disables GPU in run-time
-*
-* @par Description:
-*
-*
-* @param[in] ps_codec_obj
-*  Pointer to codec object at API level
-*
-* @param[in] pv_api_ip
-*  Pointer to input argument structure
-*
-* @param[out] pv_api_op
-*  Pointer to output argument structure
-*
-* @returns  Status
-*
-* @remarks
-*
-*
-*******************************************************************************
-*/
-
-WORD32 ihevcd_gpu_enable_disable(iv_obj_t *ps_codec_obj,
-                                 void *pv_api_ip,
-                                 void *pv_api_op)
-{
-    ihevcd_cxa_ctl_gpu_enable_diable_ip_t *ps_ip;
-    ihevcd_cxa_ctl_gpu_enable_diable_op_t *ps_op;
-    codec_t *ps_codec = (codec_t *)ps_codec_obj->pv_codec_handle;
-
-    ps_ip = (ihevcd_cxa_ctl_gpu_enable_diable_ip_t *)pv_api_ip;
-    ps_op = (ihevcd_cxa_ctl_gpu_enable_diable_op_t *)pv_api_op;
-
-#ifndef FRAME_STAGGER_ONLY
-    ps_codec->u4_gpu_enabled = ps_ip->u4_gpu_enable_diable;
-#endif
-    ps_op->u4_error_code = 0;
-    return IV_SUCCESS;
-}
-#endif
 /**
 *******************************************************************************
 *
@@ -4656,12 +4351,6 @@ WORD32 ihevcd_ctl(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             ret = ihevcd_set_processor(ps_codec_obj, (void *)pv_api_ip,
                             (void *)pv_api_op);
             break;
-#ifdef GPU_BUILD
-        case IHEVCD_CXA_CMD_CTL_GPU_ENABLE_DISABLE:
-            ret = ihevcd_gpu_enable_disable(ps_codec_obj, (void *)pv_api_ip,
-                            (void *)pv_api_op);
-            break;
-#endif
         default:
             DEBUG("\nDo nothing\n");
             break;

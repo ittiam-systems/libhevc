@@ -350,18 +350,6 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
                 WORD32 pred_flag_l0, pred_flag_l1;
                 WORD32 tmp_x, tmp_y, mvd_x, mvd_y, mvp_x, mvp_y;
                 WORD32 two_pow_16, two_pow_15;
-#if 0
-                if( !pred_flag_l0 )
-                {
-                    s_pu_temp.mv.i1_l0_ref_idx = -1;
-                    s_pu_temp.b2_pred_mode = 3;
-                }
-                if( !pred_flag_l1 )
-                {
-                    s_pu_temp.mv.i1_l1_ref_idx = -1;
-                    s_pu_temp.b2_pred_mode = 3;
-                }
-#endif
 
                 ihevcd_mv_pred(ps_mv_ctxt, pu4_top_pu_idx, pu4_left_pu_idx,
                                pu4_top_left_pu_idx, nbr_pu_idx_strd,
@@ -414,39 +402,7 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
             {
                 WORD32 part_mode;
                 WORD32 part_idx;
-#if 0
-                /* For all part_modes other than PART_2Nx2N, max of PU width and PU height gives
-                 * Coding block size.
-                 * To differentiate between PART_2Nx2N and PART_NxN
-                 * PART_NxN is possible only when CB size is min CB size
-                 * So if pu width and pu height are equal and they are half of min CB size, then current is PART_NxN
-                 */
-                if(pu_wd == pu_ht)
-                {
-                    part_mode = PART_2Nx2N;
-                    if(2 * pu_wd == (ps_sps->i1_log2_min_coding_block_size << 2))
-                    part_mode = PART_NxN;
-                }
-                else
-                {
-
-                    if(pu_wd == cb_size)
-                    {
-                        /* Part Mode is either PART_2NxN or PART_2NxnU or PART_2NxnD */
-                        /* Since the exact mode is not really needed, it is set to PART_2NxN */
-                        part_mode = PART_2NxN;
-                    }
-                    else
-                    {
-                        /* Part Mode is either PART_Nx2N or PART_nLx2N or PART_nRx2N */
-                        /* Since the exact mode is not really needed, it is set to PART_Nx2N */
-                        part_mode = PART_Nx2N;
-                    }
-
-                }
-#else
                 part_mode = ps_pu->b3_part_mode;
-#endif
                 //TODO: Get part_idx
                 part_idx = ps_pu->b2_part_idx;
 
@@ -467,25 +423,6 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
                     }
                 }
             }
-#if DEBUG_PRINT_MV
-            printf("\n-----------------------");
-            printf("\n CTB X = %d, Y = %d",
-                   ps_mv_ctxt->i4_ctb_x, ps_mv_ctxt->i4_ctb_y);
-            printf("\n pu_x = %d, pu_y = %d",
-                   (pu_x_in_4x4 * 4), (pu_y_in_4x4 * 4));
-            printf("\n pu_wd = %d, pu_ht = %d", pu_wd, pu_ht);
-            if(ps_pu->b2_pred_mode == PRED_L0)
-                printf("\n Pred = 0,Ref_idx = %d, MV l0 = %4d %4d", ps_pu->mv.i1_l0_ref_idx, ps_pu->mv.s_l0_mv.i2_mvx,
-                       ps_pu->mv.s_l0_mv.i2_mvy);
-            else if(ps_pu->b2_pred_mode == PRED_L1)
-                printf("\n Pred = 1,Ref_idx = %d,  MV l1 = %4d %4d", ps_pu->mv.i1_l1_ref_idx, ps_pu->mv.s_l1_mv.i2_mvx,
-                       ps_pu->mv.s_l1_mv.i2_mvy);
-            else
-                printf("\n Pred = 2,Ref_idx = %d,Ref_idx = %d, MV l0 = %4d %4d, MV l1 = %4d %4d", ps_pu->mv.i1_l0_ref_idx, ps_pu->mv.i1_l1_ref_idx,
-                       ps_pu->mv.s_l0_mv.i2_mvx, ps_pu->mv.s_l0_mv.i2_mvy,
-                       ps_pu->mv.s_l1_mv.i2_mvx, ps_pu->mv.s_l1_mv.i2_mvy);
-
-#endif
         }
 
         {
@@ -567,7 +504,6 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
         }
     }
 
-#if 1
     /* Updating the CTB level PU idx (Used for collocated MV pred)*/
     {
         WORD32 ctb_row, ctb_col, index_pic_map, index_nbr_map;
@@ -588,6 +524,5 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
             index_nbr_map += nbr_pu_idx_strd;
         }
     }
-#endif
     return num_pu_per_ctb;
 }

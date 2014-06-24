@@ -318,11 +318,9 @@ void ihevc_inter_pred_luma_horz_ssse3(UWORD8 *pu1_src,
 
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 8)
                 {
@@ -411,11 +409,9 @@ void ihevc_inter_pred_luma_horz_ssse3(UWORD8 *pu1_src,
             {
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 4)
                 {
@@ -516,11 +512,9 @@ void ihevc_inter_pred_luma_horz_ssse3(UWORD8 *pu1_src,
                 int offset = 0;
 
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 8)
                 {
@@ -573,11 +567,9 @@ void ihevc_inter_pred_luma_horz_ssse3(UWORD8 *pu1_src,
             {
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 4)
                 {
@@ -985,13 +977,11 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
 
             for(row = 4; row < ht; row += 4)
             {
-#if 1
                 PREFETCH((char const *)(pu1_src + (8 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (9 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (10 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (11 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 s3_0_16x8b = s3_2_16x8b;
                 s3_1_16x8b = s3_3_16x8b;
@@ -1134,13 +1124,11 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
             pu1_src = pu1_src_copy + col;
             pu1_dst = pu1_dst_copy + col;
 
-#if 1
             PREFETCH((char const *)(pu1_src + (8 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (9 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (10 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (11 * src_strd)), _MM_HINT_T0)
 
-#endif
 
             /*load 8 pixel values */
             s2_0_16x8b  = _mm_loadl_epi64((__m128i *)(pu1_src + (-3 * src_strd)));
@@ -1193,12 +1181,10 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
 
             /* i2_tmp = CLIP_U8(i2_tmp);*/
             s9_8x16b = _mm_packus_epi16(s8_8x16b, zero_8x16b);
-#if 1
             s5_8x16b = _mm_loadl_epi64((__m128i *)(pu1_dst));
             s6_8x16b =  _mm_and_si128(s5_8x16b, mask_low_32b);
             s7_8x16b =  _mm_and_si128(s9_8x16b, mask_high_96b);
             s8_8x16b = _mm_or_si128(s6_8x16b, s7_8x16b);
-#endif
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 0*/
             _mm_storel_epi64((__m128i *)(pu1_dst), s8_8x16b);
@@ -1229,12 +1215,10 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
 
             /* i2_tmp = CLIP_U8(i2_tmp);*/
             s29_8x16b = _mm_packus_epi16(s28_8x16b, zero_8x16b);
-#if 1
             s25_8x16b = _mm_loadl_epi64((__m128i *)(pu1_dst + (2 * dst_strd)));
             s26_8x16b =  _mm_and_si128(s25_8x16b, mask_low_32b);
             s27_8x16b =  _mm_and_si128(s29_8x16b, mask_high_96b);
             s28_8x16b = _mm_or_si128(s26_8x16b, s27_8x16b);
-#endif
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 2*/
             _mm_storel_epi64((__m128i *)(pu1_dst + (2 * dst_strd)), s28_8x16b);
@@ -1268,12 +1252,10 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
 
             /* i2_tmp = CLIP_U8(i2_tmp);*/
             s19_8x16b = _mm_packus_epi16(s18_8x16b, zero_8x16b);
-#if 1
             s15_8x16b = _mm_loadl_epi64((__m128i *)(pu1_dst + dst_strd));
             s16_8x16b =  _mm_and_si128(s15_8x16b, mask_low_32b);
             s17_8x16b =  _mm_and_si128(s19_8x16b, mask_high_96b);
             s18_8x16b = _mm_or_si128(s16_8x16b, s17_8x16b);
-#endif
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 1*/
             _mm_storel_epi64((__m128i *)(pu1_dst + (dst_strd)), s18_8x16b);
@@ -1303,12 +1285,10 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
             /* i2_tmp = CLIP_U8(i2_tmp);*/
             s39_8x16b = _mm_packus_epi16(s38_8x16b, zero_8x16b);
 
-#if 1
             s35_8x16b = _mm_loadl_epi64((__m128i *)(pu1_dst + (3 * dst_strd)));
             s36_8x16b =  _mm_and_si128(s35_8x16b, mask_low_32b);
             s37_8x16b =  _mm_and_si128(s39_8x16b, mask_high_96b);
             s38_8x16b = _mm_or_si128(s36_8x16b, s37_8x16b);
-#endif
 
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 2*/
@@ -1320,13 +1300,11 @@ void ihevc_inter_pred_luma_vert_ssse3(UWORD8 *pu1_src,
             for(row = 4; row < ht; row += 4)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (8 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (9 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (10 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (11 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 s3_0_16x8b = s3_2_16x8b;
                 s3_1_16x8b = s3_3_16x8b;
@@ -1700,12 +1678,10 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
 
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
 
-#endif
 
                 for(col = 0; col < wd; col += 8)
                 {
@@ -1783,11 +1759,9 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
             {
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 4)
                 {
@@ -1868,10 +1842,8 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
             {
                 int offset = 0;
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 8)
                 {
@@ -1921,11 +1893,9 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
                 int offset = 0;
 
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 for(col = 0; col < wd; col += 4)
                 {
@@ -3688,11 +3658,9 @@ void ihevc_inter_pred_chroma_horz_ssse3(UWORD8 *pu1_src,
         {
             int offset = 0;
 
-#if 1
             PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
             for(col = 0; col < 2 * wd; col += 4)
             {
@@ -3775,11 +3743,9 @@ void ihevc_inter_pred_chroma_horz_ssse3(UWORD8 *pu1_src,
         {
             int offset = 0;
 
-#if 1
             PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
             for(col = 0; col < 2 * wd; col += 8)
             {
@@ -3952,11 +3918,9 @@ void ihevc_inter_pred_chroma_vert_ssse3(UWORD8 *pu1_src,
             for(row = 0; row < ht; row += 2)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 8 pixel values from -751:-768 pos. relative to cur. pos.*/
                 s21_8x16b  = _mm_loadu_si128((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -4011,7 +3975,6 @@ void ihevc_inter_pred_chroma_vert_ssse3(UWORD8 *pu1_src,
                 _mm_storeu_si128((__m128i *)(pu1_dst), s7_8x16b);
 
 
-#if 1
                 s25_8x16b = _mm_loadu_si128((__m128i *)(pu1_src + (3 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi8(s22_8x16b, s23_8x16b);
@@ -4052,7 +4015,6 @@ void ihevc_inter_pred_chroma_vert_ssse3(UWORD8 *pu1_src,
 /* store 8 8-bit output values  */
                 /* pu1_dst[col] = (UWORD8)i2_tmp; */
                 _mm_storeu_si128((__m128i *)(pu1_dst + dst_strd), s7_8x16b);
-#endif
 
                 pu1_src += 2 * src_strd;
                 pu1_dst += 2 * dst_strd;
@@ -4072,11 +4034,9 @@ void ihevc_inter_pred_chroma_vert_ssse3(UWORD8 *pu1_src,
             for(col = 0; col < 2 * wd; col += 8)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 8 pixel values from -751:-768 pos. relative to cur. pos.*/
                 s21_8x16b  = _mm_loadl_epi64((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -4154,11 +4114,9 @@ void ihevc_inter_pred_chroma_vert_ssse3(UWORD8 *pu1_src,
             for(col = 0; col < 2 * wd; col += 4)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 8 pixel values from -751:-768 pos. relative to cur. pos.*/
                 s21_8x16b  = _mm_loadl_epi64((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -4491,11 +4449,9 @@ void ihevc_inter_pred_chroma_horz_w16out_ssse3(UWORD8 *pu1_src,
         for(row = ht; row >= 2; row -= 2)
         {
             offset = 0;
-#if 1
             PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
             for(col = 0; col < 2 * wd; col += 4)
             {
@@ -4608,11 +4564,9 @@ void ihevc_inter_pred_chroma_horz_w16out_ssse3(UWORD8 *pu1_src,
         for(row = ht; row >= 2; row -= 2)
         {
             offset = 0;
-#if 1
             PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
             PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
             for(col = 0; col < 2 * wd; col += 8)
             {
@@ -4810,11 +4764,9 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
             for(row = 0; row < ht; row += 2)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 16 pixel values */
                 s21_8x16b  = _mm_loadu_si128((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -4856,7 +4808,6 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
                 _mm_storeu_si128((__m128i *)(pi2_dst + 8), s35_8x16b);
 
 
-#if 1
                 s25_8x16b = _mm_loadu_si128((__m128i *)(pu1_src + (3 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi8(s22_8x16b, s23_8x16b);
@@ -4885,7 +4836,6 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 _mm_store_si128((__m128i *)(pi2_dst + dst_strd + 8), s35_8x16b);
 
-#endif
 
                 pu1_src += 2 * src_strd;
                 pi2_dst += 2 * dst_strd;
@@ -4908,11 +4858,9 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
             for(col = 0; col < 2 * wd; col += 8)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 8 pixel values */
                 s21_8x16b  = _mm_loadl_epi64((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -4970,11 +4918,9 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
             for(col = 0; col < 2 * wd; col += 4)
             {
 
-#if 1
                 PREFETCH((char const *)(pu1_src + (6 * src_strd)), _MM_HINT_T0)
                 PREFETCH((char const *)(pu1_src + (7 * src_strd)), _MM_HINT_T0)
 
-#endif
 
                 /*load 8 pixel values */
                 s21_8x16b  = _mm_loadl_epi64((__m128i *)(pu1_src + (-1 * src_strd)));
@@ -5186,7 +5132,6 @@ void ihevc_inter_pred_chroma_vert_w16inp_ssse3(WORD16 *pi2_src,
                 _mm_storel_epi64((__m128i *)(pu1_dst), s7_8x16b);
 
 
-#if 1
                 s25_8x16b = _mm_load_si128((__m128i *)(pi2_src + (3 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi16(s22_8x16b, s23_8x16b);
@@ -5241,7 +5186,6 @@ void ihevc_inter_pred_chroma_vert_w16inp_ssse3(WORD16 *pi2_src,
 /* store 8 8-bit output values  */
                 /* pu1_dst[col] = (UWORD8)i2_tmp; */
                 _mm_storel_epi64((__m128i *)(pu1_dst + dst_strd), s7_8x16b);
-#endif
 
                 pi2_src += 2 * src_strd;
                 pu1_dst += 2 * dst_strd;
@@ -5490,7 +5434,6 @@ void ihevc_inter_pred_chroma_vert_w16inp_w16out_ssse3(WORD16 *pi2_src,
                 _mm_store_si128((__m128i *)(pi2_dst), s7_8x16b);
 
 
-#if 1
                 s25_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (3 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi16(s22_8x16b, s23_8x16b);
@@ -5526,7 +5469,6 @@ void ihevc_inter_pred_chroma_vert_w16inp_w16out_ssse3(WORD16 *pi2_src,
 /* store 8 8-bit output values  */
                 /* pi2_dst[col] = (UWORD8)i2_tmp; */
                 _mm_store_si128((__m128i *)(pi2_dst + dst_strd), s7_8x16b);
-#endif
 
                 pi2_src += 2 * src_strd;
                 pi2_dst += 2 * dst_strd;

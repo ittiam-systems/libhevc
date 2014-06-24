@@ -167,20 +167,11 @@
 /* Maximum slice segments allowed per frame in Level 6.2 */
 #define MAX_SLICE_SEGMENTS_IN_FRAME 600
 
-#ifdef GPU_BUILD
-/**
- * Buffer allocated for ps_tu is re-used after RESET_TU_BUF_NCTB
- * Set this to MAX_NUM_CTBS_IN_FRAME to disabke reuse
- * If built for GPU, always set to maximum.
- */
-#define RESET_TU_BUF_NCTB MAX_NUM_CTBS_IN_FRAME
-#else
 /**
  * Buffer allocated for ps_tu is re-used after RESET_TU_BUF_NCTB
  * Set this to MAX_NUM_CTBS_IN_FRAME to disabke reuse
  */
 #define RESET_TU_BUF_NCTB MAX_NUM_CTBS_IN_FRAME
-#endif
 /**
  * Flag whether to shift the CTB for SAO
  */
@@ -364,12 +355,6 @@ enum
      */
     MEM_REC_SAO,
 
-#ifdef GPU_BUILD
-    /**
-     * Holds buffer GPU context
-     */
-    MEM_REC_GPU,
-#endif
     /**
      * Holds picture buffer manager context and array of pic_buf_ts
      * Also holds reference picture buffers in non-shared mode

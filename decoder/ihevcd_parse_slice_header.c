@@ -71,9 +71,6 @@
 #include "ihevcd_parse_headers.h"
 #include "ihevcd_parse_slice_header.h"
 #include "ihevcd_ref_list.h"
-#ifdef GPU_BUILD
-#include "ihevcd_opencl_mc_interface.h"
-#endif
 
 mv_buf_t* ihevcd_mv_mgr_get_poc(buf_mgr_t *ps_mv_buf_mgr, UWORD32 abs_poc);
 
@@ -241,10 +238,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
     if(ps_codec->i4_slice_error == 1)
         return ret;
 
-#ifdef GPU_BUILD
-    //TODO GPU : Later define it for ARM only version as well
-    ps_codec->s_parse.ps_slice_hdr_base = ps_codec->aps_slice_hdr_base[ps_codec->u4_parsing_view];
-#endif
     idr_pic_flag = (NAL_IDR_W_LP == i1_nal_unit_type) ||
                     (NAL_IDR_N_LP == i1_nal_unit_type);
 
@@ -320,20 +313,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
 
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base + (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
 
-#ifdef GPU_BUILD
-    /* OpenCL Ping Pong buffer */
-    // TODO GPU : Find out why this memcpy is required.
-    if(ps_codec->u4_parsing_view == 1)
-    {
-        //ps_slice_hdr += MAX_SLICE_HDR_CNT;
-        memcpy(ps_slice_hdr, ps_slice_hdr - MAX_SLICE_HDR_CNT, sizeof(slice_header_t));
-    }
-    else if(ps_codec->u4_parsing_view == 0)
-    {
-        if(1 != ps_codec->i4_num_cores)
-            memcpy(ps_slice_hdr, ps_slice_hdr + MAX_SLICE_HDR_CNT, sizeof(slice_header_t));
-    }
-#endif
 
     if((ps_pps->i1_dependent_slice_enabled_flag) &&
        (!first_slice_in_pic_flag))
@@ -710,27 +689,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
     if((!first_slice_in_pic_flag) &&
                     (ps_codec->i4_pic_present))
     {
-#ifdef GPU_BUILD
-        //TODO GPU : Later define it for ARM only version as well
-        slice_header_t *ps_slice_hdr_base = ps_codec->aps_slice_hdr_base[ps_codec->u4_parsing_view];
-#else
         slice_header_t *ps_slice_hdr_base = ps_codec->ps_slice_hdr_base;
-#endif
 
-#if 0
-        if((ps_slice_hdr_base->i1_pps_id != ps_slice_hdr->i1_pps_id) ||
-                        (ps_slice_hdr_base->i1_pic_output_flag != ps_slice_hdr->i1_pic_output_flag) ||
-                        (ps_slice_hdr_base->i1_no_output_of_prior_pics_flag != ps_slice_hdr->i1_no_output_of_prior_pics_flag) ||
-                        (ps_slice_hdr_base->i4_pic_order_cnt_lsb != ps_slice_hdr->i4_pic_order_cnt_lsb) ||
-                        (ps_slice_hdr_base->i1_short_term_ref_pic_set_sps_flag != ps_slice_hdr->i1_short_term_ref_pic_set_sps_flag) ||
-                        (ps_slice_hdr_base->i1_short_term_ref_pic_set_idx != ps_slice_hdr->i1_short_term_ref_pic_set_idx) ||
-                        (ps_slice_hdr_base->i1_num_long_term_sps != ps_slice_hdr->i1_num_long_term_sps) ||
-                        (ps_slice_hdr_base->i1_num_long_term_pics != ps_slice_hdr->i1_num_long_term_pics) ||
-                        (ps_slice_hdr_base->i1_slice_temporal_mvp_enable_flag != ps_slice_hdr->i1_slice_temporal_mvp_enable_flag))
-        {
-            return IHEVCD_IGNORE_SLICE;
-        }
-#else
 
         /* According to the standard, the above conditions must be satisfied - But for error resilience,
          * only the following conditions are checked */
@@ -739,7 +699,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         {
             return IHEVCD_IGNORE_SLICE;
         }
-#endif
 
     }
 
@@ -907,15 +866,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                         (NAL_BLA_W_LP == ps_slice_hdr->i1_nal_unit_type)  ||
                         (0 == ps_codec->u4_pic_cnt))
         {
-#ifdef GPU_BUILD
-            /* TODO GPU : Following fix not tested. */
-            for(i = 0; i < MAX_DPB_BUFS; i++)
-            {
-                if(ps_dpb_mgr->as_dpb_info[i].ps_pic_buf)
-                    ps_dpb_mgr->as_dpb_info[i].ps_pic_buf->u1_used_as_ref = UNUSED_FOR_REF;
-            }
-
-#else
             for(i = 0; i < MAX_DPB_BUFS; i++)
             {
                 if(ps_dpb_mgr->as_dpb_info[i].ps_pic_buf)
@@ -954,7 +904,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                 ps_slice_hdr->as_ref_pic_list1[r_idx].pv_mv_buf = NULL;
             }
 
-#endif
         }
         else
         {

@@ -218,22 +218,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     {
         /* Top CTB's slice header */
         slice_header_t *ps_slice_hdr_top;
-#ifdef GPU_BUILD
-//TODO GPU : Later define it for ARM only version as well
-        {
-            WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
-            if(i4_is_last_ctb_y)
-                cur_ctb_indx += ps_sps->i2_pic_wd_in_ctb;
-            ps_slice_hdr_top = ps_deblk->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
-        }
-#else
         {
             WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
             if(i4_is_last_ctb_y)
                 cur_ctb_indx += ps_sps->i2_pic_wd_in_ctb;
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
-#endif
 
         pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << (log2_ctb_size));
         pu1_src += i4_is_last_ctb_y ? ps_deblk->ps_codec->i4_strd << log2_ctb_size : 0;
@@ -334,15 +324,11 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
                 if(filter_p || filter_q)
                 {
-#if DEBUG_DEBLK_LEAF_LEVEL
-                    {
-                        DUMP_DEBLK_LUMA_VERT(pu1_src, src_strd,
-                                             u4_bs & 3, qp_p, qp_q,
-                                             ps_slice_hdr->i1_beta_offset_div2,
-                                             ps_slice_hdr->i1_tc_offset_div2,
-                                             filter_p, filter_q);
-                    }
-#endif
+                    DUMP_DEBLK_LUMA_VERT(pu1_src, src_strd,
+                                         u4_bs & 3, qp_p, qp_q,
+                                         ps_slice_hdr->i1_beta_offset_div2,
+                                         ps_slice_hdr->i1_tc_offset_div2,
+                                         filter_p, filter_q);
                     ps_codec->s_func_selector.ihevc_deblk_luma_vert_fptr(pu1_src, src_strd,
                                                                          u4_bs & 3, qp_p, qp_q,
                                                                          i1_beta_offset_div2,
@@ -374,22 +360,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
         /* Left CTB's slice header */
         slice_header_t *ps_slice_hdr_left;
-#ifdef GPU_BUILD
-//TODO GPU : Later define it for ARM only version as well
-        {
-            WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
-            if(i4_is_last_ctb_x)
-                cur_ctb_indx += 1;
-            ps_slice_hdr_left = ps_deblk->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
-        }
-#else
         {
             WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
             if(i4_is_last_ctb_x)
                 cur_ctb_indx += 1;
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
-#endif
         pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << log2_ctb_size);
         pu1_src += i4_is_last_ctb_x ? ctb_size : 0;
 
@@ -490,15 +466,11 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
                 if(filter_p || filter_q)
                 {
-#if DEBUG_DEBLK_LEAF_LEVEL
-                    {
-                        DUMP_DEBLK_LUMA_HORZ(pu1_src, src_strd,
-                                             u4_bs & 3, qp_p, qp_q,
-                                             ps_slice_hdr->i1_beta_offset_div2,
-                                             ps_slice_hdr->i1_tc_offset_div2,
-                                             filter_p, filter_q);
-                    }
-#endif
+                    DUMP_DEBLK_LUMA_HORZ(pu1_src, src_strd,
+                                         u4_bs & 3, qp_p, qp_q,
+                                         ps_slice_hdr->i1_beta_offset_div2,
+                                         ps_slice_hdr->i1_tc_offset_div2,
+                                         filter_p, filter_q);
                     ps_codec->s_func_selector.ihevc_deblk_luma_horz_fptr(pu1_src, src_strd,
                                                                          u4_bs & 3, qp_p, qp_q,
                                                                          i1_beta_offset_div2,
@@ -529,22 +501,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
         /* Top CTB's slice header */
         slice_header_t *ps_slice_hdr_top;
-#ifdef GPU_BUILD
-//TODO GPU : Later define it for ARM only version as well
-        {
-            WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
-            if(i4_is_last_ctb_y)
-                cur_ctb_indx += ps_sps->i2_pic_wd_in_ctb;
-            ps_slice_hdr_top = ps_deblk->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
-        }
-#else
         {
             WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
             if(i4_is_last_ctb_y)
                 cur_ctb_indx += ps_sps->i2_pic_wd_in_ctb;
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
-#endif
 
         pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd / 2) << log2_ctb_size);
         pu1_src += i4_is_last_ctb_y ? (ps_deblk->ps_codec->i4_strd / 2) << log2_ctb_size : 0;
@@ -636,16 +598,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 if(filter_p || filter_q)
                 {
                     ASSERT(1 == ((u4_bs & 3) >> 1));
-#if DEBUG_DEBLK_LEAF_LEVEL
-                    {
-                        DUMP_DEBLK_CHROMA_VERT(pu1_src, src_strd,
-                                               u4_bs & 3, qp_p, qp_q,
-                                               ps_pps->i1_pic_cb_qp_offset,
-                                               ps_pps->i1_pic_cr_qp_offset,
-                                               ps_slice_hdr->i1_tc_offset_div2,
-                                               filter_p, filter_q);
-                    }
-#endif
+                    DUMP_DEBLK_CHROMA_VERT(pu1_src, src_strd,
+                                           u4_bs & 3, qp_p, qp_q,
+                                           ps_pps->i1_pic_cb_qp_offset,
+                                           ps_pps->i1_pic_cr_qp_offset,
+                                           ps_slice_hdr->i1_tc_offset_div2,
+                                           filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->s_func_selector.ihevc_deblk_chroma_vert_fptr(pu1_src,
@@ -690,22 +648,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
         /* Left CTB's slice header */
         slice_header_t *ps_slice_hdr_left;
-#ifdef GPU_BUILD
-//TODO GPU : Later define it for ARM only version as well
-        {
-            WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
-            if(i4_is_last_ctb_x)
-                cur_ctb_indx += 1;
-            ps_slice_hdr_left = ps_deblk->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
-        }
-#else
         {
             WORD32 cur_ctb_indx = ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
             if(i4_is_last_ctb_x)
                 cur_ctb_indx += 1;
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
-#endif
 
         pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd / 2) << log2_ctb_size);
         pu1_src += i4_is_last_ctb_x ? ctb_size : 0;
@@ -799,16 +747,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 if(filter_p || filter_q)
                 {
                     ASSERT(1 == ((u4_bs & 3) >> 1));
-#if DEBUG_DEBLK_LEAF_LEVEL
-                    {
-                        DUMP_DEBLK_CHROMA_HORZ(pu1_src, src_strd,
-                                               u4_bs & 3, qp_p, qp_q,
-                                               ps_pps->i1_pic_cb_qp_offset,
-                                               ps_pps->i1_pic_cr_qp_offset,
-                                               ps_slice_hdr->i1_tc_offset_div2,
-                                               filter_p, filter_q);
-                    }
-#endif
+                    DUMP_DEBLK_CHROMA_HORZ(pu1_src, src_strd,
+                                           u4_bs & 3, qp_p, qp_q,
+                                           ps_pps->i1_pic_cb_qp_offset,
+                                           ps_pps->i1_pic_cr_qp_offset,
+                                           ps_slice_hdr->i1_tc_offset_div2,
+                                           filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->s_func_selector.ihevc_deblk_chroma_horz_fptr(pu1_src,
