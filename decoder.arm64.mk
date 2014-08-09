@@ -9,7 +9,6 @@ libhevcd_inc_dir_arm64   +=  $(LOCAL_PATH)/common/arm64
 libhevcd_srcs_c_arm64    +=  decoder/arm/ihevcd_function_selector.c
 libhevcd_srcs_c_arm64    +=  decoder/arm/ihevcd_function_selector_noneon.c
 
-ifeq ($(ARCH_ARM_HAVE_NEON),true)
 libhevcd_srcs_c_arm64    +=  decoder/arm64/ihevcd_function_selector_av8.c
 
 libhevcd_srcs_c_arm64    +=  common/arm/ihevc_intra_pred_filters_neon_intr.c
@@ -84,10 +83,7 @@ libhevcd_srcs_asm_arm64    +=  decoder/arm64/ihevcd_fmt_conv_420sp_to_420p.s
 libhevcd_srcs_asm_arm64    +=  decoder/arm64/ihevcd_fmt_conv_420sp_to_420sp.s
 libhevcd_srcs_asm_arm64    +=  decoder/arm64/ihevcd_fmt_conv_420sp_to_rgba8888.s
 
-libhevcd_cflags_arm += -DDEFAULT_ARCH=D_ARCH_ARMV8_GENERIC
-else
-libhevcd_cflags_arm64 += -DDISABLE_NEON -DDEFAULT_ARCH=D_ARCH_ARM_NONEON
-endif
+libhevcd_cflags_arm64 += -DDEFAULT_ARCH=D_ARCH_ARMV8_GENERIC
 
 
 
