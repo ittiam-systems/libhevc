@@ -1479,8 +1479,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                     (ps_codec->i4_ht != ps_sps->i2_pic_height_in_luma_samples)))
     {
         ps_codec->i4_reset_flag = 1;
-        ps_codec->i4_error_code = IVD_RES_CHANGED;
-        return (IHEVCD_ERROR_T)IHEVCD_FAIL;
+        return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
     }
 
     /* Update display width and display height */
