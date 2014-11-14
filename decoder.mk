@@ -87,4 +87,9 @@ include $(LOCAL_PATH)/decoder.x86_64.mk
 include $(LOCAL_PATH)/decoder.mips.mk
 include $(LOCAL_PATH)/decoder.mips64.mk
 
+ifeq ($(filter $(TARGET_ARCH),arm arm64),$(TARGET_ARCH))
+  # Clang cannot process include in .s.
+  LOCAL_CLANG := false
+endif
+
 include $(BUILD_STATIC_LIBRARY)
