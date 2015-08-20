@@ -3690,18 +3690,8 @@ WORD32 ihevcd_set_params(iv_obj_t *ps_codec_obj,
     }
 
 
-    if((-1 != (WORD32)s_ctl_dynparams_ip->u4_disp_wd) &&
-                    (0  != s_ctl_dynparams_ip->u4_disp_wd) &&
-                    (0  != strd) &&
-                    ((WORD32)s_ctl_dynparams_ip->u4_disp_wd < strd))
     {
-        s_ctl_dynparams_op->u4_error_code |= (1 << IVD_UNSUPPORTEDPARAM);
-        s_ctl_dynparams_op->u4_error_code |= IHEVCD_INVALID_DISP_STRD;
-        ret = IV_FAIL;
-    }
-    else
-    {
-        if((WORD32)s_ctl_dynparams_ip->u4_disp_wd >= ps_codec->i4_wd)
+        if((WORD32)s_ctl_dynparams_ip->u4_disp_wd >= ps_codec->i4_disp_wd)
         {
             strd = s_ctl_dynparams_ip->u4_disp_wd;
         }
