@@ -577,6 +577,13 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
                                         ps_codec->pu1_bitsbuf,
                                         bytes_remaining,
                                         &nal_len, &bits_len);
+
+            /* Decoder may read upto 8 extra bytes at the end of frame */
+            /* These are not used, but still set them to zero to avoid uninitialized reads */
+            if(bits_len < (WORD32)(ps_codec->u4_bitsbuf_size - 8))
+            {
+                memset(ps_codec->pu1_bitsbuf + bits_len, 0, 2 * sizeof(UWORD32));
+            }
         }
         /* This may be used to update the offsets for tiles and entropy sync row offsets */
         ps_codec->i4_num_emln_bytes = nal_len - bits_len;
