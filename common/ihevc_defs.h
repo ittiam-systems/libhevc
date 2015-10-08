@@ -256,10 +256,10 @@ typedef enum {
 /* Tile restrictions                                                         */
 /*****************************************************************************/
 /* Minimum tile width in Main Profile */
-#define MIN_TILE_WD  MIN_CTB_SIZE
+#define MIN_TILE_WD  MAX_CTB_SIZE
 
 /* Minimum tile height in Main Profile */
-#define MIN_TILE_HT  MIN_CTB_SIZE
+#define MIN_TILE_HT  MAX_CTB_SIZE
 
 /*****************************************************************************/
 /* SPS restrictions                                                          */
