@@ -244,14 +244,25 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
             }
             else
             {
-                ps_dec_op->s_disp_frm_buf.pv_u_buf =
-                                ps_dec_ip->s_out_buffer.pu1_bufs[1];
-                ps_dec_op->s_disp_frm_buf.pv_v_buf =
-                                ps_dec_ip->s_out_buffer.pu1_bufs[2];
+                WORD32 i;
+                UWORD8 *pu1_u_dst = NULL, *pu1_v_dst = NULL;
+                for(i = 0; i < ps_codec->i4_share_disp_buf_cnt; i++)
+                {
+                    WORD32 diff = ps_disp_buf->pu1_luma - ps_codec->s_disp_buffer[i].pu1_bufs[0];
+                    if(diff == (ps_codec->i4_strd * PAD_TOP + PAD_LEFT))
+                    {
+                        pu1_u_dst = ps_codec->s_disp_buffer[i].pu1_bufs[1];
+                        pu1_u_dst += (ps_codec->i4_strd * PAD_TOP) / 4 + (PAD_LEFT / 2);
 
+                        pu1_v_dst = ps_codec->s_disp_buffer[i].pu1_bufs[2];
+                        pu1_v_dst += (ps_codec->i4_strd * PAD_TOP) / 4 + (PAD_LEFT / 2);
+                        break;
+                    }
+                }
+                ps_dec_op->s_disp_frm_buf.pv_u_buf = pu1_u_dst;
+                ps_dec_op->s_disp_frm_buf.pv_v_buf = pu1_v_dst;
             }
             ps_dec_op->s_disp_frm_buf.u4_y_strd = ps_codec->i4_strd;
-
         }
         else
         {
