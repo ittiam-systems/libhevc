@@ -271,6 +271,9 @@ WORD32 ihevcd_get_pic_mv_bank_size(WORD32 num_luma_samples)
     /* Size for storing pu_t for each PU */
     mv_bank_size += num_pu * sizeof(pu_t);
 
+    /* Size for storing slice_idx for each CTB */
+    mv_bank_size += ALIGN4(num_ctb * sizeof(UWORD16));
+
     size =  mv_bank_size;
     return size;
 }
@@ -635,7 +638,7 @@ IHEVCD_ERROR_T ihevcd_mv_buf_mgr_add_bufs(codec_t *ps_codec)
         pu1_buf += num_pu;
 
         ps_mv_buf->pu1_pic_slice_map = (UWORD16 *)pu1_buf;
-        pu1_buf += num_ctb * sizeof(UWORD16);
+        pu1_buf += ALIGN4(num_ctb * sizeof(UWORD16));
 
         ps_mv_buf->ps_pic_pu = (pu_t *)pu1_buf;
 
