@@ -2603,7 +2603,6 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
     ps_codec->s_parse.ps_pps_base = ps_codec->ps_pps_base;
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_SLICE_HDR];
-    memset(ps_mem_rec->pv_base, 0, ps_mem_rec->u4_mem_size);
     ps_codec->ps_slice_hdr_base = (slice_header_t *)ps_mem_rec->pv_base;
     ps_codec->s_parse.ps_slice_hdr_base = ps_codec->ps_slice_hdr_base;
 
@@ -2715,7 +2714,6 @@ WORD32 ihevcd_init_mem_rec(iv_obj_t *ps_codec_obj,
 
 
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_PROC_SCRATCH];
-    memset(ps_mem_rec->pv_base, 0, ps_mem_rec->u4_mem_size);
     {
         UWORD8 *pu1_buf = (UWORD8 *)ps_mem_rec->pv_base;
         WORD32 pic_pu_idx_map_size;
