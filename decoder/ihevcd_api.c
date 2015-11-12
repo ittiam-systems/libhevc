@@ -1237,6 +1237,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = MAX_SLICE_HDR_CNT * sizeof(slice_header_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->ps_slice_hdr_base = (slice_header_t *)pv_buf;
     ps_codec->s_parse.ps_slice_hdr_base = ps_codec->ps_slice_hdr_base;
 
@@ -1305,7 +1306,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
         pu1_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
         RETURN_IF((NULL == pu1_buf), IV_FAIL);
-
+        memset(pu1_buf, 0, size);
 
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
