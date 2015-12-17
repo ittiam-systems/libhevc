@@ -551,8 +551,8 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     /* Initialize MV Bank buffer manager */
     ps_sps = ps_codec->s_parse.ps_sps;
 
-    pic_size = ps_sps->i2_pic_width_in_luma_samples *
-                    ps_sps->i2_pic_height_in_luma_samples;
+    pic_size = ALIGN64(ps_sps->i2_pic_width_in_luma_samples) *
+                    ALIGN64(ps_sps->i2_pic_height_in_luma_samples);
 
 
     /* Compute the number of MB Bank buffers needed */
@@ -673,8 +673,8 @@ IHEVCD_ERROR_T ihevcd_mv_buf_mgr_add_bufs(codec_t *ps_codec)
     /* Compute the number of MB Bank buffers needed */
     level = ps_codec->i4_init_level;
     max_dpb_size = ihevcd_get_dpb_size(level,
-                                       ps_sps->i2_pic_width_in_luma_samples *
-                                       ps_sps->i2_pic_height_in_luma_samples);
+                                       ALIGN64(ps_sps->i2_pic_width_in_luma_samples) *
+                                       ALIGN64(ps_sps->i2_pic_height_in_luma_samples));
 
     /* Allocate one extra MV Bank to handle current frame
      * In case of asynchronous parsing and processing, number of buffers should increase here
