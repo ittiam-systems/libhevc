@@ -147,7 +147,7 @@ static INLINE UWORD32 CTZ(UWORD32 u4_word)
         r = 1;                                          \
     }                                                   \
 }
-#define GCC_ENABLE 1
+#define GCC_ENABLE 0
 
 #if GCC_ENABLE
 #define _mm256_loadu2_m128i(X,Y) _mm256_insertf128_si256(_mm256_castsi128_si256(_mm_loadu_si128((Y))), _mm_loadu_si128((X)),1);
