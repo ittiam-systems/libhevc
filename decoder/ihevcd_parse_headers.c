@@ -1499,6 +1499,13 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
     }
 
+    if((ps_sps->i2_pic_width_in_luma_samples > MAX_WD) ||
+                    ((ps_sps->i2_pic_width_in_luma_samples * ps_sps->i2_pic_height_in_luma_samples) >
+                    (MAX_WD * MAX_HT)))
+    {
+        return (IHEVCD_ERROR_T)IVD_STREAM_WIDTH_HEIGHT_NOT_SUPPORTED;
+    }
+
     /* Update display width and display height */
     {
         WORD32 disp_wd, disp_ht;
