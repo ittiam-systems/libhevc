@@ -635,7 +635,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         }
 
         if((IVD_RES_CHANGED == ret) ||
-           (IHEVCD_UNSUPPORTED_DIMENSIONS == ret))
+           (IVD_STREAM_WIDTH_HEIGHT_NOT_SUPPORTED == ret))
         {
             break;
         }
