@@ -518,6 +518,47 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
             ps_pic_buf->pu1_chroma = pu1_buf + ps_codec->i4_strd * (PAD_TOP / 2) + PAD_LEFT;
             pu1_buf += chroma_samples;
 
+            /* Pad boundary pixels (one pixel on all sides) */
+            /* This ensures SAO does not read uninitialized pixels */
+            /* Note these are not used in actual processing */
+            {
+                UWORD8 *pu1_buf;
+                WORD32 strd, wd, ht;
+                WORD32 i;
+                strd = ps_codec->i4_strd;
+                wd = ps_codec->i4_wd;
+                ht = ps_codec->i4_ht;
+
+                pu1_buf = ps_pic_buf->pu1_luma;
+                for(i = 0; i < ht; i++)
+                {
+                    pu1_buf[-1] = 0;
+                    pu1_buf[wd] = 0;
+                    pu1_buf += strd;
+                }
+                pu1_buf = ps_pic_buf->pu1_luma;
+                memset(pu1_buf - strd - 1, 0, wd + 2);
+
+                pu1_buf += strd * ht;
+                memset(pu1_buf - 1, 0, wd + 2);
+
+                pu1_buf = ps_pic_buf->pu1_chroma;
+                ht >>= 1;
+                for(i = 0; i < ht; i++)
+                {
+                    pu1_buf[-1] = 0;
+                    pu1_buf[-2] = 0;
+                    pu1_buf[wd] = 0;
+                    pu1_buf[wd + 1] = 0;
+                    pu1_buf += strd;
+                }
+                pu1_buf = ps_pic_buf->pu1_chroma;
+                memset(pu1_buf - strd - 2, 0, wd + 4);
+
+                pu1_buf += strd * ht;
+                memset(pu1_buf - 2, 0, wd + 4);
+            }
+
             buf_ret = ihevc_buf_mgr_add((buf_mgr_t *)ps_codec->pv_pic_buf_mgr, ps_pic_buf, i);
 
 
