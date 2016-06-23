@@ -823,6 +823,27 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         pu1_buf = ps_cur_pic->pu1_chroma;
 
         pu1_cur_pic_chroma = pu1_buf;
+
+        ps_cur_pic->s_sei_params.i1_sei_parameters_present_flag = 0;
+        if(ps_codec->s_parse.s_sei_params.i1_sei_parameters_present_flag)
+        {
+            sei_params_t *ps_sei = &ps_codec->s_parse.s_sei_params;
+            ps_cur_pic->s_sei_params = ps_codec->s_parse.s_sei_params;
+
+            /* Once sei_params is copied to pic_buf,
+             * mark sei_params in s_parse as not present,
+             * this ensures that future frames do not use this data again.
+             */
+            ps_sei->i1_sei_parameters_present_flag = 0;
+            ps_sei->i1_user_data_registered_present_flag = 0;
+            ps_sei->i1_aud_present_flag = 0;
+            ps_sei->i1_time_code_present_flag = 0;
+            ps_sei->i1_buf_period_params_present_flag = 0;
+            ps_sei->i1_pic_timing_params_present_flag = 0;
+            ps_sei->i1_recovery_point_params_present_flag = 0;
+            ps_sei->i1_active_parameter_set = 0;
+            ps_sei->i4_sei_mastering_disp_colour_vol_params_present_flags = 0;
+        }
     }
 
     if(0 == ps_codec->u4_pic_cnt)
