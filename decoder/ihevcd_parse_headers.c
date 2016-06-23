@@ -666,21 +666,96 @@ static WORD32 ihevcd_parse_vui_parameters(bitstrm_t *ps_bitstrm,
                                           WORD32 sps_max_sub_layers_minus1)
 {
     WORD32 ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+    UWORD16 u2_sar_width = 0;
+    UWORD16 u2_sar_height = 0;
 
     BITS_PARSE("aspect_ratio_info_present_flag", ps_vui->u1_aspect_ratio_info_present_flag, ps_bitstrm, 1);
 
     ps_vui->u1_aspect_ratio_idc = SAR_UNUSED;
-    ps_vui->u2_sar_width = 0;
-    ps_vui->u2_sar_height = 0;
+    u2_sar_width = 0;
+    u2_sar_height = 0;
     if(ps_vui->u1_aspect_ratio_info_present_flag)
     {
         BITS_PARSE("aspect_ratio_idc", ps_vui->u1_aspect_ratio_idc, ps_bitstrm, 8);
-        if(ps_vui->u1_aspect_ratio_idc  ==  EXTENDED_SAR)
+        switch(ps_vui->u1_aspect_ratio_idc)
         {
-            BITS_PARSE("sar_width", ps_vui->u2_sar_width, ps_bitstrm, 16);
-            BITS_PARSE("sar_height", ps_vui->u2_sar_height, ps_bitstrm, 16);
+            case SAR_1_1:
+                u2_sar_width = 1;
+                u2_sar_height = 1;
+                break;
+            case SAR_12_11:
+                u2_sar_width = 12;
+                u2_sar_height = 11;
+                break;
+            case SAR_10_11:
+                u2_sar_width = 10;
+                u2_sar_height = 11;
+                break;
+            case SAR_16_11:
+                u2_sar_width = 16;
+                u2_sar_height = 11;
+                break;
+            case SAR_40_33:
+                u2_sar_width = 40;
+                u2_sar_height = 33;
+                break;
+            case SAR_24_11:
+                u2_sar_width = 24;
+                u2_sar_height = 11;
+                break;
+            case SAR_20_11:
+                u2_sar_width = 20;
+                u2_sar_height = 11;
+                break;
+            case SAR_32_11:
+                u2_sar_width = 32;
+                u2_sar_height = 11;
+                break;
+            case SAR_80_33:
+                u2_sar_width = 80;
+                u2_sar_height = 33;
+                break;
+            case SAR_18_11:
+                u2_sar_width = 18;
+                u2_sar_height = 11;
+                break;
+            case SAR_15_11:
+                u2_sar_width = 15;
+                u2_sar_height = 11;
+                break;
+            case SAR_64_33:
+                u2_sar_width = 64;
+                u2_sar_height = 33;
+                break;
+            case SAR_160_99:
+                u2_sar_width = 160;
+                u2_sar_height = 99;
+                break;
+            case SAR_4_3:
+                u2_sar_width = 4;
+                u2_sar_height = 3;
+                break;
+            case SAR_3_2:
+                u2_sar_width = 3;
+                u2_sar_height = 2;
+                break;
+            case SAR_2_1:
+                u2_sar_width = 2;
+                u2_sar_height = 1;
+                break;
+            case EXTENDED_SAR:
+                BITS_PARSE("sar_width", u2_sar_width, ps_bitstrm, 16);
+                BITS_PARSE("sar_height", u2_sar_height, ps_bitstrm, 16);
+                break;
+            default:
+                u2_sar_width = 0;
+                u2_sar_height = 0;
+                break;
         }
     }
+
+    ps_vui->u2_sar_width    = u2_sar_width;
+    ps_vui->u2_sar_height   = u2_sar_height;
 
     BITS_PARSE("overscan_info_present_flag", ps_vui->u1_overscan_info_present_flag, ps_bitstrm, 1);
     ps_vui->u1_overscan_appropriate_flag = 0;
@@ -823,13 +898,13 @@ static IHEVCD_ERROR_T ihevcd_parse_profile_tier_level_layer(bitstrm_t *ps_bitstr
     ps_ptl->i1_general_progressive_source_flag = value;
 
     BITS_PARSE("general_interlaced_source_flag", value, ps_bitstrm, 1);
-    ps_ptl->i1_general_progressive_source_flag = value;
+    ps_ptl->i1_general_interlaced_source_flag = value;
 
     BITS_PARSE("general_non_packed_constraint_flag", value, ps_bitstrm, 1);
-    ps_ptl->i1_general_progressive_source_flag = value;
+    ps_ptl->i1_general_non_packed_constraint_flag = value;
 
     BITS_PARSE("general_frame_only_constraint_flag", value, ps_bitstrm, 1);
-    ps_ptl->i1_general_progressive_source_flag = value;
+    ps_ptl->i1_frame_only_constraint_flag = value;
 
     BITS_PARSE("XXX_reserved_zero_44bits[0..15]", value, ps_bitstrm, 16);
 
@@ -882,6 +957,10 @@ static IHEVCD_ERROR_T ihevcd_profile_tier_level(bitstrm_t *ps_bitstrm,
     if(profile_present)
     {
         ret = ihevcd_parse_profile_tier_level_layer(ps_bitstrm, &ps_ptl->s_ptl_gen);
+        if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+        {
+            return ret;
+        }
     }
 
     BITS_PARSE("general_level_idc", value, ps_bitstrm, 8);
@@ -1961,7 +2040,600 @@ void ihevcd_copy_pps(codec_t *ps_codec, WORD32 pps_id, WORD32 pps_id_ref)
 }
 
 
+IHEVCD_ERROR_T ihevcd_parse_buffering_period_sei(codec_t *ps_codec,
+                                                 sps_t *ps_sps)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 value;
+    vui_t *ps_vui;
+    buf_period_sei_params_t *ps_buf_period_sei_params;
+    UWORD32 i;
+    hrd_params_t *ps_vui_hdr;
+    UWORD32 u4_cpb_cnt;
 
+    ps_vui = &ps_sps->s_vui_parameters;
+    ps_vui_hdr = &ps_vui->s_vui_hrd_parameters;
+
+    ps_buf_period_sei_params = &ps_parse->s_sei_params.s_buf_period_sei_params;
+
+    ps_parse->s_sei_params.i1_buf_period_params_present_flag = 1;
+
+    UEV_PARSE("bp_seq_parameter_set_id", value, ps_bitstrm);
+    ps_buf_period_sei_params->u1_bp_seq_parameter_set_id = value;
+
+    if(!ps_vui_hdr->u1_sub_pic_cpb_params_present_flag)
+    {
+        BITS_PARSE("irap_cpb_params_present_flag", value, ps_bitstrm, 1);
+        ps_buf_period_sei_params->u1_rap_cpb_params_present_flag = value;
+    }
+
+    if(ps_buf_period_sei_params->u1_rap_cpb_params_present_flag)
+    {
+        BITS_PARSE("cpb_delay_offset",
+                   value,
+                   ps_bitstrm,
+                   (ps_vui_hdr->u1_au_cpb_removal_delay_length_minus1
+                                   + 1));
+        ps_buf_period_sei_params->u4_cpb_delay_offset = value;
+
+        BITS_PARSE("dpb_delay_offset",
+                   value,
+                   ps_bitstrm,
+                   (ps_vui_hdr->u1_dpb_output_delay_length_minus1
+                                   + 1));
+        ps_buf_period_sei_params->u4_dpb_delay_offset = value;
+    }
+    else
+    {
+        ps_buf_period_sei_params->u4_cpb_delay_offset = 0;
+        ps_buf_period_sei_params->u4_dpb_delay_offset = 0;
+    }
+
+    BITS_PARSE("concatenation_flag", value, ps_bitstrm, 1);
+    ps_buf_period_sei_params->u1_concatenation_flag = value;
+
+    BITS_PARSE("au_cpb_removal_delay_delta_minus1",
+               value,
+               ps_bitstrm,
+               (ps_vui_hdr->u1_au_cpb_removal_delay_length_minus1
+                               + 1));
+    ps_buf_period_sei_params->u4_au_cpb_removal_delay_delta_minus1 = value;
+
+    if(ps_vui_hdr->u1_nal_hrd_parameters_present_flag)
+    {
+        u4_cpb_cnt = ps_vui_hdr->au1_cpb_cnt_minus1[0];
+
+        for(i = 0; i <= u4_cpb_cnt; i++)
+        {
+            BITS_PARSE("nal_initial_cpb_removal_delay[i]",
+                       value,
+                       ps_bitstrm,
+                       (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                       + 1));
+            ps_buf_period_sei_params->au4_nal_initial_cpb_removal_delay[i] =
+                            value;
+
+            BITS_PARSE("nal_initial_cpb_removal_delay_offset",
+                       value,
+                       ps_bitstrm,
+                       (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                       + 1));
+            ps_buf_period_sei_params->au4_nal_initial_cpb_removal_delay_offset[i] =
+                            value;
+
+            if(ps_vui_hdr->u1_sub_pic_cpb_params_present_flag
+                            || ps_buf_period_sei_params->u1_rap_cpb_params_present_flag)
+            {
+                BITS_PARSE("nal_initial_alt_cpb_removal_delay[i]",
+                           value,
+                           ps_bitstrm,
+                           (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                           + 1));
+                ps_buf_period_sei_params->au4_nal_initial_alt_cpb_removal_delay[i] =
+                                value;
+
+                BITS_PARSE("nal_initial_alt_cpb_removal_delay_offset",
+                           value,
+                           ps_bitstrm,
+                           (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                           + 1));
+                ps_buf_period_sei_params->au4_nal_initial_alt_cpb_removal_delay_offset[i] =
+                                value;
+            }
+        }
+    }
+
+    if(ps_vui_hdr->u1_vcl_hrd_parameters_present_flag)
+    {
+        u4_cpb_cnt = ps_vui_hdr->au1_cpb_cnt_minus1[0];
+
+        for(i = 0; i <= u4_cpb_cnt; i++)
+        {
+            BITS_PARSE("vcl_initial_cpb_removal_delay[i]",
+                       value,
+                       ps_bitstrm,
+                       (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                       + 1));
+            ps_buf_period_sei_params->au4_vcl_initial_cpb_removal_delay[i] =
+                            value;
+
+            BITS_PARSE("vcl_initial_cpb_removal_delay_offset",
+                       value,
+                       ps_bitstrm,
+                       (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                       + 1));
+            ps_buf_period_sei_params->au4_vcl_initial_cpb_removal_delay_offset[i] =
+                            value;
+
+            if(ps_vui_hdr->u1_sub_pic_cpb_params_present_flag
+                            || ps_buf_period_sei_params->u1_rap_cpb_params_present_flag)
+            {
+                BITS_PARSE("vcl_initial_alt_cpb_removal_delay[i]",
+                           value,
+                           ps_bitstrm,
+                           (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                           + 1));
+                ps_buf_period_sei_params->au4_vcl_initial_alt_cpb_removal_delay[i] =
+                                value;
+
+                BITS_PARSE("vcl_initial_alt_cpb_removal_delay_offset",
+                           value,
+                           ps_bitstrm,
+                           (ps_vui_hdr->u1_initial_cpb_removal_delay_length_minus1
+                                           + 1));
+                ps_buf_period_sei_params->au4_vcl_initial_alt_cpb_removal_delay_offset[i] =
+                                value;
+            }
+        }
+    }
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
+
+IHEVCD_ERROR_T ihevcd_parse_pic_timing_sei(codec_t *ps_codec, sps_t *ps_sps)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 value;
+    vui_t *ps_vui;
+    UWORD32 i;
+    hrd_params_t *ps_vui_hdr;
+    UWORD32 u4_cpb_dpb_delays_present_flag = 0;
+    pic_timing_sei_params_t *ps_pic_timing;
+
+    ps_pic_timing = &ps_parse->s_sei_params.s_pic_timing_sei_params;
+    ps_vui = &ps_sps->s_vui_parameters;
+    ps_vui_hdr = &ps_vui->s_vui_hrd_parameters;
+    ps_parse->s_sei_params.i1_pic_timing_params_present_flag = 1;
+    if(ps_vui->u1_frame_field_info_present_flag)
+    {
+        BITS_PARSE("pic_struct", value, ps_bitstrm, 4);
+        ps_pic_timing->u4_pic_struct = value;
+
+        BITS_PARSE("source_scan_type", value, ps_bitstrm, 2);
+        ps_pic_timing->u4_source_scan_type = value;
+
+        BITS_PARSE("duplicate_flag", value, ps_bitstrm, 1);
+        ps_pic_timing->u1_duplicate_flag = value;
+    }
+
+    if(ps_vui_hdr->u1_nal_hrd_parameters_present_flag
+                    || ps_vui_hdr->u1_vcl_hrd_parameters_present_flag)
+    {
+        u4_cpb_dpb_delays_present_flag = 1;
+    }
+    else
+    {
+        u4_cpb_dpb_delays_present_flag = 0;
+    }
+
+    if(u4_cpb_dpb_delays_present_flag)
+    {
+        BITS_PARSE("au_cpb_removal_delay_minus1", value, ps_bitstrm,
+                   (ps_vui_hdr->u1_au_cpb_removal_delay_length_minus1 + 1));
+        ps_pic_timing->u4_au_cpb_removal_delay_minus1 = value;
+
+        BITS_PARSE("pic_dpb_output_delay", value, ps_bitstrm,
+                   (ps_vui_hdr->u1_dpb_output_delay_length_minus1 + 1));
+        ps_pic_timing->u4_pic_dpb_output_delay = value;
+
+        if(ps_vui_hdr->u1_sub_pic_cpb_params_present_flag)
+        {
+            BITS_PARSE("pic_dpb_output_du_delay", value, ps_bitstrm,
+                       (ps_vui_hdr->u1_dpb_output_delay_du_length_minus1 + 1));
+            ps_pic_timing->u4_pic_dpb_output_du_delay = value;
+        }
+
+        if(ps_vui_hdr->u1_sub_pic_cpb_params_present_flag
+                        && ps_vui_hdr->u1_sub_pic_cpb_params_in_pic_timing_sei_flag)
+        {
+            UEV_PARSE("num_decoding_units_minus1", value, ps_bitstrm);
+            ps_pic_timing->u4_num_decoding_units_minus1 = value;
+
+            BITS_PARSE("du_common_cpb_removal_delay_flag", value, ps_bitstrm, 1);
+            ps_pic_timing->u1_du_common_cpb_removal_delay_flag = value;
+
+            if(ps_pic_timing->u1_du_common_cpb_removal_delay_flag)
+            {
+                BITS_PARSE("du_common_cpb_removal_delay_increment_minus1",
+                           value,
+                           ps_bitstrm,
+                           (ps_vui_hdr->u1_du_cpb_removal_delay_increment_length_minus1
+                                           + 1));
+                ps_pic_timing->u4_du_common_cpb_removal_delay_increment_minus1 =
+                                value;
+            }
+
+            for(i = 0; i <= ps_pic_timing->u4_num_decoding_units_minus1; i++)
+            {
+                UEV_PARSE("num_nalus_in_du_minus1", value, ps_bitstrm);
+                ps_pic_timing->au4_num_nalus_in_du_minus1[i] = value;
+
+                if((!ps_pic_timing->u1_du_common_cpb_removal_delay_flag)
+                                && (i < ps_pic_timing->u4_num_decoding_units_minus1))
+                {
+                    BITS_PARSE("du_common_cpb_removal_delay_increment_minus1",
+                               value,
+                               ps_bitstrm,
+                               (ps_vui_hdr->u1_du_cpb_removal_delay_increment_length_minus1
+                                               + 1));
+                    ps_pic_timing->au4_du_cpb_removal_delay_increment_minus1[i] =
+                                    value;
+                }
+            }
+        }
+    }
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
+
+IHEVCD_ERROR_T ihevcd_parse_time_code_sei(codec_t *ps_codec)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 value;
+    time_code_t *ps_time_code;
+    WORD32 i;
+
+    ps_parse->s_sei_params.i1_time_code_present_flag = 1;
+    ps_time_code = &ps_parse->s_sei_params.s_time_code;
+
+    BITS_PARSE("num_clock_ts", value, ps_bitstrm, 2);
+    ps_time_code->u1_num_clock_ts = value;
+
+    for(i = 0; i < ps_time_code->u1_num_clock_ts; i++)
+    {
+        BITS_PARSE("clock_timestamp_flag[i]", value, ps_bitstrm, 1);
+        ps_time_code->au1_clock_timestamp_flag[i] = value;
+
+        if(ps_time_code->au1_clock_timestamp_flag[i])
+        {
+            BITS_PARSE("units_field_based_flag[i]", value, ps_bitstrm, 1);
+            ps_time_code->au1_units_field_based_flag[i] = value;
+
+            BITS_PARSE("counting_type[i]", value, ps_bitstrm, 5);
+            ps_time_code->au1_counting_type[i] = value;
+
+            BITS_PARSE("full_timestamp_flag[i]", value, ps_bitstrm, 1);
+            ps_time_code->au1_full_timestamp_flag[i] = value;
+
+            BITS_PARSE("discontinuity_flag[i]", value, ps_bitstrm, 1);
+            ps_time_code->au1_discontinuity_flag[i] = value;
+
+            BITS_PARSE("cnt_dropped_flag[i]", value, ps_bitstrm, 1);
+            ps_time_code->au1_cnt_dropped_flag[i] = value;
+
+            BITS_PARSE("n_frames[i]", value, ps_bitstrm, 9);
+            ps_time_code->au2_n_frames[i] = value;
+
+            if(ps_time_code->au1_full_timestamp_flag[i])
+            {
+                BITS_PARSE("seconds_value[i]", value, ps_bitstrm, 6);
+                ps_time_code->au1_seconds_value[i] = value;
+
+                BITS_PARSE("minutes_value[i]", value, ps_bitstrm, 6);
+                ps_time_code->au1_minutes_value[i] = value;
+
+                BITS_PARSE("hours_value[i]", value, ps_bitstrm, 5);
+                ps_time_code->au1_hours_value[i] = value;
+            }
+            else
+            {
+                BITS_PARSE("seconds_flag[i]", value, ps_bitstrm, 1);
+                ps_time_code->au1_seconds_flag[i] = value;
+
+                if(ps_time_code->au1_seconds_flag[i])
+                {
+                    BITS_PARSE("seconds_value[i]", value, ps_bitstrm, 6);
+                    ps_time_code->au1_seconds_value[i] = value;
+
+                    BITS_PARSE("minutes_flag[i]", value, ps_bitstrm, 1);
+                    ps_time_code->au1_minutes_flag[i] = value;
+
+                    if(ps_time_code->au1_minutes_flag[i])
+                    {
+                        BITS_PARSE("minutes_value[i]", value, ps_bitstrm, 6);
+                        ps_time_code->au1_minutes_value[i] = value;
+
+                        BITS_PARSE("hours_flag[i]", value, ps_bitstrm, 1);
+                        ps_time_code->au1_hours_flag[i] = value;
+
+                        if(ps_time_code->au1_hours_flag[i])
+                        {
+                            BITS_PARSE("hours_value[i]", value, ps_bitstrm, 5);
+                            ps_time_code->au1_hours_value[i] = value;
+                        }
+                    }
+                }
+            }
+
+            BITS_PARSE("time_offset_length[i]", value, ps_bitstrm, 5);
+            ps_time_code->au1_time_offset_length[i] = value;
+
+            if(ps_time_code->au1_time_offset_length[i] > 0)
+            {
+                BITS_PARSE("time_offset_value[i]", value, ps_bitstrm,
+                           ps_time_code->au1_time_offset_length[i]);
+                ps_time_code->au1_time_offset_value[i] = value;
+            }
+            else
+            {
+                ps_time_code->au1_time_offset_value[i] = 0;
+            }
+        }
+    }
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
+
+IHEVCD_ERROR_T ihevcd_parse_mastering_disp_params_sei(codec_t *ps_codec)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 value;
+    mastering_dis_col_vol_sei_params_t *ps_mastering_dis_col_vol;
+    WORD32 i;
+
+    ps_parse->s_sei_params.i4_sei_mastering_disp_colour_vol_params_present_flags = 1;
+
+    ps_mastering_dis_col_vol = &ps_parse->s_sei_params.s_mastering_dis_col_vol_sei_params;
+
+    for(i = 0; i < 3; i++)
+    {
+        BITS_PARSE("display_primaries_x[c]", value, ps_bitstrm, 16);
+        ps_mastering_dis_col_vol->au2_display_primaries_x[i] = value;
+
+        BITS_PARSE("display_primaries_y[c]", value, ps_bitstrm, 16);
+        ps_mastering_dis_col_vol->au2_display_primaries_y[i] = value;
+    }
+
+    BITS_PARSE("white_point_x", value, ps_bitstrm, 16);
+    ps_mastering_dis_col_vol->u2_white_point_x = value;
+
+    BITS_PARSE("white_point_y", value, ps_bitstrm, 16);
+    ps_mastering_dis_col_vol->u2_white_point_y = value;
+
+    BITS_PARSE("max_display_mastering_luminance", value, ps_bitstrm, 32);
+    ps_mastering_dis_col_vol->u4_max_display_mastering_luminance = value;
+
+    BITS_PARSE("min_display_mastering_luminance", value, ps_bitstrm, 32);
+    ps_mastering_dis_col_vol->u4_min_display_mastering_luminance = value;
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
+
+IHEVCD_ERROR_T ihevcd_parse_user_data_registered_itu_t_t35(codec_t *ps_codec,
+                                                           UWORD32 u4_payload_size)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 value;
+    user_data_registered_itu_t_t35_t *ps_user_data_registered_itu_t_t35;
+    UWORD32 i;
+    UWORD32 j = 0;
+
+    ps_parse->s_sei_params.i1_user_data_registered_present_flag = 1;
+    ps_user_data_registered_itu_t_t35 =
+                    &ps_parse->s_sei_params.as_user_data_registered_itu_t_t35[ps_parse->s_sei_params.i4_sei_user_data_cnt];
+    ps_parse->s_sei_params.i4_sei_user_data_cnt++;
+
+    ps_user_data_registered_itu_t_t35->i4_payload_size = u4_payload_size;
+
+    if(u4_payload_size > MAX_USERDATA_PAYLOAD)
+    {
+        u4_payload_size = MAX_USERDATA_PAYLOAD;
+    }
+
+    ps_user_data_registered_itu_t_t35->i4_valid_payload_size = u4_payload_size;
+
+    BITS_PARSE("itu_t_t35_country_code", value, ps_bitstrm, 8);
+    ps_user_data_registered_itu_t_t35->u1_itu_t_t35_country_code = value;
+
+    if(0xFF != ps_user_data_registered_itu_t_t35->u1_itu_t_t35_country_code)
+    {
+        i = 1;
+    }
+    else
+    {
+        BITS_PARSE("itu_t_t35_country_code_extension_byte", value, ps_bitstrm,
+                   8);
+        ps_user_data_registered_itu_t_t35->u1_itu_t_t35_country_code_extension_byte =
+                        value;
+
+        i = 2;
+    }
+
+    do
+    {
+        BITS_PARSE("itu_t_t35_payload_byte", value, ps_bitstrm, 8);
+        ps_user_data_registered_itu_t_t35->u1_itu_t_t35_payload_byte[j++] =
+                        value;
+
+        i++;
+    }while(i < u4_payload_size);
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
+
+void ihevcd_parse_sei_payload(codec_t *ps_codec,
+                              UWORD32 u4_payload_type,
+                              UWORD32 u4_payload_size,
+                              WORD8 i1_nal_type)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    WORD32 payload_bits_remaining = 0;
+    sps_t *ps_sps;
+
+    UWORD32 i;
+
+    for(i = 0; i < MAX_SPS_CNT; i++)
+    {
+        ps_sps = ps_codec->ps_sps_base + i;
+        if(ps_sps->i1_sps_valid)
+        {
+            break;
+        }
+    }
+    if(NULL == ps_sps)
+    {
+        return;
+    }
+
+    if(NAL_PREFIX_SEI == i1_nal_type)
+    {
+        switch(u4_payload_type)
+        {
+            case SEI_BUFFERING_PERIOD:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
+                ihevcd_parse_buffering_period_sei(ps_codec, ps_sps);
+                break;
+
+            case SEI_PICTURE_TIMING:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
+                ihevcd_parse_pic_timing_sei(ps_codec, ps_sps);
+                break;
+
+            case SEI_TIME_CODE:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
+                ihevcd_parse_time_code_sei(ps_codec);
+                break;
+
+            case SEI_MASTERING_DISPLAY_COLOUR_VOLUME:
+                ps_parse->s_sei_params.i4_sei_mastering_disp_colour_vol_params_present_flags = 1;
+                ihevcd_parse_mastering_disp_params_sei(ps_codec);
+                break;
+
+            case SEI_USER_DATA_REGISTERED_ITU_T_T35:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
+                ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
+                                                            u4_payload_size);
+                break;
+
+            default:
+                for(i = 0; i < u4_payload_size; i++)
+                {
+                    ihevcd_bits_flush(ps_bitstrm, 8);
+                }
+                break;
+        }
+    }
+    else /* NAL_SUFFIX_SEI */
+    {
+        switch(u4_payload_type)
+        {
+            case SEI_USER_DATA_REGISTERED_ITU_T_T35:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
+                ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
+                                                            u4_payload_size);
+                break;
+
+            default:
+                for(i = 0; i < u4_payload_size; i++)
+                {
+                    ihevcd_bits_flush(ps_bitstrm, 8);
+                }
+                break;
+        }
+    }
+
+    /**
+     * By definition the underlying bitstream terminates in a byte-aligned manner.
+     * 1. Extract all bar the last MIN(bitsremaining,nine) bits as reserved_payload_extension_data
+     * 2. Examine the final 8 bits to determine the payload_bit_equal_to_one marker
+     * 3. Extract the remainingreserved_payload_extension_data bits.
+     *
+     * If there are fewer than 9 bits available, extract them.
+     */
+
+    payload_bits_remaining = ihevcd_bits_num_bits_remaining(ps_bitstrm);
+    if(payload_bits_remaining) /* more_data_in_payload() */
+    {
+        WORD32 final_bits;
+        WORD32 final_payload_bits = 0;
+        WORD32 mask = 0xFF;
+        UWORD32 u4_dummy;
+        UWORD32 u4_reserved_payload_extension_data;
+        UNUSED(u4_dummy);
+        UNUSED(u4_reserved_payload_extension_data);
+
+        while(payload_bits_remaining > 9)
+        {
+            BITS_PARSE("reserved_payload_extension_data",
+                       u4_reserved_payload_extension_data, ps_bitstrm, 1);
+            payload_bits_remaining--;
+        }
+
+        final_bits = ihevcd_bits_nxt(ps_bitstrm, payload_bits_remaining);
+
+        while(final_bits & (mask >> final_payload_bits))
+        {
+            final_payload_bits++;
+            continue;
+        }
+
+        while(payload_bits_remaining > (9 - final_payload_bits))
+        {
+            BITS_PARSE("reserved_payload_extension_data",
+                       u4_reserved_payload_extension_data, ps_bitstrm, 1);
+            payload_bits_remaining--;
+        }
+
+        BITS_PARSE("payload_bit_equal_to_one", u4_dummy, ps_bitstrm, 1);
+        payload_bits_remaining--;
+        while(payload_bits_remaining)
+        {
+            BITS_PARSE("payload_bit_equal_to_zero", u4_dummy, ps_bitstrm, 1);
+            payload_bits_remaining--;
+        }
+    }
+
+    return;
+}
+
+IHEVCD_ERROR_T ihevcd_read_rbsp_trailing_bits(codec_t *ps_codec,
+                                              UWORD32 u4_bits_left)
+{
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    UWORD32 value;
+    WORD32 cnt = 0;
+    BITS_PARSE("rbsp_stop_one_bit", value, &ps_parse->s_bitstrm, 1);
+    u4_bits_left--;
+    if(value != 1)
+    {
+        return (IHEVCD_ERROR_T)IHEVCD_FAIL;
+    }
+    while(u4_bits_left)
+    {
+        BITS_PARSE("rbsp_alignment_zero_bit", value, &ps_parse->s_bitstrm, 1);
+        u4_bits_left--;
+        cnt++;
+    }
+    ASSERT(cnt < 8);
+
+    return (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+}
 /**
 *******************************************************************************
 *
@@ -1981,10 +2653,56 @@ void ihevcd_copy_pps(codec_t *ps_codec, WORD32 pps_id, WORD32 pps_id_ref)
 *
 *******************************************************************************
 */
-IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec)
+IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec, nal_header_t *ps_nal)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    UNUSED(ps_codec);
+    parse_ctxt_t *ps_parse = &ps_codec->s_parse;
+    UWORD32 u4_payload_type = 0, u4_last_payload_type_byte = 0;
+    UWORD32 u4_payload_size = 0, u4_last_payload_size_byte = 0;
+    UWORD32 value;
+    bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
+    UWORD32 u4_bits_left;
+
+    u4_bits_left = ihevcd_bits_num_bits_remaining(ps_bitstrm);
+
+    while(u4_bits_left > 8)
+    {
+        while(ihevcd_bits_nxt(ps_bitstrm, 8) == 0xFF)
+        {
+            ihevcd_bits_flush(ps_bitstrm, 8); /* equal to 0xFF */
+            u4_payload_type += 255;
+        }
+
+        BITS_PARSE("last_payload_type_byte", value, ps_bitstrm, 8);
+        u4_last_payload_type_byte = value;
+
+        u4_payload_type += u4_last_payload_type_byte;
+
+        while(ihevcd_bits_nxt(ps_bitstrm, 8) == 0xFF)
+        {
+            ihevcd_bits_flush(ps_bitstrm, 8); /* equal to 0xFF */
+            u4_payload_size += 255;
+        }
+
+        BITS_PARSE("last_payload_size_byte", value, ps_bitstrm, 8);
+        u4_last_payload_size_byte = value;
+
+        u4_payload_size += u4_last_payload_size_byte;
+        u4_bits_left = ihevcd_bits_num_bits_remaining(ps_bitstrm);
+        u4_payload_size = MIN(u4_payload_size, u4_bits_left / 8);
+        ihevcd_parse_sei_payload(ps_codec, u4_payload_type, u4_payload_size,
+                                 ps_nal->i1_nal_unit_type);
+
+        /* Calculate the bits left in the current payload */
+        u4_bits_left = ihevcd_bits_num_bits_remaining(ps_bitstrm);
+    }
+
+    // read rbsp_trailing_bits
+    if(u4_bits_left)
+    {
+        ihevcd_read_rbsp_trailing_bits(ps_codec, u4_bits_left);
+    }
+
     return ret;
 }
 
