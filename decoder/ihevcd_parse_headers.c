@@ -421,7 +421,6 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
             if(0 == ref_idc)
             {
                 BITS_PARSE("use_delta_flag", value, ps_bitstrm, 1);
-                ps_stref_picset->ai1_used[i] = value;
                 ref_idc = value << 1;
             }
             if((ref_idc == 1) || (ref_idc == 2))
