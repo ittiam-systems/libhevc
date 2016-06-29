@@ -468,9 +468,16 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                     if(i < ps_slice_hdr->i1_num_long_term_sps)
                     {
                         /* Use CLZ to compute Ceil( Log2( num_long_term_ref_pics_sps ) ) */
-                        WORD32 num_bits = 32 - CLZ(ps_sps->i1_num_long_term_ref_pics_sps);
-                        BITS_PARSE("lt_idx_sps[ i ]", value, ps_bitstrm, num_bits);
-                        ps_slice_hdr->ai4_poc_lsb_lt[i] = ps_sps->ai1_lt_ref_pic_poc_lsb_sps[value];
+                        if (ps_sps->i1_num_long_term_ref_pics_sps > 1)
+                        {
+                            WORD32 num_bits = 32 - CLZ(ps_sps->i1_num_long_term_ref_pics_sps - 1);
+                            BITS_PARSE("lt_idx_sps[ i ]", value, ps_bitstrm, num_bits);
+                        }
+                        else
+                        {
+                            value = 0;
+                        }
+                        ps_slice_hdr->ai4_poc_lsb_lt[i] = ps_sps->au2_lt_ref_pic_poc_lsb_sps[value];
                         ps_slice_hdr->ai1_used_by_curr_pic_lt_flag[i] = ps_sps->ai1_used_by_curr_pic_lt_sps_flag[value];
 
                     }
