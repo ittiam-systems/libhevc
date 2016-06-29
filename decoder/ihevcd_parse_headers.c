@@ -1518,7 +1518,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         for(i = 0; i < ps_sps->i1_num_long_term_ref_pics_sps; i++)
         {
             BITS_PARSE("lt_ref_pic_poc_lsb_sps[ i ]", value, ps_bitstrm, ps_sps->i1_log2_max_pic_order_cnt_lsb);
-            ps_sps->ai1_lt_ref_pic_poc_lsb_sps[i] = value;
+            ps_sps->au2_lt_ref_pic_poc_lsb_sps[i] = value;
 
             BITS_PARSE("used_by_curr_pic_lt_sps_flag[ i ]", value, ps_bitstrm, 1);
             ps_sps->ai1_used_by_curr_pic_lt_sps_flag[i] = value;
