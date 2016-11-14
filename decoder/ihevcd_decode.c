@@ -628,6 +628,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         if(IHEVCD_IGNORE_SLICE == ret)
         {
+            ps_codec->s_parse.i4_cur_slice_idx = MAX(0, (ps_codec->s_parse.i4_cur_slice_idx - 1));
             ps_codec->pu1_inp_bitsbuf += (nal_ofst + nal_len);
             ps_codec->i4_bytes_remaining -= (nal_ofst + nal_len);
 
