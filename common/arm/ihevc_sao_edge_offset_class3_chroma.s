@@ -703,9 +703,9 @@ WD_16_HT_4_LOOP:
 
 SKIP_AU1_MASK_VAL_WD_16_HT_4:
     LDRB        r11,[r5,#2]                 @pu1_avail[2]
+    CMP         r11,#0
     SUBEQ       r8,r0,r1                    @pu1_src - src_strd
 
-    CMP         r11,#0
     MOVNE       r8,r3
     VLD1.8      D12,[r0]!                   @pu1_cur_row = vld1q_u8(pu1_src)
     VLD1.8      D13,[r0]                    @pu1_cur_row = vld1q_u8(pu1_src)
