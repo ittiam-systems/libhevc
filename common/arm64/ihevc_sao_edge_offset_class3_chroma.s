@@ -775,9 +775,9 @@ WD_16_HT_4_LOOP:
 SKIP_AU1_MASK_VAL_WD_16_HT_4:
     LDRB        w11,[x5,#2]                 //pu1_avail[2]
     SUB         x20,x0,x1                   //pu1_src - src_strd
+    CMP         x11,#0
     csel        x8, x20, x8,EQ
 
-    CMP         x11,#0
     csel        x8, x3, x8,NE
     LD1         {v5.16b},[x0]               //pu1_cur_row = vld1q_u8(pu1_src)
     //LD1 {v13.8b},[x0]                        //pu1_cur_row = vld1q_u8(pu1_src)
