@@ -886,6 +886,11 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     src_strd = trans_size;
 
                     func_idx = 1 + 4 + log2_uv_trans_size_minus_2; /* DST func + Y funcs + cur func index*/
+
+                    /* Handle error cases where 64x64 TU is signalled which results in 32x32 chroma.
+                     * By limiting func_idx to 7, max of 16x16 chroma is called */
+                    func_idx = MIN(func_idx, 7);
+
                     e_trans_type = (TRANSFORM_TYPE)(log2_uv_trans_size_minus_2 + 1);
                     /* QP for U */
                     i1_chroma_pic_qp_offset = ps_pps->i1_pic_cb_qp_offset;
