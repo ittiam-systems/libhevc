@@ -1193,6 +1193,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     sps_t *ps_sps;
     profile_tier_lvl_info_t s_ptl;
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
+    WORD32 ctb_log2_size_y = 0;
 
 
     BITS_PARSE("video_parameter_set_id", value, ps_bitstrm, 4);
@@ -1325,6 +1326,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     UEV_PARSE("log2_diff_max_min_coding_block_size", value, ps_bitstrm);
     ps_sps->i1_log2_diff_max_min_coding_block_size = value;
 
+    ctb_log2_size_y = ps_sps->i1_log2_min_coding_block_size + ps_sps->i1_log2_diff_max_min_coding_block_size;
+
     UEV_PARSE("log2_min_transform_block_size_minus2", value, ps_bitstrm);
     ps_sps->i1_log2_min_transform_block_size = value + 2;
 
@@ -1333,6 +1336,12 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     ps_sps->i1_log2_max_transform_block_size = ps_sps->i1_log2_min_transform_block_size +
                     ps_sps->i1_log2_diff_max_min_transform_block_size;
+
+    if ((ps_sps->i1_log2_max_transform_block_size < 0) ||
+                    (ps_sps->i1_log2_max_transform_block_size > MIN(ctb_log2_size_y, 5)))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
 
     ps_sps->i1_log2_ctb_size = ps_sps->i1_log2_min_coding_block_size +
                     ps_sps->i1_log2_diff_max_min_coding_block_size;
