@@ -1314,8 +1314,18 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         UEV_PARSE("max_dec_pic_buffering", value, ps_bitstrm);
         ps_sps->ai1_sps_max_dec_pic_buffering[i] = value + 1;
 
+        if(ps_sps->ai1_sps_max_dec_pic_buffering[i] > MAX_DPB_SIZE)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
+
         UEV_PARSE("num_reorder_pics", value, ps_bitstrm);
         ps_sps->ai1_sps_max_num_reorder_pics[i] = value;
+
+        if(ps_sps->ai1_sps_max_num_reorder_pics[i] > ps_sps->ai1_sps_max_dec_pic_buffering[i])
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
 
         UEV_PARSE("max_latency_increase", value, ps_bitstrm);
         ps_sps->ai1_sps_max_latency_increase[i] = value;
