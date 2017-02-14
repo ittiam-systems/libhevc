@@ -82,6 +82,9 @@
 /* Bit stream offset threshold */
 #define BITSTRM_OFF_THRS 8
 
+#define MIN_CU_QP_DELTA_ABS(x) (-26 + ((x) * 6) / 2)
+#define MAX_CU_QP_DELTA_ABS(x) (25 + ((x) * 6) / 2)
+
 /**
  * Table used to decode part_mode if AMP is enabled and current CU is not min CU
  */
@@ -302,7 +305,6 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                     }
                     AEV_TRACE("cu_qp_delta_abs", cu_qp_delta_abs, ps_cabac->u4_range);
 
-
                     ps_codec->s_parse.i4_is_cu_qp_delta_coded = 1;
 
 
@@ -315,6 +317,13 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                             cu_qp_delta_abs = -cu_qp_delta_abs;
 
                     }
+
+                    if (cu_qp_delta_abs < MIN_CU_QP_DELTA_ABS(ps_sps->i1_bit_depth_luma_minus8)
+                                    || cu_qp_delta_abs > MAX_CU_QP_DELTA_ABS(ps_sps->i1_bit_depth_luma_minus8))
+                    {
+                        return IHEVCD_INVALID_PARAMETER;
+                    }
+
                     ps_codec->s_parse.s_cu.i4_cu_qp_delta = cu_qp_delta_abs;
 
                 }
