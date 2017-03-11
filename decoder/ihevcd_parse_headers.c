@@ -1462,6 +1462,10 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     BITS_PARSE("sps_extension_flag", value, ps_bitstrm, 1);
 
+    if((UWORD8 *)ps_bitstrm->pu4_buf > ps_bitstrm->pu1_buf_max)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
 
     {
         WORD32 numerator;
