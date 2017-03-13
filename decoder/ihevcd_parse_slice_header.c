@@ -910,7 +910,11 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         }
         else
         {
-            ihevcd_ref_list(ps_codec, ps_pps, ps_sps, ps_slice_hdr);
+            ret = ihevcd_ref_list(ps_codec, ps_pps, ps_sps, ps_slice_hdr);
+            if ((WORD32)IHEVCD_SUCCESS != ret)
+            {
+                return ret;
+            }
 
         }
 
