@@ -2370,11 +2370,17 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     }
     else if((0 == ps_pps->i1_entropy_coding_sync_enabled_flag) || (ps_pps->i1_entropy_coding_sync_enabled_flag && (0 != ps_codec->s_parse.i4_ctb_x)))
     {
-        ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
-                          &ps_codec->s_parse.s_bitstrm,
-                          slice_qp,
-                          cabac_init_idc,
-                          &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+        ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
+                                &ps_codec->s_parse.s_bitstrm,
+                                slice_qp,
+                                cabac_init_idc,
+                                &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+        if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+        {
+            ps_codec->i4_slice_error = 1;
+            end_of_slice_flag = 1;
+            ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+        }
     }
 
 
@@ -2458,11 +2464,17 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             /* Cabac init is done unconditionally at the start of the tile irrespective
              * of whether it is a dependent or an independent slice */
             {
-                ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
-                                  &ps_codec->s_parse.s_bitstrm,
-                                  slice_qp,
-                                  cabac_init_idc,
-                                  &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+                ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
+                                        &ps_codec->s_parse.s_bitstrm,
+                                        slice_qp,
+                                        cabac_init_idc,
+                                        &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+                if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+                {
+                    ps_codec->i4_slice_error = 1;
+                    end_of_slice_flag = 1;
+                    ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+                }
 
             }
         }
@@ -2528,22 +2540,34 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 if(default_ctxt)
                 {
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0], size);
-                    ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
-                                      &ps_codec->s_parse.s_bitstrm,
-                                      slice_qp,
-                                      cabac_init_idc,
-                                      &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+                    ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
+                                            &ps_codec->s_parse.s_bitstrm,
+                                            slice_qp,
+                                            cabac_init_idc,
+                                            &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
 
+                    if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+                    {
+                        ps_codec->i4_slice_error = 1;
+                        end_of_slice_flag = 1;
+                        ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+                    }
                 }
                 else
                 {
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &ps_codec->s_parse.s_cabac.au1_ctxt_models_sync, size);
-                    ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
-                                      &ps_codec->s_parse.s_bitstrm,
-                                      slice_qp,
-                                      cabac_init_idc,
-                                      (const UWORD8 *)&ps_codec->s_parse.s_cabac.au1_ctxt_models_sync);
+                    ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
+                                            &ps_codec->s_parse.s_bitstrm,
+                                            slice_qp,
+                                            cabac_init_idc,
+                                            (const UWORD8 *)&ps_codec->s_parse.s_cabac.au1_ctxt_models_sync);
 
+                    if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+                    {
+                        ps_codec->i4_slice_error = 1;
+                        end_of_slice_flag = 1;
+                        ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+                    }
                 }
             }
         }
@@ -3260,6 +3284,9 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         if(end_of_pic)
             break;
     } while(!end_of_slice_flag);
+
+    /* Reset slice error */
+    ps_codec->i4_slice_error = 0;
 
     /* Increment the slice index for parsing next slice */
     if(0 == end_of_pic)
