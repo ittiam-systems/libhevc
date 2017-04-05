@@ -1331,12 +1331,16 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     /* Check if sps_max_dec_pic_buffering or sps_max_num_reorder_pics
        has changed */
-    if(0 != ps_codec->i4_first_pic_done)
+    if(0 != ps_codec->u4_allocate_dynamic_done)
     {
         sps_t *ps_sps_old = ps_codec->s_parse.ps_sps;
         if(ps_sps_old->ai1_sps_max_dec_pic_buffering[ps_sps_old->i1_sps_max_sub_layers - 1] !=
                     ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1])
         {
+            if(0 == ps_codec->i4_first_pic_done)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
             ps_codec->i4_reset_flag = 1;
             return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
         }
@@ -1344,6 +1348,10 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         if(ps_sps_old->ai1_sps_max_num_reorder_pics[ps_sps_old->i1_sps_max_sub_layers - 1] !=
                     ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1])
         {
+            if(0 == ps_codec->i4_first_pic_done)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
             ps_codec->i4_reset_flag = 1;
             return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
         }
@@ -1514,10 +1522,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i2_pic_ht_in_min_cb = numerator  /
                         (1 << ps_sps->i1_log2_min_coding_block_size);
     }
-    if((0 != ps_codec->i4_first_pic_done) &&
+    if((0 != ps_codec->u4_allocate_dynamic_done) &&
                     ((ps_codec->i4_wd != ps_sps->i2_pic_width_in_luma_samples) ||
                     (ps_codec->i4_ht != ps_sps->i2_pic_height_in_luma_samples)))
     {
+        if(0 == ps_codec->i4_first_pic_done)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_codec->i4_reset_flag = 1;
         return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
     }
