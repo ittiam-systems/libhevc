@@ -729,11 +729,15 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
             {
                 if(ps_codec->i4_pic_present)
                 {
+                    slice_header_t *ps_slice_hdr_next;
                     ps_codec->i4_slice_error = 1;
                     ps_codec->s_parse.i4_cur_slice_idx--;
                     if(ps_codec->s_parse.i4_cur_slice_idx < 0)
                         ps_codec->s_parse.i4_cur_slice_idx = 0;
 
+                    ps_slice_hdr_next = ps_codec->s_parse.ps_slice_hdr_base + ((ps_codec->s_parse.i4_cur_slice_idx + 1) & (MAX_SLICE_HDR_CNT - 1));
+                    ps_slice_hdr_next->i2_ctb_x = slice_address % ps_sps->i2_pic_wd_in_ctb;
+                    ps_slice_hdr_next->i2_ctb_y = slice_address / ps_sps->i2_pic_wd_in_ctb;
                     return ret;
                 }
                 else
