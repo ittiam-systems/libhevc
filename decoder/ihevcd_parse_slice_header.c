@@ -219,7 +219,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     WORD32 value;
-    WORD32 i;
+    WORD32 i, j;
     WORD32 sps_id;
 
     pps_t *ps_pps;
@@ -881,11 +881,11 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                     ihevc_dpb_mgr_del_ref((dpb_mgr_t *)ps_codec->pv_dpb_mgr, (buf_mgr_t *)ps_codec->pv_pic_buf_mgr, ps_pic_buf->i4_abs_poc);
                     /* Find buffer id of the MV bank corresponding to the buffer being freed (Buffer with POC of u4_abs_poc) */
                     ps_mv_buf = (mv_buf_t *)ps_codec->ps_mv_buf;
-                    for(i = 0; i < BUF_MGR_MAX_CNT; i++)
+                    for(j = 0; j < ps_codec->i4_max_dpb_size; j++)
                     {
                         if(ps_mv_buf->i4_abs_poc == ps_pic_buf->i4_abs_poc)
                         {
-                            ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_mv_buf_mgr, i, BUF_MGR_REF);
+                            ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_mv_buf_mgr, j, BUF_MGR_REF);
                             break;
                         }
                         ps_mv_buf++;
