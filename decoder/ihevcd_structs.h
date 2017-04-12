@@ -1929,6 +1929,9 @@ struct _codec_t
      */
     void *ps_mv_buf;
 
+    /** Holds the number of mv_buf_t structures allocated */
+    WORD32 i4_max_dpb_size;
+
     /**
      * Base address for Motion Vector bank buffer
      */
