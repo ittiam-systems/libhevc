@@ -598,6 +598,8 @@ IHEVCD_ERROR_T ihevcd_mv_buf_mgr_add_bufs(codec_t *ps_codec)
      */
     max_dpb_size++;
 
+    ps_codec->i4_max_dpb_size = max_dpb_size;
+
     pu1_buf = (UWORD8 *)ps_codec->pv_mv_bank_buf_base;
 
     ps_mv_buf = (mv_buf_t *)pu1_buf;
