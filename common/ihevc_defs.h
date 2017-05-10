@@ -454,6 +454,6 @@ enum
  */
 #define INTRA_PRED_CHROMA_IDX_NONE  7
 
-
+#define MAX_CPB_CNT 32
 
 #endif /*__IHEVC_DEFS_H_*/
