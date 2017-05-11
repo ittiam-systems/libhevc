@@ -644,6 +644,9 @@ static WORD32 ihevcd_parse_hrd_parameters(bitstrm_t *ps_bitstrm,
         if(!ps_hrd->au1_low_delay_hrd_flag[i])
             UEV_PARSE("cpb_cnt_minus1[ i ]", ps_hrd->au1_cpb_cnt_minus1[i], ps_bitstrm);
 
+        if(ps_hrd->au1_cpb_cnt_minus1[i] >= (MAX_CPB_CNT - 1))
+            return IHEVCD_INVALID_PARAMETER;
+
         if(ps_hrd->u1_nal_hrd_parameters_present_flag)
             ihevcd_parse_sub_layer_hrd_parameters(ps_bitstrm,
                                                   &ps_hrd->as_sub_layer_hrd_params[i],
@@ -744,7 +747,10 @@ static WORD32 ihevcd_parse_vui_parameters(bitstrm_t *ps_bitstrm,
 
         BITS_PARSE("vui_hrd_parameters_present_flag", ps_vui->u1_vui_hrd_parameters_present_flag, ps_bitstrm, 1);
         if(ps_vui->u1_vui_hrd_parameters_present_flag)
-            ihevcd_parse_hrd_parameters(ps_bitstrm, &ps_vui->s_vui_hrd_parameters, 1, sps_max_sub_layers_minus1);
+        {
+            ret = ihevcd_parse_hrd_parameters(ps_bitstrm, &ps_vui->s_vui_hrd_parameters, 1, sps_max_sub_layers_minus1);
+            RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+        }
     }
 
     BITS_PARSE("bitstream_restriction_flag", ps_vui->u1_bitstream_restriction_flag, ps_bitstrm, 1);
@@ -1456,9 +1462,12 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_vui_parameters_present_flag = value;
 
     if(ps_sps->i1_vui_parameters_present_flag)
-        ihevcd_parse_vui_parameters(ps_bitstrm,
-                                    &ps_sps->s_vui_parameters,
-                                    ps_sps->i1_sps_max_sub_layers - 1);
+    {
+        ret = ihevcd_parse_vui_parameters(ps_bitstrm,
+                                          &ps_sps->s_vui_parameters,
+                                          ps_sps->i1_sps_max_sub_layers - 1);
+        RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+    }
 
     BITS_PARSE("sps_extension_flag", value, ps_bitstrm, 1);
 
