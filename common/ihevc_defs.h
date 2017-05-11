@@ -464,7 +464,6 @@ typedef enum {
  */
 #define INTRA_PRED_CHROMA_IDX_NONE  7
 
-
 #define MAX_NUM_CLOCK_TS    3
 #define MAX_USERDATA_PAYLOAD 256
 
