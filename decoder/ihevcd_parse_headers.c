@@ -1336,6 +1336,27 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         UEV_PARSE("max_latency_increase", value, ps_bitstrm);
         ps_sps->ai1_sps_max_latency_increase[i] = value;
     }
+
+    /* Check if sps_max_dec_pic_buffering or sps_max_num_reorder_pics
+       has changed */
+    if(0 != ps_codec->i4_first_pic_done)
+    {
+        sps_t *ps_sps_old = ps_codec->s_parse.ps_sps;
+        if(ps_sps_old->ai1_sps_max_dec_pic_buffering[ps_sps_old->i1_sps_max_sub_layers - 1] !=
+                    ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1])
+        {
+            ps_codec->i4_reset_flag = 1;
+            return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
+        }
+
+        if(ps_sps_old->ai1_sps_max_num_reorder_pics[ps_sps_old->i1_sps_max_sub_layers - 1] !=
+                    ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1])
+        {
+            ps_codec->i4_reset_flag = 1;
+            return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
+        }
+    }
+
     UEV_PARSE("log2_min_coding_block_size_minus3", value, ps_bitstrm);
     ps_sps->i1_log2_min_coding_block_size = value + 3;
 
