@@ -2060,6 +2060,9 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     /* Not present in HM */
     BITS_PARSE("pps_extension_flag", value, ps_bitstrm, 1);
 
+    if((UWORD8 *)ps_bitstrm->pu4_buf > ps_bitstrm->pu1_buf_max)
+        return IHEVCD_INVALID_PARAMETER;
+
     ps_codec->i4_pps_done = 1;
     return ret;
 }
