@@ -217,16 +217,20 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             /* When depth is non-zero intra pred mode of parent node is sent */
             /* This takes care of passing correct mode to all the child nodes */
             intra_pred_mode_tmp = trafo_depth ? intra_pred_mode : ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[0];
-            ihevcd_parse_transform_tree(ps_codec, x0, y0, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 0, intra_pred_mode_tmp);
+            ret = ihevcd_parse_transform_tree(ps_codec, x0, y0, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 0, intra_pred_mode_tmp);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
             intra_pred_mode_tmp = trafo_depth ? intra_pred_mode : ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[1];
-            ihevcd_parse_transform_tree(ps_codec, x1, y0, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 1, intra_pred_mode_tmp);
+            ret = ihevcd_parse_transform_tree(ps_codec, x1, y0, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 1, intra_pred_mode_tmp);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
             intra_pred_mode_tmp = trafo_depth ? intra_pred_mode : ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[2];
-            ihevcd_parse_transform_tree(ps_codec, x0, y1, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 2, intra_pred_mode_tmp);
+            ret = ihevcd_parse_transform_tree(ps_codec, x0, y1, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 2, intra_pred_mode_tmp);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
             intra_pred_mode_tmp = trafo_depth ? intra_pred_mode : ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[3];
-            ihevcd_parse_transform_tree(ps_codec, x1, y1, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 3, intra_pred_mode_tmp);
+            ret = ihevcd_parse_transform_tree(ps_codec, x1, y1, x0, y0, log2_trafo_size - 1, trafo_depth + 1, 3, intra_pred_mode_tmp);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
         }
         else
@@ -1603,9 +1607,10 @@ IHEVCD_ERROR_T  ihevcd_parse_coding_unit(codec_t *ps_codec,
                 ps_codec->s_parse.s_cu.i4_max_trafo_depth = (pred_mode == PRED_MODE_INTRA) ?
                                 (ps_sps->i1_max_transform_hierarchy_depth_intra + intra_split_flag) :
                                 (ps_sps->i1_max_transform_hierarchy_depth_inter);
-                ihevcd_parse_transform_tree(ps_codec, x0, y0, x0, y0,
-                                            log2_cb_size, 0, 0,
-                                            ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[0]);
+                ret = ihevcd_parse_transform_tree(ps_codec, x0, y0, x0, y0,
+                                                  log2_cb_size, 0, 0,
+                                                  ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[0]);
+                RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
             }
             else
             {
@@ -1821,18 +1826,28 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
         x1 = x0 + ((1 << log2_cb_size) >> 1);
         y1 = y0 + ((1 << log2_cb_size) >> 1);
 
-        ihevcd_parse_coding_quadtree(ps_codec, x0, y0, log2_cb_size - 1, ct_depth + 1);
+        ret = ihevcd_parse_coding_quadtree(ps_codec, x0, y0, log2_cb_size - 1, ct_depth + 1);
+        RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
         /* At frame boundaries coding quadtree nodes are sent only if they fall within the frame */
         if(x1 < ps_sps->i2_pic_width_in_luma_samples)
-            ihevcd_parse_coding_quadtree(ps_codec, x1, y0, log2_cb_size - 1, ct_depth + 1);
+        {
+            ret = ihevcd_parse_coding_quadtree(ps_codec, x1, y0, log2_cb_size - 1, ct_depth + 1);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
+        }
 
         if(y1 < ps_sps->i2_pic_height_in_luma_samples)
-            ihevcd_parse_coding_quadtree(ps_codec, x0, y1, log2_cb_size - 1, ct_depth + 1);
+        {
+            ret = ihevcd_parse_coding_quadtree(ps_codec, x0, y1, log2_cb_size - 1, ct_depth + 1);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
+        }
 
         if((x1 < ps_sps->i2_pic_width_in_luma_samples) &&
                         (y1 < ps_sps->i2_pic_height_in_luma_samples))
-            ihevcd_parse_coding_quadtree(ps_codec, x1, y1, log2_cb_size - 1, ct_depth + 1);
+        {
+            ret = ihevcd_parse_coding_quadtree(ps_codec, x1, y1, log2_cb_size - 1, ct_depth + 1);
+            RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
+        }
     }
     else
     {
@@ -1854,7 +1869,8 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
             }
         }
 
-        ihevcd_parse_coding_unit(ps_codec, x0, y0, log2_cb_size);
+        ret = ihevcd_parse_coding_unit(ps_codec, x0, y0, log2_cb_size);
+        RETURN_IF((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret, ret);
 
         if(ps_pps->i1_cu_qp_delta_enabled_flag)
         {
@@ -2180,7 +2196,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 {
 
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    WORD32 end_of_slice_flag;
+    WORD32 end_of_slice_flag = 0;
     sps_t *ps_sps;
     pps_t *ps_pps;
     slice_header_t *ps_slice_hdr;
@@ -2606,11 +2622,87 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 
         if(0 == ps_codec->i4_slice_error)
         {
-            ihevcd_parse_coding_quadtree(ps_codec,
-                                         (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size),
-                                         (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size),
-                                         ps_sps->i1_log2_ctb_size,
-                                         0);
+            tu_t *ps_tu = ps_codec->s_parse.ps_tu;
+            WORD32 i4_tu_cnt = ps_codec->s_parse.s_cu.i4_tu_cnt;
+            WORD32 i4_pic_tu_idx = ps_codec->s_parse.i4_pic_tu_idx;
+
+            pu_t *ps_pu = ps_codec->s_parse.ps_pu;
+            WORD32 i4_pic_pu_idx = ps_codec->s_parse.i4_pic_pu_idx;
+
+            UWORD8 *pu1_tu_coeff_data = (UWORD8 *)ps_codec->s_parse.pv_tu_coeff_data;
+
+            ret = ihevcd_parse_coding_quadtree(ps_codec,
+                                               (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size),
+                                               (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size),
+                                               ps_sps->i1_log2_ctb_size,
+                                               0);
+            /* Check for error */
+            if (ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+            {
+                /* Reset tu and pu parameters, and signal current ctb as skip */
+                WORD32 pu_skip_wd, pu_skip_ht;
+                WORD32 rows_remaining, cols_remaining;
+                WORD32 tu_coeff_data_reset_size;
+
+                /* Set pu wd and ht based on whether the ctb is complete or not */
+                rows_remaining = ps_sps->i2_pic_height_in_luma_samples
+                                - (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size);
+                pu_skip_ht = MIN(ctb_size, rows_remaining);
+
+                cols_remaining = ps_sps->i2_pic_width_in_luma_samples
+                                - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size);
+                pu_skip_wd = MIN(ctb_size, cols_remaining);
+
+                ps_codec->s_parse.ps_tu = ps_tu;
+                ps_codec->s_parse.s_cu.i4_tu_cnt = i4_tu_cnt;
+                ps_codec->s_parse.i4_pic_tu_idx = i4_pic_tu_idx;
+
+                ps_codec->s_parse.ps_pu = ps_pu;
+                ps_codec->s_parse.i4_pic_pu_idx = i4_pic_pu_idx;
+
+                ps_tu->b1_cb_cbf = 0;
+                ps_tu->b1_cr_cbf = 0;
+                ps_tu->b1_y_cbf = 0;
+                ps_tu->b4_pos_x = 0;
+                ps_tu->b4_pos_y = 0;
+                ps_tu->b1_transquant_bypass = 0;
+                ps_tu->b3_size = (ps_sps->i1_log2_ctb_size - 2);
+                ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
+                ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
+                ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
+                ps_tu->b1_first_tu_in_cu = 1;
+
+                tu_coeff_data_reset_size = (UWORD8 *)ps_codec->s_parse.pv_tu_coeff_data - pu1_tu_coeff_data;
+                memset(pu1_tu_coeff_data, 0, tu_coeff_data_reset_size);
+                ps_codec->s_parse.pv_tu_coeff_data = (void *)pu1_tu_coeff_data;
+
+                ps_codec->s_parse.ps_tu++;
+                ps_codec->s_parse.s_cu.i4_tu_cnt++;
+                ps_codec->s_parse.i4_pic_tu_idx++;
+
+                ps_codec->s_parse.s_cu.i4_pred_mode = PRED_MODE_SKIP;
+                ps_codec->s_parse.s_cu.i4_part_mode = PART_2Nx2N;
+
+                ps_pu->b2_part_idx = 0;
+                ps_pu->b4_pos_x = 0;
+                ps_pu->b4_pos_y = 0;
+                ps_pu->b4_wd = (pu_skip_wd >> 2) - 1;
+                ps_pu->b4_ht = (pu_skip_ht >> 2) - 1;
+                ps_pu->b1_intra_flag = 0;
+                ps_pu->b3_part_mode = ps_codec->s_parse.s_cu.i4_part_mode;
+                ps_pu->b1_merge_flag = 1;
+                ps_pu->b3_merge_idx = 0;
+
+                ps_codec->s_parse.ps_pu++;
+                ps_codec->s_parse.i4_pic_pu_idx++;
+
+                /* Set slice error to suppress further parsing and
+                 * signal end of slice.
+                 */
+                ps_codec->i4_slice_error = 1;
+                end_of_slice_flag = 1;
+                ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+            }
         }
         else
         {
@@ -2653,8 +2745,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 
         if(0 == ps_codec->i4_slice_error)
             end_of_slice_flag = ihevcd_cabac_decode_terminate(&ps_codec->s_parse.s_cabac, &ps_codec->s_parse.s_bitstrm);
-        else
-            end_of_slice_flag = 0;
 
         AEV_TRACE("end_of_slice_flag", end_of_slice_flag, ps_codec->s_parse.s_cabac.u4_range);
 
