@@ -694,8 +694,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     ps_codec->s_parse.i4_error_code = IHEVCD_SUCCESS;
     ps_sps = ps_codec->s_parse.ps_sps;
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
-    /* If parse_pic_init is called, then slice data is present in the input bitstrea stream */
-    ps_codec->i4_pic_present = 1;
 
     /* Memset picture level intra map and transquant bypass map to zero */
     num_min_cu = ((ps_sps->i2_pic_height_in_luma_samples + 7) / 8) * ((ps_sps->i2_pic_width_in_luma_samples + 63) / 64);
@@ -1158,6 +1156,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         }
     }
 
+    /* If parse_pic_init is called, then slice data is present in the input bitstrea stream */
+    ps_codec->i4_pic_present = 1;
 
     return ret;
 }
