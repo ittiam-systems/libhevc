@@ -1285,15 +1285,31 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     {
 
         UEV_PARSE("pic_crop_left_offset", value, ps_bitstrm);
+        if (value >= ps_sps->i2_pic_width_in_luma_samples)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_sps->i2_pic_crop_left_offset = value;
 
         UEV_PARSE("pic_crop_right_offset", value, ps_bitstrm);
+        if (value >= ps_sps->i2_pic_width_in_luma_samples)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_sps->i2_pic_crop_right_offset = value;
 
         UEV_PARSE("pic_crop_top_offset", value, ps_bitstrm);
+        if (value >= ps_sps->i2_pic_height_in_luma_samples)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_sps->i2_pic_crop_top_offset = value;
 
         UEV_PARSE("pic_crop_bottom_offset", value, ps_bitstrm);
+        if (value >= ps_sps->i2_pic_height_in_luma_samples)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_sps->i2_pic_crop_bottom_offset = value;
     }
     else
