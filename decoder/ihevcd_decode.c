@@ -81,6 +81,7 @@
 #define NUM_FRAMES_LIMIT 0x7FFFFFFF
 #endif
 
+IHEVCD_ERROR_T ihevcd_check_out_buf_size(codec_t *ps_codec);
 IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                                process_ctxt_t *ps_proc,
                                UWORD8 *pu1_y_dst,
@@ -470,6 +471,10 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             {
                 ihevcd_init_proc_ctxt(ps_proc, 0);
             }
+
+            /* Output buffer check */
+            ret = ihevcd_check_out_buf_size(ps_codec);
+            RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
 
             /* Set remaining number of rows to be processed */
             ret = ihevcd_fmt_conv(ps_codec, &ps_codec->as_process[prev_proc_idx],
