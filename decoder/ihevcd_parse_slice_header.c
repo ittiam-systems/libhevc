@@ -356,7 +356,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         slice_address = value;
         /* If slice address is greater than the number of CTBs in a picture,
          * ignore the slice */
-        if(value >= ps_sps->i4_pic_size_in_ctb)
+        if(value >= ps_sps->i4_pic_size_in_ctb || value <= 0)
             return IHEVCD_IGNORE_SLICE;
     }
     else
