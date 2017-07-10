@@ -2708,6 +2708,17 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         {
             tu_t *ps_tu = ps_codec->s_parse.ps_tu;
             pu_t *ps_pu = ps_codec->s_parse.ps_pu;
+            WORD32 pu_skip_wd, pu_skip_ht;
+            WORD32 rows_remaining, cols_remaining;
+
+            /* Set pu wd and ht based on whether the ctb is complete or not */
+            rows_remaining = ps_sps->i2_pic_height_in_luma_samples
+                            - (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size);
+            pu_skip_ht = MIN(ctb_size, rows_remaining);
+
+            cols_remaining = ps_sps->i2_pic_width_in_luma_samples
+                            - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size);
+            pu_skip_wd = MIN(ctb_size, cols_remaining);
 
             ps_tu->b1_cb_cbf = 0;
             ps_tu->b1_cr_cbf = 0;
@@ -2731,8 +2742,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             ps_pu->b2_part_idx = 0;
             ps_pu->b4_pos_x = 0;
             ps_pu->b4_pos_y = 0;
-            ps_pu->b4_wd = (ctb_size >> 2) - 1;
-            ps_pu->b4_ht = (ctb_size >> 2) - 1;
+            ps_pu->b4_wd = (pu_skip_wd >> 2) - 1;
+            ps_pu->b4_ht = (pu_skip_ht >> 2) - 1;
             ps_pu->b1_intra_flag = 0;
             ps_pu->b3_part_mode = ps_codec->s_parse.s_cu.i4_part_mode;
             ps_pu->b1_merge_flag = 1;
