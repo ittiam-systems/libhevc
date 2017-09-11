@@ -1516,10 +1516,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i2_pic_ht_in_min_cb = numerator  /
                         (1 << ps_sps->i1_log2_min_coding_block_size);
     }
-    if((0 != ps_codec->i4_first_pic_done) &&
+    if((0 != ps_codec->i4_sps_done) &&
                     ((ps_codec->i4_wd != ps_sps->i2_pic_width_in_luma_samples) ||
                     (ps_codec->i4_ht != ps_sps->i2_pic_height_in_luma_samples)))
     {
+        if(0 == ps_codec->i4_first_pic_done)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_codec->i4_reset_flag = 1;
         ps_codec->i4_error_code = IVD_RES_CHANGED;
         return (IHEVCD_ERROR_T)IHEVCD_FAIL;
