@@ -1867,10 +1867,10 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     }
 
     /* Max CTBs in a row */
-    size  = wd / MIN_CTB_SIZE + 2 /* Top row and bottom row extra. This ensures accessing left,top in first row
-                                              and right in last row will not result in invalid access*/;
+    size  = wd / MIN_CTB_SIZE;
     /* Max CTBs in a column */
-    size *= ht / MIN_CTB_SIZE;
+    size *= (ht / MIN_CTB_SIZE + 2) /* Top row and bottom row extra. This ensures accessing left,top in first row
+                                              and right in last row will not result in invalid access*/;
 
     size *= sizeof(UWORD16);
     pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
