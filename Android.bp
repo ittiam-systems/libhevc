@@ -192,7 +192,7 @@ cc_library_static {
 
             instruction_set: "arm",
 
-            armv7_a_neon: {
+            neon: {
                 srcs: [
                     "decoder/arm/ihevcd_function_selector_a9q.c",
                     "common/arm/ihevc_intra_ref_substitution_a9q.c",
