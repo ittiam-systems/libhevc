@@ -1187,7 +1187,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
     /* Request memory for static bitstream buffer which holds bitstream after emulation prevention */
     size = MIN_BITSBUF_SIZE;
-    pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
+    pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size + 16); //Alloc extra for parse optimization
     RETURN_IF((NULL == pv_buf), IV_FAIL);
     ps_codec->pu1_bitsbuf_static = pv_buf;
     ps_codec->u4_bitsbuf_size_static = size;
@@ -1880,7 +1880,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     size = wd * ht;
     if(size > MIN_BITSBUF_SIZE)
     {
-        pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
+        pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size + 16); //Alloc extra for parse optimization
         RETURN_IF((NULL == pv_buf), IV_FAIL);
         ps_codec->pu1_bitsbuf_dynamic = pv_buf;
         ps_codec->u4_bitsbuf_size_dynamic = size;
