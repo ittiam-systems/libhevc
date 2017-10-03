@@ -2337,8 +2337,17 @@ IHEVCD_ERROR_T ihevcd_parse_pic_timing_sei(codec_t *ps_codec, sps_t *ps_sps)
         if(ps_vui_hdr->u1_sub_pic_cpb_params_present_flag
                         && ps_vui_hdr->u1_sub_pic_cpb_params_in_pic_timing_sei_flag)
         {
+            UWORD32 num_units_minus1;
+            UWORD32 array_size;
+
             UEV_PARSE("num_decoding_units_minus1", value, ps_bitstrm);
             ps_pic_timing->u4_num_decoding_units_minus1 = value;
+
+            num_units_minus1 = ps_pic_timing->u4_num_decoding_units_minus1;
+            array_size = (sizeof(ps_pic_timing->au4_num_nalus_in_du_minus1)
+                       / sizeof(ps_pic_timing->au4_num_nalus_in_du_minus1[0]));
+            num_units_minus1 = CLIP3(num_units_minus1, 0,(array_size - 1));
+            ps_pic_timing->u4_num_decoding_units_minus1 = num_units_minus1;
 
             BITS_PARSE("du_common_cpb_removal_delay_flag", value, ps_bitstrm, 1);
             ps_pic_timing->u1_du_common_cpb_removal_delay_flag = value;
