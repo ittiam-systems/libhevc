@@ -2623,8 +2623,20 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
 
             case SEI_USER_DATA_REGISTERED_ITU_T_T35:
                 ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
-                ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
-                                                            u4_payload_size);
+                if(ps_parse->s_sei_params.i4_sei_user_data_cnt >= USER_DATA_MAX)
+                {
+                    for(i = 0; i < u4_payload_size / 4; i++)
+                    {
+                        ihevcd_bits_flush(ps_bitstrm, 4 * 8);
+                    }
+
+                    ihevcd_bits_flush(ps_bitstrm, (u4_payload_size - i * 4) * 8);
+                }
+                else
+                {
+                    ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
+                                                                u4_payload_size);
+                }
                 break;
 
             default:
@@ -2641,8 +2653,20 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
         {
             case SEI_USER_DATA_REGISTERED_ITU_T_T35:
                 ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
-                ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
-                                                            u4_payload_size);
+                if(ps_parse->s_sei_params.i4_sei_user_data_cnt >= USER_DATA_MAX)
+                {
+                    for(i = 0; i < u4_payload_size / 4; i++)
+                    {
+                        ihevcd_bits_flush(ps_bitstrm, 4 * 8);
+                    }
+
+                    ihevcd_bits_flush(ps_bitstrm, (u4_payload_size - i * 4) * 8);
+                }
+                else
+                {
+                    ihevcd_parse_user_data_registered_itu_t_t35(ps_codec,
+                                                                u4_payload_size);
+                }
                 break;
 
             default:
