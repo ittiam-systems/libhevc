@@ -1898,6 +1898,7 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
     /* Request memory for buffer which holds bitstream after emulation prevention */
     ps_mem_rec = &ps_mem_rec_base[MEM_REC_BITSBUF];
     ps_mem_rec->u4_mem_size = MAX((max_wd_luma * max_ht_luma), MIN_BITSBUF_SIZE);
+    ps_mem_rec->u4_mem_size += 16; //Alloc extra for parse optimization
     DEBUG("\nMemory record Id %d = %d \n", MEM_REC_BITSBUF,
                     ps_mem_rec->u4_mem_size);
 
