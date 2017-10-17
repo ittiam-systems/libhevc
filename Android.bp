@@ -9,6 +9,11 @@ cc_library_static {
 
         "-O3",
         "-DANDROID",
+        "-Wall",
+        "-Werror",
+        // common/x86/ihevc_sao_ssse3_intr.c: implicit conversion from
+        // 'int' to 'char' changes value from 128 to -128
+        "-Wno-error=constant-conversion",
     ],
 
     export_include_dirs: [
