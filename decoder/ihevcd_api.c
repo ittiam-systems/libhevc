@@ -2286,10 +2286,11 @@ WORD32 ihevcd_fill_num_mem_rec(void *pv_api_ip, void *pv_api_op)
     {
         WORD32 size = 0;
         /* Max CTBs in a row */
-        size  = max_wd_luma / MIN_CTB_SIZE + 2 /* Top row and bottom row extra. This ensures accessing left,top in first row
-                                                  and right in last row will not result in invalid access*/;
+        size  = max_wd_luma / MIN_CTB_SIZE;
+
         /* Max CTBs in a column */
-        size *= max_ht_luma / MIN_CTB_SIZE;
+        size *= (max_ht_luma / MIN_CTB_SIZE + 2) /* Top row and bottom row extra. This ensures accessing left,top in first row
+                                                  and right in last row will not result in invalid access*/;
 
         size *= sizeof(UWORD16);
         ps_mem_rec->u4_mem_size = size;
