@@ -690,14 +690,6 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         BREAK_AFTER_SLICE_NAL();
     }
 
-    if((ps_codec->u4_pic_cnt == 0) && (ret != IHEVCD_SUCCESS))
-    {
-        ps_codec->i4_error_code = ret;
-
-        ihevcd_fill_outargs(ps_codec, ps_dec_ip, ps_dec_op);
-        return IV_FAIL;
-    }
-
     if(1 == ps_codec->i4_pic_present && 0 == ps_codec->s_parse.i4_end_of_frame)
     {
         slice_header_t *ps_slice_hdr_next;
