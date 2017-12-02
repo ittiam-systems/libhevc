@@ -1272,12 +1272,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if((0 >= ps_sps->i2_pic_width_in_luma_samples) || (0 >= ps_sps->i2_pic_height_in_luma_samples))
         return IHEVCD_INVALID_PARAMETER;
 
-    /* i2_pic_width_in_luma_samples and i2_pic_height_in_luma_samples
-       should be multiples of min_cb_size. Here these are aligned to 8,
-       i.e. smallest CB size */
-    ps_sps->i2_pic_width_in_luma_samples = ALIGN8(ps_sps->i2_pic_width_in_luma_samples);
-    ps_sps->i2_pic_height_in_luma_samples = ALIGN8(ps_sps->i2_pic_height_in_luma_samples);
-
     BITS_PARSE("pic_cropping_flag", value, ps_bitstrm, 1);
     ps_sps->i1_pic_cropping_flag = value;
 
@@ -1418,7 +1412,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                     (ps_sps->i1_log2_diff_max_min_transform_block_size < 0) ||
                     (ps_sps->i1_log2_max_transform_block_size > ps_sps->i1_log2_ctb_size) ||
                     (ps_sps->i1_log2_ctb_size < 4) ||
-                    (ps_sps->i1_log2_ctb_size > 6))
+                    (ps_sps->i1_log2_ctb_size > 6) ||
+                    (ps_sps->i2_pic_width_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0) ||
+                    (ps_sps->i2_pic_height_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0))
     {
         return IHEVCD_INVALID_PARAMETER;
     }
