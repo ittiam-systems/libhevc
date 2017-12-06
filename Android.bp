@@ -1,5 +1,6 @@
 cc_library_static {
     name: "libhevcdec",
+    vendor_available: true,
 
     cflags: [
         "-D_LIB",
