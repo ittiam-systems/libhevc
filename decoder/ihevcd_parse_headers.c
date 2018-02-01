@@ -1402,6 +1402,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
+    if(value < 0 || value > 12)
+        return IHEVCD_INVALID_PARAMETER;
     ps_sps->i1_log2_max_pic_order_cnt_lsb = value + 4;
 
     BITS_PARSE("sps_sub_layer_ordering_info_present_flag", value, ps_bitstrm, 1);
