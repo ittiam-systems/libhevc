@@ -1318,8 +1318,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_vps_id = vps_id;
     ps_sps->i1_sps_max_sub_layers = sps_max_sub_layers;
     ps_sps->i1_sps_temporal_id_nesting_flag = sps_temporal_id_nesting_flag;
-    /* This is used only during initialization to get reorder count etc */
-    ps_codec->i4_sps_id = sps_id;
+
     memcpy(&ps_sps->s_ptl, &s_ptl, sizeof(profile_tier_lvl_info_t));
 
     UEV_PARSE("chroma_format_idc", value, ps_bitstrm);
@@ -1704,6 +1703,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             }
         }
     }
+
+    /* This is used only during initialization to get reorder count etc */
+    ps_codec->i4_sps_id = sps_id;
 
     ps_codec->i4_sps_done = 1;
     return ret;
