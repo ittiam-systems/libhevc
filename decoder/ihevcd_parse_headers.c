@@ -1413,14 +1413,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     for(; i < ps_sps->i1_sps_max_sub_layers; i++)
     {
         UEV_PARSE("max_dec_pic_buffering", value, ps_bitstrm);
-        if((value + 1) > MAX_DPB_SIZE)
+        if(value < 0 || (value + 1) > MAX_DPB_SIZE)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
         ps_sps->ai1_sps_max_dec_pic_buffering[i] = value + 1;
 
         UEV_PARSE("num_reorder_pics", value, ps_bitstrm);
-        if(value > ps_sps->ai1_sps_max_dec_pic_buffering[i])
+        if(value < 0 || value > ps_sps->ai1_sps_max_dec_pic_buffering[i])
         {
             return IHEVCD_INVALID_PARAMETER;
         }
