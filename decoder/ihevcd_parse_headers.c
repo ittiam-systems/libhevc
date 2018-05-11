@@ -1558,9 +1558,11 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     }
     UEV_PARSE("num_short_term_ref_pic_sets", value, ps_bitstrm);
+    if(value < 0 || value > MAX_STREF_PICS_SPS)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_num_short_term_ref_pic_sets = value;
-
-    ps_sps->i1_num_short_term_ref_pic_sets = CLIP3(ps_sps->i1_num_short_term_ref_pic_sets, 0, MAX_STREF_PICS_SPS);
 
     for(i = 0; i < ps_sps->i1_num_short_term_ref_pic_sets; i++)
         ihevcd_short_term_ref_pic_set(ps_bitstrm, &ps_sps->as_stref_picset[0], ps_sps->i1_num_short_term_ref_pic_sets, i, &ps_sps->as_stref_picset[i]);
@@ -1571,6 +1573,10 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if(ps_sps->i1_long_term_ref_pics_present_flag)
     {
         UEV_PARSE("num_long_term_ref_pics_sps", value, ps_bitstrm);
+        if(value < 0 || value > MAX_LTREF_PICS_SPS)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_sps->i1_num_long_term_ref_pics_sps = value;
 
         for(i = 0; i < ps_sps->i1_num_long_term_ref_pics_sps; i++)
