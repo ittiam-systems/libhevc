@@ -2177,6 +2177,98 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
  *******************************************************************************
  *
  * @brief
+ *  Set ctb skip
+ *
+ * @par Description:
+ *  During error, sets tu and pu params of a ctb as skip.
+ *
+ * @param[in] ps_codec
+ *  Pointer to codec context
+ *
+ * @returns  None
+ *
+ * @remarks
+ *
+ *
+ *******************************************************************************
+ */
+void ihevcd_set_ctb_skip(codec_t *ps_codec)
+{
+    tu_t *ps_tu;
+    pu_t *ps_pu;
+    sps_t *ps_sps = ps_codec->s_parse.ps_sps;
+    WORD32 ctb_size = 1 << ps_sps->i1_log2_ctb_size;
+    WORD32 ctb_skip_wd, ctb_skip_ht;
+    WORD32 rows_remaining, cols_remaining;
+    WORD32 tu_abs_x, tu_abs_y;
+    WORD32 numbytes_row =  (ps_sps->i2_pic_width_in_luma_samples + 63) / 64;
+    UWORD8 *pu1_pic_intra_flag;
+    UWORD32 u4_mask;
+    WORD32 pu_x,pu_y;
+
+    /* Set pu wd and ht based on whether the ctb is complete or not */
+    rows_remaining = ps_sps->i2_pic_height_in_luma_samples
+                    - (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size);
+    ctb_skip_ht = MIN(ctb_size, rows_remaining);
+
+    cols_remaining = ps_sps->i2_pic_width_in_luma_samples
+                    - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size);
+    ctb_skip_wd = MIN(ctb_size, cols_remaining);
+
+    ps_codec->s_parse.s_cu.i4_pred_mode = PRED_MODE_SKIP;
+    ps_codec->s_parse.s_cu.i4_part_mode = PART_2Nx2N;
+
+    for (pu_y = 0; pu_y < ctb_skip_ht ; pu_y += MIN_CU_SIZE)
+    {
+        for (pu_x = 0; pu_x < ctb_skip_wd ; pu_x += MIN_CU_SIZE)
+        {
+            ps_tu = ps_codec->s_parse.ps_tu;
+            ps_tu->b1_cb_cbf = 0;
+            ps_tu->b1_cr_cbf = 0;
+            ps_tu->b1_y_cbf = 0;
+            ps_tu->b4_pos_x = pu_x >> 2;
+            ps_tu->b4_pos_y = pu_y >> 2;
+            ps_tu->b1_transquant_bypass = 0;
+            ps_tu->b3_size = 1;
+            ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
+            ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
+            ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
+            ps_tu->b1_first_tu_in_cu = 1;
+
+            ps_codec->s_parse.ps_tu++;
+            ps_codec->s_parse.s_cu.i4_tu_cnt++;
+            ps_codec->s_parse.i4_pic_tu_idx++;
+
+            tu_abs_x = (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size) + pu_x;
+            tu_abs_y = (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size) + pu_y;
+            pu1_pic_intra_flag = ps_codec->s_parse.pu1_pic_intra_flag;
+            pu1_pic_intra_flag += (tu_abs_y >> 3) * numbytes_row;
+            pu1_pic_intra_flag += (tu_abs_x >> 6);
+            u4_mask = (LSB_ONES((MIN_CU_SIZE >> 3)) << (((tu_abs_x) / 8) % 8));
+            u4_mask = ~u4_mask;
+            *pu1_pic_intra_flag &= u4_mask;
+
+            ps_pu = ps_codec->s_parse.ps_pu;
+            ps_pu->b2_part_idx = 0;
+            ps_pu->b4_pos_x = pu_x >> 2;
+            ps_pu->b4_pos_y = pu_y >> 2;
+            ps_pu->b4_wd = 1;
+            ps_pu->b4_ht = 1;
+            ps_pu->b1_intra_flag = 0;
+            ps_pu->b3_part_mode = ps_codec->s_parse.s_cu.i4_part_mode;
+            ps_pu->b1_merge_flag = 1;
+            ps_pu->b3_merge_idx = 0;
+
+            ps_codec->s_parse.ps_pu++;
+            ps_codec->s_parse.i4_pic_pu_idx++;
+        }
+    }
+}
+
+/**
+ *******************************************************************************
+ *
+ * @brief
  *  Parses Slice data syntax
  *
  * @par Description:
@@ -2376,26 +2468,29 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 
     /*Cabac init at the beginning of a slice*/
     //If the slice is a dependent slice, not present at the start of a tile
-    if((1 == ps_slice_hdr->i1_dependent_slice_flag) && (!((ps_codec->s_parse.i4_ctb_tile_x == 0) && (ps_codec->s_parse.i4_ctb_tile_y == 0))))
+    if(0 == ps_codec->i4_slice_error)
     {
-        if((0 == ps_pps->i1_entropy_coding_sync_enabled_flag) || (ps_pps->i1_entropy_coding_sync_enabled_flag && (0 != ps_codec->s_parse.i4_ctb_x)))
+        if((1 == ps_slice_hdr->i1_dependent_slice_flag) && (!((ps_codec->s_parse.i4_ctb_tile_x == 0) && (ps_codec->s_parse.i4_ctb_tile_y == 0))))
         {
-            ihevcd_cabac_reset(&ps_codec->s_parse.s_cabac,
-                               &ps_codec->s_parse.s_bitstrm);
+            if((0 == ps_pps->i1_entropy_coding_sync_enabled_flag) || (ps_pps->i1_entropy_coding_sync_enabled_flag && (0 != ps_codec->s_parse.i4_ctb_x)))
+            {
+                ihevcd_cabac_reset(&ps_codec->s_parse.s_cabac,
+                                   &ps_codec->s_parse.s_bitstrm);
+            }
         }
-    }
-    else if((0 == ps_pps->i1_entropy_coding_sync_enabled_flag) || (ps_pps->i1_entropy_coding_sync_enabled_flag && (0 != ps_codec->s_parse.i4_ctb_x)))
-    {
-        ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
-                                &ps_codec->s_parse.s_bitstrm,
-                                slice_qp,
-                                cabac_init_idc,
-                                &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
-        if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+        else if((0 == ps_pps->i1_entropy_coding_sync_enabled_flag) || (ps_pps->i1_entropy_coding_sync_enabled_flag && (0 != ps_codec->s_parse.i4_ctb_x)))
         {
-            ps_codec->i4_slice_error = 1;
-            end_of_slice_flag = 1;
-            ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+            ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
+                                    &ps_codec->s_parse.s_bitstrm,
+                                    slice_qp,
+                                    cabac_init_idc,
+                                    &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]);
+            if(ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
+            {
+                ps_codec->i4_slice_error = 1;
+                end_of_slice_flag = 1;
+                ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
+            }
         }
     }
 
@@ -2479,6 +2574,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 
             /* Cabac init is done unconditionally at the start of the tile irrespective
              * of whether it is a dependent or an independent slice */
+            if(0 == ps_codec->i4_slice_error)
             {
                 ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                         &ps_codec->s_parse.s_bitstrm,
@@ -2542,7 +2638,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         if(ps_pps->i1_entropy_coding_sync_enabled_flag)
         {
             /*TODO Handle single CTB and top-right belonging to a different slice */
-            if(0 == ps_codec->s_parse.i4_ctb_x)
+            if(0 == ps_codec->s_parse.i4_ctb_x && 0 == ps_codec->i4_slice_error)
             {
                 //WORD32 size = sizeof(ps_codec->s_parse.s_cabac.au1_ctxt_models);
                 WORD32 default_ctxt = 0;
@@ -2640,18 +2736,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             if (ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
             {
                 /* Reset tu and pu parameters, and signal current ctb as skip */
-                WORD32 pu_skip_wd, pu_skip_ht;
-                WORD32 rows_remaining, cols_remaining;
                 WORD32 tu_coeff_data_reset_size;
-
-                /* Set pu wd and ht based on whether the ctb is complete or not */
-                rows_remaining = ps_sps->i2_pic_height_in_luma_samples
-                                - (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size);
-                pu_skip_ht = MIN(ctb_size, rows_remaining);
-
-                cols_remaining = ps_sps->i2_pic_width_in_luma_samples
-                                - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size);
-                pu_skip_wd = MIN(ctb_size, cols_remaining);
 
                 ps_codec->s_parse.ps_tu = ps_tu;
                 ps_codec->s_parse.s_cu.i4_tu_cnt = i4_tu_cnt;
@@ -2660,41 +2745,11 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 ps_codec->s_parse.ps_pu = ps_pu;
                 ps_codec->s_parse.i4_pic_pu_idx = i4_pic_pu_idx;
 
-                ps_tu->b1_cb_cbf = 0;
-                ps_tu->b1_cr_cbf = 0;
-                ps_tu->b1_y_cbf = 0;
-                ps_tu->b4_pos_x = 0;
-                ps_tu->b4_pos_y = 0;
-                ps_tu->b1_transquant_bypass = 0;
-                ps_tu->b3_size = (ps_sps->i1_log2_ctb_size - 2);
-                ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
-                ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
-                ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
-                ps_tu->b1_first_tu_in_cu = 1;
-
                 tu_coeff_data_reset_size = (UWORD8 *)ps_codec->s_parse.pv_tu_coeff_data - pu1_tu_coeff_data;
                 memset(pu1_tu_coeff_data, 0, tu_coeff_data_reset_size);
                 ps_codec->s_parse.pv_tu_coeff_data = (void *)pu1_tu_coeff_data;
 
-                ps_codec->s_parse.ps_tu++;
-                ps_codec->s_parse.s_cu.i4_tu_cnt++;
-                ps_codec->s_parse.i4_pic_tu_idx++;
-
-                ps_codec->s_parse.s_cu.i4_pred_mode = PRED_MODE_SKIP;
-                ps_codec->s_parse.s_cu.i4_part_mode = PART_2Nx2N;
-
-                ps_pu->b2_part_idx = 0;
-                ps_pu->b4_pos_x = 0;
-                ps_pu->b4_pos_y = 0;
-                ps_pu->b4_wd = (pu_skip_wd >> 2) - 1;
-                ps_pu->b4_ht = (pu_skip_ht >> 2) - 1;
-                ps_pu->b1_intra_flag = 0;
-                ps_pu->b3_part_mode = ps_codec->s_parse.s_cu.i4_part_mode;
-                ps_pu->b1_merge_flag = 1;
-                ps_pu->b3_merge_idx = 0;
-
-                ps_codec->s_parse.ps_pu++;
-                ps_codec->s_parse.i4_pic_pu_idx++;
+                ihevcd_set_ctb_skip(ps_codec);
 
                 /* Set slice error to suppress further parsing and
                  * signal end of slice.
@@ -2706,52 +2761,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         }
         else
         {
-            tu_t *ps_tu = ps_codec->s_parse.ps_tu;
-            pu_t *ps_pu = ps_codec->s_parse.ps_pu;
-            WORD32 pu_skip_wd, pu_skip_ht;
-            WORD32 rows_remaining, cols_remaining;
-
-            /* Set pu wd and ht based on whether the ctb is complete or not */
-            rows_remaining = ps_sps->i2_pic_height_in_luma_samples
-                            - (ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size);
-            pu_skip_ht = MIN(ctb_size, rows_remaining);
-
-            cols_remaining = ps_sps->i2_pic_width_in_luma_samples
-                            - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size);
-            pu_skip_wd = MIN(ctb_size, cols_remaining);
-
-            ps_tu->b1_cb_cbf = 0;
-            ps_tu->b1_cr_cbf = 0;
-            ps_tu->b1_y_cbf = 0;
-            ps_tu->b4_pos_x = 0;
-            ps_tu->b4_pos_y = 0;
-            ps_tu->b1_transquant_bypass = 0;
-            ps_tu->b3_size = (ps_sps->i1_log2_ctb_size - 2);
-            ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
-            ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
-            ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
-            ps_tu->b1_first_tu_in_cu = 1;
-
-            ps_codec->s_parse.ps_tu++;
-            ps_codec->s_parse.s_cu.i4_tu_cnt++;
-            ps_codec->s_parse.i4_pic_tu_idx++;
-
-            ps_codec->s_parse.s_cu.i4_pred_mode = PRED_MODE_SKIP;
-            ps_codec->s_parse.s_cu.i4_part_mode = PART_2Nx2N;
-
-            ps_pu->b2_part_idx = 0;
-            ps_pu->b4_pos_x = 0;
-            ps_pu->b4_pos_y = 0;
-            ps_pu->b4_wd = (pu_skip_wd >> 2) - 1;
-            ps_pu->b4_ht = (pu_skip_ht >> 2) - 1;
-            ps_pu->b1_intra_flag = 0;
-            ps_pu->b3_part_mode = ps_codec->s_parse.s_cu.i4_part_mode;
-            ps_pu->b1_merge_flag = 1;
-            ps_pu->b3_merge_idx = 0;
-
-            ps_codec->s_parse.ps_pu++;
-            ps_codec->s_parse.i4_pic_pu_idx++;
-
+            ihevcd_set_ctb_skip(ps_codec);
         }
 
         if(0 == ps_codec->i4_slice_error)
@@ -2783,7 +2793,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 if((ps_codec->s_parse.i4_ctb_tile_y + 1) == ps_tile->u2_ht)
                     end_of_tile = 1;
             }
-            if((0 == end_of_slice_flag) &&
+            if((0 == end_of_slice_flag) && (0 == ps_codec->i4_slice_error) &&
                             ((ps_pps->i1_tiles_enabled_flag && end_of_tile) ||
                                             (ps_pps->i1_entropy_coding_sync_enabled_flag && end_of_tile_row)))
             {
@@ -3101,15 +3111,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 UWORD32 *pu4_nbr_pu_idx = ps_proc->pu4_pic_pu_idx_map;
                 WORD32 nbr_pu_idx_strd = MAX_CTB_SIZE / MIN_PU_SIZE + 2;
                 pu_t *ps_pu;
-
-                for(row = 0; row < ctb_size / MIN_PU_SIZE; row++)
-                {
-                    for(col = 0; col < ctb_size / MIN_PU_SIZE; col++)
-                    {
-                        pu1_pic_pu_map_ctb[row * ctb_size / MIN_PU_SIZE + col] = 0;
-                    }
-                }
-
+                WORD32 ctb_size_in_min_pu = (ctb_size / MIN_PU_SIZE);
 
                 /* Neighbor PU idx update inside CTB */
                 /* 1byte per 4x4. Indicates the PU idx that 4x4 block belongs to */
@@ -3158,6 +3160,27 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                         ps_proc->pu4_pic_pu_idx_top[(ps_codec->s_parse.i4_ctb_x * ctb_size / MIN_PU_SIZE) + i] =
                                         pu4_nbr_pu_idx[(ctb_size_left / MIN_PU_SIZE) * nbr_pu_idx_strd + i + 1];
 
+                    }
+                }
+
+                /* Updating the CTB level PU idx (Used for collocated MV pred)*/
+                {
+                    WORD32 ctb_row, ctb_col, index_pic_map, index_nbr_map;
+                    WORD32 first_pu_of_ctb;
+                    first_pu_of_ctb = pu4_nbr_pu_idx[1 + nbr_pu_idx_strd];
+
+                    index_pic_map = 0 * ctb_size_in_min_pu + 0;
+                    index_nbr_map = (0 + 1) * nbr_pu_idx_strd + (0 + 1);
+
+                    for(ctb_row = 0; ctb_row < ctb_size_in_min_pu; ctb_row++)
+                    {
+                        for(ctb_col = 0; ctb_col < ctb_size_in_min_pu; ctb_col++)
+                        {
+                            pu1_pic_pu_map_ctb[index_pic_map + ctb_col] = pu4_nbr_pu_idx[index_nbr_map + ctb_col]
+                                            - first_pu_of_ctb;
+                        }
+                        index_pic_map += ctb_size_in_min_pu;
+                        index_nbr_map += nbr_pu_idx_strd;
                     }
                 }
             }

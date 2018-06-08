@@ -388,4 +388,12 @@ cc_library_static {
             ],
         },
     },
+
+    sanitize: {
+        cfi: true,
+        diag: {
+            cfi: true,
+        },
+        blacklist: "cfi_blacklist.txt",
+    },
 }
