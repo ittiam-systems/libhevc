@@ -390,11 +390,13 @@ cc_library_static {
     },
 
     sanitize: {
+        integer_overflow: true,
         cfi: true,
         diag: {
+            integer_overflow: true,
             cfi: true,
         },
-        blacklist: "cfi_blacklist.txt",
+        blacklist: "libhevc_blacklist.txt",
     },
 }
 
