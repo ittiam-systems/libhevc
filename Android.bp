@@ -391,10 +391,10 @@ cc_library_static {
 
     sanitize: {
         integer_overflow: true,
-        cfi: true,
+        // Enable CFI if this becomes a shared library.
+        // cfi: true,
         diag: {
             integer_overflow: true,
-            cfi: true,
         },
         blacklist: "libhevc_blacklist.txt",
     },
