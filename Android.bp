@@ -397,3 +397,17 @@ cc_library_static {
         blacklist: "cfi_blacklist.txt",
     },
 }
+
+cc_test {
+    name: "hevcdec",
+    cflags: [
+        "-DPROFILE_ENABLE",
+        "-DARM",
+        "-fPIC",
+        "-DMD5_DISABLE",
+        "-Wall",
+        "-Werror",
+    ],
+    srcs: ["test/decoder/main.c"],
+    static_libs: ["libhevcdec"],
+}
