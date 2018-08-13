@@ -1169,6 +1169,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, sizeof(iv_obj_t));
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, sizeof(iv_obj_t));
     *pps_codec_obj = (iv_obj_t *)pv_buf;
     ps_create_op->s_ivd_create_op_t.pv_handle = *pps_codec_obj;
 
@@ -1205,6 +1206,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = MAX_PROCESS_THREADS * ithread_get_handle_size();
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
 
     for(i = 0; i < MAX_PROCESS_THREADS; i++)
     {
@@ -1217,6 +1219,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = MIN_BITSBUF_SIZE;
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size + 16); //Alloc extra for parse optimization
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size + 16);
     ps_codec->pu1_bitsbuf_static = pv_buf;
     ps_codec->u4_bitsbuf_size_static = size;
 
@@ -1224,24 +1227,28 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = sizeof(buf_mgr_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_disp_buf_mgr = pv_buf;
 
     /* size for holding dpb manager context */
     size = sizeof(dpb_mgr_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_dpb_mgr = pv_buf;
 
     /* size for holding buffer manager context */
     size = sizeof(buf_mgr_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_pic_buf_mgr = pv_buf;
 
     /* size for holding mv buffer manager context */
     size = sizeof(buf_mgr_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_mv_buf_mgr = pv_buf;
 
     size = MAX_VPS_CNT * sizeof(vps_t);
@@ -1277,6 +1284,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = (MAX_SPS_CNT + MAX_PPS_CNT) * size * sizeof(WORD16);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pi2_scaling_mat = (WORD16 *)pv_buf;
 
 
@@ -1287,6 +1295,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     size = BUF_MGR_MAX_CNT * sizeof(pic_buf_t);
     pv_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_pic_buf_base = (UWORD8 *)pv_buf;
 
     /* TO hold scratch buffers needed for each SAO context */
@@ -1298,6 +1307,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
     pu1_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pu1_buf), IV_FAIL);
+    memset(pu1_buf, 0, size);
 
     for(i = 0; i < MAX_PROCESS_THREADS; i++)
     {
@@ -1607,6 +1617,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
     pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
     RETURN_IF((NULL == pv_buf), IV_FAIL);
+    memset(pv_buf, 0, size);
     ps_codec->pv_proc_jobq_buf = pv_buf;
     ps_codec->i4_proc_jobq_buf_size = size;
 
@@ -1914,6 +1925,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     {
         pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size + 16); //Alloc extra for parse optimization
         RETURN_IF((NULL == pv_buf), IV_FAIL);
+        memset(pv_buf, 0, size + 16);
         ps_codec->pu1_bitsbuf_dynamic = pv_buf;
         ps_codec->u4_bitsbuf_size_dynamic = size;
     }
@@ -1950,6 +1962,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
         pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
         RETURN_IF((NULL == pv_buf), IV_FAIL);
+        memset(pv_buf, 0, size);
 
         ps_codec->pv_mv_bank_buf_base = pv_buf;
         ps_codec->i4_total_mv_bank_size = size;
@@ -1969,7 +1982,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         size = ihevcd_get_total_pic_buf_size(ps_codec, wd, ht);
         pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
         RETURN_IF((NULL == pv_buf), IV_FAIL);
-
+        memset(pv_buf, 0, size);
 
         ps_codec->i4_total_pic_buf_size = size;
         ps_codec->pu1_ref_pic_buf_base = (UWORD8 *)pv_buf;
@@ -2229,6 +2242,7 @@ WORD32 ihevcd_set_display_frame(iv_obj_t *ps_codec_obj,
 
             pu1_chroma_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
             RETURN_IF((NULL == pu1_chroma_buf), IV_FAIL);
+            memset(pu1_chroma_buf, 0, size);
 
             ps_codec->pu1_cur_chroma_ref_buf = pu1_chroma_buf;
         }
