@@ -389,6 +389,8 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
     /* Initialize error code */
     ps_codec->i4_error_code = 0;
+    /* Initialize bytes remaining */
+    ps_codec->i4_bytes_remaining = 0;
 
     ps_dec_ip = (ivd_video_decode_ip_t *)pv_api_ip;
     ps_dec_op = (ivd_video_decode_op_t *)pv_api_op;

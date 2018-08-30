@@ -834,6 +834,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         if(ps_slice_hdr->i4_num_entry_point_offsets > 0)
         {
             UEV_PARSE("offset_len_minus1", value, ps_bitstrm);
+            if(value < 0 || value > 31)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
             ps_slice_hdr->i1_offset_len = value + 1;
 
             for(i = 0; i < ps_slice_hdr->i4_num_entry_point_offsets; i++)
