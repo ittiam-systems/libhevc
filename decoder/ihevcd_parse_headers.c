@@ -1824,16 +1824,32 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     ps_pps->i1_tiles_enabled_flag = value;
 
     /* When tiles are enabled and width or height is >= 4096,
-     * CTB Size should at least be 32. 16x16 CTBs can result
-     * in tile position greater than 255 for 4096,
+     * CTB Size should at least be 32 while if width or height is >= 8192,
+     * CTB Size should at least be 64 and so on. 16x16 CTBs can result
+     * in tile position greater than 255 for 4096 while 32x32 CTBs can result
+     * in tile position greater than 255 for 8192,
      * which decoder does not support.
      */
-    if((ps_pps->i1_tiles_enabled_flag) &&
-                    (ps_sps->i1_log2_ctb_size == 4) &&
-                    ((ps_sps->i2_pic_width_in_luma_samples >= 4096) ||
-                    (ps_sps->i2_pic_height_in_luma_samples >= 4096)))
+    if (ps_pps->i1_tiles_enabled_flag)
     {
-        return IHEVCD_INVALID_HEADER;
+        if((ps_sps->i1_log2_ctb_size == 4) &&
+            ((ps_sps->i2_pic_width_in_luma_samples >= 4096) ||
+            (ps_sps->i2_pic_height_in_luma_samples >= 4096)))
+        {
+            return IHEVCD_INVALID_HEADER;
+        }
+        if((ps_sps->i1_log2_ctb_size == 5) &&
+            ((ps_sps->i2_pic_width_in_luma_samples >= 8192) ||
+            (ps_sps->i2_pic_height_in_luma_samples >= 8192)))
+        {
+            return IHEVCD_INVALID_HEADER;
+        }
+        if((ps_sps->i1_log2_ctb_size == 6) &&
+            ((ps_sps->i2_pic_width_in_luma_samples >= 16384) ||
+            (ps_sps->i2_pic_height_in_luma_samples >= 16384)))
+        {
+            return IHEVCD_INVALID_HEADER;
+        }
     }
 
     BITS_PARSE("entropy_coding_sync_enabled_flag", value, ps_bitstrm, 1);
