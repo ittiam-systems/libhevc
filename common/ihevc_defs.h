@@ -348,7 +348,7 @@ enum
 /* CU Size Range */
 #define MAX_CU_SIZE         64
 #define MIN_CU_SIZE         8
-
+#define LOG2_MIN_CU_SIZE    3
 
 /* Number of max TU in a CTB row */
 #define MAX_TU_IN_CTB_ROW   ((MAX_CTB_SIZE / MIN_TU_SIZE))

@@ -458,6 +458,27 @@ fun:ihevc_weighted_pred_uni
 fun:ihevc_weighted_pred_uni_sse42
 fun:ihevc_weighted_pred_uni_ssse3
 
+#encoder files
+fun:ihevce_ed_calc_8x8_blk
+fun:ihevce_ed_calc_4x4_blk
+fun:ihevce_ed_4x4_find_best_modes
+fun:ihevce_pu_calc_4x4_blk
+fun:ihevce_mode_eval_filtering
+fun:ihevce_intra_rdopt_cu_ntu
+fun:ihevce_final_rdopt_mode_prcs
+fun:ihevce_it_recon_fxn
+fun:ihevce_deblk_ctb
+fun:ihevce_pad_interp_recon_ctb
+fun:ihevce_luma_interpolate_8bit_dxdy
+fun:ihevce_luma_interpolate_16bit_dxdy
+fun:ihevce_chroma_interpolate_8bit_dxdy
+fun:ihevce_chroma_interpolate_16bit_dxdy
+fun:ihevce_chroma_cu_prcs_rdopt
+fun:ihevce_intra_chroma_pred_mode_selector
+fun:ihevce_sao_ctb
+fun:ihevce_distortion_based_intra_chroma_mode_selector
+fun:ihevce_luma_inter_pred_pu
+
 [integer]
 # decoder/ihevcd_bitstream.c:250: 0 - 16 cannot be represented in type 'unsigned int'
 # decoder/ihevcd_bitstream.c:251: 4294967280 + 32 cannot be represented in type 'unsigned int'
