@@ -150,17 +150,27 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     WORD32 value;
+    UWORD32 u4_value;
     WORD32 i;
 
     pred_wt_ofst_t *ps_wt_ofst = &ps_slice_hdr->s_wt_ofst;
     UNUSED(ps_pps);
 
-    UEV_PARSE("luma_log2_weight_denom", value, ps_bitstrm);
-    ps_wt_ofst->i1_luma_log2_weight_denom = value;
+    UEV_PARSE("luma_log2_weight_denom", u4_value, ps_bitstrm);
+    if(u4_value > 7)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+    ps_wt_ofst->i1_luma_log2_weight_denom = u4_value;
 
     if(ps_sps->i1_chroma_format_idc != 0)
     {
         SEV_PARSE("delta_chroma_log2_weight_denom", value, ps_bitstrm);
+        if(((ps_wt_ofst->i1_luma_log2_weight_denom + value) < 0) ||
+                ((ps_wt_ofst->i1_luma_log2_weight_denom + value) > 7))
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         ps_wt_ofst->i1_chroma_log2_weight_denom = ps_wt_ofst->i1_luma_log2_weight_denom + value;
     }
 
@@ -358,7 +368,7 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
                                              stref_picset_t *ps_stref_picset)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    WORD32 value;
+    UWORD32 value;
     stref_picset_t *ps_stref_picset_ref;
     WORD32 delta_idx, delta_rps;
     WORD32 r_idx;
@@ -383,6 +393,10 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
         if(idx == num_short_term_ref_pic_sets)
         {
             UEV_PARSE("delta_idx_minus1", value, ps_bitstrm);
+            if(value > 63)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
             delta_idx = value + 1;
         }
         else
@@ -398,6 +412,10 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
         delta_rps_sign = value;
 
         UEV_PARSE("abs_delta_rps_minus1", value, ps_bitstrm);
+        if(value > 32767)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
         abs_delta_rps = value + 1;
 
         delta_rps = (1 - 2 * delta_rps_sign) * (abs_delta_rps);
@@ -511,7 +529,11 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
         for(i = 0; i < ps_stref_picset->i1_num_neg_pics; i++)
         {
             UEV_PARSE("delta_poc_s0_minus1", value, ps_bitstrm);
-            poc = prev_poc - (value + 1);
+            if(value > 32767)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
+            poc = prev_poc - ((WORD32)(value + 1));
             prev_poc = poc;
             ps_stref_picset->ai2_delta_poc[i] = poc;
 
@@ -525,6 +547,10 @@ IHEVCD_ERROR_T ihevcd_short_term_ref_pic_set(bitstrm_t *ps_bitstrm,
                         i++)
         {
             UEV_PARSE("delta_poc_s1_minus1", value, ps_bitstrm);
+            if(value > 32767)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
             poc = prev_poc + (value + 1);
             prev_poc = poc;
             ps_stref_picset->ai2_delta_poc[i] = poc;
@@ -1087,6 +1113,10 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
                     {
                         SEV_PARSE("scaling_list_delta_coef",
                                   scaling_list_delta_coef, ps_bitstrm);
+                        if((scaling_list_delta_coef < -128) || (scaling_list_delta_coef > 127))
+                        {
+                            return IHEVCD_INVALID_PARAMETER;
+                        }
                         next_coef = (next_coef + scaling_list_delta_coef + 256)
                                         % 256;
                         pi2_scaling_mat_offset[scan_table[i]] = next_coef;
@@ -1100,6 +1130,10 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
                     {
                         SEV_PARSE("scaling_list_delta_coef",
                                   scaling_list_delta_coef, ps_bitstrm);
+                        if((scaling_list_delta_coef < -128) || (scaling_list_delta_coef > 127))
+                        {
+                            return IHEVCD_INVALID_PARAMETER;
+                        }
                         next_coef = (next_coef + scaling_list_delta_coef + 256)
                                         % 256;
 
@@ -1120,6 +1154,10 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
                     {
                         SEV_PARSE("scaling_list_delta_coef",
                                   scaling_list_delta_coef, ps_bitstrm);
+                        if((scaling_list_delta_coef < -128) || (scaling_list_delta_coef > 127))
+                        {
+                            return IHEVCD_INVALID_PARAMETER;
+                        }
                         next_coef = (next_coef + scaling_list_delta_coef + 256)
                                         % 256;
 
@@ -1267,7 +1305,7 @@ IHEVCD_ERROR_T ihevcd_parse_vps(codec_t *ps_codec)
 IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    WORD32 value;
+    UWORD32 value;
 
     WORD32 i;
     WORD32 vps_id;
@@ -1356,28 +1394,28 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     {
 
         UEV_PARSE("pic_crop_left_offset", value, ps_bitstrm);
-        if (value < 0 || value >= ps_sps->i2_pic_width_in_luma_samples)
+        if (value >= ps_sps->i2_pic_width_in_luma_samples)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
         ps_sps->i2_pic_crop_left_offset = value;
 
         UEV_PARSE("pic_crop_right_offset", value, ps_bitstrm);
-        if (value < 0 || value >= ps_sps->i2_pic_width_in_luma_samples)
+        if (value >= ps_sps->i2_pic_width_in_luma_samples)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
         ps_sps->i2_pic_crop_right_offset = value;
 
         UEV_PARSE("pic_crop_top_offset", value, ps_bitstrm);
-        if (value < 0 || value >= ps_sps->i2_pic_height_in_luma_samples)
+        if (value >= ps_sps->i2_pic_height_in_luma_samples)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
         ps_sps->i2_pic_crop_top_offset = value;
 
         UEV_PARSE("pic_crop_bottom_offset", value, ps_bitstrm);
-        if (value < 0 || value >= ps_sps->i2_pic_height_in_luma_samples)
+        if (value >= ps_sps->i2_pic_height_in_luma_samples)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
@@ -1401,11 +1439,15 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
-    if(value < 0 || value > 12)
+    if(value > 12)
         return IHEVCD_INVALID_PARAMETER;
     ps_sps->i1_log2_max_pic_order_cnt_lsb = value + 4;
 
     BITS_PARSE("sps_sub_layer_ordering_info_present_flag", value, ps_bitstrm, 1);
+    if(value != 0 && value !=1)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_sps_sub_layer_ordering_info_present_flag = value;
 
 
@@ -1413,14 +1455,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     for(; i < ps_sps->i1_sps_max_sub_layers; i++)
     {
         UEV_PARSE("max_dec_pic_buffering", value, ps_bitstrm);
-        if(value < 0 || (value + 1) > MAX_DPB_SIZE)
+        if(value > (MAX_DPB_SIZE - 1))
         {
             return IHEVCD_INVALID_PARAMETER;
         }
         ps_sps->ai1_sps_max_dec_pic_buffering[i] = value + 1;
 
         UEV_PARSE("num_reorder_pics", value, ps_bitstrm);
-        if(value < 0 || value > ps_sps->ai1_sps_max_dec_pic_buffering[i])
+        if(value > ps_sps->ai1_sps_max_dec_pic_buffering[i])
         {
             return IHEVCD_INVALID_PARAMETER;
         }
@@ -1500,14 +1542,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_log2_diff_max_min_pcm_coding_block_size = 0;
 
     UEV_PARSE("max_transform_hierarchy_depth_inter", value, ps_bitstrm);
-    if(value < 0 || value > (ps_sps->i1_log2_ctb_size - ps_sps->i1_log2_min_transform_block_size))
+    if(value > (ps_sps->i1_log2_ctb_size - ps_sps->i1_log2_min_transform_block_size))
     {
         return IHEVCD_INVALID_PARAMETER;
     }
     ps_sps->i1_max_transform_hierarchy_depth_inter = value;
 
     UEV_PARSE("max_transform_hierarchy_depth_intra", value, ps_bitstrm);
-    if(value < 0 || value > (ps_sps->i1_log2_ctb_size - ps_sps->i1_log2_min_transform_block_size))
+    if(value > (ps_sps->i1_log2_ctb_size - ps_sps->i1_log2_min_transform_block_size))
     {
         return IHEVCD_INVALID_PARAMETER;
     }
@@ -1558,7 +1600,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     }
     UEV_PARSE("num_short_term_ref_pic_sets", value, ps_bitstrm);
-    if(value < 0 || value > MAX_STREF_PICS_SPS)
+    if(value > MAX_STREF_PICS_SPS)
     {
         return IHEVCD_INVALID_PARAMETER;
     }
@@ -1573,7 +1615,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if(ps_sps->i1_long_term_ref_pics_present_flag)
     {
         UEV_PARSE("num_long_term_ref_pics_sps", value, ps_bitstrm);
-        if(value < 0 || value > MAX_LTREF_PICS_SPS)
+        if(value > MAX_LTREF_PICS_SPS)
         {
             return IHEVCD_INVALID_PARAMETER;
         }
@@ -1807,7 +1849,8 @@ void ihevcd_copy_sps(codec_t *ps_codec, WORD32 sps_id, WORD32 sps_id_ref)
 IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
-    WORD32 value;
+    UWORD32 value;
+    WORD32 i4_value;
     WORD32 pps_id;
 
     pps_t *ps_pps;
@@ -1876,8 +1919,8 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     UEV_PARSE("num_ref_idx_l1_default_active_minus1", value, ps_bitstrm);
     ps_pps->i1_num_ref_idx_l1_default_active = value + 1;
 
-    SEV_PARSE("pic_init_qp_minus26", value, ps_bitstrm);
-    ps_pps->i1_pic_init_qp = value + 26;
+    SEV_PARSE("pic_init_qp_minus26", i4_value, ps_bitstrm);
+    ps_pps->i1_pic_init_qp = i4_value + 26;
 
     BITS_PARSE("constrained_intra_pred_flag", value, ps_bitstrm, 1);
     ps_pps->i1_constrained_intra_pred_flag = value;
@@ -1899,12 +1942,12 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     }
     ps_pps->i1_log2_min_cu_qp_delta_size = ps_sps->i1_log2_ctb_size - ps_pps->i1_diff_cu_qp_delta_depth;
     /* Print different */
-    SEV_PARSE("cb_qp_offset", value, ps_bitstrm);
-    ps_pps->i1_pic_cb_qp_offset = value;
+    SEV_PARSE("cb_qp_offset", i4_value, ps_bitstrm);
+    ps_pps->i1_pic_cb_qp_offset = i4_value;
 
     /* Print different */
-    SEV_PARSE("cr_qp_offset", value, ps_bitstrm);
-    ps_pps->i1_pic_cr_qp_offset = value;
+    SEV_PARSE("cr_qp_offset", i4_value, ps_bitstrm);
+    ps_pps->i1_pic_cr_qp_offset = i4_value;
 
     /* Print different */
     BITS_PARSE("slicelevel_chroma_qp_flag", value, ps_bitstrm, 1);
@@ -1981,7 +2024,7 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
         {
 
-            WORD32 start;
+            UWORD32 start;
             WORD32 i, j;
 
 
@@ -2100,11 +2143,11 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
         if(!ps_pps->i1_pic_disable_deblocking_filter_flag)
         {
 
-            SEV_PARSE("pps_beta_offset_div2", value, ps_bitstrm);
-            ps_pps->i1_beta_offset_div2 = value;
+            SEV_PARSE("pps_beta_offset_div2", i4_value, ps_bitstrm);
+            ps_pps->i1_beta_offset_div2 = i4_value;
 
-            SEV_PARSE("pps_tc_offset_div2", value, ps_bitstrm);
-            ps_pps->i1_tc_offset_div2 = value;
+            SEV_PARSE("pps_tc_offset_div2", i4_value, ps_bitstrm);
+            ps_pps->i1_tc_offset_div2 = i4_value;
 
         }
     }
