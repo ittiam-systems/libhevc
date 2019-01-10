@@ -3154,7 +3154,7 @@ WORD32 ihevcd_get_vui_params(iv_obj_t *ps_codec_obj,
     ps_op->u4_vui_num_units_in_tick                  =  ps_vui->u4_vui_num_units_in_tick;
     ps_op->u4_vui_time_scale                         =  ps_vui->u4_vui_time_scale;
     ps_op->u1_poc_proportional_to_timing_flag        =  ps_vui->u1_poc_proportional_to_timing_flag;
-    ps_op->u1_num_ticks_poc_diff_one_minus1          =  ps_vui->u1_num_ticks_poc_diff_one_minus1;
+    ps_op->u4_num_ticks_poc_diff_one_minus1          =  ps_vui->u4_num_ticks_poc_diff_one_minus1;
     ps_op->u1_bitstream_restriction_flag             =  ps_vui->u1_bitstream_restriction_flag;
     ps_op->u1_tiles_fixed_structure_flag             =  ps_vui->u1_tiles_fixed_structure_flag;
     ps_op->u1_motion_vectors_over_pic_boundaries_flag =  ps_vui->u1_motion_vectors_over_pic_boundaries_flag;
@@ -3189,7 +3189,7 @@ WORD32 ihevcd_get_vui_params(iv_obj_t *ps_codec_obj,
     {
         ps_op->au1_fixed_pic_rate_general_flag[i]                  =    ps_vui->s_vui_hrd_parameters.au1_fixed_pic_rate_general_flag[i];
         ps_op->au1_fixed_pic_rate_within_cvs_flag[i]               =    ps_vui->s_vui_hrd_parameters.au1_fixed_pic_rate_within_cvs_flag[i];
-        ps_op->au1_elemental_duration_in_tc_minus1[i]              =    ps_vui->s_vui_hrd_parameters.au1_elemental_duration_in_tc_minus1[i];
+        ps_op->au2_elemental_duration_in_tc_minus1[i]              =    ps_vui->s_vui_hrd_parameters.au2_elemental_duration_in_tc_minus1[i];
         ps_op->au1_low_delay_hrd_flag[i]                           =    ps_vui->s_vui_hrd_parameters.au1_low_delay_hrd_flag[i];
         ps_op->au1_cpb_cnt_minus1[i]                               =    ps_vui->s_vui_hrd_parameters.au1_cpb_cnt_minus1[i];
     }

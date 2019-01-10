@@ -653,7 +653,7 @@ typedef struct
      * element units that specify HRD output times of consecutive pictures in output order is constrained
      * refer to Table E-6
      */
-    UWORD8 au1_elemental_duration_in_tc_minus1[VPS_MAX_SUB_LAYERS];
+    UWORD16 au2_elemental_duration_in_tc_minus1[VPS_MAX_SUB_LAYERS];
 
     /**
      * specifies the HRD operational mode
@@ -834,7 +834,7 @@ typedef struct
      * num_ticks_poc_diff_one_minus1 plus 1 specifies the number of clock ticks
      * corresponding to a difference of poc values equal to 1
      */
-    UWORD8 u1_num_ticks_poc_diff_one_minus1;
+    UWORD32 u4_num_ticks_poc_diff_one_minus1;
 
     /**
      * 1, specifies that the following cvs bitstream restriction parameters are present
