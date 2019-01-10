@@ -397,6 +397,7 @@ cc_library_static {
         diag: {
             integer_overflow: true,
             misc_undefined: ["bounds"],
+            no_recover: ["bounds", "integer"],
         },
         blacklist: "libhevc_blacklist.txt",
     },
