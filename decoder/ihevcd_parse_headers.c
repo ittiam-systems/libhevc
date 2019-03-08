@@ -1686,6 +1686,18 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         if((0 >= disp_wd) || (0 >= disp_ht))
             return IHEVCD_INVALID_PARAMETER;
 
+        if((0 != ps_codec->u4_allocate_dynamic_done) &&
+                            ((ps_codec->i4_disp_wd != disp_wd) ||
+                            (ps_codec->i4_disp_ht != disp_ht)))
+        {
+            if(0 == ps_codec->i4_first_pic_done)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
+            ps_codec->i4_reset_flag = 1;
+            return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
+        }
+
         ps_codec->i4_disp_wd = disp_wd;
         ps_codec->i4_disp_ht = disp_ht;
 
