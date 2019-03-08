@@ -113,9 +113,9 @@ void hme_init_function_ptr_neon(void *pv_me_context)
     pv_me_ctxt->s_func_selector.pf_had_8x8_using_4_4x4_r = &ihevce_had_8x8_using_4_4x4_r_neon;
     pv_me_ctxt->s_func_selector.pf_had_16x16_r = &ihevce_had_16x16_r_neon;
     pv_me_ctxt->s_func_selector.pf_compute_32x32HAD_using_16x16 = &ihevce_compute_32x32HAD_using_16x16_neon;
-    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_eq_1 = hme_evalsatd_update_1_best_result_pt_pu_16x16;
-    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_lt_9 = hme_evalsatd_update_1_best_result_pt_pu_16x16;
-    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_lt_17 = hme_evalsatd_update_1_best_result_pt_pu_16x16;
+    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_eq_1 = hme_evalsatd_update_1_best_result_pt_pu_16x16_neon;
+    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_lt_9 = hme_evalsatd_update_1_best_result_pt_pu_16x16_neon;
+    pv_me_ctxt->s_func_selector.pf_evalsatd_update_1_best_result_pt_pu_16x16_num_part_lt_17 = hme_evalsatd_update_1_best_result_pt_pu_16x16_neon;
     // clang-format on
 }
 #endif

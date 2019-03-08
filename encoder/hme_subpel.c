@@ -1552,28 +1552,18 @@ void hme_evalsatd_update_1_best_result_pt_pu_16x16(
 
     /* Update AMP SATDs 16x12,16x4, 12x16,4x16  */
     pi4_sad_grid[PART_ID_nLx2N_L] =
-        ai4_satd_4x4[0] + ai4_satd_4x4[4] + ai4_satd_4x4[8] + ai4_satd_4x4[12];
-
-    pi4_sad_grid[PART_ID_nLx2N_R] = ai4_satd_4x4[1] + ai4_satd_4x4[5] + ai4_satd_4x4[9] +
-                                    ai4_satd_4x4[13] + pi4_sad_grid[PART_ID_Nx2N_R];
-
-    pi4_sad_grid[PART_ID_nRx2N_L] = ai4_satd_4x4[2] + ai4_satd_4x4[6] + ai4_satd_4x4[10] +
-                                    ai4_satd_4x4[14] + pi4_sad_grid[PART_ID_Nx2N_L];
-
+        ai4_satd_4x4[0] + ai4_satd_4x4[2] + ai4_satd_4x4[8] + ai4_satd_4x4[10];
     pi4_sad_grid[PART_ID_nRx2N_R] =
-        ai4_satd_4x4[3] + ai4_satd_4x4[7] + ai4_satd_4x4[11] + ai4_satd_4x4[15];
-
+        ai4_satd_4x4[5] + ai4_satd_4x4[7] + ai4_satd_4x4[13] + ai4_satd_4x4[15];
     pi4_sad_grid[PART_ID_2NxnU_T] =
-        ai4_satd_4x4[0] + ai4_satd_4x4[1] + ai4_satd_4x4[2] + ai4_satd_4x4[3];
-
-    pi4_sad_grid[PART_ID_2NxnU_B] = ai4_satd_4x4[4] + ai4_satd_4x4[5] + ai4_satd_4x4[6] +
-                                    ai4_satd_4x4[7] + pi4_sad_grid[PART_ID_2NxN_B];
-
-    pi4_sad_grid[PART_ID_2NxnD_T] = ai4_satd_4x4[8] + ai4_satd_4x4[9] + ai4_satd_4x4[10] +
-                                    ai4_satd_4x4[11] + pi4_sad_grid[PART_ID_2NxN_T];
-
+        ai4_satd_4x4[0] + ai4_satd_4x4[1] + ai4_satd_4x4[4] + ai4_satd_4x4[5];
     pi4_sad_grid[PART_ID_2NxnD_B] =
-        ai4_satd_4x4[12] + ai4_satd_4x4[13] + ai4_satd_4x4[14] + ai4_satd_4x4[15];
+        ai4_satd_4x4[10] + ai4_satd_4x4[11] + ai4_satd_4x4[14] + ai4_satd_4x4[15];
+
+    pi4_sad_grid[PART_ID_nLx2N_R] = pi4_sad_grid[PART_ID_2Nx2N] - pi4_sad_grid[PART_ID_nLx2N_L];
+    pi4_sad_grid[PART_ID_nRx2N_L] = pi4_sad_grid[PART_ID_2Nx2N] - pi4_sad_grid[PART_ID_nRx2N_R];
+    pi4_sad_grid[PART_ID_2NxnU_B] = pi4_sad_grid[PART_ID_2Nx2N] - pi4_sad_grid[PART_ID_2NxnU_T];
+    pi4_sad_grid[PART_ID_2NxnD_T] = pi4_sad_grid[PART_ID_2Nx2N] - pi4_sad_grid[PART_ID_2NxnD_B];
 
     /* Call the update results function */
     {
