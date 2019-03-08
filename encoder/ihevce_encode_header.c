@@ -2406,11 +2406,9 @@ WORD32 ihevce_populate_sps(
     if(ps_sps->i1_pic_cropping_flag)
     {
         WORD32 num_rows_to_pad_bottom =
-            ps_sps->i2_pic_height_in_luma_samples -
-            ps_stat_cfg_prms->s_tgt_lyr_prms.as_tgt_params[i4_resolution_id].i4_height;
+            ps_sps->i2_pic_height_in_luma_samples - ps_stat_cfg_prms->s_src_prms.i4_orig_height;
         WORD32 num_rows_to_pad_right =
-            ps_sps->i2_pic_width_in_luma_samples -
-            ps_stat_cfg_prms->s_tgt_lyr_prms.as_tgt_params[i4_resolution_id].i4_width;
+            ps_sps->i2_pic_width_in_luma_samples - ps_stat_cfg_prms->s_src_prms.i4_orig_width;
 
         ps_sps->i2_pic_crop_top_offset = DEFAULT_PIC_CROP_TOP_OFFSET;
 

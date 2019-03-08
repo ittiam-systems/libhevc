@@ -486,7 +486,7 @@ void ihevce_deblk_ctb(
         /* Increase the column size to filter last 4 pixels */
         col_size += last_col;
     }
-    else
+    else if(!last_col)
     {
         col_size -= 1;
     }
@@ -587,7 +587,7 @@ void ihevce_deblk_ctb(
         /* Increase the column size to filter last 8 (uv) pixels */
         col_size += last_col;
     }
-    else
+    else if(!last_col)
     {
         col_size--;
     }

@@ -1585,11 +1585,67 @@ void ihevce_ed_frame_init(void *pv_ed_ctxt, WORD32 i4_layer_no)
 *
 ********************************************************************************
 */
+void ihevce_scaling_filter_mxn(
+    UWORD8 *pu1_src,
+    WORD32 src_strd,
+    UWORD8 *pu1_scrtch,
+    WORD32 scrtch_strd,
+    UWORD8 *pu1_dst,
+    WORD32 dst_strd,
+    WORD32 ht,
+    WORD32 wd)
+{
+#define FILT_TAP_Q 8
+#define N_TAPS 7
+    const WORD16 i4_ftaps[N_TAPS] = { -18, 0, 80, 132, 80, 0, -18 };
+    WORD32 i, j;
+    WORD32 tmp;
+    UWORD8 *pu1_src_tmp = pu1_src - 3 * src_strd;
+    UWORD8 *pu1_scrtch_tmp = pu1_scrtch;
+
+    /* horizontal filtering */
+    for(i = -3; i < ht + 2; i++)
+    {
+        for(j = 0; j < wd; j += 2)
+        {
+            tmp = (i4_ftaps[3] * pu1_src_tmp[j] +
+                   i4_ftaps[2] * (pu1_src_tmp[j - 1] + pu1_src_tmp[j + 1]) +
+                   i4_ftaps[1] * (pu1_src_tmp[j + 2] + pu1_src_tmp[j - 2]) +
+                   i4_ftaps[0] * (pu1_src_tmp[j + 3] + pu1_src_tmp[j - 3]) +
+                   (1 << (FILT_TAP_Q - 1))) >>
+                  FILT_TAP_Q;
+            pu1_scrtch_tmp[j >> 1] = CLIP_U8(tmp);
+        }
+        pu1_scrtch_tmp += scrtch_strd;
+        pu1_src_tmp += src_strd;
+    }
+    /* vertical filtering */
+    pu1_scrtch_tmp = pu1_scrtch + 3 * scrtch_strd;
+    for(i = 0; i < ht; i += 2)
+    {
+        for(j = 0; j < (wd >> 1); j++)
+        {
+            tmp =
+                (i4_ftaps[3] * pu1_scrtch_tmp[j] +
+                 i4_ftaps[2] * (pu1_scrtch_tmp[j + scrtch_strd] + pu1_scrtch_tmp[j - scrtch_strd]) +
+                 i4_ftaps[1] *
+                     (pu1_scrtch_tmp[j + 2 * scrtch_strd] + pu1_scrtch_tmp[j - 2 * scrtch_strd]) +
+                 i4_ftaps[0] *
+                     (pu1_scrtch_tmp[j + 3 * scrtch_strd] + pu1_scrtch_tmp[j - 3 * scrtch_strd]) +
+                 (1 << (FILT_TAP_Q - 1))) >>
+                FILT_TAP_Q;
+            pu1_dst[j] = CLIP_U8(tmp);
+        }
+        pu1_dst += dst_strd;
+        pu1_scrtch_tmp += (scrtch_strd << 1);
+    }
+}
+
 void ihevce_scale_by_2(
     UWORD8 *pu1_src,
-    WORD32 src_stride,
+    WORD32 src_strd,
     UWORD8 *pu1_dst,
-    WORD32 dst_stride,
+    WORD32 dst_strd,
     WORD32 wd,
     WORD32 ht,
     UWORD8 *pu1_wkg_mem,
@@ -1597,263 +1653,125 @@ void ihevce_scale_by_2(
     WORD32 block_ht,
     WORD32 wd_offset,
     WORD32 block_wd,
-    FT_COPY_2D *pf_copy_2d)
+    FT_COPY_2D *pf_copy_2d,
+    FT_SCALING_FILTER_BY_2 *pf_scaling_filter_mxn)
 {
-    UWORD8 *pu1_in, *pu1_out, *pu1_tmp_inp, *pu1_tmp_out;
-    UWORD8 *pu1_src_filter, *pu1_cpy_strt;
-    WORD32 in_fltr_stride;
-    WORD32 in_stride, out_stride, i, j, k;
-    WORD16 i4_ftaps[7] = { -18, 0, 80, 132, 80, 0, -18 };
-    UWORD8 au1_tmp[(MAX_CTB_SIZE + 6) * (MAX_CTB_SIZE + 6)];
-    WORD32 tmp;
-    WORD32 row_start;
-    WORD32 temp_var;
-    WORD32 middle_blocks_ht;
-    WORD32 ht_start;
-    UWORD8 *pu1_tmp = au1_tmp;
-    WORD32 tmp_stride = (MAX_CTB_SIZE + 6);
-    WORD32 cpy_hght;
+#define N_TAPS 7
+#define MAX_BLK_SZ (MAX_CTB_SIZE + ((N_TAPS >> 1) << 1))
+    UWORD8 au1_cpy[MAX_BLK_SZ * MAX_BLK_SZ];
+    UWORD32 cpy_strd = MAX_BLK_SZ;
+    UWORD8 *pu1_cpy = au1_cpy + cpy_strd * (N_TAPS >> 1) + (N_TAPS >> 1);
 
-#define FILT_TAP_Q 8
-#define CLIP_UCHAR(val) (((val) > 255) ? 255 : ((val) < 0) ? 0 : (val))
+    UWORD8 *pu1_in, *pu1_out;
+    WORD32 in_strd, wkg_mem_strd;
 
-    ASSERT((wd & 1) == 0);
-    ASSERT((ht & 1) == 0);
+    WORD32 row_start, row_end;
+    WORD32 col_start, col_end;
+    WORD32 i, fun_select;
+    WORD32 ht_tmp, wd_tmp;
+    FT_SCALING_FILTER_BY_2 *ihevce_scaling_filters[2];
 
-    pu1_out = pu1_wkg_mem;
-    in_stride = src_stride;
-    pu1_in = pu1_src + in_stride * ht_offset;
-    pu1_in += wd_offset;
+    assert((wd & 1) == 0);
+    assert((ht & 1) == 0);
+    assert(block_wd <= MAX_CTB_SIZE);
+    assert(block_ht <= MAX_CTB_SIZE);
 
-    /* Check if block_ht is the last block in the frame. If yes, check if
-    block_ht is multiple of ht and adjust the valid block height accordingly. */
-    temp_var = (ht % block_ht == 0) ? block_ht : (ht % block_ht);
-    block_ht = ((ht_offset + block_ht) > ht) ? temp_var : block_ht;
+    /* function pointers for filtering different dimensions */
+    ihevce_scaling_filters[0] = ihevce_scaling_filter_mxn;
+    ihevce_scaling_filters[1] = pf_scaling_filter_mxn;
 
-    /* Check if block_wd is the last block in the row. If yes, check if
-    block_wd is multiple of wd and adjust the valid block width accordingly. */
-    temp_var = (wd % block_wd == 0) ? block_wd : (wd % block_wd);
-    block_wd = ((wd_offset + block_wd) > wd) ? temp_var : block_wd;
-
-    out_stride = block_wd / 2;
-
-    /*Do width scaling for 3 extra rows in the beggining in the 1st pass for all but first block */
-    /* Because 3 extra rows are required inthe 2nd pass for all but 1at block */
-    /* for blocks stsrting from 4 th row prev 3 rows should be available */
-    ht_start = (ht_offset > 2) ? -3 : 0;
-    pu1_in = pu1_in + in_stride * ht_start;
-
-    /* Do width scaling in the first pass for 3 extra rows for all but last block */
-    /* Because in the second pass we need 3 extra blocks in the end for all but last block */
-    middle_blocks_ht = (ht - ht_offset - block_ht == 0) ? block_ht : block_ht + 3;
-
-    pu1_tmp_inp = pu1_in;
-    pu1_tmp_out = pu1_out;
-
-    cpy_hght = middle_blocks_ht - ht_start;
-
-    /* Left side boundary condition */
-    if(wd_offset == 0)
+    /* handle boundary blks */
+    col_start = (wd_offset < (N_TAPS >> 1)) ? 1 : 0;
+    row_start = (ht_offset < (N_TAPS >> 1)) ? 1 : 0;
+    col_end = ((wd_offset + block_wd) > (wd - (N_TAPS >> 1))) ? 1 : 0;
+    row_end = ((ht_offset + block_ht) > (ht - (N_TAPS >> 1))) ? 1 : 0;
+    if(col_end && (wd % block_wd != 0))
     {
-        for(i = ht_start; i < middle_blocks_ht; i++)
-        {
-            /* Copy the input data into the temp buffer
-            First pixel is replicated as left is not available*/
-            pu1_tmp[0] = pu1_tmp_inp[0];
-            pu1_tmp[1] = pu1_tmp_inp[0];
-            pu1_tmp[2] = pu1_tmp_inp[0];
-
-            pu1_tmp += tmp_stride;
-
-            pu1_tmp_out += out_stride;
-            pu1_tmp_inp += in_stride;
-        }
-
-        pu1_cpy_strt = pu1_in;
-
-        pf_copy_2d(&au1_tmp[3], tmp_stride, pu1_cpy_strt, in_stride, block_wd + 3, cpy_hght);
-
-        in_fltr_stride = tmp_stride;
-        pu1_src_filter = &au1_tmp[3];
+        block_wd = (wd % block_wd);
     }
-    else if(wd_offset == 2)
+    if(row_end && (ht % block_ht != 0))
     {
-        for(i = ht_start; i < middle_blocks_ht; i++)
-        {
-            /* Copy the input data into the temp buffer
-            One pixel is not available which is replicated
-            by the first available pixel*/
-            pu1_tmp[0] = pu1_tmp_inp[-2];
+        block_ht = (ht % block_ht);
+    }
 
-            pu1_tmp += tmp_stride;
+    /* boundary blks needs to be padded, copy src to tmp buffer */
+    if(col_start || col_end || row_end || row_start)
+    {
+        UWORD8 *pu1_src_tmp = pu1_src + wd_offset + ht_offset * src_strd;
 
-            pu1_tmp_out += out_stride;
-            pu1_tmp_inp += in_stride;
-        }
-
-        pu1_cpy_strt = pu1_in - 1;
-
-        pf_copy_2d(&au1_tmp[1], tmp_stride, pu1_cpy_strt, in_stride, (block_wd + 5), cpy_hght);
-
-        in_fltr_stride = tmp_stride;
-        pu1_src_filter = &au1_tmp[3];
+        pu1_cpy -= (3 * (1 - col_start) + cpy_strd * 3 * (1 - row_start));
+        pu1_src_tmp -= (3 * (1 - col_start) + src_strd * 3 * (1 - row_start));
+        ht_tmp = block_ht + 3 * (1 - row_start) + 3 * (1 - row_end);
+        wd_tmp = block_wd + 3 * (1 - col_start) + 3 * (1 - col_end);
+        pf_copy_2d(pu1_cpy, cpy_strd, pu1_src_tmp, src_strd, wd_tmp, ht_tmp);
+        pu1_in = au1_cpy + cpy_strd * 3 + 3;
+        in_strd = cpy_strd;
     }
     else
     {
-        in_fltr_stride = in_stride;
-        pu1_src_filter = pu1_in;
+        pu1_in = pu1_src + wd_offset + ht_offset * src_strd;
+        in_strd = src_strd;
     }
 
-    /* Right side boundary condition */
-    pu1_tmp_inp = pu1_in;
-    pu1_tmp_out = pu1_out;
-
-    j = block_wd - 2;
-
-    pu1_tmp = &au1_tmp[3];
-
-    if(wd == wd_offset + block_wd)
+    /*top padding*/
+    if(row_start)
     {
-        for(i = ht_start; i < middle_blocks_ht; i++)
-        {
-            /* Copy the input data into the temp buffer
-            Righ most pixel is replicated as the pixels are not
-            available on the right side : Frame boundary*/
-            pu1_tmp[j + 2] = pu1_tmp_inp[j + 1];
-            pu1_tmp[j + 3] = pu1_tmp_inp[j + 1];
+        UWORD8 *pu1_cpy_tmp = au1_cpy + cpy_strd * 3;
 
-            pu1_tmp += tmp_stride;
-            pu1_tmp_out += out_stride;
-            pu1_tmp_inp += in_stride;
-        }
-
-        pu1_cpy_strt = pu1_in - 3;
-
-        pf_copy_2d(au1_tmp, tmp_stride, pu1_cpy_strt, in_stride, (block_wd + 3), cpy_hght);
-
-        in_fltr_stride = tmp_stride;
-        pu1_src_filter = &au1_tmp[3];
+        pu1_cpy = au1_cpy + cpy_strd * (3 - 1);
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
+        pu1_cpy -= cpy_strd;
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
+        pu1_cpy -= cpy_strd;
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
     }
 
-    /* Steady state block */
-    for(i = ht_start; i < middle_blocks_ht; i++)
+    /*bottom padding*/
+    if(row_end)
     {
-        for(j = 0; j < block_wd; j += 2)
-        {
-            tmp = (i4_ftaps[3] * pu1_src_filter[j] +
-                   i4_ftaps[2] * (pu1_src_filter[j - 1] + pu1_src_filter[j + 1]) +
-                   i4_ftaps[1] * (pu1_src_filter[j + 2] + pu1_src_filter[j - 2]) +
-                   i4_ftaps[0] * (pu1_src_filter[j + 3] + pu1_src_filter[j - 3]) +
-                   (1 << (FILT_TAP_Q - 1))) >>
-                  FILT_TAP_Q;
-            pu1_out[j >> 1] = CLIP_UCHAR(tmp);
-        }
-        pu1_out += out_stride;
-        pu1_src_filter += in_fltr_stride;
+        UWORD8 *pu1_cpy_tmp = au1_cpy + cpy_strd * 3 + (block_ht - 1) * cpy_strd;
+
+        pu1_cpy = pu1_cpy_tmp + cpy_strd;
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
+        pu1_cpy += cpy_strd;
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
+        pu1_cpy += cpy_strd;
+        memcpy(pu1_cpy, pu1_cpy_tmp, block_wd + 6);
     }
 
-    in_stride = block_wd / 2;
+    /*left padding*/
+    if(col_start)
+    {
+        UWORD8 *pu1_cpy_tmp = au1_cpy + 3;
 
-    /* For all but 1st block input pointer should be moved by 3 rows since 1st 3 rows
-    in the 1st pass are generated only for reference for all but 1st block */
-    pu1_in = (ht_offset > 2) ? pu1_wkg_mem + 3 * in_stride : pu1_wkg_mem;
+        pu1_cpy = au1_cpy;
+        for(i = 0; i < block_ht + 6; i++)
+        {
+            pu1_cpy[0] = pu1_cpy[1] = pu1_cpy[2] = pu1_cpy_tmp[0];
+            pu1_cpy += cpy_strd;
+            pu1_cpy_tmp += cpy_strd;
+        }
+    }
+
+    /*right padding*/
+    if(col_end)
+    {
+        UWORD8 *pu1_cpy_tmp = au1_cpy + 3 + block_wd - 1;
+
+        pu1_cpy = au1_cpy + 3 + block_wd;
+        for(i = 0; i < block_ht + 6; i++)
+        {
+            pu1_cpy[0] = pu1_cpy[1] = pu1_cpy[2] = pu1_cpy_tmp[0];
+            pu1_cpy += cpy_strd;
+            pu1_cpy_tmp += cpy_strd;
+        }
+    }
+
+    wkg_mem_strd = block_wd >> 1;
     pu1_out = pu1_dst + (wd_offset >> 1);
-
-    out_stride = dst_stride;
-    k = in_stride;
-
-    if(ht_offset == 0)
-    {
-        row_start = 4;
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp = ((i4_ftaps[0] + i4_ftaps[1] + i4_ftaps[2] + i4_ftaps[3]) * pu1_in[j] +
-                   i4_ftaps[4] * pu1_in[j + k] + i4_ftaps[5] * pu1_in[j + 2 * k] +
-                   i4_ftaps[6] * pu1_in[j + 3 * k] + (1 << (FILT_TAP_Q - 1))) >>
-                  FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-
-        pu1_in += (in_stride << 1);
-        pu1_out += (out_stride);
-
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp = ((i4_ftaps[0] + i4_ftaps[1]) * pu1_in[j - 2 * k] + i4_ftaps[2] * pu1_in[j - k] +
-                   i4_ftaps[3] * pu1_in[j] + i4_ftaps[4] * pu1_in[j + k] +
-                   i4_ftaps[5] * pu1_in[j + 2 * k] + i4_ftaps[6] * pu1_in[j + 3 * k] +
-                   (1 << (FILT_TAP_Q - 1))) >>
-                  FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-
-        pu1_in += (in_stride << 1);
-        pu1_out += (out_stride);
-    }
-    else if(ht_offset == 2)
-    {
-        pu1_in += (in_stride << 1);
-        row_start = 2;
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp = ((i4_ftaps[0] + i4_ftaps[1]) * pu1_in[j - 2 * k] + i4_ftaps[2] * pu1_in[j - k] +
-                   i4_ftaps[3] * pu1_in[j] + i4_ftaps[4] * pu1_in[j + k] +
-                   i4_ftaps[5] * pu1_in[j + 2 * k] + i4_ftaps[6] * pu1_in[j + 3 * k] +
-                   (1 << (FILT_TAP_Q - 1))) >>
-                  FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-
-        pu1_in += (in_stride << 1);
-        pu1_out += (out_stride);
-    }
-    else
-    {
-        row_start = 0;
-    }
-
-    for(i = row_start; i < block_ht - 2; i += 2)
-    {
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp =
-                (i4_ftaps[3] * pu1_in[j] + i4_ftaps[2] * (pu1_in[j - k] + pu1_in[j + k]) +
-                 i4_ftaps[1] * (pu1_in[j + 2 * k] + pu1_in[j - 2 * k]) +
-                 i4_ftaps[0] * (pu1_in[j + 3 * k] + pu1_in[j - 3 * k]) + (1 << (FILT_TAP_Q - 1))) >>
-                FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-
-        pu1_out += out_stride;
-        pu1_in += (in_stride << 1);
-    }
-
-    /* For last block next 3 rows are not available */
-    if(ht - ht_offset - block_ht == 0)
-    {
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp = (i4_ftaps[3] * pu1_in[j] + i4_ftaps[2] * pu1_in[j - k] +
-                   i4_ftaps[1] * pu1_in[j - 2 * k] + i4_ftaps[0] * pu1_in[j - 3 * k] +
-                   (i4_ftaps[0] + i4_ftaps[1] + i4_ftaps[2]) * pu1_in[j + k] +
-                   (1 << (FILT_TAP_Q - 1))) >>
-                  FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-    }
-    /* Next 3 rows are available for all but last block */
-    else
-    {
-        for(j = 0; j < (block_wd >> 1); j++)
-        {
-            tmp =
-                (i4_ftaps[3] * pu1_in[j] + i4_ftaps[2] * (pu1_in[j - k] + pu1_in[j + k]) +
-                 i4_ftaps[1] * (pu1_in[j + 2 * k] + pu1_in[j - 2 * k]) +
-                 i4_ftaps[0] * (pu1_in[j + 3 * k] + pu1_in[j - 3 * k]) + (1 << (FILT_TAP_Q - 1))) >>
-                FILT_TAP_Q;
-            pu1_out[j] = CLIP_UCHAR(tmp);
-        }
-    }
+    fun_select = (block_wd % 16 == 0);
+    ihevce_scaling_filters[fun_select](
+        pu1_in, in_strd, pu1_wkg_mem, wkg_mem_strd, pu1_out, dst_strd, block_ht, block_wd);
 
     /* Left padding of 16 for 1st block of every row */
     if(wd_offset == 0)
@@ -1866,10 +1784,8 @@ void ihevce_scale_by_2(
         for(i = 0; i < pad_ht; i++)
         {
             u1_val = dst[0];
-            for(j = -pad_wd; j < 0; j++)
-                dst[j] = u1_val;
-
-            dst += dst_stride;
+            memset(&dst[-pad_wd], u1_val, pad_wd);
+            dst += dst_strd;
         }
     }
 
@@ -1885,29 +1801,33 @@ void ihevce_scale_by_2(
         for(i = 0; i < pad_ht; i++)
         {
             u1_val = dst[0];
-            for(j = 1; j <= pad_wd; j++)
-                dst[j] = u1_val;
-            dst += dst_stride;
+            memset(&dst[1], u1_val, pad_wd);
+            dst += dst_strd;
         }
 
         if(ht_offset == 0)
         {
             /* Top padding of 16 is done for 1st row only after we reach end of that row */
-            pad_wd = dst_stride;
-            pad_ht = 16;
-            dst = pu1_dst - 16;
+            WORD32 pad_wd = dst_strd;
+            WORD32 pad_ht = 16;
+            UWORD8 *dst = pu1_dst - 16;
+
             for(i = 1; i <= pad_ht; i++)
-                memcpy(dst - (i * dst_stride), dst, pad_wd);
+            {
+                memcpy(dst - (i * dst_strd), dst, pad_wd);
+            }
         }
+
         /* Bottom padding of (16 + (CEIL16(ht/2)) - ht/2) is done only if we have
-        reached end of frame */
+         reached end of frame */
         if(ht - ht_offset - block_ht == 0)
         {
-            pad_wd = dst_stride;
-            pad_ht = 16 + CEIL16((ht >> 1)) - (ht >> 1) + 4;
-            dst = pu1_dst + (((block_ht >> 1) - 1) * dst_stride) - 16;
+            WORD32 pad_wd = dst_strd;
+            WORD32 pad_ht = 16 + CEIL16((ht >> 1)) - (ht >> 1) + 4;
+            UWORD8 *dst = pu1_dst + (((block_ht >> 1) - 1) * dst_strd) - 16;
+
             for(i = 1; i <= pad_ht; i++)
-                memcpy(dst + (i * dst_stride), dst, pad_wd);
+                memcpy(dst + (i * dst_strd), dst, pad_wd);
         }
     }
 }
@@ -2013,7 +1933,7 @@ void ihevce_decomp_pre_intra_process_row(
     */
     if(!skip_decomp)
     {
-        ps_ipe_optimised_function_list->pf_scale_by_2(
+        ihevce_scale_by_2(
             pu1_src,
             src_stride,
             pu1_dst_decomp,
@@ -2025,7 +1945,8 @@ void ihevce_decomp_pre_intra_process_row(
             block_ht,
             block_wd * 0,
             block_wd,
-            ps_cmn_utils_optimised_function_list->pf_copy_2d);
+            ps_cmn_utils_optimised_function_list->pf_copy_2d,
+            ps_ipe_optimised_function_list->pf_scaling_filter_mxn);
         /* Disable noise detection */
         ps_ctb_analyse_curr->s_ctb_noise_params.i4_noise_present = 0;
 
@@ -2140,7 +2061,7 @@ void ihevce_decomp_pre_intra_process_row(
     {
         if(!skip_decomp)
         {
-            ps_ipe_optimised_function_list->pf_scale_by_2(
+            ihevce_scale_by_2(
                 pu1_src,
                 src_stride,
                 pu1_dst_decomp,
@@ -2152,7 +2073,8 @@ void ihevce_decomp_pre_intra_process_row(
                 block_ht,
                 block_wd * col_block_no,
                 block_wd,
-                ps_cmn_utils_optimised_function_list->pf_copy_2d);
+                ps_cmn_utils_optimised_function_list->pf_copy_2d,
+                ps_ipe_optimised_function_list->pf_scaling_filter_mxn);
             /* Disable noise detection */
             memset(
                 ps_ctb_analyse_curr->s_ctb_noise_params.au1_is_8x8Blk_noisy,
@@ -2185,9 +2107,9 @@ void ihevce_decomp_pre_intra_process_row(
     }
 
     /* Last ctb in row */
-    if(!skip_decomp)
+    if((!skip_decomp) && (col_block_no == (num_col_blks - 1)))
     {
-        ps_ipe_optimised_function_list->pf_scale_by_2(
+        ihevce_scale_by_2(
             pu1_src,
             src_stride,
             pu1_dst_decomp,
@@ -2199,7 +2121,8 @@ void ihevce_decomp_pre_intra_process_row(
             block_ht,
             block_wd * col_block_no,
             block_wd,
-            ps_cmn_utils_optimised_function_list->pf_copy_2d);
+            ps_cmn_utils_optimised_function_list->pf_copy_2d,
+            ps_ipe_optimised_function_list->pf_scaling_filter_mxn);
         {
             /* Disable noise detection */
             memset(
@@ -2211,7 +2134,7 @@ void ihevce_decomp_pre_intra_process_row(
         }
     }
 
-    if(do_pre_intra_analysis)
+    if(do_pre_intra_analysis && (col_block_no == (num_col_blks - 1)))
     {
         /*
         * The last ctb can be complete or incomplete. The complete

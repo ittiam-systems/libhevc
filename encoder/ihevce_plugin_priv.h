@@ -47,10 +47,8 @@
 /* Constant Macros                                                           */
 /*****************************************************************************/
 
-#define MAX_SUB_GOP_SIZE 8 + 1
-#define MAX_RC_LOOK_AHEAD 120
 #define XTRA_INP_DATA_BUFS 0
-#define MAX_NUM_INP_DATA_BUFS MAX_SUB_GOP_SIZE + MAX_RC_LOOK_AHEAD
+#define MAX_NUM_INP_DATA_BUFS MAX_SUB_GOP_SIZE + NUM_LAP2_LOOK_AHEAD
 #define MAX_NUM_INP_CTRL_SYNC_BUFS MAX_NUM_INP_DATA_BUFS
 #define MAX_NUM_INP_CTRL_ASYNC_BUFS 5
 
