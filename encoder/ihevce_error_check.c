@@ -554,18 +554,18 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
         return IHEVCE_SETUNSUPPORTEDINPUT(error_code);
     }
 
-    if(((ps_static_cfg_prms->s_src_prms.i4_frm_rate_num /
-         ps_static_cfg_prms->s_src_prms.i4_frm_rate_denom) > 120) ||
-       ((ps_static_cfg_prms->s_src_prms.i4_frm_rate_num /
-         ps_static_cfg_prms->s_src_prms.i4_frm_rate_denom) *
-            10 <
-        75))
+    if((((ps_static_cfg_prms->s_src_prms.i4_frm_rate_num * 1.0) /
+          ps_static_cfg_prms->s_src_prms.i4_frm_rate_denom) > MAX_FRAME_RATE) ||
+       (((ps_static_cfg_prms->s_src_prms.i4_frm_rate_num * 1.0) /
+          ps_static_cfg_prms->s_src_prms.i4_frm_rate_denom) < MIN_FRAME_RATE))
     {
         error_code = IHEVCE_FRAME_RATE_NOT_SUPPORTED;
         ps_sys_api->ihevce_printf(
             pv_cb_handle,
-            "IHEVCE ERROR:  Frame rate (i4_frame_rate_num & i4_frame_rate_denom) is out of range "
-            "\n");
+            "IHEVCE ERROR: Frame rate (%d / %d) is out of range [%.1f - %.1f]\n",
+            ps_static_cfg_prms->s_src_prms.i4_frm_rate_num,
+            ps_static_cfg_prms->s_src_prms.i4_frm_rate_denom,
+            MIN_FRAME_RATE, MAX_FRAME_RATE);
         return IHEVCE_SETUNSUPPORTEDINPUT(error_code);
     }
 
