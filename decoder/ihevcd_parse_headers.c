@@ -1651,39 +1651,54 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     }
 
     UEV_PARSE("log2_min_coding_block_size_minus3", value, ps_bitstrm);
+    if(value > (LOG2_MAX_CU_SIZE - 3))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_min_coding_block_size = value + 3;
+    if((ps_sps->i2_pic_width_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0) ||
+                    (ps_sps->i2_pic_height_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
 
     UEV_PARSE("log2_diff_max_min_coding_block_size", value, ps_bitstrm);
+    if(value > (LOG2_MAX_CU_SIZE - ps_sps->i1_log2_min_coding_block_size))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_diff_max_min_coding_block_size = value;
 
     ctb_log2_size_y = ps_sps->i1_log2_min_coding_block_size + ps_sps->i1_log2_diff_max_min_coding_block_size;
 
+    if((ctb_log2_size_y < LOG2_MIN_CTB_SIZE) || (ctb_log2_size_y > LOG2_MAX_CTB_SIZE))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+    ps_sps->i1_log2_ctb_size = ctb_log2_size_y;
+
     UEV_PARSE("log2_min_transform_block_size_minus2", value, ps_bitstrm);
+    if(value > (LOG2_MAX_TU_SIZE - 2))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_min_transform_block_size = value + 2;
+    if(ps_sps->i1_log2_min_transform_block_size >= ps_sps->i1_log2_min_coding_block_size)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
 
     UEV_PARSE("log2_diff_max_min_transform_block_size", value, ps_bitstrm);
+    if(value > (LOG2_MAX_TU_SIZE - ps_sps->i1_log2_min_transform_block_size))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_diff_max_min_transform_block_size = value;
 
     ps_sps->i1_log2_max_transform_block_size = ps_sps->i1_log2_min_transform_block_size +
                     ps_sps->i1_log2_diff_max_min_transform_block_size;
 
-    if ((ps_sps->i1_log2_max_transform_block_size < 0) ||
-                    (ps_sps->i1_log2_max_transform_block_size > MIN(ctb_log2_size_y, 5)))
-    {
-        return IHEVCD_INVALID_PARAMETER;
-    }
-
-    ps_sps->i1_log2_ctb_size = ps_sps->i1_log2_min_coding_block_size +
-                    ps_sps->i1_log2_diff_max_min_coding_block_size;
-
-    if((ps_sps->i1_log2_min_coding_block_size < 3) ||
-                    (ps_sps->i1_log2_min_transform_block_size < 2) ||
-                    (ps_sps->i1_log2_diff_max_min_transform_block_size < 0) ||
-                    (ps_sps->i1_log2_max_transform_block_size > ps_sps->i1_log2_ctb_size) ||
-                    (ps_sps->i1_log2_ctb_size < 4) ||
-                    (ps_sps->i1_log2_ctb_size > 6) ||
-                    (ps_sps->i2_pic_width_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0) ||
-                    (ps_sps->i2_pic_height_in_luma_samples % (1 << ps_sps->i1_log2_min_coding_block_size) != 0))
+    if(ps_sps->i1_log2_max_transform_block_size > ps_sps->i1_log2_ctb_size)
     {
         return IHEVCD_INVALID_PARAMETER;
     }
