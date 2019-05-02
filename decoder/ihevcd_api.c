@@ -2125,7 +2125,7 @@ WORD32 ihevcd_create(iv_obj_t *ps_codec_obj,
             }
         }
         ps_create_op->s_ivd_create_op_t.u4_error_code = IVD_MEM_ALLOC_FAILED;
-        ps_create_op->s_ivd_create_op_t.u4_error_code = 1 << IVD_FATALERROR;
+        ps_create_op->s_ivd_create_op_t.u4_error_code |= 1 << IVD_FATALERROR;
 
         return IV_FAIL;
     }

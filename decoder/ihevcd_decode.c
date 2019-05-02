@@ -137,6 +137,10 @@ static UWORD32 ihevcd_map_error(IHEVCD_ERROR_T e_error)
         case IHEVCD_NUM_EXTRA_DISP_UNSUPPORTED:
         case IHEVCD_INSUFFICIENT_MEM_MVBANK:
         case IHEVCD_INSUFFICIENT_MEM_PICBUF:
+        case IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC:
+        case IHEVCD_UNSUPPORTED_BIT_DEPTH:
+        case IVD_MEM_ALLOC_FAILED:
+        case IVD_STREAM_WIDTH_HEIGHT_NOT_SUPPORTED:
             error_code |= 1 << IVD_FATALERROR;
             break;
         case IHEVCD_INVALID_DISP_STRD:
@@ -144,8 +148,6 @@ static UWORD32 ihevcd_map_error(IHEVCD_ERROR_T e_error)
         case IHEVCD_UNSUPPORTED_VPS_ID:
         case IHEVCD_UNSUPPORTED_SPS_ID:
         case IHEVCD_UNSUPPORTED_PPS_ID:
-        case IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC:
-        case IHEVCD_UNSUPPORTED_BIT_DEPTH:
         case IHEVCD_BUF_MGR_ERROR:
         case IHEVCD_NO_FREE_MVBANK:
         case IHEVCD_NO_FREE_PICBUF:
@@ -717,7 +719,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
                 /* Free any dynamic buffers that are allocated */
                 ihevcd_free_dynamic_bufs(ps_codec);
                 ps_codec->i4_error_code = IVD_MEM_ALLOC_FAILED;
-                ps_dec_op->u4_error_code |= 1 << IVD_FATALERROR;
+                ps_dec_op->u4_error_code = 1 << IVD_FATALERROR;
                 ps_dec_op->u4_error_code |= IVD_MEM_ALLOC_FAILED;
 
                 return IV_FAIL;
