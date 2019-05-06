@@ -436,12 +436,15 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
             }
             else
             {
-                ihevcd_short_term_ref_pic_set(ps_bitstrm,
-                                              &ps_sps->as_stref_picset[0],
-                                              ps_sps->i1_num_short_term_ref_pic_sets,
-                                              ps_sps->i1_num_short_term_ref_pic_sets,
-                                              &ps_slice_hdr->s_stref_picset);
-
+                ret = ihevcd_short_term_ref_pic_set(ps_bitstrm,
+                                                    &ps_sps->as_stref_picset[0],
+                                                    ps_sps->i1_num_short_term_ref_pic_sets,
+                                                    ps_sps->i1_num_short_term_ref_pic_sets,
+                                                    &ps_slice_hdr->s_stref_picset);
+                if (ret != IHEVCD_SUCCESS)
+                {
+                    return ret;
+                }
                 st_rps_idx = ps_sps->i1_num_short_term_ref_pic_sets;
                 num_neg_pics = ps_slice_hdr->s_stref_picset.i1_num_neg_pics;
                 num_pos_pics = ps_slice_hdr->s_stref_picset.i1_num_pos_pics;
