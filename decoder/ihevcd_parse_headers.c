@@ -1565,7 +1565,13 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_num_short_term_ref_pic_sets = value;
 
     for(i = 0; i < ps_sps->i1_num_short_term_ref_pic_sets; i++)
-        ihevcd_short_term_ref_pic_set(ps_bitstrm, &ps_sps->as_stref_picset[0], ps_sps->i1_num_short_term_ref_pic_sets, i, &ps_sps->as_stref_picset[i]);
+    {
+        ret = ihevcd_short_term_ref_pic_set(ps_bitstrm, &ps_sps->as_stref_picset[0], ps_sps->i1_num_short_term_ref_pic_sets, i, &ps_sps->as_stref_picset[i]);
+        if (ret != IHEVCD_SUCCESS)
+        {
+            return ret;
+        }
+    }
 
     BITS_PARSE("long_term_ref_pics_present_flag", value, ps_bitstrm, 1);
     ps_sps->i1_long_term_ref_pics_present_flag = value;
