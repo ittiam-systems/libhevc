@@ -1916,6 +1916,10 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
                     {
                         UEV_PARSE("column_width_minus1[ i ]", value, ps_bitstrm);
                         value += 1;
+                        if (value >= ps_sps->i2_pic_wd_in_ctb - start)
+                        {
+                            return IHEVCD_INVALID_HEADER;
+                        }
                     }
                     else
                     {
@@ -1952,6 +1956,10 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
                         UEV_PARSE("row_height_minus1[ i ]", value, ps_bitstrm);
                         value += 1;
+                        if (value >= ps_sps->i2_pic_ht_in_ctb - start)
+                        {
+                            return IHEVCD_INVALID_HEADER;
+                        }
                     }
                     else
                     {
