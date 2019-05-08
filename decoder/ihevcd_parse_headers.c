@@ -1459,17 +1459,37 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     }
 
     UEV_PARSE("log2_min_coding_block_size_minus3", value, ps_bitstrm);
+    if(value > (LOG2_MAX_CU_SIZE - 3))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_min_coding_block_size = value + 3;
 
     UEV_PARSE("log2_diff_max_min_coding_block_size", value, ps_bitstrm);
+    if(value > (LOG2_MAX_CU_SIZE - LOG2_MIN_CU_SIZE))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_diff_max_min_coding_block_size = value;
 
     ctb_log2_size_y = ps_sps->i1_log2_min_coding_block_size + ps_sps->i1_log2_diff_max_min_coding_block_size;
 
     UEV_PARSE("log2_min_transform_block_size_minus2", value, ps_bitstrm);
+    if(value > (LOG2_MAX_TU_SIZE - 2))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_min_transform_block_size = value + 2;
+    if(ps_sps->i1_log2_min_transform_block_size >= ps_sps->i1_log2_min_coding_block_size)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
 
     UEV_PARSE("log2_diff_max_min_transform_block_size", value, ps_bitstrm);
+    if(value > (LOG2_MAX_TU_SIZE - LOG2_MIN_TU_SIZE))
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
     ps_sps->i1_log2_diff_max_min_transform_block_size = value;
 
     ps_sps->i1_log2_max_transform_block_size = ps_sps->i1_log2_min_transform_block_size +
