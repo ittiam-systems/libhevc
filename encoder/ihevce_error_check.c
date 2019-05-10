@@ -517,16 +517,16 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
     }
 
     /* Error check for static source parameters */
-    if((ps_static_cfg_prms->s_src_prms.i4_width > HEVCE_MAX_WIDTH) ||
-       (ps_static_cfg_prms->s_src_prms.i4_width < HEVCE_MIN_WIDTH))
+    if((ps_static_cfg_prms->s_src_prms.i4_orig_width > HEVCE_MAX_WIDTH) ||
+       (ps_static_cfg_prms->s_src_prms.i4_orig_width < 2))
     {
         error_code = IHEVCE_WIDTH_NOT_SUPPORTED;
         ps_sys_api->ihevce_printf(pv_cb_handle, "IHEVCE ERROR:  i4_src_width out of range \n");
         return (IHEVCE_SETUNSUPPORTEDINPUT(error_code));
     }
 
-    if((ps_static_cfg_prms->s_src_prms.i4_height > HEVCE_MAX_HEIGHT) ||
-       (ps_static_cfg_prms->s_src_prms.i4_height < HEVCE_MIN_HEIGHT))
+    if((ps_static_cfg_prms->s_src_prms.i4_orig_height > HEVCE_MAX_HEIGHT) ||
+       (ps_static_cfg_prms->s_src_prms.i4_orig_height < 2))
     {
         error_code = IHEVCE_HEIGHT_NOT_SUPPORTED;
         ps_sys_api->ihevce_printf(pv_cb_handle, "IHEVCE ERROR:  i4_src_height out of range \n");
