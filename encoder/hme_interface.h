@@ -60,8 +60,8 @@
  *  @brief      layer min dimensions
 ******************************************************************************
  */
-#define MIN_WD_COARSE 80
-#define MIN_HT_COARSE 32
+#define MIN_WD_COARSE 16
+#define MIN_HT_COARSE 16
 
 /**
 ******************************************************************************

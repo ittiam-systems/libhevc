@@ -121,7 +121,8 @@ void ihevce_scale_by_2(
     WORD32 block_ht,
     WORD32 wd_offset,
     WORD32 block_wd,
-    FT_COPY_2D *pf_copy_2d);
+    FT_COPY_2D *pf_copy_2d,
+    FT_SCALING_FILTER_BY_2 *pf_scaling_filter_mxn);
 
 void ihevce_ed_frame_init(void *pv_ed_ctxt, WORD32 i4_layer_no);
 

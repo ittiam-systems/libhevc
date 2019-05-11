@@ -2915,129 +2915,124 @@ void ihevce_enc_loop_process_row(
                             ps_ctxt->i4_bitrate_instance_num,
                             ps_ctxt->ps_func_selector);
                     }
+                }
+                /* Call the sao function again for the last ctb of the last ctb row of frame */
+                if((vert_ctr == (ps_tile_params->i4_first_ctb_y +
+                                 ps_tile_params->i4_curr_tile_ht_in_ctb_unit - 1)) &&
+                   ((ctb_ctr + 1) ==
+                    (ctb_end)))  //( ((ctb_ctr+1) == ps_frm_ctb_prms->i4_num_ctbs_horz))
+                {
+                    /* Register the curr ctb's x pos in sao context*/
+                    ps_ctxt->s_sao_ctxt_t.i4_ctb_x = ctb_ctr;
 
-                    /* Call the sao function again for the last ctb of the last ctb row of frame */
-                    if(((ctb_ctr + 1) ==
-                        (ctb_end)))  //( ((ctb_ctr+1) == ps_frm_ctb_prms->i4_num_ctbs_horz))
+                    /* Register the curr ctb's y pos in sao context*/
+                    ps_ctxt->s_sao_ctxt_t.i4_ctb_y = vert_ctr;
+
+                    ps_ctb_out_sao = ps_ctxt->s_sao_ctxt_t.ps_ctb_out +
+                                     (vert_ctr)*ps_frm_ctb_prms->i4_num_ctbs_horz + (ctb_ctr);
+
+                    ps_ctxt->s_sao_ctxt_t.ps_sao = &ps_ctb_out_sao->s_sao;
+
+                    ps_ctxt->s_sao_ctxt_t.i4_sao_blk_wd =
+                        ctb_size - ((ps_tile_params->i4_curr_tile_wd_in_ctb_unit * ctb_size) -
+                                    ps_tile_params->i4_curr_tile_width);
+
+                    ps_ctxt->s_sao_ctxt_t.i4_sao_blk_ht =
+                        ctb_size - ((ps_tile_params->i4_curr_tile_ht_in_ctb_unit * ctb_size) -
+                                    ps_tile_params->i4_curr_tile_height);
+
+                    ps_ctxt->s_sao_ctxt_t.i4_is_last_ctb_row = 1;
+                    ps_ctxt->s_sao_ctxt_t.i4_is_last_ctb_col = 1;
+
+                    /* Calculate the recon buf pointer and stride for teh current ctb */
+                    ps_sao_ctxt->pu1_cur_luma_recon_buf =
+                        ps_sao_ctxt->pu1_frm_luma_recon_buf +
+                        (ps_sao_ctxt->i4_frm_luma_recon_stride * ps_sao_ctxt->i4_ctb_y * ctb_size) +
+                        (ps_sao_ctxt->i4_ctb_x * ctb_size);
+
+                    ps_sao_ctxt->i4_cur_luma_recon_stride = ps_sao_ctxt->i4_frm_luma_recon_stride;
+
+                    ps_sao_ctxt->pu1_cur_chroma_recon_buf =
+                        ps_sao_ctxt->pu1_frm_chroma_recon_buf +
+                        (ps_sao_ctxt->i4_frm_chroma_recon_stride * ps_sao_ctxt->i4_ctb_y *
+                         (ctb_size >> (ps_ctxt->u1_chroma_array_type == 1))) +
+                        (ps_sao_ctxt->i4_ctb_x * ctb_size);
+
+                    ps_sao_ctxt->i4_cur_chroma_recon_stride =
+                        ps_sao_ctxt->i4_frm_chroma_recon_stride;
+
+                    ps_sao_ctxt->pu1_cur_luma_src_buf =
+                        ps_sao_ctxt->pu1_frm_luma_src_buf +
+                        (ps_sao_ctxt->i4_frm_luma_src_stride * ps_sao_ctxt->i4_ctb_y * ctb_size) +
+                        (ps_sao_ctxt->i4_ctb_x * ctb_size);
+
+                    ps_sao_ctxt->i4_cur_luma_src_stride = ps_sao_ctxt->i4_frm_luma_src_stride;
+
+                    ps_sao_ctxt->pu1_cur_chroma_src_buf =
+                        ps_sao_ctxt->pu1_frm_chroma_src_buf +
+                        (ps_sao_ctxt->i4_frm_chroma_src_stride * ps_sao_ctxt->i4_ctb_y *
+                         (ctb_size >> (ps_ctxt->u1_chroma_array_type == 1))) +
+                        (ps_sao_ctxt->i4_ctb_x * ctb_size);
+
+                    ps_sao_ctxt->i4_cur_chroma_src_stride = ps_sao_ctxt->i4_frm_chroma_src_stride;
+
+                    /* Calculate the pointer to buff to store the (x,y)th sao
+                    * for the top merge of (x,y+1)th ctb
+                    */
+                    ps_sao_ctxt->ps_top_ctb_sao =
+                        &ps_sao_ctxt->aps_frm_top_ctb_sao[ps_ctxt->i4_enc_frm_id]
+                                                         [ps_sao_ctxt->i4_ctb_x +
+                                                          ps_sao_ctxt->i4_ctb_y *
+                                                              ps_frm_ctb_prms->i4_num_ctbs_horz +
+                                                          (ps_ctxt->i4_bitrate_instance_num *
+                                                           ps_sao_ctxt->i4_num_ctb_units)];
+
+                    /* Calculate the pointer to buff to store the top pixels of curr ctb*/
+                    ps_sao_ctxt->pu1_curr_sao_src_top_luma =
+                        ps_sao_ctxt->apu1_sao_src_frm_top_luma[ps_ctxt->i4_enc_frm_id] +
+                        (ps_sao_ctxt->i4_ctb_y - 1) * ps_sao_ctxt->i4_frm_top_luma_buf_stride +
+                        ps_sao_ctxt->i4_ctb_x * ctb_size +
+                        ps_ctxt->i4_bitrate_instance_num * (ps_sao_ctxt->i4_top_luma_buf_size +
+                                                            ps_sao_ctxt->i4_top_chroma_buf_size);
+
+                    /* Calculate the pointer to buff to store the top pixels of curr ctb*/
+                    ps_sao_ctxt->pu1_curr_sao_src_top_chroma =
+                        ps_sao_ctxt->apu1_sao_src_frm_top_chroma[ps_ctxt->i4_enc_frm_id] +
+                        (ps_sao_ctxt->i4_ctb_y - 1) * ps_sao_ctxt->i4_frm_top_chroma_buf_stride +
+                        ps_sao_ctxt->i4_ctb_x * ctb_size +
+                        ps_ctxt->i4_bitrate_instance_num * (ps_sao_ctxt->i4_top_luma_buf_size +
+                                                            ps_sao_ctxt->i4_top_chroma_buf_size);
+
                     {
-                        /* Register the curr ctb's x pos in sao context*/
-                        ps_ctxt->s_sao_ctxt_t.i4_ctb_x = ctb_ctr;
+                        UWORD32 u4_ctb_sao_bits;
 
-                        /* Register the curr ctb's y pos in sao context*/
-                        ps_ctxt->s_sao_ctxt_t.i4_ctb_y = vert_ctr;
-
-                        ps_ctb_out_sao = ps_ctxt->s_sao_ctxt_t.ps_ctb_out +
-                                         (vert_ctr)*ps_frm_ctb_prms->i4_num_ctbs_horz + (ctb_ctr);
-
-                        ps_ctxt->s_sao_ctxt_t.ps_sao = &ps_ctb_out_sao->s_sao;
-
-                        ps_ctxt->s_sao_ctxt_t.i4_sao_blk_wd =
-                            ctb_size - ((ps_tile_params->i4_curr_tile_wd_in_ctb_unit * ctb_size) -
-                                        ps_tile_params->i4_curr_tile_width);
-
-                        ps_ctxt->s_sao_ctxt_t.i4_sao_blk_ht =
-                            ctb_size - ((ps_tile_params->i4_curr_tile_ht_in_ctb_unit * ctb_size) -
-                                        ps_tile_params->i4_curr_tile_height);
-
-                        ps_ctxt->s_sao_ctxt_t.i4_is_last_ctb_row = 1;
-                        ps_ctxt->s_sao_ctxt_t.i4_is_last_ctb_col = 1;
-
-                        /* Calculate the recon buf pointer and stride for teh current ctb */
-                        ps_sao_ctxt->pu1_cur_luma_recon_buf =
-                            ps_sao_ctxt->pu1_frm_luma_recon_buf +
-                            (ps_sao_ctxt->i4_frm_luma_recon_stride * ps_sao_ctxt->i4_ctb_y *
-                             ctb_size) +
-                            (ps_sao_ctxt->i4_ctb_x * ctb_size);
-
-                        ps_sao_ctxt->i4_cur_luma_recon_stride =
-                            ps_sao_ctxt->i4_frm_luma_recon_stride;
-
-                        ps_sao_ctxt->pu1_cur_chroma_recon_buf =
-                            ps_sao_ctxt->pu1_frm_chroma_recon_buf +
-                            (ps_sao_ctxt->i4_frm_chroma_recon_stride * ps_sao_ctxt->i4_ctb_y *
-                             (ctb_size >> (ps_ctxt->u1_chroma_array_type == 1))) +
-                            (ps_sao_ctxt->i4_ctb_x * ctb_size);
-
-                        ps_sao_ctxt->i4_cur_chroma_recon_stride =
-                            ps_sao_ctxt->i4_frm_chroma_recon_stride;
-
-                        ps_sao_ctxt->pu1_cur_luma_src_buf = ps_sao_ctxt->pu1_frm_luma_src_buf +
-                                                            (ps_sao_ctxt->i4_frm_luma_src_stride *
-                                                             ps_sao_ctxt->i4_ctb_y * ctb_size) +
-                                                            (ps_sao_ctxt->i4_ctb_x * ctb_size);
-
-                        ps_sao_ctxt->i4_cur_luma_src_stride = ps_sao_ctxt->i4_frm_luma_src_stride;
-
-                        ps_sao_ctxt->pu1_cur_chroma_src_buf =
-                            ps_sao_ctxt->pu1_frm_chroma_src_buf +
-                            (ps_sao_ctxt->i4_frm_chroma_src_stride * ps_sao_ctxt->i4_ctb_y *
-                             (ctb_size >> (ps_ctxt->u1_chroma_array_type == 1))) +
-                            (ps_sao_ctxt->i4_ctb_x * ctb_size);
-
-                        ps_sao_ctxt->i4_cur_chroma_src_stride =
-                            ps_sao_ctxt->i4_frm_chroma_src_stride;
-
-                        /* Calculate the pointer to buff to store the (x,y)th sao
-                        * for the top merge of (x,y+1)th ctb
-                        */
-                        ps_sao_ctxt->ps_top_ctb_sao =
-                            &ps_sao_ctxt->aps_frm_top_ctb_sao[ps_ctxt->i4_enc_frm_id]
-                                                             [ps_sao_ctxt->i4_ctb_x +
-                                                              ps_sao_ctxt->i4_ctb_y *
-                                                                  ps_frm_ctb_prms->i4_num_ctbs_horz +
-                                                              (ps_ctxt->i4_bitrate_instance_num *
-                                                               ps_sao_ctxt->i4_num_ctb_units)];
-
-                        /* Calculate the pointer to buff to store the top pixels of curr ctb*/
-                        ps_sao_ctxt->pu1_curr_sao_src_top_luma =
-                            ps_sao_ctxt->apu1_sao_src_frm_top_luma[ps_ctxt->i4_enc_frm_id] +
-                            (ps_sao_ctxt->i4_ctb_y - 1) * ps_sao_ctxt->i4_frm_top_luma_buf_stride +
-                            ps_sao_ctxt->i4_ctb_x * ctb_size +
-                            ps_ctxt->i4_bitrate_instance_num *
-                                (ps_sao_ctxt->i4_top_luma_buf_size +
-                                 ps_sao_ctxt->i4_top_chroma_buf_size);
-
-                        /* Calculate the pointer to buff to store the top pixels of curr ctb*/
-                        ps_sao_ctxt->pu1_curr_sao_src_top_chroma =
-                            ps_sao_ctxt->apu1_sao_src_frm_top_chroma[ps_ctxt->i4_enc_frm_id] +
-                            (ps_sao_ctxt->i4_ctb_y - 1) *
-                                ps_sao_ctxt->i4_frm_top_chroma_buf_stride +
-                            ps_sao_ctxt->i4_ctb_x * ctb_size +
-                            ps_ctxt->i4_bitrate_instance_num *
-                                (ps_sao_ctxt->i4_top_luma_buf_size +
-                                 ps_sao_ctxt->i4_top_chroma_buf_size);
-
-                        {
-                            UWORD32 u4_ctb_sao_bits;
-
-                            ihevce_sao_analyse(
-                                &ps_ctxt->s_sao_ctxt_t,
-                                ps_ctb_out_sao,
-                                &u4_ctb_sao_bits,
-                                ps_tile_params);
-                            ps_ctxt
-                                ->aaps_enc_loop_rc_params[ps_ctxt->i4_enc_frm_id]
-                                                         [ps_ctxt->i4_bitrate_instance_num]
-                                ->u4_frame_rdopt_header_bits += u4_ctb_sao_bits;
-                            ps_ctxt
-                                ->aaps_enc_loop_rc_params[ps_ctxt->i4_enc_frm_id]
-                                                         [ps_ctxt->i4_bitrate_instance_num]
-                                ->u4_frame_rdopt_bits += u4_ctb_sao_bits;
-                        }
-                        if(ps_ctxt->i4_deblk_pad_hpel_cur_pic &
-                           0x1) /** Subpel generation not done for non-ref picture **/
-                        {
-                            /* Padding and Subpel Plane Generation */
-                            ihevce_pad_interp_recon_ctb(
-                                ps_pad_interp_recon,
-                                ctb_ctr,
-                                vert_ctr,
-                                ps_ctxt->i4_quality_preset,
-                                ps_frm_ctb_prms,
-                                ps_ctxt->ai2_scratch,
-                                ps_ctxt->i4_bitrate_instance_num,
-                                ps_ctxt->ps_func_selector);
-                        }
+                        ihevce_sao_analyse(
+                            &ps_ctxt->s_sao_ctxt_t,
+                            ps_ctb_out_sao,
+                            &u4_ctb_sao_bits,
+                            ps_tile_params);
+                        ps_ctxt
+                            ->aaps_enc_loop_rc_params[ps_ctxt->i4_enc_frm_id]
+                                                     [ps_ctxt->i4_bitrate_instance_num]
+                            ->u4_frame_rdopt_header_bits += u4_ctb_sao_bits;
+                        ps_ctxt
+                            ->aaps_enc_loop_rc_params[ps_ctxt->i4_enc_frm_id]
+                                                     [ps_ctxt->i4_bitrate_instance_num]
+                            ->u4_frame_rdopt_bits += u4_ctb_sao_bits;
+                    }
+                    if(ps_ctxt->i4_deblk_pad_hpel_cur_pic &
+                       0x1) /** Subpel generation not done for non-ref picture **/
+                    {
+                        /* Padding and Subpel Plane Generation */
+                        ihevce_pad_interp_recon_ctb(
+                            ps_pad_interp_recon,
+                            ctb_ctr,
+                            vert_ctr,
+                            ps_ctxt->i4_quality_preset,
+                            ps_frm_ctb_prms,
+                            ps_ctxt->ai2_scratch,
+                            ps_ctxt->i4_bitrate_instance_num,
+                            ps_ctxt->ps_func_selector);
                     }
                 }
             }  //end of loop over CTBs in current CTB-row
