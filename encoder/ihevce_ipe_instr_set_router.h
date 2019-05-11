@@ -53,6 +53,9 @@ typedef UWORD32 FT_BLK_SAD_COMPUTER(UWORD8 *, UWORD8 *, WORD32, WORD32, WORD32, 
 
 typedef WORD32 FT_SAD_COMPUTER_GENERIC(UWORD8 *, WORD32, UWORD8 *, WORD32, WORD32);
 
+typedef void
+    FT_SCALING_FILTER_BY_2(UWORD8 *, WORD32, UWORD8 *, WORD32, UWORD8 *, WORD32, WORD32, WORD32);
+
 typedef void FT_SCALE_BY_2(
     UWORD8 *,
     WORD32,
@@ -65,10 +68,8 @@ typedef void FT_SCALE_BY_2(
     WORD32,
     WORD32,
     WORD32,
-    FT_COPY_2D *);
-
-typedef void
-    FT_SCALING_FILTER_BY_2(UWORD8 *, WORD32, UWORD8 *, WORD32, UWORD8 *, WORD32, WORD32, WORD32);
+    FT_COPY_2D *,
+    FT_SCALING_FILTER_BY_2 *);
 
 typedef void FT_ED_4X4_FIND_BEST_MODES(
     UWORD8 *, WORD32, UWORD8 *, UWORD16 *, UWORD8 *, WORD32 *, WORD32, FT_SAD_COMPUTER *);
@@ -81,7 +82,7 @@ typedef struct
     FT_SAD_COMPUTER *pf_4x4_sad_computer;
     FT_SAD_COMPUTER *pf_8x8_sad_computer;
     FT_SAD_COMPUTER_GENERIC *pf_nxn_sad_computer;
-    FT_SCALE_BY_2 *pf_scale_by_2;
+    FT_SCALING_FILTER_BY_2 *pf_scaling_filter_mxn;
     FT_ED_4X4_FIND_BEST_MODES *pf_ed_4x4_find_best_modes;
 } ihevce_ipe_optimised_function_list_t;
 
@@ -96,6 +97,7 @@ FT_SAD_COMPUTER ihevce_4x4_sad_computer;
 FT_SAD_COMPUTER ihevce_8x8_sad_computer;
 FT_SAD_COMPUTER_GENERIC ihevce_nxn_sad_computer;
 FT_SCALE_BY_2 ihevce_scale_by_2;
+FT_SCALING_FILTER_BY_2 ihevce_scaling_filter_mxn;
 FT_ED_4X4_FIND_BEST_MODES ihevce_ed_4x4_find_best_modes;
 
 #ifdef ENABLE_NEON
@@ -104,9 +106,7 @@ FT_SAD_COMPUTER ihevce_4x4_sad_computer_neon;
 FT_SAD_COMPUTER ihevce_8x8_sad_computer_neon;
 FT_SAD_COMPUTER_GENERIC ihevce_nxn_sad_computer_neon;
 FT_BLK_SAD_COMPUTER ihevce_4mx4n_sad_computer_neon;
-FT_SCALING_FILTER_BY_2 ihevce_scaling_filter_mxn;
 FT_SCALING_FILTER_BY_2 ihevce_scaling_filter_mxn_neon;
-FT_SCALE_BY_2 ihevce_scale_by_2_neon;
 #endif
 
 #endif

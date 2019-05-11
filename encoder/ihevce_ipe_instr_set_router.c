@@ -78,7 +78,7 @@ void ihevce_ipe_instr_set_router(
         ps_func_list->pf_8x8_sad_computer = ihevce_8x8_sad_computer_neon;
         ps_func_list->pf_ed_4x4_find_best_modes = ihevce_ed_4x4_find_best_modes;
         ps_func_list->pf_nxn_sad_computer = ihevce_nxn_sad_computer_neon;
-        ps_func_list->pf_scale_by_2 = ihevce_scale_by_2_neon;
+        ps_func_list->pf_scaling_filter_mxn = ihevce_scaling_filter_mxn_neon;
         break;
 #endif
 
@@ -87,7 +87,7 @@ void ihevce_ipe_instr_set_router(
         ps_func_list->pf_8x8_sad_computer = ihevce_8x8_sad_computer;
         ps_func_list->pf_ed_4x4_find_best_modes = ihevce_ed_4x4_find_best_modes;
         ps_func_list->pf_nxn_sad_computer = ihevce_nxn_sad_computer;
-        ps_func_list->pf_scale_by_2 = ihevce_scale_by_2;
+        ps_func_list->pf_scaling_filter_mxn = ihevce_scaling_filter_mxn;
         break;
     }
     // clang-format on

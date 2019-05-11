@@ -255,6 +255,12 @@ typedef struct
     /** Height of input luma */
     WORD32 i4_height;
 
+    /** Configured Width of input luma */
+    WORD32 i4_orig_width;
+
+    /** Configured Height of input luma */
+    WORD32 i4_orig_height;
+
     /** Width of each pixel in bits */
     WORD32 i4_input_bit_depth;
 
