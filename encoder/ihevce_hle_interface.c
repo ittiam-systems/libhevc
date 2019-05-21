@@ -319,23 +319,6 @@ IV_API_CALL_STATUS_T ihevce_hle_interface_create(ihevce_hle_ctxt_t *ps_hle_ctxt)
         /*store num bit-rate instances in the encoder context */
         ps_enc_ctxt->i4_num_bitrates =
             ps_enc_static_cfg_params->s_tgt_lyr_prms.as_tgt_params[ctr].i4_num_bitrate_instances;
-
-        if(1 == ps_enc_static_cfg_params->s_config_prms.i4_rate_control_mode)
-        {
-            LWORD64 i8_peak_bitrate;
-            for(i4_br_id = 0; i4_br_id < ps_enc_ctxt->i4_num_bitrates; i4_br_id++)
-            {
-                i8_peak_bitrate =
-                    (ULWORD64)(ps_enc_static_cfg_params->s_tgt_lyr_prms.as_tgt_params[ctr]
-                                   .ai4_peak_bitrate[i4_br_id]);
-
-                ps_enc_static_cfg_params->s_tgt_lyr_prms.as_tgt_params[ctr]
-                    .ai4_tgt_bitrate[i4_br_id] = (WORD32)(
-                    (i8_peak_bitrate * ps_enc_static_cfg_params->s_config_prms.i4_rate_factor) /
-                    1000);
-            }
-        }
-
         if(BLU_RAY_SUPPORT == ps_enc_static_cfg_params->s_out_strm_prms.i4_interop_flags)
         {
             ps_enc_ctxt->i4_blu_ray_spec = 1;
