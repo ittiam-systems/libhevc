@@ -1946,6 +1946,7 @@ WORD32 ihevce_rc_pre_enc_qp_query(
             }
         }
 
+        i4_frame_qp = CLIP3(i4_frame_qp, ps_rc_ctxt->i4_min_frame_qp, ps_rc_ctxt->i4_max_frame_qp);
         return i4_frame_qp;
     }
 }
