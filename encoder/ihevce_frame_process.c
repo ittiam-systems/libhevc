@@ -2472,8 +2472,8 @@ void ihevce_update_qp_L1_sad_based(
             4;  //((i4_l1_ht + 31) & 0xFFFFFFE0)/4;//(i4_l1_ht + (i4_l1_ht % 32 )) / 4;
         ld_frame_avg_satd_L1 =
             (WORD32)log(
-                (long double)i8_frame_acc_sadt_L1_squared /
-                ((long double)((i4_tot_4x4block_l1_x * i4_tot_4x4block_l1_y) >> 2))) /
+                1 + (long double)i8_frame_acc_sadt_L1_squared /
+                        ((long double)((i4_tot_4x4block_l1_x * i4_tot_4x4block_l1_y) >> 2))) /
             log(2.0);
         /* L1 satd accumalated for computing qp */
         i8_frame_satd_by_act_L1_accum = 0;
@@ -5747,7 +5747,8 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
                          (ps_curr_out->i4_acc_frame_8x8_num_blks[i4_k] >> 1)) /
                         ps_curr_out->i4_acc_frame_8x8_num_blks[i4_k];
                     ps_curr_out->ld_curr_frame_8x8_log_avg[i4_k] =
-                        (log((long double)ps_curr_out->i8_curr_frame_8x8_avg_act[i4_k]) / log(2.0));
+                        (log(1 + (long double)ps_curr_out->i8_curr_frame_8x8_avg_act[i4_k]) /
+                         log(2.0));
                 }
 
                 if(0 == ps_curr_out->i4_acc_frame_16x16_num_blks[i4_k])
@@ -5761,7 +5762,7 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
                          (ps_curr_out->i4_acc_frame_16x16_num_blks[i4_k] >> 1)) /
                         ps_curr_out->i4_acc_frame_16x16_num_blks[i4_k];
                     ps_curr_out->ld_curr_frame_16x16_log_avg[i4_k] =
-                        (log((long double)ps_curr_out->i8_curr_frame_16x16_avg_act[i4_k]) /
+                        (log(1 + (long double)ps_curr_out->i8_curr_frame_16x16_avg_act[i4_k]) /
                          log(2.0));
                 }
 
@@ -5776,7 +5777,7 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
                          (ps_curr_out->i4_acc_frame_32x32_num_blks[i4_k] >> 1)) /
                         ps_curr_out->i4_acc_frame_32x32_num_blks[i4_k];
                     ps_curr_out->ld_curr_frame_32x32_log_avg[i4_k] =
-                        (log((long double)ps_curr_out->i8_curr_frame_32x32_avg_act[i4_k]) /
+                        (log(1 + (long double)ps_curr_out->i8_curr_frame_32x32_avg_act[i4_k]) /
                          log(2.0));
                 }
             }
@@ -5798,7 +5799,8 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
                      (ps_curr_out->i4_acc_frame_16x16_num_blks[i4_k] >> 1)) /
                     ps_curr_out->i4_acc_frame_16x16_num_blks[i4_k];
                 ps_curr_out->ld_curr_frame_16x16_log_avg[i4_k] =
-                    (log((long double)ps_curr_out->i8_curr_frame_16x16_avg_act[i4_k]) / log(2.0));
+                    (log(1 + (long double)ps_curr_out->i8_curr_frame_16x16_avg_act[i4_k]) /
+                     log(2.0));
             }
 
             if(0 == ps_curr_out->i4_acc_frame_32x32_num_blks[i4_k])
@@ -5812,7 +5814,8 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
                      (ps_curr_out->i4_acc_frame_32x32_num_blks[i4_k] >> 1)) /
                     ps_curr_out->i4_acc_frame_32x32_num_blks[i4_k];
                 ps_curr_out->ld_curr_frame_32x32_log_avg[i4_k] =
-                    (log((long double)ps_curr_out->i8_curr_frame_32x32_avg_act[i4_k]) / log(2.0));
+                    (log(1 + (long double)ps_curr_out->i8_curr_frame_32x32_avg_act[i4_k]) /
+                     log(2.0));
             }
         }
         /*store the avg activity for B pictures*/

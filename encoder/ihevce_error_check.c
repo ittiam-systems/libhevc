@@ -1204,7 +1204,7 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
                 return (IHEVCE_SETUNSUPPORTEDINPUT(error_code));
             }
 
-            peak_bitrate = tgt_bitrate << 2;
+            peak_bitrate = tgt_bitrate << 1;
             peak_bitrate =
                 MIN(peak_bitrate,
                     g_as_level_data[codec_level_index]
