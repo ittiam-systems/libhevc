@@ -395,6 +395,58 @@ void ihevce_fill_sei_payload(
 
 /*!
 ******************************************************************************
+* \if Function name : ihevce_dyn_bitrate \endif
+*
+* \brief
+*    Call back function to be called for changing the bitrate
+*
+*
+* \return
+*    None
+*
+* \author
+*  Ittiam
+*
+*****************************************************************************
+*/
+void ihevce_dyn_bitrate(void *pv_hle_ctxt, void *pv_dyn_bitrate_prms)
+{
+    ihevce_hle_ctxt_t *ps_hle_ctxt = (ihevce_hle_ctxt_t *)pv_hle_ctxt;
+    ihevce_dyn_config_prms_t *ps_dyn_bitrate_prms = (ihevce_dyn_config_prms_t *)pv_dyn_bitrate_prms;
+    enc_ctxt_t *ps_enc_ctxt =
+        (enc_ctxt_t *)ps_hle_ctxt->apv_enc_hdl[ps_dyn_bitrate_prms->i4_tgt_res_id];
+    ihevce_static_cfg_params_t *ps_static_cfg_params = ps_hle_ctxt->ps_static_cfg_prms;
+
+    if(ps_enc_ctxt->ps_stat_prms->i4_log_dump_level > 0)
+    {
+        ps_static_cfg_params->s_sys_api.ihevce_printf(
+            ps_static_cfg_params->s_sys_api.pv_cb_handle,
+            "\n Average Bitrate changed to %d",
+            ps_dyn_bitrate_prms->i4_new_tgt_bitrate);
+        ps_static_cfg_params->s_sys_api.ihevce_printf(
+            ps_static_cfg_params->s_sys_api.pv_cb_handle,
+            "\n Peak    Bitrate changed to %d",
+            ps_dyn_bitrate_prms->i4_new_peak_bitrate);
+    }
+
+
+    /* acquire mutex lock for rate control calls */
+    osal_mutex_lock(ps_enc_ctxt->pv_rc_mutex_lock_hdl);
+
+    ihevce_rc_register_dyn_change_bitrate(
+        ps_enc_ctxt->s_module_ctxt.apv_rc_ctxt[ps_dyn_bitrate_prms->i4_tgt_br_id],
+        (LWORD64)ps_dyn_bitrate_prms->i4_new_tgt_bitrate,
+        (LWORD64)ps_dyn_bitrate_prms->i4_new_peak_bitrate,
+        ps_dyn_bitrate_prms->i4_new_rate_factor,
+        ps_enc_ctxt->ps_stat_prms->s_config_prms.i4_rate_control_mode);
+
+    /*unlock rate control context*/
+    osal_mutex_unlock(ps_enc_ctxt->pv_rc_mutex_lock_hdl);
+    return;
+}
+
+/*!
+******************************************************************************
 * \if Function name : ihevce_validate_encoder_parameters \endif
 *
 * \brief

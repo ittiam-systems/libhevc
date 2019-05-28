@@ -705,6 +705,56 @@ void ihevce_lap_parse_sync_cmd(
 /*!
 ************************************************************************
 * \brief
+*    lap parse Async commands
+************************************************************************
+*/
+void ihevce_lap_parse_async_cmd(
+    ihevce_hle_ctxt_t *ps_hle_ctxt,
+    WORD32 *pi4_cmd_buf,
+    WORD32 i4_length,
+    WORD32 i4_buf_id,
+    WORD32 *pi4_num_set_bitrate_cmds,
+    ihevce_dyn_config_prms_t *ps_dyn_br)
+{
+    WORD32 i4_end_flag = 0;
+    WORD32 *pi4_end = pi4_cmd_buf + (i4_length >> 2) - 1;
+    WORD32 *pi4_tag_parse = pi4_cmd_buf;
+
+    while(pi4_tag_parse != pi4_end)
+    {
+        switch(*pi4_tag_parse)
+        {
+        case IHEVCE_ASYNCH_API_SETBITRATE_TAG:
+            if((*(pi4_tag_parse + 1)) != sizeof(ihevce_dyn_config_prms_t))
+                ps_hle_ctxt->ihevce_cmds_error_report(
+                    ps_hle_ctxt->pv_cmd_err_cb_handle, IHEVCE_ASYNCH_ERR_BR_NOT_BYTE, 1, i4_buf_id);
+
+            memcpy(
+                (void *)ps_dyn_br, (void *)(pi4_tag_parse + 2), sizeof(ihevce_dyn_config_prms_t));
+            pi4_tag_parse += 2;
+            pi4_tag_parse += (sizeof(ihevce_dyn_config_prms_t) >> 2);
+            *pi4_num_set_bitrate_cmds = *pi4_num_set_bitrate_cmds + 1;
+            ps_dyn_br++;
+
+            break;
+        case IHEVCE_ASYNCH_API_END_TAG:
+            i4_end_flag = 1;
+            break;
+        default:
+            ps_hle_ctxt->ihevce_cmds_error_report(
+                ps_hle_ctxt->pv_cmd_err_cb_handle, IHEVCE_ASYNCH_ERR_TLV_ERROR, 1, i4_buf_id);
+        }
+        if(i4_end_flag)
+            break;
+    }
+    if(!i4_end_flag)
+        ps_hle_ctxt->ihevce_cmds_error_report(
+            ps_hle_ctxt->pv_cmd_err_cb_handle, IHEVCE_ASYNCH_ERR_NO_END_TAG, 1, i4_buf_id);
+}
+
+/*!
+************************************************************************
+* \brief
 *    ref pics weight offset calculation
 ************************************************************************
 */
@@ -2011,11 +2061,46 @@ ihevce_lap_enc_buf_t *ihevce_lap_process(void *pv_interface_ctxt, ihevce_lap_enc
     WORD32 i4_force_idr_check = 0;
     WORD32 i4_set_res_check = 0;
     WORD32 i4_tree_num = 0;
+    iv_input_ctrl_buffs_t *ps_ctrl_buf = NULL;
+    WORD32 buf_id = 0;
+
+    ps_lap_interface->i4_ctrl_in_que_blocking_mode = BUFF_QUE_NON_BLOCKING_MODE;
 
     /* ----------- LAP processing ----------- */
     if(ps_lap_struct->end_flag != 1)
     {
         ASSERT(NULL != ps_curr_inp);
+
+        /* ---------- get the filled control command buffer ------------ */
+        ps_ctrl_buf = (iv_input_ctrl_buffs_t *)ihevce_q_get_filled_buff(
+            ps_hle_ctxt->apv_enc_hdl[0],
+            ps_lap_interface->i4_ctrl_in_que_id,
+            &buf_id,
+            ps_lap_interface->i4_ctrl_in_que_blocking_mode);
+
+        /* ----------- check the command ---------------------- */
+        if(NULL != ps_ctrl_buf)
+        {
+            /* check for async errors */
+            ihevce_dyn_config_prms_t as_dyn_br[MAX_NUM_DYN_BITRATE_CMDS];
+            WORD32 i4_num_set_bitrate_cmds = 0;
+            WORD32 bitrt_ctr = 0;
+
+            ihevce_lap_parse_async_cmd(
+                ps_hle_ctxt,
+                (WORD32 *)ps_ctrl_buf->pv_asynch_ctrl_bufs,
+                ps_ctrl_buf->i4_cmd_buf_size,
+                ps_ctrl_buf->i4_buf_id,
+                &i4_num_set_bitrate_cmds,
+                &as_dyn_br[0]);
+
+            /* Call the call back function to register the new bitrate */
+            for(bitrt_ctr = 0; bitrt_ctr < i4_num_set_bitrate_cmds; bitrt_ctr++)
+            {
+                ps_lap_interface->ihevce_dyn_bitrate_cb(
+                    (void *)ps_hle_ctxt, (void *)&as_dyn_br[bitrt_ctr]);
+            }
+        }
 
         {
             WORD32 *pi4_cmd_buf = (WORD32 *)ps_lap_inp_buf->s_input_buf.pv_synch_ctrl_bufs;
