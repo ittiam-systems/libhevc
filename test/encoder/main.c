@@ -58,6 +58,11 @@
 #include "app.h"
 
 /*****************************************************************************/
+/* Constant Macros                                                           */
+/*****************************************************************************/
+#define DYN_BITRATE_TEST 0
+
+/*****************************************************************************/
 /* Global definitions                                                        */
 /*****************************************************************************/
 
@@ -1027,7 +1032,12 @@ IHEVCE_PLUGIN_STATUS_T libihevce_encode_frame(appl_ctxt_t *ps_ctxt, FILE *pf_inp
         {
             ps_inp_pic = NULL;
         }
-
+#if DYN_BITRATE_TEST
+        if((i4_num_frames == 200) && (ps_inp_pic != NULL))
+        {
+            ps_inp_pic->i4_curr_bitrate = ps_inp_pic->i4_curr_bitrate << 1;
+        }
+#endif
         /* call encoder process frame */
         PROFILE_START(&s_profile_data);
         status = ihevce_encode(ps_ctxt->ihevceHdl, ps_inp_pic, &out_pic);

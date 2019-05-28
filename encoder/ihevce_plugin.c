@@ -81,8 +81,10 @@
 #include "ihevce_multi_thrd_structs.h"
 #include "ihevce_me_common_defs.h"
 #include "ihevce_error_codes.h"
+#include "ihevce_error_checks.h"
 #include "ihevce_function_selector.h"
 #include "ihevce_enc_structs.h"
+#include "ihevce_global_tables.h"
 
 #include "cast_types.h"
 #include "osal.h"
@@ -2002,6 +2004,59 @@ IHEVCE_PLUGIN_STATUS_T
 
                     if(IV_SUCCESS != result)
                         return (IHEVCE_EFAIL);
+
+                    if(3 != ps_ctxt->ps_static_cfg_prms->s_config_prms.i4_rate_control_mode)
+                    {
+                        /* Dynamic Change in bitrate not supported for multi res/MBR */
+                        /*** Check for change in bitrate command ***/
+                        if(ps_ctxt->ai4_old_bitrate[0][0] != ps_inp->i4_curr_bitrate)
+                        {
+                            WORD32 buf_id;
+                            WORD32 *pi4_cmd_buf;
+                            iv_input_ctrl_buffs_t *ps_ctrl_buf;
+                            ihevce_dyn_config_prms_t *ps_dyn_br;
+                            WORD32 codec_level_index = ihevce_get_level_index(
+                                ps_ctxt->ps_static_cfg_prms->s_tgt_lyr_prms.as_tgt_params[0]
+                                    .i4_codec_level);
+                            WORD32 max_bitrate =
+                                g_as_level_data[codec_level_index].i4_max_bit_rate
+                                    [ps_ctxt->ps_static_cfg_prms->s_out_strm_prms.i4_codec_tier] *
+                                1000;
+
+                            /* ---------- get a free buffer from command Q ------ */
+                            ps_ctrl_buf = (iv_input_ctrl_buffs_t *)ihevce_q_get_free_inp_ctrl_buff(
+                                ps_interface_ctxt, &buf_id, BUFF_QUE_BLOCKING_MODE);
+                            /* store the buffer id */
+                            ps_ctrl_buf->i4_buf_id = buf_id;
+
+                            /* get the buffer pointer */
+                            pi4_cmd_buf = (WORD32 *)ps_ctrl_buf->pv_asynch_ctrl_bufs;
+
+                            /* store the set default command, encoder should use create time prms */
+                            *pi4_cmd_buf = IHEVCE_ASYNCH_API_SETBITRATE_TAG;
+                            *(pi4_cmd_buf + 1) = sizeof(ihevce_dyn_config_prms_t);
+
+                            ps_dyn_br = (ihevce_dyn_config_prms_t *)(pi4_cmd_buf + 2);
+                            ps_dyn_br->i4_size = sizeof(ihevce_dyn_config_prms_t);
+                            ps_dyn_br->i4_tgt_br_id = 0;
+                            ps_dyn_br->i4_tgt_res_id = 0;
+                            ps_dyn_br->i4_new_tgt_bitrate =
+                                MIN(ps_inp->i4_curr_bitrate, max_bitrate);
+                            ps_dyn_br->i4_new_peak_bitrate =
+                                MIN((ps_dyn_br->i4_new_tgt_bitrate << 1), max_bitrate);
+
+                            pi4_cmd_buf += 2;
+                            pi4_cmd_buf += (sizeof(ihevce_dyn_config_prms_t) >> 2);
+
+                            *(pi4_cmd_buf) = IHEVCE_ASYNCH_API_END_TAG;
+
+                            /* ---------- set the buffer as produced ---------- */
+                            ihevce_q_set_inp_ctrl_buff_prod(ps_interface_ctxt, buf_id);
+
+                            ps_ctxt->ai4_old_bitrate[0][0] = ps_inp->i4_curr_bitrate;
+                        }
+                    }
+
                     ps_ctxt->u8_num_frames_queued++;
                 }
                 else
