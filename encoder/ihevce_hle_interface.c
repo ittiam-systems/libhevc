@@ -1211,8 +1211,13 @@ WORD32 ihevce_hle_interface_thrd(void *pv_proc_intf_ctxt)
         ps_lap_interface_ctxt->pv_hle_ctxt = ps_hle_ctxt;
         ps_enc_ctxt = (enc_ctxt_t *)ps_hle_ctxt->apv_enc_hdl[0];
         ps_lap_interface_ctxt->pv_lap_module_ctxt = ps_enc_ctxt->s_module_ctxt.pv_lap_ctxt;
+        ps_lap_interface_ctxt->i4_ctrl_in_que_id = IHEVCE_INPUT_ASYNCH_CTRL_Q;
+        ps_lap_interface_ctxt->i4_ctrl_out_que_id = IHEVCE_OUTPUT_STATUS_Q;
+        ps_lap_interface_ctxt->i4_ctrl_cmd_buf_size = ENC_COMMAND_BUFF_SIZE;
+        ps_lap_interface_ctxt->i4_ctrl_in_que_blocking_mode = BUFF_QUE_BLOCKING_MODE;
         ps_lap_interface_ctxt->ps_sys_api = &ps_enc_ctxt_base->ps_stat_prms->s_sys_api;
         ps_enc_ctxt_base->pv_lap_interface_ctxt = (void *)ps_lap_interface_ctxt;
+        ps_lap_interface_ctxt->ihevce_dyn_bitrate_cb = ihevce_dyn_bitrate;
     }
 
     /* --------------------------------------------------------------------- */

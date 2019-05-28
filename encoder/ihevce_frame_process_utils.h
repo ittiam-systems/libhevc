@@ -81,4 +81,6 @@ void ihevce_fill_sei_payload(
     ihevce_lap_enc_buf_t *ps_curr_inp,
     frm_proc_ent_cod_ctxt_t *ps_curr_out);
 
+void ihevce_dyn_bitrate(void *pv_hle_ctxt, void *pv_dyn_bitrate_prms);
+
 #endif /* _IHEVCE_FRAME_PROCESS_UTILS_H_ */

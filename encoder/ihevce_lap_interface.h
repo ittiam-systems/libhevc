@@ -49,6 +49,33 @@ typedef struct
     ihevce_sys_api_t *ps_sys_api;
     void *pv_hle_ctxt;
     void *pv_lap_module_ctxt;
+
+    /**
+    * Control Input buffer Queue id
+    */
+
+    WORD32 i4_ctrl_in_que_id;
+    /**
+    *
+    *EnC and application owned command buffer size
+    */
+    WORD32 i4_ctrl_cmd_buf_size;
+
+    /**
+    * Control Input buffer blocking mode
+    */
+    WORD32 i4_ctrl_in_que_blocking_mode;
+
+    /**
+    * Control output buffer Queue id
+    */
+    WORD32 i4_ctrl_out_que_id;
+
+    /**
+    * Dynamic bitrate change Callback function
+    */
+    void (*ihevce_dyn_bitrate_cb)(void *pv_hle_ctxt, void *pv_dyn_bitrate_prms);
+
 } lap_intface_t;
 
 /*****************************************************************************/
