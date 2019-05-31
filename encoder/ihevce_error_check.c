@@ -1191,8 +1191,8 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
             if(tgt_bitrate >
                    g_as_level_data[codec_level_index]
                            .i4_max_bit_rate[ps_static_cfg_prms->s_out_strm_prms.i4_codec_tier] *
-                       1000 ||
-               tgt_bitrate <= 0)
+                       CBP_VCL_FACTOR ||
+               tgt_bitrate < 4000)
             {
                 error_code = IHEVCE_BITRATE_NOT_SUPPORTED;
                 ps_sys_api->ihevce_printf(
