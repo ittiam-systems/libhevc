@@ -2668,7 +2668,7 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
             break;
         }
     }
-    if(NULL == ps_sps)
+    if(!ps_sps->i1_sps_valid)
     {
         return;
     }
