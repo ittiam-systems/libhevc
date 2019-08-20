@@ -401,6 +401,7 @@ cc_library_static {
 
 cc_test {
     name: "hevcdec",
+    host_supported: true,
     cflags: [
         "-DPROFILE_ENABLE",
         "-DARM",
