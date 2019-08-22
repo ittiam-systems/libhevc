@@ -626,6 +626,13 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         nal_ofst = ihevcd_nal_search_start_code(ps_codec->pu1_inp_bitsbuf,
                                                 ps_codec->i4_bytes_remaining);
+        /* If there is no start code found, consume the data and break */
+        if(nal_ofst == ps_codec->i4_bytes_remaining)
+        {
+            ps_codec->pu1_inp_bitsbuf += nal_ofst;
+            ps_codec->i4_bytes_remaining -= nal_ofst;
+            break;
+        }
 
         ps_codec->i4_nal_ofst = nal_ofst;
         {
