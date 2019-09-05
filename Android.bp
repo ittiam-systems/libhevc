@@ -422,7 +422,7 @@ cc_test {
 cc_library_static {
     name: "libhevcenc",
     vendor_available: true,
-
+    host_supported: true,
     cflags: [
         "-DENABLE_MAIN_REXT_PROFILE",
         "-fPIC",
@@ -776,6 +776,7 @@ cc_library_static {
 
 cc_test {
     name: "hevcenc",
+    host_supported: true,
     cflags: [
         "-DARM",
         "-fPIC",
