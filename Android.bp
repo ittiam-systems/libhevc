@@ -412,6 +412,11 @@ cc_test {
     ],
     srcs: ["test/decoder/main.c"],
     static_libs: ["libhevcdec"],
+    target: {
+        darwin: {
+            enabled: false,
+        },
+    },
 }
 
 cc_library_static {
