@@ -46,7 +46,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <malloc.h>
 #include <limits.h>
 
 /* User include files */
