@@ -1473,7 +1473,19 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_log2_diff_max_min_coding_block_size = value;
 
     ctb_log2_size_y = ps_sps->i1_log2_min_coding_block_size + ps_sps->i1_log2_diff_max_min_coding_block_size;
-
+    /* Check if CTB size is different in case of multiple SPS with same ID */
+    {
+        sps_t *ps_sps_old = (ps_codec->s_parse.ps_sps_base + sps_id);
+        if(ps_sps_old->i1_sps_valid && ps_sps_old->i1_log2_ctb_size != ctb_log2_size_y)
+        {
+            if(0 == ps_codec->i4_first_pic_done)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
+            ps_codec->i4_reset_flag = 1;
+            return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
+        }
+    }
     UEV_PARSE("log2_min_transform_block_size_minus2", value, ps_bitstrm);
     if(value > (LOG2_MAX_TU_SIZE - 2))
     {
