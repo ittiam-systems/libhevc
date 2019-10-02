@@ -325,6 +325,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
     {
         BITS_PARSE("dependent_slice_flag", value, ps_bitstrm, 1);
 
+        /* First slice to be decoded in the current picture can't be dependent slice */
+        if (value && 0 == ps_codec->i4_pic_present)
+        {
+             return IHEVCD_IGNORE_SLICE;
+        }
+
         /* If dependendent slice, copy slice header from previous slice */
         if(value && (ps_codec->s_parse.i4_cur_slice_idx > 0))
         {
