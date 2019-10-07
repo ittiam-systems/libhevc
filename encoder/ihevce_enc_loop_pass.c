@@ -2436,17 +2436,19 @@ void ihevce_enc_loop_process_row(
 
             if(ps_ctxt->i4_deblk_pad_hpel_cur_pic)
             {
-                /* Wait till top neighbour CTB has done it's deblocking*/
-                if(ctb_ctr < (ctb_end)-1)
+                /* for last ctb of a row check top instead of top right */
+                if(((ctb_ctr + 1) == ctb_end) && (vert_ctr > 0))
                 {
-                    ihevce_dmgr_chk_row_row_sync(
-                        pv_dep_mngr_enc_loop_dblk,
-                        ctb_ctr,
-                        dblk_offset,
-                        dblk_check_dep_pos,
-                        ps_ctxt->i4_tile_col_idx, /* Col Tile No. */
-                        ps_ctxt->thrd_id);
+                    dblk_offset = 1;
                 }
+                /* Wait till top neighbour CTB has done it's deblocking*/
+                ihevce_dmgr_chk_row_row_sync(
+                    pv_dep_mngr_enc_loop_dblk,
+                    ctb_ctr,
+                    dblk_offset,
+                    dblk_check_dep_pos,
+                    ps_ctxt->i4_tile_col_idx, /* Col Tile No. */
+                    ps_ctxt->thrd_id);
 
                 if((0 == ps_ctxt->i4_deblock_type))
                 {
