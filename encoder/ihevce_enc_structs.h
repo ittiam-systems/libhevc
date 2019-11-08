@@ -99,18 +99,8 @@
 
 #define MIN_PRE_ENC_RC_DELAY (MIN_L0_IPE_ENC_STAGGER + 1 + NUM_BUFS_DECOMP_HME)
 
-/** @brief number of contexts buffers maintained at frame level b/w pre-encode : encode */
-/*Explaination for minus 1: eg: MAX_PRE_ENC_STAGGER = 31 and MAX_L0_IPE_ENC_STAGGER = 5, In this case L1 produce 30 buffer,
-  l0 will start off with 30th buffer and enc will work on 33nd and 34rd frame.*/
-/* NUM_BUFS_DECOMP_HME is added to take care of pipeline between Decomp-preintra and HME */
-#define MAX_NUM_PREENC_ENC_BUFS                                                                    \
-    (MAX_PRE_ENC_STAGGER + MAX_L0_IPE_ENC_STAGGER + NUM_BUFS_DECOMP_HME - 1)  //22//5
-
-#define MIN_NUM_PREENC_ENC_BUFS                                                                    \
-    (MAX_PRE_ENC_STAGGER + MIN_L0_IPE_ENC_STAGGER + NUM_BUFS_DECOMP_HME - 1)
-
 /** @brief number of ctb contexts maintained at frame level b/w encode : entropy */
-#define NUM_FRMPROC_ENTCOD_BUFS 8
+#define NUM_FRMPROC_ENTCOD_BUFS 1
 
 /** @brief number of extra recon buffs required for stagger design*/
 #define NUM_EXTRA_RECON_BUFS 0
@@ -2487,11 +2477,6 @@ typedef struct
      * based on Load balance b/w stage in encoder
      */
     WORD32 i4_num_active_enc_thrds;
-    /**  Job Queue Memory encode */
-    job_queue_t *ps_job_q_enc[PING_PONG_BUF];
-
-    /** Array of Job Queue handles of enc group for ping and pong instance*/
-    job_queue_handle_t as_job_que_enc_hdls[NUM_ENC_JOBS_QUES][PING_PONG_BUF];
 
     /** Mutex for ensuring thread safety of the access of Job queues in encode group */
     void *pv_job_q_mutex_hdl_enc_grp_me;
@@ -2501,18 +2486,6 @@ typedef struct
 
     /** Array of Semaphore handles (for each frame processing threads ) */
     void *apv_enc_thrd_sem_handle[MAX_NUM_FRM_PROC_THRDS_ENC];
-
-    /** Array for communcating start processing from master thread to indivisual
-    *   threads in Enocde group of threads
-    *  till 0 : wait
-    *  1  : start
-    * After reading the start signal, corresponding thread hould reset it to 0
-    */
-    WORD32 ai4_enc_frm_proc_start[MAX_NUM_FRM_PROC_THRDS_ENC];
-
-    /** Note: For Enc loop pass similar memory is used whihc is part of frm_proc_ent_cod_ctxt_t
-    *  for Row level Sync hence not explicitly declared here
-    */
 
     /** Array for ME to export the Job que dependency for all layers */
     multi_thrd_me_job_q_prms_t as_me_job_q_prms[MAX_NUM_HME_LAYERS][MAX_NUM_VERT_UNITS_FRM];
@@ -2628,47 +2601,29 @@ typedef struct
     /* Pointers to store input (only L0 IPE)*/
     pre_enc_L0_ipe_encloop_ctxt_t *aps_cur_L0_ipe_inp_prms[MAX_NUM_ME_PARALLEL];
 
-    /** Slice header parameters   */
-    /** temporarily store the slice header parameters in enc-loop thread
-    which will be copied to curr_out when buffer is aquired */
-    //slice_header_t      as_slice_hdr[PING_PONG_BUF];
-
-    /* Array to store input buffer ids for ping and pong instances*/
-    //WORD32 in_buf_id[PING_PONG_BUF];
-
     /* Array tp store L0 IPE input buf ids*/
     WORD32 ai4_in_frm_l0_ipe_id[MAX_NUM_ME_PARALLEL];
 
     /* Array to store output buffer ids for ping and pong instances*/
-    WORD32 out_buf_id[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];  //[PING_PONG_BUF];
-
-    /* Variable to indicate ping and pong instance for each thread*/
-    WORD32 ping_pong[MAX_NUM_FRM_PROC_THRDS_ENC];
+    WORD32 out_buf_id[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];
 
     /* Array of pointers to store the recon buf pointers*/
-    iv_enc_recon_data_buffs_t
-        *ps_recon_out[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];  //[PING_PONG_BUF];
+    iv_enc_recon_data_buffs_t *ps_recon_out[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];
 
     /* Array of pointers to frame recon for ping and pong instances*/
     recon_pic_buf_t *ps_frm_recon[NUM_ME_ENC_BUFS][IHEVCE_MAX_NUM_BITRATES];
 
     /* Array of recon buffer ids for ping and pong instance*/
-    WORD32 recon_buf_id[NUM_ME_ENC_BUFS][IHEVCE_MAX_NUM_BITRATES];  //[PING_PONG_BUF];
-
-    /* End flag to signal end of all the frames in me*/
-    WORD32 me_end_flag;
-
-    /* End flag to signal end of all the frames in enc*/
-    WORD32 enc_end_flag;
+    WORD32 recon_buf_id[NUM_ME_ENC_BUFS][IHEVCE_MAX_NUM_BITRATES];
 
     /* Counter to keep track of num thrds done*/
     WORD32 num_thrds_done;
 
     /* Flags to keep track of dumped ping pong recon buffer*/
-    WORD32 is_recon_dumped[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];  //[PING_PONG_BUF];
+    WORD32 is_recon_dumped[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];
 
     /* Flags to keep track of dumped ping pong output buffer*/
-    WORD32 is_out_buf_freed[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];  //[PING_PONG_BUF];
+    WORD32 is_out_buf_freed[MAX_NUM_ENC_LOOP_PARALLEL][IHEVCE_MAX_NUM_BITRATES];
 
     /* flag to produce output buffer by the thread who ever is finishing
     enc-loop processing first, so that the entropy thread can start processing */
@@ -2786,9 +2741,6 @@ typedef struct
 
     /** buffer id for L0 IPE enc buffer*/
     WORD32 i4_L0_IPE_out_buf_id;
-
-    /** current frame recon pointer */
-    recon_pic_buf_t *aps_frm_recon_pre_enc[MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME];
 
     /** Current picture Qp */
     WORD32 ai4_cur_frame_qp_pre_enc[MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME];
