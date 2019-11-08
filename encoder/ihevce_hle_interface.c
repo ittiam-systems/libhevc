@@ -1071,8 +1071,6 @@ WORD32 ihevce_hle_interface_thrd(void *pv_proc_intf_ctxt)
 
         /*initialize multi-thread context for enc group*/
         ps_enc_ctxt->s_multi_thrd.i4_is_recon_free_done = 0;
-        ps_enc_ctxt->s_multi_thrd.me_end_flag = 0;
-        ps_enc_ctxt->s_multi_thrd.enc_end_flag = 0;
         ps_enc_ctxt->s_multi_thrd.i4_idx_dvsr_p = 0;
         ps_enc_ctxt->s_multi_thrd.i4_last_inp_buf = 0;
 
@@ -1128,17 +1126,10 @@ WORD32 ihevce_hle_interface_thrd(void *pv_proc_intf_ctxt)
                 ps_enc_ctxt->s_multi_thrd.apv_dep_mngr_prev_frame_me_done[i]);
         }
 
-        /* reset the completed status & start proc flags of slave encode frame processing threads */
-        for(ctr = 0; ctr < ps_enc_ctxt->s_multi_thrd.i4_num_enc_proc_thrds; ctr++)
-        {
-            ps_enc_ctxt->s_multi_thrd.ai4_enc_frm_proc_start[ctr] = 0;
-        }
-
         /* initialize multi-thread context for pre enc group */
 
         ps_enc_ctxt->s_multi_thrd.i4_ctrl_blocking_mode = BUFF_QUE_BLOCKING_MODE;
 
-        //for (ctr=0; ctr< PING_PONG_BUF; ctr++)
         for(ctr = 0; ctr < MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME; ctr++)
         {
             ps_enc_ctxt->s_multi_thrd.ai4_pre_enc_init_done[ctr] = 0;
@@ -1167,10 +1158,11 @@ WORD32 ihevce_hle_interface_thrd(void *pv_proc_intf_ctxt)
             /**init idx for handling delay between pre-me and l0-ipe*/
             ps_enc_ctxt->s_multi_thrd.i4_delay_pre_me_btw_l0_ipe = 0;
             ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe =
-                MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME - 1;
+                MIN_L1_L0_STAGGER_NON_SEQ +
+                ps_enc_ctxt->s_lap_stat_prms.s_lap_params.i4_rc_look_ahead_pics + 1;
             if(ps_enc_ctxt->s_lap_stat_prms.s_lap_params.i4_rc_look_ahead_pics)
             {
-                ps_enc_ctxt->s_multi_thrd.i4_delay_pre_me_btw_l0_ipe +=
+                ps_enc_ctxt->s_multi_thrd.i4_delay_pre_me_btw_l0_ipe =
                     MIN_L1_L0_STAGGER_NON_SEQ +
                     ps_enc_ctxt->s_lap_stat_prms.s_lap_params.i4_rc_look_ahead_pics;
             }

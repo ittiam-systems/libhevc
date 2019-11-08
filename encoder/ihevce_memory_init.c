@@ -181,7 +181,7 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
     WORD32 a_disp_wd[MAX_NUM_HME_LAYERS], a_disp_ht[MAX_NUM_HME_LAYERS];
     WORD32 a_ctb_align_wd[MAX_NUM_HME_LAYERS], a_ctb_align_ht[MAX_NUM_HME_LAYERS];
     WORD32 n_enc_layers = 1, n_tot_layers;
-    WORD32 num_bufs_preenc_me_que, num_bufs_L0_ipe_enc;
+    WORD32 num_bufs_preenc_me_que, num_bufs_L0_ipe_enc, max_delay_preenc_l0_que;
     WORD32 i, i4_resolution_id = ps_enc_ctxt->i4_resolution_id;  //counter
     WORD32 i4_num_bitrate_inst;
     iv_mem_rec_t *ps_memtab;
@@ -392,6 +392,9 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         {
             num_bufs_L0_ipe_enc = MIN_L0_IPE_ENC_STAGGER;
         }
+
+        max_delay_preenc_l0_que = MIN_L1_L0_STAGGER_NON_SEQ +
+                                  ps_enc_ctxt->ps_stat_prms->s_lap_prms.i4_rc_look_ahead_pics + 1;
     }
 
     /* ------------ popluate the lap static parameters ------------- */
@@ -1398,10 +1401,9 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
     /* Job Queue related memory                            */
     /* max num ctb rows is doubled to take care worst case */
     /* requirements because of HME layers                  */
-    buf_size = (MAX_NUM_VERT_UNITS_FRM) * (NUM_PRE_ENC_JOBS_QUES) *
-               (MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME);  //PING_PONG_BUF;
-
+    buf_size = (MAX_NUM_VERT_UNITS_FRM) * (NUM_PRE_ENC_JOBS_QUES) * (max_delay_preenc_l0_que);
     buf_size *= sizeof(job_queue_t);
+
     ps_memtab[total_memtabs_used].i4_mem_alignment = 8;
 
     ps_memtab[total_memtabs_used].e_mem_type = (IV_MEM_TYPE_T)space_for_mem_in_enc_grp;
@@ -2253,7 +2255,7 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
     */
 
     ps_enc_ctxt->s_multi_thrd.aps_job_q_pre_enc[0] = (job_queue_t *)ps_memtab->pv_base;
-    for(ctr = 1; ctr < MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME; ctr++)
+    for(ctr = 1; ctr < max_delay_preenc_l0_que; ctr++)
     {
         ps_enc_ctxt->s_multi_thrd.aps_job_q_pre_enc[ctr] =
             ps_enc_ctxt->s_multi_thrd.aps_job_q_pre_enc[0] +
