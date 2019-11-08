@@ -362,10 +362,12 @@ void complexity_RC_reset_marking(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ipe_idx,
         ASSERT(i4_is_cur_pic_high_complex_region != -1);
 
         /*get the next idx of p/i picture */
-        i4_next_ipe_idx =
-            (i4_cur_ipe_idx + 1) % (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
-        i4_temp_ipe_idx =
-            (i4_cur_ipe_idx + 1) % (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+        i4_next_ipe_idx = (i4_cur_ipe_idx + 1);
+        if(i4_next_ipe_idx >= ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe)
+        {
+            i4_next_ipe_idx = 0;
+        }
+        i4_temp_ipe_idx = i4_next_ipe_idx;
         for(i = 0; i < (1 << i4_max_temporal_layers); i++)
         {
             ps_lap_out_temp =
@@ -376,12 +378,18 @@ void complexity_RC_reset_marking(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ipe_idx,
             {
                 break;
             }
-            i4_next_ipe_idx = (i4_next_ipe_idx + 1) %
-                              (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+            i4_next_ipe_idx++;
+            if(i4_next_ipe_idx >= ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe)
+            {
+                i4_next_ipe_idx = 0;
+            }
         }
         /* get the next idx of next p/i picture*/
-        i4_next_next_ipe_idx =
-            (i4_next_ipe_idx + 1) % (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+        i4_next_next_ipe_idx = (i4_next_ipe_idx + 1);
+        if(i4_next_next_ipe_idx >= ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe)
+        {
+            i4_next_next_ipe_idx = 0;
+        }
         for(i = 0; i < (1 << i4_max_temporal_layers); i++)
         {
             ps_lap_out_temp =
@@ -392,8 +400,11 @@ void complexity_RC_reset_marking(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ipe_idx,
             {
                 break;
             }
-            i4_next_next_ipe_idx = (i4_next_next_ipe_idx + 1) %
-                                   (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+            i4_next_next_ipe_idx++;
+            if(i4_next_next_ipe_idx >= ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe)
+            {
+                i4_next_next_ipe_idx = 0;
+            }
         }
 
         /*check for any possible RC reset in the future 8 frames*/
@@ -411,8 +422,11 @@ void complexity_RC_reset_marking(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ipe_idx,
             {
                 ps_enc_ctxt->i4_future_RC_scd_reset = 1;
             }
-            i4_temp_ipe_idx = (i4_temp_ipe_idx + 1) %
-                              (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+            i4_temp_ipe_idx++;
+            if(i4_temp_ipe_idx >= ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe)
+            {
+                i4_temp_ipe_idx = 0;
+            }
         }
 
         if((!ps_enc_ctxt->i4_future_RC_reset) && (ps_enc_ctxt->i4_past_RC_reset_count > 8))
@@ -3021,11 +3035,6 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                     ps_curr_out_me->i4_end_flag =
                         ps_enc_ctxt->s_multi_thrd.aps_cur_inp_me_prms[i4_me_frm_id]->i4_end_flag;
 
-                    /* set the parameters for sync b/w entropy thread */
-
-                    ps_enc_ctxt->s_multi_thrd.me_end_flag =
-                        ps_enc_ctxt->s_multi_thrd.aps_cur_inp_me_prms[i4_me_frm_id]->i4_end_flag;
-
                     /* do the processing if input frm data is valid */
                     if(1 == ps_curr_inp->s_input_buf.i4_inp_frm_data_valid_flag)
                     {
@@ -5582,7 +5591,7 @@ void ihevce_variance_calc_acc_activity(enc_ctxt_t *ps_enc_ctxt, WORD32 i4_cur_ip
         (ps_enc_ctxt->s_multi_thrd.aps_curr_inp_pre_enc[i4_cur_ipe_idx]->s_lap_out.i4_pic_type ==
          IV_P_FRAME);
 
-    WORD32 i4_delay_loop = (ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe + 1);
+    WORD32 i4_delay_loop = ps_enc_ctxt->s_multi_thrd.i4_max_delay_pre_me_btw_l0_ipe;
     pre_enc_me_ctxt_t *ps_pre_enc_me_ctxt_t;
     pre_enc_me_ctxt_t *ps_curr_out = ps_enc_ctxt->s_multi_thrd.aps_curr_out_pre_enc[i4_cur_ipe_idx];
     rc_lap_out_params_t *ps_temp_ipe_rc_lap_out;
@@ -6304,7 +6313,7 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
         i4_cur_decomp_idx = i4_cur_decomp_idx + 1;
 
         /* wrap around case */
-        if(i4_cur_decomp_idx == (MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME))
+        if(i4_cur_decomp_idx >= ps_multi_thrd->i4_max_delay_pre_me_btw_l0_ipe)
         {
             i4_cur_decomp_idx = 0;
         }
@@ -6353,9 +6362,6 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
                     ps_multi_thrd->ai4_decomp_lyr_buf_idx[i4_cur_coarse_me_idx],
                     ps_multi_thrd->ai4_cur_frame_qp_pre_enc[i4_cur_coarse_me_idx],
                     i4_cur_coarse_me_idx);
-
-                /* store the recon buffer pointer */
-                ps_multi_thrd->aps_frm_recon_pre_enc[i4_cur_coarse_me_idx] = ps_frm_recon;
             }
 
             ps_multi_thrd->ai4_pre_enc_hme_init_done[i4_cur_coarse_me_idx] = 1;
@@ -6418,7 +6424,7 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
                     /* wrap around case */
                     if(i4_cur_coarse_me_idx == 0)
                     {
-                        i4_prev_coarse_me_idx = MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME - 1;
+                        i4_prev_coarse_me_idx = ps_multi_thrd->i4_max_delay_pre_me_btw_l0_ipe - 1;
                     }
                     else
                     {
@@ -6495,7 +6501,7 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
             i4_cur_coarse_me_idx = i4_cur_coarse_me_idx + 1;
 
             /* wrap around case */
-            if(i4_cur_coarse_me_idx == (MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME))
+            if(i4_cur_coarse_me_idx >= ps_multi_thrd->i4_max_delay_pre_me_btw_l0_ipe)
             {
                 i4_cur_coarse_me_idx = 0;
             }
@@ -6531,7 +6537,7 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
             i4_cur_coarse_me_idx = i4_cur_coarse_me_idx + 1;
 
             /* wrap around case */
-            if(i4_cur_coarse_me_idx == (MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME))
+            if(i4_cur_coarse_me_idx >= ps_multi_thrd->i4_max_delay_pre_me_btw_l0_ipe)
             {
                 i4_cur_coarse_me_idx = 0;
             }
@@ -6970,10 +6976,11 @@ WORD32 ihevce_pre_enc_process_frame_thrd(void *pv_frm_proc_thrd_ctxt)
                     i4_cur_ipe_idx = i4_cur_ipe_idx + 1;
 
                     /* wrap around case */
-                    if(i4_cur_ipe_idx == (MAX_PRE_ENC_STAGGER + NUM_BUFS_DECOMP_HME))
+                    if(i4_cur_ipe_idx >= ps_multi_thrd->i4_max_delay_pre_me_btw_l0_ipe)
                     {
                         i4_cur_ipe_idx = 0;
                     }
+
                     i4_num_buf_prod_for_l0_ipe--;
                 }
                 /*NOTE: update of above indices should mark end if ipe.do not access below this*/
