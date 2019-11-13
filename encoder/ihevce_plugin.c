@@ -1913,7 +1913,7 @@ IHEVCE_PLUGIN_STATUS_T
         if(ps_ctxt->ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers)
         {
             u4_latency +=
-                (1 << ps_ctxt->ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers);
+                (1 << ps_ctxt->ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers) - 1;
         }
 
         u4_latency += ps_ctxt->ps_static_cfg_prms->s_lap_prms.i4_rc_look_ahead_pics;
