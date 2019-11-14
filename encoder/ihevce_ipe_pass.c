@@ -201,26 +201,12 @@ void ihevce_ipe_recompute_lambda_from_min_8x8_act_in_ctb(
     ihevce_ipe_ctxt_t *ps_ctxt, ihevce_ed_ctb_l1_t *ps_ed_ctb_l1)
 {
     WORD32 i4_cu_qp = 0;
-    WORD32 i4_mod_factor_num;
 #if MODULATE_LAMDA_WHEN_SPATIAL_MOD_ON
     WORD32 i4_activity;
 #endif
     WORD32 i4_qscale;
     WORD32 i4_curr_satd;
     long double ld_avg_satd;
-
-#if MODULATE_LAMDA_WHEN_SPATIAL_MOD_ON
-    WORD32 i4_mod_factor_denom = QP_MOD_FACTOR_DEN;
-#endif
-
-    if(ISLICE == ps_ctxt->i4_slice_type)
-    {
-        i4_mod_factor_num = INTRA_QP_MOD_FACTOR_NUM;
-    }
-    else
-    {
-        i4_mod_factor_num = INTER_QP_MOD_FACTOR_NUM;
-    }
 
 #if LAMDA_BASED_ON_QUANT
     i4_curr_satd = ps_ed_ctb_l1->i4_32x32_satd[0][2];
@@ -956,13 +942,7 @@ void ihevce_ipe_process_row(
 
         if(ps_ctxt->u1_use_lambda_derived_from_min_8x8_act_in_ctb)
         {
-            /*HACK : MAMATHA, This function assumes that data is accumalated
-            for all probable CU-TU combinations for INcomplete CTB, which is currently not the case,
-            hence not recomputing lamda for the incomplete CTB */
-            if((ps_ctb_node->u1_width == u1_ctb_size) && (ps_ctb_node->u1_height == u1_ctb_size))
-            {
-                ihevce_ipe_recompute_lambda_from_min_8x8_act_in_ctb(ps_ctxt, ps_ed_ctb_l1);
-            }
+            ihevce_ipe_recompute_lambda_from_min_8x8_act_in_ctb(ps_ctxt, ps_ed_ctb_l1);
         }
 
         ihevce_ipe_process_ctb(
