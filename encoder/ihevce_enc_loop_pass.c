@@ -624,6 +624,11 @@ LWORD64 ihevce_cu_mode_decide(
             }
         }
 
+        if(ps_ctxt->i1_cu_qp_delta_enable)
+        {
+            ihevce_update_cu_level_qp_lamda(ps_ctxt, ps_cu_analyse, 4, 0);
+        }
+
         s_prms.i4_ctb_nbr_map_stride = ps_ctxt->i4_nbr_map_strd;
         s_prms.i4_max_num_inter_rdopt_cands = ps_ctxt->i4_max_num_inter_rdopt_cands;
         s_prms.i4_nbr_4x4_left_strd = nbr_4x4_left_strd;
@@ -2037,11 +2042,6 @@ void ihevce_enc_loop_process_row(
             ps_ctb_ipe_analyse->nodes_created_in_cu_tree = 1;
             ps_ctxt->ps_enc_out_ctxt = &ps_ctxt->as_enc_cu_ctxt[0];
             ps_ctxt->pu1_ecd_data = pu1_row_ecd_data;
-            if(ps_ctxt->i4_use_ctb_level_lamda)
-            {
-                ihevce_compute_cu_level_QP(
-                    ps_ctxt, -1, ps_ctb_ipe_analyse->i4_64x64_act_factor[3][1], 0);
-            }
 
             s_cu_update_prms.ppu1_row_ecd_data = &pu1_row_ecd_data;
             s_cu_update_prms.pi4_last_cu_pos_in_ctb = &last_cu_pos_in_ctb;
