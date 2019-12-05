@@ -1101,37 +1101,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
     /* increment the memtab counter */
     total_memtabs_used++;
     total_system_memtabs++;
-    /*
-    * L0 8x8 cur satd for qp mod
-    */
-    buf_size = (a_ctb_align_wd[0] >> 3) * (a_ctb_align_ht[0] >> 3) * sizeof(ihevce_8x8_L0_satd_t) *
-               num_bufs_preenc_me_que;
-
-    ps_memtab[total_memtabs_used].i4_mem_alignment = 8;
-
-    ps_memtab[total_memtabs_used].e_mem_type = (IV_MEM_TYPE_T)space_for_mem_in_pre_enc_grp;
-
-    ps_memtab[total_memtabs_used].i4_mem_size = buf_size;
-
-    /* increment the memtab counter */
-    total_memtabs_used++;
-    total_system_memtabs++;
-
-    /*
-    * L0 8x8 cur mean for qp mod
-    */
-    buf_size = (a_ctb_align_wd[0] >> 3) * (a_ctb_align_ht[0] >> 3) * sizeof(ihevce_8x8_L0_mean_t) *
-               num_bufs_preenc_me_que;
-
-    ps_memtab[total_memtabs_used].i4_mem_alignment = 8;
-
-    ps_memtab[total_memtabs_used].e_mem_type = (IV_MEM_TYPE_T)space_for_mem_in_pre_enc_grp;
-
-    ps_memtab[total_memtabs_used].i4_mem_size = buf_size;
-
-    /* increment the memtab counter */
-    total_memtabs_used++;
-    total_system_memtabs++;
 
     /*
     * Layer early decision buffer L1 buf.Since the pre intra analysis always
@@ -1913,8 +1882,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         ihevce_ed_ctb_l1_t *ps_ed_ctb_l1;
         ihevce_ed_blk_t *ps_layer1_buf;
         ihevce_ed_blk_t *ps_layer2_buf;
-        ihevce_8x8_L0_satd_t *ps_layer0_cur_satd;
-        ihevce_8x8_L0_mean_t *ps_layer0_cur_mean;
         UWORD8 *pu1_lap_input_yuv_buf[4];
         UWORD8 *pu1_input_synch_ctrl_cmd;
         WORD32 i4_count = 0;
@@ -1989,14 +1956,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         ps_ipe_analyse_ctb = (ipe_l0_ctb_analyse_for_me_t *)ps_memtab->pv_base;
         ps_memtab++;
 
-        /*L0 8x8 cur satd for qp mod*/
-        ps_layer0_cur_satd = (ihevce_8x8_L0_satd_t *)ps_memtab->pv_base;
-        ps_memtab++;
-
-        /*L0 8x8 cur mean for qp mod*/
-        ps_layer0_cur_mean = (ihevce_8x8_L0_mean_t *)ps_memtab->pv_base;
-        ps_memtab++;
-
         /*Contains ctb level information at pre-intra stage */
         ps_ed_ctb_l1 = (ihevce_ed_ctb_l1_t *)ps_memtab->pv_base;
         ps_memtab++;
@@ -2056,8 +2015,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
             ps_pre_enc_bufs->pv_me_ref_idx = (void *)pu1_ref_idx_bank;
             ps_pre_enc_bufs->ps_layer1_buf = ps_layer1_buf;
             ps_pre_enc_bufs->ps_layer2_buf = ps_layer2_buf;
-            ps_pre_enc_bufs->ps_layer0_cur_satd = ps_layer0_cur_satd;
-            ps_pre_enc_bufs->ps_layer0_cur_mean = ps_layer0_cur_mean;
             ps_pre_enc_bufs->ps_ed_ctb_l1 = ps_ed_ctb_l1;
             ps_pre_enc_bufs->plf_intra_8x8_cost = plf_intra_8x8_cost;
 
@@ -2071,7 +2028,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
             ps_ed_ctb_l1 += (a_ctb_align_wd[1] >> 5) * (a_ctb_align_ht[1] >> 5);
             ps_layer1_buf += (a_ctb_align_wd[1] >> 2) * (a_ctb_align_ht[1] >> 2);
             ps_layer2_buf += (a_ctb_align_wd[2] >> 2) * (a_ctb_align_ht[2] >> 2);
-            ps_layer0_cur_satd += (a_ctb_align_wd[0] >> 3) * (a_ctb_align_ht[0] >> 3);
             ps_pre_enc_bufs++;
         }
 
