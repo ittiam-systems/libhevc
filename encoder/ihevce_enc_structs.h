@@ -1211,29 +1211,7 @@ typedef struct
     UWORD16 sad_cost;
 
 } ihevce_ed_mode_attr_t;  //early decision
-/**
-******************************************************************************
- *  @brief  Structure at 8x8 block level which has parameters such as cur satd
- * for QP mod @ L0 level
-******************************************************************************
- */
-typedef struct
-{
-    /*Store SATD of current data at 8*8 level for current layer (L0)*/
-    WORD32 i4_8x8_cur_satd;
-} ihevce_8x8_L0_satd_t;
-/**
-******************************************************************************
- *  @brief  Structure at 8x8 block level mean for MEAN based QP mod
-******************************************************************************
- */
-typedef struct
-{
-    /*Store SATD of current data at 8*8 level for current layer (L0)*/
-    WORD16 i2_8x8_cur_mean;
-} ihevce_8x8_L0_mean_t;
 
-//#define DEBUG_ED_CTB_POS
 /**
 ******************************************************************************
  *  @brief  Structure at 4x4 block level which has parameters about early
@@ -1249,24 +1227,18 @@ typedef struct
      * 2 - eval inter only
      * 3 - eval both intra and inter
      */
-    UWORD8 intra_or_inter : 2;
+    UWORD8 intra_or_inter;
 
-    UWORD8 merge_success : 1;
+    UWORD8 merge_success;
 
     /** Best mode for the current 4x4 prediction block */
     UWORD8 best_mode;
 
-    /* sad cost for the best prediction mode */
-    //UWORD16 best_sad_cost;
-
     /** Best mode for the current 4x4 prediction block */
     UWORD8 best_merge_mode;
 
-    /*Store SATD at 4*4 level for current layer (L1)*/
+    /** Store SATD at 4*4 level for current layer (L1) */
     WORD32 i4_4x4_satd;
-
-    /*Store SATD of current data at 4*4 level for current layer (L1)*/
-    WORD32 i4_4x4_cur_satd;
 
 } ihevce_ed_blk_t;  //early decision
 
@@ -1278,41 +1250,37 @@ typedef struct
     WORD32 i4_sum_4x4_satd[16];
     WORD32 i4_min_4x4_satd[16];
 
-    /*satd for L1_8x8 blocks in L1_32x32
-    16 - num L1_8x8 in L1_32x32
-    2 =>
-        0 - sum of L1_4x4 @ L1_8x8
-          - equivalent to transform size of 16x16 @ L0
-        1 - min/median of L1_4x4 @ L1_8x8
-          - equivalent to transform size of 8x8 @ L0
-    */
+    /* satd for L1_8x8 blocks in L1_32x32
+     * [16] : num L1_8x8 in L1_32x32
+     * [2]  : 0 - sum of L1_4x4 @ L1_8x8
+     *          - equivalent to transform size of 16x16 @ L0
+     *        1 - min/median of L1_4x4 @ L1_8x8
+     *          - equivalent to transform size of 8x8 @ L0
+     */
     WORD32 i4_8x8_satd[16][2];
 
-    /*satd for L1_16x16 blocks in L1_32x32
-    4 - num L1_16x16 in L1_32x32
-    3 =>
-        0 - sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16
-          - equivalent to transform size of 32x32 @ L0
-        1 - min/median of (sum of L1_4x4 @ L1_8x8) @ L1_16x16
-          - equivalent to transform size of 16x16 @ L0
-        2 - min/median of (min/median of L1_4x4 @ L1_8x8) @ L1_16x16
-          - equivalent to transform size of 8x8 @ L0
-    */
+    /* satd for L1_16x16 blocks in L1_32x32
+     * [4] : num L1_16x16 in L1_32x32
+     * [3] : 0 - sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16
+     *         - equivalent to transform size of 32x32 @ L0
+     *       1 - min/median of (sum of L1_4x4 @ L1_8x8) @ L1_16x16
+     *         - equivalent to transform size of 16x16 @ L0
+     *       2 - min/median of (min/median of L1_4x4 @ L1_8x8) @ L1_16x16
+     *         - equivalent to transform size of 8x8 @ L0
+     */
     WORD32 i4_16x16_satd[4][3];
 
-    /*satd for 32x32 block in L1*/
-    /*Please note that i4_32x32_satd[0][3] contains sum of all 32x32 */
-    /*satd for L1_32x32 blocks in L1_32x32
-    1 - num L1_32x32 in L1_32x32
-    4 =>
-        0 - min/median of (sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16) @ L1_32x32
-          - equivalent to transform size of 32x32 @ L0
-        1 - min/median of (sum of L1_4x4 @ L1_8x8) @ L1_32x32
-          - equivalent to transform size of 16x16 @ L0
-        2 - min/median of (min/median of L1_4x4 @ L1_8x8) @ L1_32x32
-          - equivalent to transform size of 8x8 @ L0
-        3 - sum of (sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16) @ L1_32x32
-    */
+    /* Please note that i4_32x32_satd[0][3] contains sum of all 32x32 */
+    /* satd for L1_32x32 blocks in L1_32x32
+     * [1] : num L1_32x32 in L1_32x32
+     * [4] : 0 - min/median of (sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16) @ L1_32x32
+     *         - equivalent to transform size of 32x32 @ L0
+     *       1 - min/median of (sum of L1_4x4 @ L1_8x8) @ L1_32x32
+     *         - equivalent to transform size of 16x16 @ L0
+     *       2 - min/median of (min/median of L1_4x4 @ L1_8x8) @ L1_32x32
+     *         - equivalent to transform size of 8x8 @ L0
+     *       3 - sum of (sum of (sum of L1_4x4 @ L1_8x8) @ L1_16x16) @ L1_32x32
+     */
     WORD32 i4_32x32_satd[1][4];
 
     /*Store SATD at 8x8 level for current layer (L1)*/
@@ -1371,9 +1339,6 @@ typedef struct
      */
     UWORD8 au1_4x4_best_modes[4][MAX_INTRA_CU_CANDIDATES + 1];
 
-    /** best 8x8 intra sad/SATD cost */
-    WORD32 i4_best_intra_cost;
-
     /** flag to indicate if nxn pu mode (different pu at 4x4 level) is enabled */
     UWORD8 b1_enable_nxn : 1;
 
@@ -1404,9 +1369,6 @@ typedef struct
 
     /** 8x8 children intra analyze for this 16x16 */
     intra8_analyse_t as_intra8_analyse[4];
-
-    /* best 16x16 intra sad/SATD cost */
-    WORD32 i4_best_intra_cost;
 
     /* indicates if 16x16 is best cu or 8x8 cu */
     UWORD8 b1_split_flag : 1;
@@ -1445,9 +1407,6 @@ typedef struct
 
     /** 16x16 children intra analyze for this 32x32 */
     intra16_analyse_t as_intra16_analyse[4];
-
-    /* best 32x32 intra sad/SATD cost               */
-    WORD32 i4_best_intra_cost;
 
     /* indicates if 32x32 is best cu or 16x16 cu    */
     UWORD8 b1_split_flag : 1;
@@ -1499,16 +1458,6 @@ typedef struct
 
     /* best 64x64 intra cost */
     WORD32 i4_best64x64_intra_cost;
-
-    /**
-     * CTB level early intra / inter decision at 8x8 block level
-     * 0 - invalid decision
-     * 1 - eval intra only
-     * 2 - eval inter only
-     * 3 - eval both intra and inter
-     */
-    /* Z scan format */
-    WORD8 ai1_early_intra_inter_decision[MAX_CU_IN_CTB];
 
     /*
     @L0 level
@@ -1638,12 +1587,6 @@ typedef struct
 
     /** Buffer pointer for CTB level information in pre intra pass*/
     ihevce_ed_ctb_l1_t *ps_ed_ctb_l1;
-
-    /* L0 cur 8x8 satd for QP mod*/
-    ihevce_8x8_L0_satd_t *ps_layer0_cur_satd;
-
-    /* L0 cur 8x8 mean for QP mod*/
-    ihevce_8x8_L0_mean_t *ps_layer0_cur_mean;
 
     /** vps parameters activated by current slice  */
     sei_params_t s_sei;

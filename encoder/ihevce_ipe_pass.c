@@ -213,10 +213,9 @@ void ihevce_ipe_recompute_lambda_from_min_8x8_act_in_ctb(
     i8_avg_satd = ps_ctxt->i8_curr_frame_32x32_avg_act[2];
 #else
     i4_curr_satd = ps_ed_ctb_l1->i4_32x32_satd[0][3];
-
     ld_avg_satd = 2.0 + ps_ctxt->ld_curr_frame_16x16_log_avg[0];
-
 #endif
+
     if(ps_ctxt->i4_l0ipe_qp_mod)
     {
 #if MODULATE_LAMDA_WHEN_SPATIAL_MOD_ON
@@ -1429,7 +1428,6 @@ void ihevce_populate_ipe_ol_cu_lambda_prms(
 *
 *****************************************************************************
 */
-#define MAX_64BIT_VAL 0x7fffffffffffffff
 void ihevce_populate_ipe_frame_init(
     void *pv_ctxt,
     ihevce_static_cfg_params_t *ps_stat_prms,
