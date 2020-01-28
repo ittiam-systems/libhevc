@@ -559,20 +559,22 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     UWORD8 *pu1_pic_intra_flag;
     /*************************************************************************/
     /* Contanis scaling matrix offset in the following order in a 1D buffer  */
+    /* Entries that are listed as UNUSED are invalid combinations where      */
+    /* scaling matrix is not used. eg: 64x64 SKIP CU, 64x64 PCM CU           */
     /* Intra 4 x 4 Y, 4 x 4 U, 4 x 4 V                                       */
     /* Inter 4 x 4 Y, 4 x 4 U, 4 x 4 V                                       */
     /* Intra 8 x 8 Y, 8 x 8 U, 8 x 8 V                                       */
     /* Inter 8 x 8 Y, 8 x 8 U, 8 x 8 V                                       */
     /* Intra 16x16 Y, 16x16 U, 16x16 V                                       */
     /* Inter 16x16 Y, 16x16 U, 16x16 V                                       */
-    /* Intra 32x32 Y                                                         */
-    /* Inter 32x32 Y                                                         */
+    /* Intra 32x32 Y, UNUSED,  UNUSED                                        */
+    /* Inter 32x32 Y, UNUSED,  UNUSED                                        */
+    /* UNUSED,        UNUSED,  UNUSED                                        */
+    /* UNUSED,        UNUSED,  UNUSED                                        */
     /*************************************************************************/
-    /* Only first 20 entries are used. Array is extended to avoid out of bound
-       reads. Skip CUs (64x64) read this table, but don't really use the value */
     static const WORD32 scaling_mat_offset[] =
       { 0, 16, 32, 48, 64, 80, 96, 160, 224, 288, 352, 416, 480, 736, 992,
-        1248, 1504, 1760, 2016, 3040, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        1248, 1504, 1760, 2016, 0, 0, 3040, 0, 0, 0, 0, 0, 0, 0, 0};
 
     PROFILE_DISABLE_IQ_IT_RECON_INTRA_PRED();
 
@@ -806,10 +808,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                     /* Calculating scaling matrix offset */
                     offset = log2_y_trans_size_minus_2 * 6
-                                    + (!intra_flag)
-                                    * ((log2_y_trans_size_minus_2
-                                                    == 3) ? 1 : 3)
-                                    + c_idx;
+                                    + (!intra_flag) * 3 + c_idx;
                     pi2_dequant_matrix = pi2_scaling_mat
                                     + scaling_mat_offset[offset];
 
