@@ -542,6 +542,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     WORD16 *pi2_tmp;
     WORD32 pic_strd;
     WORD32 luma_nbr_flags;
+    WORD32 luma_nbr_flags_4x4[4] = { 0 };
     WORD32 chroma_nbr_flags = 0;
     UWORD8 u1_luma_pred_mode_first_tu = 0;
     /* Pointers for generating 2d coeffs from coeff-map */
@@ -678,7 +679,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
         WORD32 tu_y_offset, tu_uv_offset;
         WORD8 i1_chroma_pic_qp_offset, i1_chroma_slice_qp_offset;
         UWORD8 u1_cbf = 0, u1_cbf_v = 0, u1_luma_pred_mode, u1_chroma_pred_mode;
-        WORD32 luma_nbr_flags_4x4[4];
         WORD32 offset;
         WORD32 pcm_flag;
         WORD32  chroma_yuv420sp_vu = (ps_codec->e_ref_chroma_fmt == IV_YUV_420SP_VU);
