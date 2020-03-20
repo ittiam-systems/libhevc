@@ -141,6 +141,8 @@ extern UWORD8 gau1_num_parts_in_part_type[MAX_PART_TYPES];
 /* Constant Macros                                                           */
 /*****************************************************************************/
 #define UPDATE_QP_AT_CTB 6
+#define INTRAPRED_SIMD_LEFT_PADDING 16
+#define INTRAPRED_SIMD_RIGHT_PADDING 8
 
 /*****************************************************************************/
 /* Function Definitions                                                      */
@@ -3731,8 +3733,12 @@ WORD32 ihevce_enc_loop_get_mem_recs(
     ps_mem_tab[ENC_LOOP_CHROMA_PRED_INTRA].i4_mem_alignment = 8;
 
     /* Memory required to store pred for reference substitution output */
+    /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actual size needed,
+       allocate 16 bytes to the left and 7 bytes to the right to facilitate
+       SIMD access */
     ps_mem_tab[ENC_LOOP_REF_SUB_OUT].i4_mem_size =
-        i4_num_proc_thrds * ((MAX_TU_SIZE * 2 * 2) + 4) *
+        i4_num_proc_thrds * (((MAX_TU_SIZE * 2 * 2) + INTRAPRED_SIMD_RIGHT_PADDING)
+        + INTRAPRED_SIMD_LEFT_PADDING)*
         ((ps_init_prms->s_tgt_lyr_prms.i4_internal_bit_depth > 8) ? 2 : 1) * sizeof(UWORD8);
 
     ps_mem_tab[ENC_LOOP_REF_SUB_OUT].e_mem_type = (IV_MEM_TYPE_T)i4_mem_space;
@@ -3740,8 +3746,12 @@ WORD32 ihevce_enc_loop_get_mem_recs(
     ps_mem_tab[ENC_LOOP_REF_SUB_OUT].i4_mem_alignment = 8;
 
     /* Memory required to store pred for reference filtering output */
+    /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actual size needed,
+       allocate 16 bytes to the left and 7 bytes to the right to facilitate
+       SIMD access */
     ps_mem_tab[ENC_LOOP_REF_FILT_OUT].i4_mem_size =
-        i4_num_proc_thrds * ((MAX_TU_SIZE * 2 * 2) + 4) *
+        i4_num_proc_thrds * (((MAX_TU_SIZE * 2 * 2) + INTRAPRED_SIMD_RIGHT_PADDING)
+        + INTRAPRED_SIMD_LEFT_PADDING)*
         ((ps_init_prms->s_tgt_lyr_prms.i4_internal_bit_depth > 8) ? 2 : 1) * sizeof(UWORD8);
 
     ps_mem_tab[ENC_LOOP_REF_FILT_OUT].e_mem_type = (IV_MEM_TYPE_T)i4_mem_space;
@@ -4670,22 +4680,24 @@ void *ihevce_enc_loop_init(
 
             /* Memory assignments for reference substitution output */
             {
-                WORD32 pred_buf_size = ((MAX_TU_SIZE * 2 * 2) + 4);
+                WORD32 pred_buf_size = ((MAX_TU_SIZE * 2 * 2) + INTRAPRED_SIMD_RIGHT_PADDING
+                                       + INTRAPRED_SIMD_LEFT_PADDING);
                 WORD32 pred_buf_size_per_thread = pred_buf_size;
                 UWORD8 *pu1_base = (UWORD8 *)ps_mem_tab[ENC_LOOP_REF_SUB_OUT].pv_base +
                                    (ctr * pred_buf_size_per_thread);
 
-                ps_ctxt->pv_ref_sub_out = pu1_base;
+                ps_ctxt->pv_ref_sub_out = pu1_base + INTRAPRED_SIMD_LEFT_PADDING;
             }
 
             /* Memory assignments for reference filtering output */
             {
-                WORD32 pred_buf_size = ((MAX_TU_SIZE * 2 * 2) + 4);
+                WORD32 pred_buf_size = ((MAX_TU_SIZE * 2 * 2) + INTRAPRED_SIMD_RIGHT_PADDING
+                                       + INTRAPRED_SIMD_LEFT_PADDING);
                 WORD32 pred_buf_size_per_thread = pred_buf_size;
                 UWORD8 *pu1_base = (UWORD8 *)ps_mem_tab[ENC_LOOP_REF_FILT_OUT].pv_base +
                                    (ctr * pred_buf_size_per_thread);
 
-                ps_ctxt->pv_ref_filt_out = pu1_base;
+                ps_ctxt->pv_ref_filt_out = pu1_base + INTRAPRED_SIMD_LEFT_PADDING;
             }
 
             /* Memory assignments for recon storage during CU Recursion */
