@@ -946,7 +946,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actaul size needed,
                        au1_ref_sub_out size is kept as multiple of 8,
                        so that SIMD functions can load 64 bits */
-                    UWORD8 au1_ref_sub_out[(MAX_TU_SIZE * 2 * 2) + 8];
+                    UWORD8 au1_ref_sub_out[(MAX_TU_SIZE * 2 * 2) + 8] = {0};
                     UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
                     WORD32 luma_pred_func_idx, chroma_pred_func_idx;
 
