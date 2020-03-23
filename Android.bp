@@ -386,6 +386,7 @@ cc_test {
         "-Wall",
         "-Werror",
     ],
+    gtest: false,
     srcs: ["test/decoder/main.c"],
     static_libs: ["libhevcdec"],
     target: {
@@ -755,6 +756,7 @@ cc_test {
         "-Wall",
         "-Werror",
     ],
+    gtest: false,
     srcs: ["test/encoder/main.c"],
     static_libs: ["libhevcenc"],
     sanitize: {
