@@ -325,6 +325,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
     {
         BITS_PARSE("dependent_slice_flag", value, ps_bitstrm, 1);
 
+        /* First slice to be decoded in the current picture can't be dependent slice */
+        if (value && 0 == ps_codec->i4_pic_present)
+        {
+             return IHEVCD_IGNORE_SLICE;
+        }
+
         /* If dependendent slice, copy slice header from previous slice */
         if(value && (ps_codec->s_parse.i4_cur_slice_idx > 0))
         {
@@ -471,7 +477,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                     ps_slice_hdr->i1_num_long_term_sps = value;
                 }
                 UEV_PARSE("num_long_term_pics", value, ps_bitstrm);
-                if((value + ps_slice_hdr->i1_num_long_term_sps + num_neg_pics + num_pos_pics) > (MAX_DPB_SIZE - 1))
+                if(((ULWORD64)value + ps_slice_hdr->i1_num_long_term_sps + num_neg_pics +
+                    num_pos_pics) > (MAX_DPB_SIZE - 1))
                 {
                     return IHEVCD_INVALID_PARAMETER;
                 }
@@ -487,6 +494,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                         {
                             WORD32 num_bits = 32 - CLZ(ps_sps->i1_num_long_term_ref_pics_sps - 1);
                             BITS_PARSE("lt_idx_sps[ i ]", value, ps_bitstrm, num_bits);
+                            if(value >= ps_sps->i1_num_long_term_ref_pics_sps)
+                            {
+                                return IHEVCD_INVALID_PARAMETER;
+                            }
                         }
                         else
                         {
