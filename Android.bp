@@ -373,6 +373,12 @@ cc_library_static {
         // cfi: true,
         blacklist: "libhevc_blacklist.txt",
     },
+
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.media.swcodec",
+    ],
+    min_sdk_version: "29",
 }
 
 cc_test {
@@ -623,7 +629,9 @@ cc_library_static {
             ],
 
             cflags: [
-                "-DENABLE_NEON", "-DARMV8", "-DARM",
+                "-DENABLE_NEON",
+                "-DARMV8",
+                "-DARM",
             ],
         },
 
@@ -720,7 +728,8 @@ cc_library_static {
                 ],
 
                 cflags: [
-                    "-DENABLE_NEON", "-DARM",
+                    "-DENABLE_NEON",
+                    "-DARM",
                 ],
             },
         },
@@ -735,7 +744,7 @@ cc_library_static {
             local_include_dirs: [
                 "common/x86",
             ],
-        }
+        },
 
     },
     sanitize: {
@@ -745,6 +754,12 @@ cc_library_static {
         // cfi: true,
         blacklist: "libhevc_blacklist.txt",
     },
+
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.media.swcodec",
+    ],
+    min_sdk_version: "29",
 }
 
 cc_test {
