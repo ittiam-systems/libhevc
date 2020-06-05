@@ -2076,6 +2076,10 @@ ihevce_lap_enc_buf_t *ihevce_lap_process(void *pv_interface_ctxt, ihevce_lap_enc
                 ps_lap_interface->ihevce_dyn_bitrate_cb(
                     (void *)ps_hle_ctxt, (void *)&as_dyn_br[bitrt_ctr]);
             }
+
+            /* release async ctrl buffer*/
+            ihevce_q_rel_buf(
+                ps_hle_ctxt->apv_enc_hdl[0], IHEVCE_INPUT_ASYNCH_CTRL_Q, ps_ctrl_buf->i4_buf_id);
         }
 
         {
