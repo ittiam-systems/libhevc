@@ -371,7 +371,7 @@ cc_library_static {
         misc_undefined: ["bounds"],
         // Enable CFI if this becomes a shared library.
         // cfi: true,
-        blacklist: "libhevc_blacklist.txt",
+        blocklist: "libhevc_blocklist.txt",
     },
 
     apex_available: [
@@ -752,7 +752,7 @@ cc_library_static {
         misc_undefined: ["bounds"],
         // Enable CFI if this becomes a shared library.
         // cfi: true,
-        blacklist: "libhevc_blacklist.txt",
+        blocklist: "libhevc_blocklist.txt",
     },
 
     apex_available: [
