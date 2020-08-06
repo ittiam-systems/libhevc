@@ -1,2 +1,4 @@
+# owners for external/libhevc
+include platform/frameworks/av:/media/janitors/OWNERS-codecs
 marcone@google.com
 essick@google.com
