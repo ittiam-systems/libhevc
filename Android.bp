@@ -752,10 +752,6 @@ cc_library_static {
         misc_undefined: ["bounds"],
         // Enable CFI if this becomes a shared library.
         // cfi: true,
-        diag: {
-            integer_overflow: true,
-            misc_undefined: ["bounds"],
-        },
         blocklist: "libhevc_blocklist.txt",
     },
 
@@ -781,9 +777,5 @@ cc_test {
     sanitize: {
         integer_overflow: true,
         misc_undefined: ["bounds"],
-        diag: {
-            integer_overflow: true,
-            misc_undefined: ["bounds"],
-        },
     },
 }
