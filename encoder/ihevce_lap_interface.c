@@ -1710,7 +1710,7 @@ void ihevce_pre_rel_lapout_update(lap_struct_t *ps_lap_struct, ihevce_lap_enc_bu
     }
 
     ps_lap_struct->pv_prev_inp_buf = (void *)ps_lap_out_buf;
-    ps_lap_out_buf->s_lap_out.i4_is_prev_pic_in_Tid0_same_scene = 0;
+    ps_lap_out_buf->s_lap_out.i4_is_prev_pic_in_Tid0_same_scene = 1;
 
     /*with force idr below check is not valid*/
 #if(!FORCE_IDR_TEST)
