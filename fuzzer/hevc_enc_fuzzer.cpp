@@ -150,13 +150,13 @@ void Codec::encodeFrames(const uint8_t *data, size_t size) {
     ihevce_out_buf_t sHeaderOp{};
     ihevce_encode_header(mCodecCtx, &sHeaderOp);
     size_t frameNumber = 0;
+    uint8_t *tmpData = new uint8_t[frameSize];
     while (size > 0) {
         ihevce_inp_buf_t sEncodeIp{};
         ihevce_out_buf_t sEncodeOp{};
-        uint8_t tmpData[frameSize];
         size_t bytesConsumed = std::min(size, frameSize);
         if (bytesConsumed < frameSize) {
-            memset(&tmpData[bytesConsumed], data[0], sizeof(tmpData) - bytesConsumed);
+            memset(&tmpData[bytesConsumed], data[0], frameSize - bytesConsumed);
         }
         memcpy(tmpData, data, bytesConsumed);
         int32_t yStride = mWidth;
@@ -194,6 +194,7 @@ void Codec::encodeFrames(const uint8_t *data, size_t size) {
         data += bytesConsumed;
         size -= bytesConsumed;
     }
+    delete[] tmpData;
 }
 
 void Codec::deInitEncoder() {
