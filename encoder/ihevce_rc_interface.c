@@ -4944,9 +4944,10 @@ void ihevce_rc_store_retrive_update_info(
             }
             else
             {
-                if(ps_rc_lap_out_curr->i4_rc_display_num &&
-                   (ps_rc_lap_out_curr->i4_rc_display_num %
-                    (ps_rc_ctxt->u4_intra_frame_interval - 1)) == 0)
+                if(ps_rc_ctxt->u4_intra_frame_interval <= 1 ||
+                   (ps_rc_lap_out_curr->i4_rc_display_num &&
+                    (ps_rc_lap_out_curr->i4_rc_display_num %
+                     (ps_rc_ctxt->u4_intra_frame_interval - 1)) == 0))
                 {
                     ps_rc_ctxt->as_rc_lap_out[i4_enc_frm_id_rc].i4_next_pic_type = IV_I_FRAME;
                 }
