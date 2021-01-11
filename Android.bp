@@ -368,23 +368,11 @@ cc_library_static {
         },
     },
 
-    target: {
-        android: {
-            sanitize: {
-                diag: {
-                    cfi: true,
-                },
-            },
-        },
-    },
-
     sanitize: {
         integer_overflow: true,
         misc_undefined: ["bounds"],
-        cfi: true,
-        config: {
-            cfi_assembly_support: true,
-        },
+        // Enable CFI if this becomes a shared library.
+        // cfi: true,
         blocklist: "libhevc_blocklist.txt",
     },
 
@@ -761,24 +749,11 @@ cc_library_static {
         },
 
     },
-
-    target: {
-        android: {
-            sanitize: {
-                diag: {
-                    cfi: true,
-                },
-            },
-        },
-    },
-
     sanitize: {
         integer_overflow: true,
         misc_undefined: ["bounds"],
-        cfi: true,
-        config: {
-            cfi_assembly_support: true,
-        },
+        // Enable CFI if this becomes a shared library.
+        // cfi: true,
         blocklist: "libhevc_blocklist.txt",
     },
 
