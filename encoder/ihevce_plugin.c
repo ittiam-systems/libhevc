@@ -735,6 +735,13 @@ IHEVCE_PLUGIN_STATUS_T ihevce_init(ihevce_static_cfg_params_t *ps_params, void *
             MIN(MAX_NUM_FRM_IN_GOP,
                 ps_ctxt->ps_static_cfg_prms->s_coding_tools_prms.i4_max_i_open_gop_period);
 
+        /* entropy sync is disabled if there is only one CTB row */
+        if(ps_ctxt->ps_static_cfg_prms->s_src_prms.i4_height <=
+            (1 << ps_ctxt->ps_static_cfg_prms->s_config_prms.i4_max_log2_cu_size))
+        {
+            ps_ctxt->ps_static_cfg_prms->s_coding_tools_prms.i4_enable_entropy_sync = 0;
+        }
+
         /* --------------------------------------------------------------------- */
         /*            High Level Encoder context init                            */
         /* --------------------------------------------------------------------- */
