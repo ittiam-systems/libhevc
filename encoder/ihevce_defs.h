@@ -967,13 +967,6 @@ typedef enum
 
 } REF_LISTS_t;
 
-typedef enum
-{
-    NULL_PLANE = -1,
-    U_PLANE = 0,
-    V_PLANE = 1
-} CHROMA_PLANE_ID_T;
-
 typedef enum SSD_TYPE_T
 {
     NULL_TYPE = -1,
