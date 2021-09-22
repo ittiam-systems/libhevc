@@ -1191,13 +1191,14 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
                    g_as_level_data[codec_level_index]
                            .i4_max_bit_rate[ps_static_cfg_prms->s_out_strm_prms.i4_codec_tier] *
                        CBP_VCL_FACTOR ||
-               tgt_bitrate < 4000)
+               tgt_bitrate < MIN_BITRATE)
             {
                 error_code = IHEVCE_BITRATE_NOT_SUPPORTED;
                 ps_sys_api->ihevce_printf(
                     pv_cb_handle,
-                    "IHEVCE ERROR: i4_tgt_bitrate out of range for resoltuion number %d bitrate "
+                    "IHEVCE ERROR: i4_tgt_bitrate %d out of range for resolution number %d bitrate "
                     "number %d\n",
+                    tgt_bitrate,
                     i4_resolution_id,
                     br_ctr);
                 return (IHEVCE_SETUNSUPPORTEDINPUT(error_code));
