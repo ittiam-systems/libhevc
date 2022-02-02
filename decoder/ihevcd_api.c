@@ -438,6 +438,16 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                 return (IV_FAIL);
             }
 
+            if(((codec_t *)(ps_handle->pv_codec_handle))->u1_enable_cu_info
+                            && !ps_ip->pu1_8x8_blk_qp_map && !ps_ip->pu1_8x8_blk_type_map)
+            {
+                ps_op->s_ivd_video_decode_op_t.u4_error_code |= 1
+                                << IVD_UNSUPPORTEDPARAM;
+                ps_op->s_ivd_video_decode_op_t.u4_error_code |=
+                                IHEVCD_FRAME_INFO_OP_BUF_NULL;
+                return (IV_FAIL);
+            }
+
         }
             break;
 
@@ -1196,6 +1206,11 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
         ps_codec->i4_share_disp_buf = 0;
     }
 
+    if (ps_create_ip->s_ivd_create_ip_t.u4_size == sizeof(ihevcd_cxa_create_ip_t))
+    {
+        ps_codec->u1_enable_cu_info = ps_create_ip->u4_enable_frame_info;
+    }
+
     ps_codec->e_chroma_fmt = ps_create_ip->s_ivd_create_ip_t.e_output_format;
 
     ps_codec->pf_aligned_alloc = pf_aligned_alloc;
@@ -1906,7 +1921,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         qp_const_flag_size /= 8;
 
         /* QP changes at CU level - So store at 8x8 level */
-        num_8x8 = (ht * wd) / (MIN_CU_SIZE * MIN_CU_SIZE);
+        num_8x8 = (wd * ht) / (MIN_CU_SIZE * MIN_CU_SIZE);
         qp_size = num_8x8;
 
         /* To hold vertical boundary strength */
@@ -2018,6 +2033,22 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     RETURN_IF((NULL == pv_buf), IV_FAIL);
     memset(pv_buf, 0, size);
     ps_codec->pv_tu_data = pv_buf;
+
+    /* CU info map to store qp and CU type at 8x8 level */
+    if(ps_codec->u1_enable_cu_info)
+    {
+        size = ((wd * ht) / (MIN_CU_SIZE * MIN_CU_SIZE)) * BUF_MGR_MAX_CNT;
+
+        pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
+        RETURN_IF((NULL == pv_buf), IV_FAIL);
+        memset(pv_buf, 0, size);
+        ps_codec->pu1_qp_map_base = pv_buf;
+
+        pv_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
+        RETURN_IF((NULL == pv_buf), IV_FAIL);
+        memset(pv_buf, 0, size);
+        ps_codec->pu1_cu_type_map_base = pv_buf;
+    }
 
     {
         sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
@@ -2141,6 +2172,11 @@ WORD32 ihevcd_free_dynamic_bufs(codec_t *ps_codec)
     ALIGNED_FREE(ps_codec, ps_codec->pv_mv_bank_buf_base);
     ALIGNED_FREE(ps_codec, ps_codec->pu1_ref_pic_buf_base);
     ALIGNED_FREE(ps_codec, ps_codec->pu1_cur_chroma_ref_buf);
+    if(ps_codec->u1_enable_cu_info)
+    {
+        ALIGNED_FREE(ps_codec, ps_codec->pu1_qp_map_base);
+        ALIGNED_FREE(ps_codec, ps_codec->pu1_cu_type_map_base);
+    }
 
     ps_codec->u4_allocate_dynamic_done = 0;
     return IV_SUCCESS;
