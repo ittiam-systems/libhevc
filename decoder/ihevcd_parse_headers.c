@@ -168,6 +168,11 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
     if(ps_sps->i1_chroma_format_idc != 0)
     {
         SEV_PARSE("delta_chroma_log2_weight_denom", value, ps_bitstrm);
+        if((value < -7) || (value > 7))
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
+
         if(((ps_wt_ofst->i1_luma_log2_weight_denom + value) < 0) ||
                 ((ps_wt_ofst->i1_luma_log2_weight_denom + value) > 7))
         {
