@@ -417,8 +417,7 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
             if(ps_ip->s_ivd_video_decode_ip_t.u4_size
                             != sizeof(ihevcd_cxa_video_decode_ip_t)
                             && ps_ip->s_ivd_video_decode_ip_t.u4_size
-                                            != offsetof(ivd_video_decode_ip_t,
-                                                        s_out_buffer))
+                                            != sizeof(ivd_video_decode_ip_t))
             {
                 ps_op->s_ivd_video_decode_op_t.u4_error_code |= 1
                                 << IVD_UNSUPPORTEDPARAM;
@@ -430,8 +429,7 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
             if(ps_op->s_ivd_video_decode_op_t.u4_size
                             != sizeof(ihevcd_cxa_video_decode_op_t)
                             && ps_op->s_ivd_video_decode_op_t.u4_size
-                                            != offsetof(ivd_video_decode_op_t,
-                                                        u4_output_present))
+                                            != sizeof(ivd_video_decode_op_t))
             {
                 ps_op->s_ivd_video_decode_op_t.u4_error_code |= 1
                                 << IVD_UNSUPPORTEDPARAM;
@@ -494,7 +492,9 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                     ps_op = (ihevcd_cxa_ctl_set_config_op_t *)pv_api_op;
 
                     if(ps_ip->s_ivd_ctl_set_config_ip_t.u4_size
-                                    != sizeof(ihevcd_cxa_ctl_set_config_ip_t))
+                                    != sizeof(ihevcd_cxa_ctl_set_config_ip_t) &&
+                                    ps_ip->s_ivd_ctl_set_config_ip_t.u4_size
+                                                != sizeof(ivd_ctl_set_config_ip_t))
                     {
                         ps_op->s_ivd_ctl_set_config_op_t.u4_error_code |= 1
                                         << IVD_UNSUPPORTEDPARAM;
