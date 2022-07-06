@@ -183,9 +183,19 @@ static UWORD32 ihevcd_map_error(IHEVCD_ERROR_T e_error)
  *******************************************************************************
  */
 static void ihevcd_fill_outargs(codec_t *ps_codec,
-                                ivd_video_decode_ip_t *ps_dec_ip,
-                                ivd_video_decode_op_t *ps_dec_op)
+                                void *pv_api_ip,
+                                void *pv_api_op)
 {
+
+    ihevcd_cxa_video_decode_ip_t *ps_hevcd_dec_ip;
+    ihevcd_cxa_video_decode_op_t *ps_hevcd_dec_op;
+    ivd_video_decode_ip_t *ps_dec_ip;
+    ivd_video_decode_op_t *ps_dec_op;
+
+    ps_hevcd_dec_ip = (ihevcd_cxa_video_decode_ip_t *)pv_api_ip;
+    ps_hevcd_dec_op = (ihevcd_cxa_video_decode_op_t *)pv_api_op;
+    ps_dec_ip = &ps_hevcd_dec_ip->s_ivd_video_decode_ip_t;
+    ps_dec_op = &ps_hevcd_dec_op->s_ivd_video_decode_op_t;
 
     ps_dec_op->u4_error_code = ihevcd_map_error((IHEVCD_ERROR_T)ps_codec->i4_error_code);
     ps_dec_op->u4_num_bytes_consumed = ps_dec_ip->u4_num_Bytes
@@ -387,6 +397,9 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 {
     WORD32 ret = IV_SUCCESS;
     codec_t *ps_codec = (codec_t *)(ps_codec_obj->pv_codec_handle);
+    ihevcd_cxa_video_decode_ip_t s_hevcd_dec_ip = {};
+    ihevcd_cxa_video_decode_ip_t *ps_hevcd_dec_ip;
+    ihevcd_cxa_video_decode_op_t *ps_hevcd_dec_op;
     ivd_video_decode_ip_t *ps_dec_ip;
     ivd_video_decode_op_t *ps_dec_op;
 
@@ -399,11 +412,18 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
     ps_codec->i4_bytes_remaining = 0;
 
     ps_dec_ip = (ivd_video_decode_ip_t *)pv_api_ip;
-    ps_dec_op = (ivd_video_decode_op_t *)pv_api_op;
+    memcpy(&s_hevcd_dec_ip, ps_dec_ip, ps_dec_ip->u4_size);
+    s_hevcd_dec_ip.s_ivd_video_decode_ip_t.u4_size = sizeof(ihevcd_cxa_video_decode_ip_t);
+
+    ps_hevcd_dec_ip = &s_hevcd_dec_ip;
+    ps_dec_ip = &ps_hevcd_dec_ip->s_ivd_video_decode_ip_t;
+
+    ps_hevcd_dec_op = (ihevcd_cxa_video_decode_op_t *)pv_api_op;
+    ps_dec_op = &ps_hevcd_dec_op->s_ivd_video_decode_op_t;
 
     {
         UWORD32 u4_size = ps_dec_op->u4_size;
-        memset(ps_dec_op, 0, sizeof(ivd_video_decode_op_t));
+        memset(ps_hevcd_dec_op, 0, u4_size);
         ps_dec_op->u4_size = u4_size; //Restore size field
     }
     if(ps_codec->i4_init_done != 1)
@@ -532,7 +552,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
                                   ps_codec->i4_disp_buf_id, BUF_MGR_DISP);
         }
 
-        ihevcd_fill_outargs(ps_codec, ps_dec_ip, ps_dec_op);
+        ihevcd_fill_outargs(ps_codec, ps_hevcd_dec_ip, ps_hevcd_dec_op);
 
         if(1 == ps_dec_op->u4_output_present)
         {
@@ -936,7 +956,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         /* Increment the number of pictures decoded */
         ps_codec->u4_pic_cnt++;
     }
-    ihevcd_fill_outargs(ps_codec, ps_dec_ip, ps_dec_op);
+    ihevcd_fill_outargs(ps_codec, ps_hevcd_dec_ip, ps_hevcd_dec_op);
 
     if(1 == ps_dec_op->u4_output_present)
     {
