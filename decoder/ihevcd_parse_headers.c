@@ -1943,6 +1943,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
         ps_codec->i4_wd = ps_sps->i2_pic_width_in_luma_samples;
         ps_codec->i4_ht = ps_sps->i2_pic_height_in_luma_samples;
+        ps_codec->u4_num_8x8_blks = ALIGN64(ps_codec->i4_wd) * ALIGN64(ps_codec->i4_ht) >> 6;
 
         {
             WORD32 ref_strd;

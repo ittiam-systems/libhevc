@@ -363,6 +363,47 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         ps_codec->i4_flush_mode = 0;
     }
 
+    if(ps_codec->u1_enable_cu_info && ps_dec_op->u4_output_present)
+    {
+        WORD32 info_map_dst_strd = ALIGN8(ps_codec->i4_wd) >> 3;
+        WORD32 info_map_src_strd = ALIGN64(ps_codec->i4_wd) >> 3;
+        WORD32 info_map_ht = ALIGN8(ps_codec->i4_ht);
+        UWORD32 info_map_size = (ALIGN8(ps_codec->i4_wd) * info_map_ht) >> 6;
+        WORD32 vert_8x8;
+        UWORD8 *pu1_out_qp_map, *pu1_qp_map;
+        UWORD8 *pu1_out_blk_type_map, *pu1_type_map;
+
+        if(ps_hevcd_dec_ip->pu1_8x8_blk_qp_map)
+        {
+            ps_hevcd_dec_op->pu1_8x8_blk_qp_map = ps_hevcd_dec_ip->pu1_8x8_blk_qp_map;
+            ps_hevcd_dec_op->u4_8x8_blk_qp_map_size = info_map_size;
+
+            pu1_out_qp_map = ps_hevcd_dec_op->pu1_8x8_blk_qp_map;
+            pu1_qp_map = ps_codec->as_buf_id_info_map[ps_codec->i4_disp_buf_id].pu1_qp_map;
+            for(vert_8x8 = 0; vert_8x8 < info_map_ht; vert_8x8++)
+            {
+                memcpy(pu1_out_qp_map, pu1_qp_map, info_map_dst_strd);
+                pu1_out_qp_map += info_map_dst_strd;
+                pu1_qp_map += info_map_src_strd;
+            }
+        }
+
+        if(ps_hevcd_dec_ip->pu1_8x8_blk_type_map)
+        {
+            ps_hevcd_dec_op->pu1_8x8_blk_type_map = ps_hevcd_dec_ip->pu1_8x8_blk_type_map;
+            ps_hevcd_dec_op->u4_8x8_blk_type_map_size = info_map_size;
+
+            pu1_out_blk_type_map = ps_hevcd_dec_op->pu1_8x8_blk_type_map;
+            pu1_type_map =
+                ps_codec->as_buf_id_info_map[ps_codec->i4_disp_buf_id].pu1_cu_type_map;
+            for(vert_8x8 = 0; vert_8x8 < info_map_ht; vert_8x8++)
+            {
+                memcpy(pu1_out_blk_type_map, pu1_type_map, info_map_dst_strd);
+                pu1_out_blk_type_map += info_map_dst_strd;
+                pu1_type_map += info_map_src_strd;
+            }
+        }
+    }
 }
 
 /**
@@ -439,6 +480,21 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         ps_dec_op->u4_error_code |= IHEVCD_NUM_FRAMES_LIMIT_REACHED;
         return IV_FAIL;
     }
+
+    if(ps_codec->u1_enable_cu_info && ps_codec->i4_sps_done)
+    {
+        UWORD32 blk_qp_map_size = ps_hevcd_dec_ip->u4_8x8_blk_qp_map_size;
+        UWORD32 blk_type_map_size = ps_hevcd_dec_ip->u4_8x8_blk_type_map_size;
+        UWORD32 blk_8x8_map_size = (ALIGN8(ps_codec->i4_wd) * ALIGN8(ps_codec->i4_ht)) >> 6;
+
+        if ((ps_hevcd_dec_ip->pu1_8x8_blk_qp_map && blk_qp_map_size < blk_8x8_map_size) ||
+            (ps_hevcd_dec_ip->pu1_8x8_blk_type_map && blk_type_map_size < blk_8x8_map_size))
+        {
+            ps_dec_op->u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
+            ps_dec_op->u4_error_code |= IHEVCD_INSUFFICIENT_METADATA_BUFFER;
+            return IV_FAIL;
+        }
+     }
 
     /* If reset flag is set, flush the existing buffers */
     if(ps_codec->i4_reset_flag)
