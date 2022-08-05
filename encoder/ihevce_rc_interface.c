@@ -1785,7 +1785,7 @@ WORD32 ihevce_get_L0_est_satd_based_scd_qp(
 WORD32 ihevce_rc_pre_enc_qp_query(
     void *pv_rc_ctxt, rc_lap_out_params_t *ps_rc_lap_out, WORD32 i4_update_delay)
 {
-    WORD32 scene_type, i4_is_scd = 0, i4_frame_qp, slice_type;
+    WORD32 scene_type, i4_is_scd = 0, i4_frame_qp, slice_type = ISLICE;
     rc_context_t *ps_rc_ctxt = (rc_context_t *)pv_rc_ctxt;
     rc_type_e e_rc_type = ps_rc_ctxt->e_rate_control_type;
     IV_PICTURE_CODING_TYPE_T pic_type = (IV_PICTURE_CODING_TYPE_T)ps_rc_lap_out->i4_rc_pic_type;
@@ -1853,6 +1853,11 @@ WORD32 ihevce_rc_pre_enc_qp_query(
         case IV_B_FRAME:
         {
             slice_type = BSLICE;
+            break;
+        }
+        default:
+        {
+            DBG_PRINTF("Invalid picture type %d\n", pic_type);
             break;
         }
         }
@@ -2086,7 +2091,7 @@ WORD32 ihevce_rc_get_pic_quant(
     WORD32 i4_frame_qp, i4_frame_qp_q6, i4_hevc_frame_qp = -1, i4_deltaQP = 0;
     WORD32 i4_max_frame_bits = (1 << 30);
     rc_type_e e_rc_type = ps_rc_ctxt->e_rate_control_type;
-    WORD32 slice_type, index, i4_num_frames_in_cur_gop, i4_cur_est_texture_bits;
+    WORD32 slice_type = ISLICE, index, i4_num_frames_in_cur_gop, i4_cur_est_texture_bits;
     WORD32 temporal_layer_id = ps_rc_lap_out->i4_rc_temporal_lyr_id;
     IV_PICTURE_CODING_TYPE_T pic_type = (IV_PICTURE_CODING_TYPE_T)ps_rc_lap_out->i4_rc_pic_type;
     picture_type_e rc_pic_type = ihevce_rc_conv_pic_type(
@@ -2138,6 +2143,11 @@ WORD32 ihevce_rc_get_pic_quant(
         case IV_B_FRAME:
         {
             slice_type = BSLICE;
+            break;
+        }
+        default:
+        {
+            DBG_PRINTF("Invalid picture type %d\n", pic_type);
             break;
         }
         }
