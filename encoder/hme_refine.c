@@ -5129,7 +5129,7 @@ void hme_populate_cu_tree(
 
 #if ENABLE_CU_TREE_CULLING
         {
-            cur_ctb_cu_tree_t *ps_32x32_root;
+            cur_ctb_cu_tree_t *ps_32x32_root = NULL;
 
             switch(e_parent_blk_pos)
             {
@@ -5155,6 +5155,11 @@ void hme_populate_cu_tree(
             {
                 ps_32x32_root = ps_ctb_cluster_info->ps_cu_tree_root->ps_child_node_br;
 
+                break;
+            }
+            default:
+            {
+                DBG_PRINTF("Invalid block position %d\n", e_parent_blk_pos);
                 break;
             }
             }
@@ -5249,6 +5254,11 @@ void hme_populate_cu_tree(
 
                 break;
             }
+            default:
+            {
+                DBG_PRINTF("Invalid block position %d\n", e_grandparent_blk_pos);
+                break;
+            }
             }
 
             switch(e_parent_blk_pos)
@@ -5275,6 +5285,11 @@ void hme_populate_cu_tree(
             {
                 ps_16x16_root = ps_32x32_root->ps_child_node_br;
 
+                break;
+            }
+            default:
+            {
+                DBG_PRINTF("Invalid block position %d\n", e_parent_blk_pos);
                 break;
             }
             }

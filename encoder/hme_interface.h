@@ -158,8 +158,7 @@ typedef enum
     ME_MEDIUM_SPEED,
     ME_HIGH_SPEED,
     ME_XTREME_SPEED,
-    ME_XTREME_SPEED_25,
-    ME_USER_DEFINED
+    ME_XTREME_SPEED_25
 } ME_QUALITY_PRESETS_T;
 
 /*****************************************************************************/

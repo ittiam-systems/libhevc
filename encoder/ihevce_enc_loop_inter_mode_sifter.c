@@ -426,8 +426,8 @@ static WORD8 ihevce_merge_cand_pred_buffer_preparation(
     WORD32 i4_part_wd_pu2;
     WORD32 i4_part_ht_pu2;
     WORD32 i4_buf_offset;
-    UWORD8 *pu1_pred_src;
-    UWORD8 *pu1_pred_dst;
+    UWORD8 *pu1_pred_src = NULL;
+    UWORD8 *pu1_pred_dst = NULL;
     WORD8 i1_retval = pau1_final_pred_buf_id[MERGE_DERIVED][0];
 
     WORD32 i4_stride = i4_pred_stride * u1_num_bytes_per_pel;
@@ -557,6 +557,11 @@ static WORD8 ihevce_merge_cand_pred_buffer_preparation(
 
             break;
         }
+        default:
+        {
+            DBG_PRINTF("Invalid partition type %d\n", u1_part_type);
+            break;
+        }
         }
 
         pf_copy_2d(
@@ -591,7 +596,7 @@ static WORD8 ihevce_mixed_mode_cand_type1_pred_buffer_preparation(
     WORD32 i4_part_ht;
     WORD32 i4_part_wd_pu2;
     WORD32 i4_part_ht_pu2;
-    UWORD8 *pu1_pred_src;
+    UWORD8 *pu1_pred_src = NULL;
     UWORD8 *pu1_pred_dst = NULL;
     WORD8 i1_retval = pau1_final_pred_buf_id[ME_OR_SKIP_DERIVED][0];
 
@@ -667,6 +672,11 @@ static WORD8 ihevce_mixed_mode_cand_type1_pred_buffer_preparation(
 
                 i1_retval = pau1_final_pred_buf_id[ME_OR_SKIP_DERIVED][0];
 
+                break;
+            }
+            default:
+            {
+                DBG_PRINTF("Invalid partition type %d\n", u1_part_type);
                 break;
             }
             }
@@ -910,7 +920,7 @@ static WORD8 ihevce_mixed_mode_cand_type0_pred_buffer_preparation(
     WORD32 i4_part_wd_pu2;
     WORD32 i4_part_ht_pu2;
     WORD32 i4_buf_offset;
-    UWORD8 *pu1_pred_src;
+    UWORD8 *pu1_pred_src = NULL;
     UWORD8 *pu1_pred_dst = NULL;
     WORD8 i1_retval = pau1_final_pred_buf_id[ME_OR_SKIP_DERIVED][0];
 
@@ -979,6 +989,11 @@ static WORD8 ihevce_mixed_mode_cand_type0_pred_buffer_preparation(
 
                 i1_retval = pau1_final_pred_buf_id[MIXED_MODE_TYPE0][0];
 
+                break;
+            }
+            default:
+            {
+                DBG_PRINTF("Invalid partition type %d\n", u1_part_type);
                 break;
             }
             }

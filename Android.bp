@@ -463,7 +463,6 @@ cc_library_static {
         "-Wall",
         "-Wno-unused-variable",
         "-Wno-unused-parameter",
-        "-Wno-switch",
     ],
 
     export_include_dirs: [
