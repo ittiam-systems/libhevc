@@ -27,13 +27,14 @@
 #include "ihevce_plugin.h"
 #include "ihevce_profile.h"
 
+#define NELEMENTS(x) (sizeof(x) / sizeof(x[0]))
 constexpr size_t kRcType[] = {2, 3, 5};
 constexpr IHEVCE_QUALITY_CONFIG_T kQuality[] = {
     IHEVCE_QUALITY_P0, IHEVCE_QUALITY_P2, IHEVCE_QUALITY_P3, IHEVCE_QUALITY_P4,
     IHEVCE_QUALITY_P5, IHEVCE_QUALITY_P6, IHEVCE_QUALITY_P7};
 
-constexpr size_t kRcTypeNum = std::size(kRcType);
-constexpr size_t kQualityNum = std::size(kQuality);
+constexpr size_t kRcTypeNum = NELEMENTS(kRcType);
+constexpr size_t kQualityNum = NELEMENTS(kQuality);
 constexpr size_t kMaxQP = 51;
 constexpr size_t kMaxGopPeriod = 16;
 constexpr size_t kMaxWidth = 10240;
