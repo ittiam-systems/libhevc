@@ -5175,6 +5175,7 @@ void ihevce_pre_enc_init(
         case IHEVCE_QUALITY_P4:
         case IHEVCE_QUALITY_P5:
         case IHEVCE_QUALITY_P6:
+        case IHEVCE_QUALITY_P7:
             max_merge_candidates = 2;
             break;
 
