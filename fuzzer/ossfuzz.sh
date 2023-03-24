@@ -31,8 +31,9 @@ mkdir -p ${build_dir}
 
 pushd ${build_dir}
 cmake ${SRC}/libhevc
-make -j$(nproc) hevc_dec_fuzzer
-cp ${build_dir}/hevc_dec_fuzzer $OUT/hevc_dec_fuzzer
+make -j$(nproc) hevc_dec_fuzzer hevc_enc_fuzzer
+cp ${build_dir}/hevc_dec_fuzzer $OUT/
+cp ${build_dir}/hevc_enc_fuzzer $OUT/
 popd
 
 cp $SRC/hevc_dec_fuzzer_seed_corpus.zip $OUT/hevc_dec_fuzzer_seed_corpus.zip
