@@ -4015,7 +4015,8 @@ static WORD32 ihevce_get_offline_index(rc_context_t *ps_rc_ctxt, WORD32 i4_num_p
     }
     else if(
         (i4_rc_quality_preset == IHEVCE_QUALITY_P5) ||
-        (i4_rc_quality_preset == IHEVCE_QUALITY_P6)) /*Extreme speed */
+        (i4_rc_quality_preset == IHEVCE_QUALITY_P6) ||
+        (i4_rc_quality_preset == IHEVCE_QUALITY_P7)) /*Extreme speed */
     {
         return base + 4;
     }
