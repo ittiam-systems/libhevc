@@ -40,6 +40,8 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     "${HEVC_ROOT}/decoder/arm64/ihevcd_fmt_conv_420sp_to_420p.s"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_fmt_conv_420sp_to_420sp.s"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_fmt_conv_420sp_to_rgba8888.s"
+    "${HEVC_ROOT}/decoder/arm/ihevcd_function_selector.c"
+    "${HEVC_ROOT}/decoder/arm/ihevcd_function_selector_noneon.c"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_function_selector_av8.c"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_chroma.s"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_luma.s")

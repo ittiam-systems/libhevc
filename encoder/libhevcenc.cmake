@@ -130,7 +130,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}"
     "${HEVC_ROOT}/encoder/arm/ihevce_subpel_neon.c"
     "${HEVC_ROOT}/encoder/arm/ihevce_subpel_neon.c")
 
-  include_directories(${HEVC_ROOT}/encoder/arm)
+  include_directories(${HEVC_ROOT}/encoder/arm ${HEVC_ROOT}/encoder)
 endif()
 
 add_library(libhevcenc STATIC ${LIBHEVC_COMMON_SRCS} ${LIBHEVC_COMMON_ASMS}

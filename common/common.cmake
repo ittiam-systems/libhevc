@@ -59,13 +59,19 @@ list(
   "${HEVC_ROOT}/common/ihevc_trans_tables.c"
   "${HEVC_ROOT}/common/ihevc_weighted_pred.c")
 
-  include_directories(${HEVC_ROOT}/common)
+include_directories(${HEVC_ROOT}/common)
 
 # arm/x86 sources
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
   list(
     APPEND
     LIBHEVC_COMMON_ASMS
+    "${HEVC_ROOT}/common/arm/ihevc_intra_pred_filters_neon_intr.c"
+    "${HEVC_ROOT}/common/arm/ihevc_quant_iquant_ssd_neon_intr.c"
+    "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_neon_intr.c"
+    "${HEVC_ROOT}/common/arm/ihevc_resi_trans_neon_32x32.c"
+    "${HEVC_ROOT}/common/arm/ihevc_resi_trans_neon.c"
+    "${HEVC_ROOT}/common/arm/ihevc_intra_ref_substitution_a9q.c"
     "${HEVC_ROOT}/common/arm64/ihevc_deblk_chroma_horz.s"
     "${HEVC_ROOT}/common/arm64/ihevc_deblk_chroma_vert.s"
     "${HEVC_ROOT}/common/arm64/ihevc_deblk_luma_horz.s"
@@ -128,7 +134,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_bi.s"
     "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_uni.s")
 
-    include_directories(${HEVC_ROOT}/common/arm64)
+  include_directories(${HEVC_ROOT}/common/arm64 ${HEVC_ROOT}/common/arm)
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch32")
   list(
     APPEND
@@ -204,7 +210,7 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_neon_intr.c"
     "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_uni.s")
 
-    include_directories(${HEVC_ROOT}/common/arm)
+  include_directories(${HEVC_ROOT}/common/arm)
 else()
   list(
     APPEND
@@ -229,5 +235,5 @@ else()
     "${HEVC_ROOT}/common/x86/ihevc_32x32_itrans_recon_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_tables_x86_intr.c")
 
-    include_directories(${HEVC_ROOT}/common/x86)
+  include_directories(${HEVC_ROOT}/common/x86)
 endif()

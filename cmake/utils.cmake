@@ -33,9 +33,10 @@ endfunction()
 # Adds defintions for all targets
 function(libhevc_add_definitions)
   if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
-    add_definitions(-DARMV8 -DDEFAULT_ARCH=D_ARCH_ARMV8_GENERIC)
+    add_definitions(-DARMV8 -DDEFAULT_ARCH=D_ARCH_ARMV8_GENERIC -DENABLE_NEON)
   elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch32")
-    add_definitions(-DARMV7 -DDEFAULT_ARCH=D_ARCH_ARM_A9Q)
+    add_definitions(-DARMV7 -DDEFAULT_ARCH=D_ARCH_ARM_A9Q -DENABLE_NEON
+                    -DDISABLE_NEONINTR)
   else()
     add_definitions(-DX86 -DX86_LINUX=1 -DDISABLE_AVX2
                     -DDEFAULT_ARCH=D_ARCH_X86_SSE42)
