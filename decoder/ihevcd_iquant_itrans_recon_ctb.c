@@ -945,8 +945,11 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 {
                     /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actaul size needed,
                        au1_ref_sub_out size is kept as multiple of 8,
-                       so that SIMD functions can load 64 bits */
-                    UWORD8 au1_ref_sub_out[(MAX_TU_SIZE * 2 * 2) + 8] = {0};
+                       so that SIMD functions can load 64 bits. Also some SIMD
+                       modules read few bytes before the start of the array, so
+                       allocate 16 extra bytes at the start */
+                    UWORD8 au1_ref_sub_out[16 + (MAX_TU_SIZE * 2 * 2) + 8] = {0};
+                    UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16];
                     UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
                     WORD32 luma_pred_func_idx, chroma_pred_func_idx;
 
@@ -980,23 +983,23 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         if(luma_nbr_flags == 0x1ffff)
                             ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_subst_all_avlble_fptr(
                                             pu1_top_left,
-                                            pu1_top, pu1_left, pred_strd, trans_size, luma_nbr_flags, au1_ref_sub_out, 1);
+                                            pu1_top, pu1_left, pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
                         else
                             ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_substitution_fptr(
                                             pu1_top_left,
-                                            pu1_top, pu1_left, pred_strd, trans_size, luma_nbr_flags, au1_ref_sub_out, 1);
+                                            pu1_top, pu1_left, pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
 
                         /* call reference filtering */
                         ps_codec->s_func_selector.ihevc_intra_pred_ref_filtering_fptr(
-                                        au1_ref_sub_out, trans_size,
-                                        au1_ref_sub_out,
+                                        pu1_ref_sub_out, trans_size,
+                                        pu1_ref_sub_out,
                                         u1_luma_pred_mode, ps_sps->i1_strong_intra_smoothing_enable_flag);
 
                         /* use the look up to get the function idx */
                         luma_pred_func_idx = g_i4_ip_funcs[u1_luma_pred_mode];
 
                         /* call the intra prediction function */
-                        ps_codec->apf_intra_pred_luma[luma_pred_func_idx](au1_ref_sub_out, 1, pu1_pred, pred_strd, trans_size, u1_luma_pred_mode);
+                        ps_codec->apf_intra_pred_luma[luma_pred_func_idx](pu1_ref_sub_out, 1, pu1_pred, pred_strd, trans_size, u1_luma_pred_mode);
                     }
                     else
                     {
@@ -1048,14 +1051,14 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         /* call the chroma reference array substitution */
                         ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_substitution_fptr(
                                         pu1_top_left,
-                                        pu1_top, pu1_left, pic_strd, trans_size, chroma_nbr_flags, au1_ref_sub_out, 1);
+                                        pu1_top, pu1_left, pic_strd, trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1);
 
                         /* use the look up to get the function idx */
                         chroma_pred_func_idx =
                                         g_i4_ip_funcs[u1_chroma_pred_mode];
 
                         /* call the intra prediction function */
-                        ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](au1_ref_sub_out, 1, pu1_pred_orig, pred_strd, trans_size, u1_chroma_pred_mode);
+                        ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](pu1_ref_sub_out, 1, pu1_pred_orig, pred_strd, trans_size, u1_chroma_pred_mode);
                     }
                 }
 
