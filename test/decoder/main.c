@@ -1195,24 +1195,24 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
         case VERSION:
             break;
         case INPUT_FILE:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_ip_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_ip_fname);
             //input_passed = 1;
             break;
 
         case OUTPUT:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_op_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_op_fname);
             break;
 
         case QP_MAP_FILE:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_qp_map_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_qp_map_fname);
             break;
 
         case BLK_TYPE_MAP_FILE:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_blk_type_map_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_blk_type_map_fname);
             break;
 
         case CHKSUM:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_op_chksum_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_op_chksum_fname);
             break;
 
         case SAVE_OUTPUT:
@@ -1332,7 +1332,7 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
             break;
 
         case PICLEN_FILE:
-            snprintf(value, STRLENGTH, "%s", ps_app_ctx->ac_piclen_fname);
+            sscanf(value, "%s", ps_app_ctx->ac_piclen_fname);
             break;
 
         case INVALID:
