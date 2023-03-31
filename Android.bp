@@ -40,7 +40,6 @@ cc_library_static {
 
     cflags: [
         "-D_LIB",
-        "-DMULTICORE",
         "-fPIC",
 
         "-O3",
