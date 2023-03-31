@@ -822,15 +822,11 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                         return IV_FAIL;
                     }
 
-#ifdef MULTICORE
                     if((ps_ip->u4_num_cores < 1) || (ps_ip->u4_num_cores > MAX_NUM_CORES))
-#else
-                    if(ps_ip->u4_num_cores != 1)
-#endif
-                        {
-                            ps_op->u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
-                            return IV_FAIL;
-                        }
+                    {
+                        ps_op->u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
+                        return IV_FAIL;
+                    }
                     break;
                 }
                 case IHEVCD_CXA_CMD_CTL_SET_PROCESSOR:
@@ -3504,11 +3500,7 @@ WORD32 ihevcd_set_num_cores(iv_obj_t *ps_codec_obj,
     ps_ip = (ihevcd_cxa_ctl_set_num_cores_ip_t *)pv_api_ip;
     ps_op = (ihevcd_cxa_ctl_set_num_cores_op_t *)pv_api_op;
 
-#ifdef MULTICORE
     ps_codec->i4_num_cores = ps_ip->u4_num_cores;
-#else
-    ps_codec->i4_num_cores = 1;
-#endif
     ps_op->u4_error_code = 0;
     return IV_SUCCESS;
 }
