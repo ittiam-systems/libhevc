@@ -88,7 +88,7 @@
 
 #define IHEVCE_PAYLOAD_TYPE_SHIFT (16)
 
-#define MAX_FRAME_RATE  120.0
+#define MAX_FRAME_RATE  300.0
 #define MIN_FRAME_RATE  1.0
 
 /*****************************************************************************/
