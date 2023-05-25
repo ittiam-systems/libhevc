@@ -440,6 +440,9 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                 {
                     numbits = 32 - CLZ(ps_sps->i1_num_short_term_ref_pic_sets - 1);
                     BITS_PARSE("short_term_ref_pic_set_idx", value, ps_bitstrm, numbits);
+                    if (value >= ps_sps->i1_num_short_term_ref_pic_sets) {
+                        return IHEVCD_INVALID_PARAMETER;
+                    }
                     ps_slice_hdr->i1_short_term_ref_pic_set_idx = value;
                 }
 
