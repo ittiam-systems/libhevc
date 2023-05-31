@@ -23,7 +23,7 @@
 * \file ihevce_hle_interface.c
 *
 * \brief
-*    This file contains all the functions related High level enocder
+*    This file contains all the functions related High level encoder
 *    Interface layer
 *
 * \date
@@ -163,7 +163,7 @@ void ihevce_context_reset(enc_ctxt_t *ps_enc_ctxt)
 * \brief
 *    High level Encoder create function
 *
-* \param[in]  High level enocder interface context pointer
+* \param[in]  High level encoder interface context pointer
 *
 * \return
 *    success or fail
