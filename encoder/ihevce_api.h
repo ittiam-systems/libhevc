@@ -682,7 +682,7 @@ typedef struct
  *            parameters of encoder
  *
  *            these new params can be passed as async commands
- *            to the enocder by sending a IHEVCE_CMD_CTL_SETPARAMS command
+ *            to the encoder by sending a IHEVCE_CMD_CTL_SETPARAMS command
  */
 typedef struct
 {
@@ -707,7 +707,7 @@ typedef struct
  *            parameters of encoder for dynamic resolution change
  *
  *            these new params can be passed as synchromous commands
- *            to the enocder by sending a IHEVCE_SYNCH_API_SET_RES_TAG command
+ *            to the encoder by sending a IHEVCE_SYNCH_API_SET_RES_TAG command
  */
 typedef struct
 {

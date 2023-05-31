@@ -22,7 +22,7 @@
 * \file ihevce_hle_interface.h
 *
 * \brief
-*    This file contains infertace prototypes of High level enocder interafce
+*    This file contains infertace prototypes of High level encoder interafce
 *    structure and interface functions.
 *
 * \date
