@@ -1515,8 +1515,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
             ps_intrf_ctxt->i4_error_code = IHEVCE_CANNOT_ALLOCATE_MEMORY;
             return;
         }
-
-        memset(pu1_mem, 0, ps_memtab[ctr].i4_mem_size);
     }
 
     /* --------------------------------------------------------------------- */
