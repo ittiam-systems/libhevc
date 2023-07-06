@@ -1040,9 +1040,10 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     /* Reset the jobq to start of the jobq buffer */
     ihevcd_jobq_reset((jobq_t *)ps_codec->pv_proc_jobq);
 
-#ifdef KEEP_THREADS_ACTIVE
-    ps_codec->i4_break_threads = 0;
-#endif
+    if(ps_codec->i4_threads_active)
+    {
+        ps_codec->i4_break_threads = 0;
+    }
     ps_codec->s_parse.i4_pic_pu_idx = 0;
     ps_codec->s_parse.i4_pic_tu_idx = 0;
 
@@ -1248,16 +1249,17 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
                                 (void *)&ps_codec->as_process[i]);
                     ps_codec->ai4_process_thread_created[i] = 1;
                 }
-#ifdef KEEP_THREADS_ACTIVE
-                ret = ithread_mutex_lock(ps_codec->apv_proc_start_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+                if(ps_codec->i4_threads_active)
+                {
+                    ret = ithread_mutex_lock(ps_codec->apv_proc_start_mutex[i]);
+                    RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
 
-                ps_codec->ai4_process_start[i] = 1;
-                ithread_cond_signal(ps_codec->apv_proc_start_condition[i]);
+                    ps_codec->ai4_process_start[i] = 1;
+                    ithread_cond_signal(ps_codec->apv_proc_start_condition[i]);
 
-                ret = ithread_mutex_unlock(ps_codec->apv_proc_start_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-#endif
+                    ret = ithread_mutex_unlock(ps_codec->apv_proc_start_mutex[i]);
+                    RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+                }
             }
             else
             {

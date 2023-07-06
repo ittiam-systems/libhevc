@@ -2080,7 +2080,6 @@ struct _codec_t
      */
     parse_ctxt_t s_parse;
 
-#ifdef KEEP_THREADS_ACTIVE
     /**
      * Condition variable to signal process start
      */
@@ -2115,7 +2114,6 @@ struct _codec_t
      * Flag to signal processing thread to exit
      */
     WORD32 i4_break_threads;
-#endif
 
     /**
      * Processing context - One for each processing thread
@@ -2239,6 +2237,8 @@ struct _codec_t
 
     /** Number of active display buffers - for shared mode */
     WORD32  i4_share_disp_buf_cnt;
+
+    WORD32 i4_threads_active;
 };
 
 #endif /* _IHEVCD_STRUCTS_H_ */

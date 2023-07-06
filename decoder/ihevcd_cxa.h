@@ -176,6 +176,11 @@ typedef struct {
      * enable_frm_info
      */
     UWORD32                                 u4_enable_frame_info;
+
+    /**
+     * enable_threads
+     */
+    UWORD32                                  u4_keep_threads_active;
 }ihevcd_cxa_create_ip_t;
 
 

@@ -227,6 +227,9 @@ typedef struct
     WORD32  quit;
     WORD32  paused;
 
+    /* Active threads present*/
+    UWORD32 i4_active_threads;
+
 
     void *pv_disp_ctx;
     void *display_thread_handle;
@@ -277,6 +280,8 @@ typedef enum
     SOC,
     PICLEN,
     PICLEN_FILE,
+
+    KEEP_THREADS_ACTIVE,
 }ARGUMENT_T;
 
 typedef struct
@@ -342,6 +347,8 @@ static const argument_t argument_mapping[] =
         "Set Architecture. Supported values  ARM_NONEON, ARM_A9Q, ARM_A7, ARM_A5, ARM_NEONINTR, X86_GENERIC, X86_SSSE3, X86_SSE4 \n" },
     { "--",  "--soc", SOC,
         "Set SOC. Supported values  GENERIC, HISI_37X \n" },
+    {"--", "--keep_threads_active", KEEP_THREADS_ACTIVE,
+        "Keep threads active"},
 };
 
 #define PEAK_WINDOW_SIZE            8
@@ -1335,6 +1342,10 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
             sscanf(value, "%s", ps_app_ctx->ac_piclen_fname);
             break;
 
+        case KEEP_THREADS_ACTIVE:
+            sscanf(value, "%d", &ps_app_ctx->i4_active_threads);
+            break;
+
         case INVALID:
         default:
             printf("Ignoring argument :  %s\n", argument);
@@ -1879,6 +1890,7 @@ int main(WORD32 argc, CHAR *argv[])
     s_app_ctx.full_screen = 0;
     s_app_ctx.u4_piclen_flag = 0;
     s_app_ctx.u4_frame_info_enable = 0;
+    s_app_ctx.i4_active_threads = 0;
     s_app_ctx.fps = DEFAULT_FPS;
     file_pos = 0;
     total_bytes_comsumed = 0;
@@ -2157,6 +2169,7 @@ int main(WORD32 argc, CHAR *argv[])
             s_create_ip.s_ivd_create_ip_t.u4_size = sizeof(ihevcd_cxa_create_ip_t);
             s_create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
             s_create_ip.u4_enable_frame_info = s_app_ctx.u4_frame_info_enable;
+            s_create_ip.u4_keep_threads_active = s_app_ctx.i4_active_threads;
 
 
 
