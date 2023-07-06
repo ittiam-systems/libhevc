@@ -984,22 +984,25 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         {
             if(ps_codec->ai4_process_thread_created[i])
             {
-#ifdef KEEP_THREADS_ACTIVE
-                ret = ithread_mutex_lock(ps_codec->apv_proc_done_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-
-                while(!ps_codec->ai4_process_done[i])
+                if(ps_codec->i4_threads_active)
                 {
-                    ithread_cond_wait(ps_codec->apv_proc_done_condition[i],
-                                      ps_codec->apv_proc_done_mutex[i]);
+                    ret = ithread_mutex_lock(ps_codec->apv_proc_done_mutex[i]);
+                    RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+
+                    while(!ps_codec->ai4_process_done[i])
+                    {
+                        ithread_cond_wait(ps_codec->apv_proc_done_condition[i],
+                                          ps_codec->apv_proc_done_mutex[i]);
+                    }
+                    ps_codec->ai4_process_done[i] = 0;
+                    ret = ithread_mutex_unlock(ps_codec->apv_proc_done_mutex[i]);
+                    RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
                 }
-                ps_codec->ai4_process_done[i] = 0;
-                ret = ithread_mutex_unlock(ps_codec->apv_proc_done_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-#else
-                ithread_join(ps_codec->apv_process_thread_handle[i], NULL);
-                ps_codec->ai4_process_thread_created[i] = 0;
-#endif
+                else
+                {
+                    ithread_join(ps_codec->apv_process_thread_handle[i], NULL);
+                    ps_codec->ai4_process_thread_created[i] = 0;
+                }
             }
         }
 

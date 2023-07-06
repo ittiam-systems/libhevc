@@ -1596,31 +1596,32 @@ void ihevcd_process_thread(process_ctxt_t *ps_proc)
         ithread_set_affinity(ps_proc->i4_id + 1);
     }
 
-#ifdef KEEP_THREADS_ACTIVE
     while(1)
     {
         codec_t *ps_dec = ps_proc->ps_codec;
-        DEBUG("In ihevcd_process_thread \n");
-
-        ret = ithread_mutex_lock(ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
-        if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
-            break;
-
-        while(!ps_dec->ai4_process_start[ps_proc->i4_id])
+        if(ps_proc->ps_codec->i4_threads_active)
         {
-            ithread_cond_wait(ps_dec->apv_proc_start_condition[ps_proc->i4_id],
-                              ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
+            DEBUG("In ihevcd_process_thread \n");
+
+            ret = ithread_mutex_lock(ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
+            if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+                break;
+
+            while(!ps_dec->ai4_process_start[ps_proc->i4_id])
+            {
+                ithread_cond_wait(ps_dec->apv_proc_start_condition[ps_proc->i4_id],
+                                  ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
+            }
+            ps_dec->ai4_process_start[ps_proc->i4_id] = 0;
+            ret = ithread_mutex_unlock(ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
+            if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+                break;
+
+            DEBUG(" Got control at ihevcd_process_thread \n");
+
+            if(ps_dec->i4_break_threads == 1)
+                break;
         }
-        ps_dec->ai4_process_start[ps_proc->i4_id] = 0;
-        ret = ithread_mutex_unlock(ps_dec->apv_proc_start_mutex[ps_proc->i4_id]);
-        if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
-            break;
-
-        DEBUG(" Got control at ihevcd_process_thread \n");
-
-        if(ps_dec->i4_break_threads == 1)
-            break;
-#endif
         while(1)
         {
             proc_job_t s_job;
@@ -1670,19 +1671,24 @@ void ihevcd_process_thread(process_ctxt_t *ps_proc)
                                 s_job.i2_ctb_y << ps_sps->i1_log2_ctb_size, num_rows);
             }
         }
-#ifdef KEEP_THREADS_ACTIVE
-        ret = ithread_mutex_lock(ps_dec->apv_proc_done_mutex[ps_proc->i4_id]);
-        if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
-            break;
+        if(ps_proc->ps_codec->i4_threads_active)
+        {
+            ret = ithread_mutex_lock(ps_dec->apv_proc_done_mutex[ps_proc->i4_id]);
+            if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+                break;
 
-        ps_dec->ai4_process_done[ps_proc->i4_id] = 1;
-        ithread_cond_signal(ps_dec->apv_proc_done_condition[ps_proc->i4_id]);
+            ps_dec->ai4_process_done[ps_proc->i4_id] = 1;
+            ithread_cond_signal(ps_dec->apv_proc_done_condition[ps_proc->i4_id]);
 
-        ret = ithread_mutex_unlock(ps_dec->apv_proc_done_mutex[ps_proc->i4_id]);
-        if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+            ret = ithread_mutex_unlock(ps_dec->apv_proc_done_mutex[ps_proc->i4_id]);
+            if((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+                break;
+        }
+        else
+        {
             break;
+        }
     }
-#endif
     //ithread_exit(0);
     return;
 }
