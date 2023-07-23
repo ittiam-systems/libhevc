@@ -1461,6 +1461,37 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     return (status);
 }
 
+WORD32 ihevcd_join_threads(codec_t *ps_codec)
+{
+    if(ps_codec->i4_threads_active)
+    {
+        int i;
+        /* Wait for threads */
+        ps_codec->i4_break_threads = 1;
+
+        for(i = 0; i < MAX_PROCESS_THREADS; i++)
+        {
+            WORD32 ret;
+            if(ps_codec->ai4_process_thread_created[i])
+            {
+                ret = ithread_mutex_lock(ps_codec->apv_proc_start_mutex[i]);
+                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+
+                ps_codec->ai4_process_start[i] = 1;
+                ret = ithread_cond_signal(ps_codec->apv_proc_start_condition[i]);
+                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+
+                ret = ithread_mutex_unlock(ps_codec->apv_proc_start_mutex[i]);
+                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+
+                ithread_join(ps_codec->apv_process_thread_handle[i], NULL);
+
+                ps_codec->ai4_process_thread_created[i] = 0;
+            }
+        }
+    }
+    return IV_SUCCESS;
+}
 /**
 *******************************************************************************
 *
@@ -1494,26 +1525,11 @@ WORD32 ihevcd_free_static_bufs(iv_obj_t *ps_codec_obj)
     if(ps_codec->i4_threads_active)
     {
         /* Wait for threads */
-        ps_codec->i4_break_threads = 1;
+        ihevcd_join_threads(ps_codec);
+
         for(int i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             WORD32 ret;
-            if(ps_codec->ai4_process_thread_created[i])
-            {
-                ret = ithread_mutex_lock(ps_codec->apv_proc_start_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-
-                ps_codec->ai4_process_start[i] = 1;
-                ret = ithread_cond_signal(ps_codec->apv_proc_start_condition[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-
-                ret = ithread_mutex_unlock(ps_codec->apv_proc_start_mutex[i]);
-                RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
-
-                ithread_join(ps_codec->apv_process_thread_handle[i], NULL);
-
-                ps_codec->ai4_process_thread_created[i] = 0;
-            }
             ret = ithread_cond_destroy(ps_codec->apv_proc_start_condition[i]);
             RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
 
@@ -2941,6 +2957,8 @@ WORD32 ihevcd_reset(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
     if(ps_codec != NULL)
     {
         DEBUG("\nReset called \n");
+        ihevcd_join_threads(ps_codec);
+
         ihevcd_init(ps_codec);
     }
     else
