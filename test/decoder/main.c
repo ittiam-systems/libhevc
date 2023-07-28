@@ -1890,7 +1890,7 @@ int main(WORD32 argc, CHAR *argv[])
     s_app_ctx.full_screen = 0;
     s_app_ctx.u4_piclen_flag = 0;
     s_app_ctx.u4_frame_info_enable = 0;
-    s_app_ctx.i4_active_threads = 0;
+    s_app_ctx.i4_active_threads = 1;
     s_app_ctx.fps = DEFAULT_FPS;
     file_pos = 0;
     total_bytes_comsumed = 0;
