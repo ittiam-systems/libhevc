@@ -2467,6 +2467,7 @@ WORD32 ihevcd_set_flush_mode(iv_obj_t *ps_codec_obj,
     ivd_ctl_flush_op_t *ps_ctl_op = (ivd_ctl_flush_op_t *)pv_api_op;
     UNUSED(pv_api_ip);
     ps_codec = (codec_t *)(ps_codec_obj->pv_codec_handle);
+    ihevcd_join_threads(ps_codec);
 
     /* Signal flush frame control call */
     ps_codec->i4_flush_mode = 1;
