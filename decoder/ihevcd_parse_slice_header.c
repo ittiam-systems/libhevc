@@ -808,11 +808,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                 if(ps_codec->i4_pic_present)
                 {
                     prev_slice_incomplete_flag = 1;
+                    ps_codec->i4_slice_error = 1;
+                    ps_codec->s_parse.i4_cur_slice_idx--;
+                    if(ps_codec->s_parse.i4_cur_slice_idx < 0)
+                        ps_codec->s_parse.i4_cur_slice_idx = 0;
                 }
-                else
-                {
-                    return IHEVCD_IGNORE_SLICE;
-                }
+                return IHEVCD_IGNORE_SLICE;
             }
             /* If the slice address is less than the next CTB's index,
              * extra CTBs have been decoded in the previous slice.
