@@ -1893,7 +1893,10 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
     }
 
+    // Ensure both i2_pic_width_in_luma_samples and i2_pic_height_in_luma_samples do
+    // not exceed MAX_WD and their product doesn't exceed MAX_WD * MAX_HT
     if((ps_sps->i2_pic_width_in_luma_samples > MAX_WD) ||
+                    (ps_sps->i2_pic_height_in_luma_samples > MAX_WD) ||
                     ((ps_sps->i2_pic_width_in_luma_samples * ps_sps->i2_pic_height_in_luma_samples) >
                     (MAX_WD * MAX_HT)))
     {
