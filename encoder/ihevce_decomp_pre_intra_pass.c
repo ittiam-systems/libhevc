@@ -859,7 +859,7 @@ WORD32 ihevce_cu_level_qp_mod(
     *pi4_act_factor = (1 << QP_LEVEL_MOD_ACT_FACTOR);
     if(cu_satd != -1 && (WORD32)frm_avg_activity != 0)
     {
-        ULWORD64 sq_cur_satd = (cu_satd * cu_satd);
+        ULWORD64 sq_cur_satd = ((ULWORD64)cu_satd * (ULWORD64)cu_satd);
         float log2_sq_cur_satd = fast_log2(1 + sq_cur_satd);
         WORD32 qp_offset = f_mod_strength * (log2_sq_cur_satd - frm_avg_activity);
 
