@@ -1844,6 +1844,21 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                                           &ps_sps->s_vui_parameters,
                                           ps_sps->i1_sps_max_sub_layers - 1);
         RETURN_IF((ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS), ret);
+
+        if (0 != ps_codec->u4_allocate_dynamic_done) {
+
+            vui_t *ps_vui = &ps_sps->s_vui_parameters;
+            sps_t *ps_sps_old = ps_codec->s_parse.ps_sps;
+            vui_t *ps_vui_old = &ps_sps_old->s_vui_parameters;
+
+            if (ps_vui->u1_video_full_range_flag != ps_vui_old->u1_video_full_range_flag ||
+                ps_vui->u1_colour_primaries != ps_vui_old->u1_colour_primaries ||
+                ps_vui->u1_transfer_characteristics != ps_vui_old->u1_transfer_characteristics ||
+                ps_vui->u1_matrix_coefficients != ps_vui_old->u1_matrix_coefficients) {
+                ps_codec->i4_reset_flag = 1;
+                return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
+            }
+        }
     }
 
     BITS_PARSE("sps_extension_flag", value, ps_bitstrm, 1);
