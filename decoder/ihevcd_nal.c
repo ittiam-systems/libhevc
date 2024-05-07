@@ -451,6 +451,7 @@ IHEVCD_ERROR_T ihevcd_nal_unit(codec_t *ps_codec)
             DEBUG_PRINT_NAL_INFO(ps_codec, s_nal.i1_nal_unit_type);
             break;
 
+#ifndef DISABLE_SEI
         case NAL_PREFIX_SEI:
         case NAL_SUFFIX_SEI:
             if(IVD_DECODE_HEADER == ps_codec->i4_header_mode)
@@ -461,6 +462,7 @@ IHEVCD_ERROR_T ihevcd_nal_unit(codec_t *ps_codec)
             ret = ihevcd_parse_sei(ps_codec, &s_nal);
             break;
 
+#endif
         case NAL_EOS        :
             ps_codec->i4_cra_as_first_pic = 1;
             break;

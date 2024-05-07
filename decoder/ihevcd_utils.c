@@ -928,6 +928,7 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
         pu1_cur_pic_chroma = pu1_buf;
 
+#ifndef DISABLE_SEI
         ps_cur_pic->s_sei_params.i1_sei_parameters_present_flag = 0;
         if(ps_codec->s_parse.s_sei_params.i1_sei_parameters_present_flag)
         {
@@ -948,6 +949,7 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             ps_sei->i1_active_parameter_set = 0;
             ps_sei->i4_sei_mastering_disp_colour_vol_params_present_flags = 0;
         }
+#endif
     }
 
     if(0 == ps_codec->u4_pic_cnt)

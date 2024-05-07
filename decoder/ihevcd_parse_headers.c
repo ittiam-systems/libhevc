@@ -2475,6 +2475,7 @@ void ihevcd_copy_pps(codec_t *ps_codec, WORD32 pps_id, WORD32 pps_id_ref)
 }
 
 
+#ifndef DISABLE_SEI
 IHEVCD_ERROR_T ihevcd_parse_buffering_period_sei(codec_t *ps_codec,
                                                  sps_t *ps_sps)
 {
@@ -3185,6 +3186,7 @@ IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec, nal_header_t *ps_nal)
 
     return ret;
 }
+#endif
 
 /**
 *******************************************************************************

@@ -253,6 +253,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
     if(ps_codec->ps_disp_buf)
     {
         pic_buf_t *ps_disp_buf = ps_codec->ps_disp_buf;
+#ifndef DISABLE_SEI
         sei_params_t *ps_sei = &ps_disp_buf->s_sei_params;
 
         if(ps_sei->i1_sei_parameters_present_flag &&
@@ -277,6 +278,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
                     break;
             }
         }
+#endif
         ps_dec_op->i4_display_index = ps_disp_buf->i4_abs_poc;
         ps_dec_op->u4_output_present = 1;
         ps_dec_op->u4_ts = ps_disp_buf->u4_ts;
