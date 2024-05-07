@@ -1161,10 +1161,12 @@ typedef struct
      */
     WORD32 i4_next_tu_ctb_cnt;
 
+#ifndef DISABLE_SEI
     /**
      * SEI parameters
      */
     sei_params_t s_sei_params;
+#endif
 }parse_ctxt_t;
 
 /**

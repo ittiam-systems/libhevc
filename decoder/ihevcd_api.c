@@ -768,6 +768,7 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
 
                     break;
                 }
+#ifndef DISABLE_SEI
                 case IHEVCD_CXA_CMD_CTL_GET_SEI_MASTERING_PARAMS:
                 {
                     ihevcd_cxa_ctl_get_sei_mastering_params_ip_t *ps_ip;
@@ -796,6 +797,7 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
 
                     break;
                 }
+#endif
                 case IHEVCD_CXA_CMD_CTL_SET_NUM_CORES:
                 {
                     ihevcd_cxa_ctl_set_num_cores_ip_t *ps_ip;
@@ -3338,6 +3340,7 @@ WORD32 ihevcd_get_vui_params(iv_obj_t *ps_codec_obj,
     return IV_SUCCESS;
 }
 
+#ifndef DISABLE_SEI
 /**
 *******************************************************************************
 *
@@ -3413,6 +3416,7 @@ WORD32 ihevcd_get_sei_mastering_params(iv_obj_t *ps_codec_obj,
 
     return IV_SUCCESS;
 }
+#endif
 
 /**
 *******************************************************************************
@@ -3646,10 +3650,12 @@ WORD32 ihevcd_ctl(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             ret = ihevcd_get_vui_params(ps_codec_obj, (void *)pv_api_ip,
                                         (void *)pv_api_op);
             break;
+#ifndef DISABLE_SEI
         case IHEVCD_CXA_CMD_CTL_GET_SEI_MASTERING_PARAMS:
             ret = ihevcd_get_sei_mastering_params(ps_codec_obj, (void *)pv_api_ip,
                                         (void *)pv_api_op);
             break;
+#endif
         case IHEVCD_CXA_CMD_CTL_SET_PROCESSOR:
             ret = ihevcd_set_processor(ps_codec_obj, (void *)pv_api_ip,
                             (void *)pv_api_op);
