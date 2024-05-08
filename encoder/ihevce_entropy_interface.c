@@ -322,7 +322,9 @@ WORD32 ihevce_entropy_encode_frame(
     vps_t *ps_vps = ps_curr_inp->ps_vps;
     sps_t *ps_sps = ps_curr_inp->ps_sps;
     pps_t *ps_pps = ps_curr_inp->ps_pps;
+#ifndef DISABLE_SEI
     sei_params_t *ps_sei = &ps_curr_inp->s_sei;
+#endif
     ihevce_tile_params_t *ps_tile_params_base;
     WORD32 out_buf_size = i4_out_buf_size;
 
@@ -355,7 +357,9 @@ WORD32 ihevce_entropy_encode_frame(
     ps_entropy_ctxt->ps_vps = ps_vps;
     ps_entropy_ctxt->ps_sps = ps_sps;
     ps_entropy_ctxt->ps_pps = ps_pps;
+#ifndef DISABLE_SEI
     ps_entropy_ctxt->ps_sei = ps_sei;
+#endif
     ps_entropy_ctxt->ps_slice_hdr = &ps_curr_inp->s_slice_hdr;
     ps_entropy_ctxt->i4_is_cu_cbf_zero = 1;
 
@@ -413,6 +417,7 @@ WORD32 ihevce_entropy_encode_frame(
         ret |= ihevce_generate_pps(ps_bitstrm, ps_entropy_ctxt->ps_pps);
     }
 
+#ifndef DISABLE_SEI
     /* generate sei */
     if(1 == ps_entropy_ctxt->ps_sei->i1_sei_parameters_present_flag)
     {
@@ -435,6 +440,7 @@ WORD32 ihevce_entropy_encode_frame(
                 &ps_curr_inp->as_sei_payload[0]);
         }
     }
+#endif
 
     /*PIC INFO: Populate slice header bits */
     ps_entropy_ctxt->ps_pic_level_info->u8_bits_estimated_slice_header +=
@@ -674,6 +680,7 @@ WORD32 ihevce_entropy_encode_frame(
         }
     }
 
+#ifndef DISABLE_SEI
     /* generate suffix sei */
     if(1 == ps_entropy_ctxt->ps_sei->i1_sei_parameters_present_flag)
     {
@@ -693,6 +700,7 @@ WORD32 ihevce_entropy_encode_frame(
         /* Updating bytes generated */
         ps_curr_out->i4_bytes_generated += ps_bitstrm->u4_strm_buf_offset;
     }
+#endif
 
     /* generate end of sequence nal */
     if((1 == ps_curr_inp->i1_eos_present_flag) && (ps_curr_inp->i4_is_end_of_idr_gop == 1))

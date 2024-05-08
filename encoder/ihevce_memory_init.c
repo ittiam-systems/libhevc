@@ -1340,6 +1340,7 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         total_memtabs_used++;
         total_system_memtabs++;
 
+#ifndef DISABLE_SEI
         /* SEI Payload Data */
         buf_size = sizeof(UWORD8) * MAX_NUMBER_OF_SEI_PAYLOAD * MAX_SEI_PAYLOAD_PER_TLV *
                    NUM_FRMPROC_ENTCOD_BUFS;
@@ -1352,6 +1353,7 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         /* increment the memtab counter */
         total_memtabs_used++;
         total_system_memtabs++;
+#endif
     }
 
     /* ------ Working mem frame level -------*/
@@ -2110,7 +2112,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         UWORD8 *pu1_coeffs;
         WORD32 num_ctb_in_frm;
         WORD32 coeff_size;
-        UWORD8 *pu1_sei_payload;
 
         /* frame process/entropy coding buffer pointer array */
         pps_frm_proc_ent_cod_bufs[i] = (frm_proc_ent_cod_ctxt_t **)ps_memtab->pv_base;
@@ -2147,9 +2148,12 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         /* increment the memtabs */
         ps_memtab++;
 
+#ifndef DISABLE_SEI
         /* CC User Data  */
+        UWORD8 *pu1_sei_payload;
         pu1_sei_payload = (UWORD8 *)ps_memtab->pv_base;
         ps_memtab++;
+#endif
 
         num_ctb_in_frm = num_ctb_horz * num_ctb_vert;
 
@@ -2162,7 +2166,6 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
         /* loop to initialise all the memories */
         for(ctr = 0; ctr < NUM_FRMPROC_ENTCOD_BUFS; ctr++)
         {
-            WORD32 num_sei;
             pps_frm_proc_ent_cod_bufs[i][ctr] = ps_frmp_ent_bufs;
 
             ps_frmp_ent_bufs->ps_frm_ctb_data = ps_ctb;
@@ -2184,7 +2187,8 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
 
             pu1_coeffs += coeff_size;
 
-            for(num_sei = 0; num_sei < MAX_NUMBER_OF_SEI_PAYLOAD; num_sei++)
+#ifndef DISABLE_SEI
+            for(WORD32 num_sei = 0; num_sei < MAX_NUMBER_OF_SEI_PAYLOAD; num_sei++)
             {
                 ps_frmp_ent_bufs->as_sei_payload[num_sei].pu1_sei_payload = pu1_sei_payload;
                 ps_frmp_ent_bufs->as_sei_payload[num_sei].u4_payload_type = 0;
@@ -2192,6 +2196,7 @@ void ihevce_mem_manager_init(enc_ctxt_t *ps_enc_ctxt, ihevce_hle_ctxt_t *ps_intr
                 pu1_sei_payload += MAX_SEI_PAYLOAD_PER_TLV;
             }
 
+#endif
             ps_frmp_ent_bufs++;
         }
     }

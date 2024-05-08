@@ -3097,12 +3097,15 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                                     ps_curr_inp->s_lap_out.i4_is_ref_pic;
 
                                 {
-                                    WORD32 sei_hash_enabled =
-                                        (ps_enc_ctxt->ps_stat_prms->s_out_strm_prms
+                                    WORD32 sei_hash_enabled;
+#ifndef DISABLE_SEI
+                                    sei_hash_enabled = (ps_enc_ctxt->ps_stat_prms->s_out_strm_prms
                                              .i4_sei_enable_flag == 1) &&
                                         (ps_enc_ctxt->ps_stat_prms->s_out_strm_prms
                                              .i4_decoded_pic_hash_sei_flag != 0);
-
+#else
+                                    sei_hash_enabled = 0;
+#endif
                                     /* Deblock a picture for all reference frames unconditionally. */
                                     /* Deblock non ref if psnr compute or save recon is enabled    */
                                     ps_frm_recon->i4_deblk_pad_hpel_cur_pic =
@@ -3508,6 +3511,7 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                             ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr];
                         //ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr]->i4_enc_order_num = ps_curr_inp->s_lap_out.i4_enc_order_num;
                         /*registered User Data Call*/
+#ifndef DISABLE_SEI
                         if(ps_enc_ctxt->ps_stat_prms->s_out_strm_prms.i4_sei_payload_enable_flag)
                         {
                             ihevce_fill_sei_payload(
@@ -3516,6 +3520,7 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                                 ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr]);
                         }
 
+#endif
                         /*derive end flag and input valid flag in output buffer */
                         if(NULL != ps_enc_ctxt->s_multi_thrd.aps_cur_inp_enc_prms[i4_enc_frm_id])
                         {
@@ -3568,12 +3573,14 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                             ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr]->ps_vps =
                                 &ps_enc_ctxt->as_vps[i4_bitrate_ctr];
 
+#ifndef DISABLE_SEI
                             /* SEI header will be populated in pre-enocde stage */
                             memcpy(
                                 &ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr]->s_sei,
                                 &ps_curr_inp_from_me->s_sei,
                                 sizeof(sei_params_t));
 
+#endif
                             /*AUD and EOS presnt flags are populated*/
                             ps_curr_out[i4_enc_frm_id][i4_bitrate_ctr]->i1_aud_present_flag =
                                 ps_enc_ctxt->ps_stat_prms->s_out_strm_prms.i4_aud_enable_flags;
@@ -4168,6 +4175,7 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                             if(1 == ps_enc_ctxt->s_multi_thrd.aps_cur_inp_enc_prms[i4_enc_frm_id]
                                         ->i4_frm_proc_valid_flag)
                             {
+#ifndef DISABLE_SEI
                                 /* Calculate the SEI Hash if enabled */
                                 if(0 !=
                                    ps_enc_ctxt->s_multi_thrd.ps_curr_out_enc_grp[i4_enc_frm_id][i]
@@ -4198,6 +4206,7 @@ WORD32 ihevce_enc_frm_proc_slave_thrd(void *pv_frm_proc_thrd_ctxt)
                                         0,
                                         0);
                                 }
+#endif
                                 /* Sending qp, poc and pic-type to entropy thread for printing on console */
                                 if(ps_enc_ctxt->ps_stat_prms->i4_log_dump_level != 0)
                                 {
@@ -5259,6 +5268,7 @@ void ihevce_pre_enc_init(
         ps_curr_out->ps_vps = &ps_enc_ctxt->as_vps[0];
     }
 
+#ifndef DISABLE_SEI
     /* By default, Sei messages are set to 0, to avoid unintialised memory access */
     memset(&ps_curr_out->s_sei, 0, sizeof(sei_params_t));
 
@@ -5340,6 +5350,7 @@ void ihevce_pre_enc_init(
                 ps_enc_ctxt->ps_stat_prms->s_out_strm_prms.i4_decoded_pic_hash_sei_flag;
         }
     }
+#endif
 
     /* For interlace pictures, first_field depends on topfield_first and bottom field */
     if(i4_field_pic)

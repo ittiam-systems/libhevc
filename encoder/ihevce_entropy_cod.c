@@ -282,6 +282,7 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
 
         PROFILE_START(
             &ps_hle_ctxt->profile_entropy[ps_enc_ctxt->i4_resolution_id][i4_bitrate_instance_num]);
+#ifndef DISABLE_SEI
         /* Content Light Level Information */
         {
             ps_curr_inp->s_sei.i1_sei_cll_enable =
@@ -291,6 +292,7 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
             ps_curr_inp->s_sei.s_cll_info_sei_params.u2_sei_avg_cll =
                 ps_enc_ctxt->ps_stat_prms->s_out_strm_prms.u2_sei_avg_cll;
         }
+#endif
         if((NULL != ps_curr_out) && (NULL != ps_curr_inp))
 
         {
@@ -370,6 +372,7 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
 
             if(1 == ps_curr_inp->i4_frm_proc_valid_flag)
             {
+#ifndef DISABLE_SEI
                 /* --- Init of buffering period and pic timing SEI related params ----*/
                 {
                     UWORD32 i4_dbf, i4_buffersize, i4_trgt_bit_rate;
@@ -414,10 +417,12 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
                         ps_curr_inp->ps_sps->ai1_sps_max_num_reorder_pics[0] +
                         ps_curr_inp->i4_display_num - u4_encode_frm_num;
                 }
+#endif
                 /* call the core entropy coding entry point function */
                 entropy_error = ihevce_entropy_encode_frame(
                     pv_entropy_hdl, ps_curr_out, ps_curr_inp, ps_curr_out->i4_bitstream_buf_size);
 
+#ifndef DISABLE_SEI
                 /* ----------------- Derivation of u4_au_cpb_removal_delay_minus1  --------------------------------*/
                 if(ps_curr_inp->s_sei.i1_buf_period_params_present_flag)
                 {
@@ -438,6 +443,7 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
                     u4_au_cpb_removal_delay_minus1 = (u4_au_cpb_removal_delay_minus1 + 1) &
                                                      u4_max_cpb_removal_delay_val;
                 }
+#endif
                 /* Debug prints for entropy error */
                 if(entropy_error)
                 {
@@ -449,13 +455,20 @@ WORD32 ihevce_ent_coding_thrd(void *pv_frm_proc_thrd_ctxt)
                     /* acquire mutex lock for rate control calls */
                     osal_mutex_lock(ps_enc_ctxt->pv_rc_mutex_lock_hdl);
 
+                    UWORD32 removal_delay_minus1;
+#ifndef DISABLE_SEI
+                    removal_delay_minus1 =
+                        ps_curr_inp->s_sei.s_pic_timing_sei_params.u4_au_cpb_removal_delay_minus1;
+#else
+                    removal_delay_minus1 = 0;
+#endif
                     /* get frame rate/bit rate/max buffer size */
                     ihevce_vbv_compliance_frame_level_update(
                         ps_enc_ctxt->s_module_ctxt.apv_rc_ctxt[i4_bitrate_instance_num],
                         (ps_curr_out->i4_bytes_generated << 3),
                         i4_resolution_id,
                         i4_bitrate_instance_num,
-                        ps_curr_inp->s_sei.s_pic_timing_sei_params.u4_au_cpb_removal_delay_minus1);
+                        removal_delay_minus1);
                     /* release mutex lock after rate control calls */
                     osal_mutex_unlock(ps_enc_ctxt->pv_rc_mutex_lock_hdl);
                 }

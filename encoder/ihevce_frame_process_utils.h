@@ -76,10 +76,12 @@ WORD32 ihevce_get_cur_frame_qp(
     WORD32 max_qp,
     rc_quant_t *ps_rc_quant_ctxt);
 
+#ifndef DISABLE_SEI
 void ihevce_fill_sei_payload(
     enc_ctxt_t *ps_enc_ctxt,
     ihevce_lap_enc_buf_t *ps_curr_inp,
     frm_proc_ent_cod_ctxt_t *ps_curr_out);
+#endif
 
 void ihevce_dyn_bitrate(void *pv_hle_ctxt, void *pv_dyn_bitrate_prms);
 

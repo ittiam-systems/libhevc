@@ -39,6 +39,7 @@
 #define _IHEVC_STRUCTS_H_
 
 
+#ifndef DISABLE_SEI
 /**
  * Buffering Period SEI parameters Info
  */
@@ -519,6 +520,7 @@ typedef struct
     time_code_t s_time_code;
 } sei_params_t;
 
+#endif
 
 /**
  * Sub-layer HRD parameters Info
@@ -952,7 +954,9 @@ typedef struct
     // See IV_FLD_TYPE_T for all field types
     UWORD32 e4_fld_type;
 
+#ifndef DISABLE_SEI
     sei_params_t s_sei_params;
+#endif
 
     WORD32 i4_vui_present;
 

@@ -308,6 +308,7 @@ unsigned int calc_block_ssim(
     }
 }
 
+#ifndef DISABLE_SEI
 /*!
 ******************************************************************************
 * \if Function name : ihevce_fill_sei_payload \endif
@@ -392,6 +393,7 @@ void ihevce_fill_sei_payload(
             pu4_tag += 2;
     }
 }
+#endif
 
 /*!
 ******************************************************************************

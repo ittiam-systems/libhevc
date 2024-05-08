@@ -595,6 +595,7 @@ WORD32 ihevce_generate_vui(bitstrm_t *ps_bitstrm, sps_t *ps_sps, vui_t s_vui)
     return return_status;
 }
 
+#ifndef DISABLE_SEI
 /**
 ******************************************************************************
 *
@@ -2470,6 +2471,7 @@ WORD32 ihevce_populate_hash_sei(
 
     return IHEVCE_SUCCESS;
 }
+#endif
 
 /**
 ******************************************************************************

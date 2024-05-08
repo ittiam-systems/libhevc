@@ -213,8 +213,10 @@ typedef struct entropy_context
     /** pointer to current pps parameters    */
     pps_t *ps_pps;
 
+#ifndef DISABLE_SEI
     /** pointer to current sei parameters    */
     sei_params_t *ps_sei;
+#endif
 
     /** pointer to current slice header parameters    */
     slice_header_t *ps_slice_hdr;
