@@ -466,6 +466,7 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         ps_static_prms->s_out_strm_prms.i4_vui_enable = i4_value;
         break;
 
+#ifndef DISABLE_SEI
     case SEI_ENABLE_FLAGS:
         sscanf(value, "%d", &i4_value);
         ps_static_prms->s_out_strm_prms.i4_sei_enable_flag = i4_value;
@@ -505,6 +506,7 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         sscanf(value, "%d", &i4_value);
         ps_static_prms->s_out_strm_prms.i4_sei_mastering_disp_colour_vol_flags = i4_value;
         break;
+#endif
 
     case DISPLAY_PRIMARIES_X:
     {
@@ -513,10 +515,12 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         const char s[2] = ",";
         WORD32 i;
 
+#ifndef DISABLE_SEI
         if(0 == ps_static_prms->s_out_strm_prms.i4_sei_mastering_disp_colour_vol_flags)
         {
             break;
         }
+#endif
         sscanf(value, "%s", pu1_keywd_str);
 
         str = (char *)pu1_keywd_str;
@@ -547,10 +551,12 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         const char s[2] = ",";
         WORD32 i;
 
+#ifndef DISABLE_SEI
         if(0 == ps_static_prms->s_out_strm_prms.i4_sei_mastering_disp_colour_vol_flags)
         {
             break;
         }
+#endif
         sscanf(value, "%s", pu1_keywd_str);
 
         str = (char *)pu1_keywd_str;
@@ -594,6 +600,7 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         ps_static_prms->s_out_strm_prms.u4_min_display_mastering_luminance = i4_value;
         break;
 
+#ifndef DISABLE_SEI
     case SEI_CLL_INFO_ENABLE:
         sscanf(value, "%d", &i4_value);
         ps_static_prms->s_out_strm_prms.i4_sei_cll_enable = i4_value;
@@ -608,6 +615,7 @@ IHEVCE_PLUGIN_STATUS_T parse_argument(appl_ctxt_t *ps_ctxt, CHAR *argument, CHAR
         sscanf(value, "%d", &i4_value);
         ps_static_prms->s_out_strm_prms.u2_sei_avg_cll = i4_value;
         break;
+#endif
 
     case TILES_ENABLED_FLAG:
         sscanf(value, "%d", &i4_value);

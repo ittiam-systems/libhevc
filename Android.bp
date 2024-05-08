@@ -447,6 +447,7 @@ cc_library_static {
     host_supported: true,
     cflags: [
         "-DENABLE_MAIN_REXT_PROFILE",
+        "-DDISABLE_SEI",
         "-fPIC",
         "-O3",
         "-Wall",
@@ -810,6 +811,7 @@ cc_test {
     host_supported: true,
     cflags: [
         "-DARM",
+        "-DDISABLE_SEI",
         "-fPIC",
         "-Wall",
         "-Werror",

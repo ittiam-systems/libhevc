@@ -64,7 +64,9 @@ enum {
     IDX_MAX_CRA_OPEN_GOP,
     IDX_ENABLE_SPS_AT_CDR,
     IDX_ENABLE_VUI,
+#ifndef DISABLE_SEI
     IDX_ENABLE_SEI,
+#endif
     IDX_ARCH_TYPE,
     IDX_ENABLE_FORCE_IDR,
     IDX_ENABLE_DYNAMIC_BITRATE,
@@ -132,8 +134,10 @@ bool Codec::initEncoder(const uint8_t *data) {
 
     mEncParams.s_out_strm_prms.i4_sps_at_cdr_enable = data[IDX_ENABLE_SPS_AT_CDR] & 0x01;
     mEncParams.s_out_strm_prms.i4_vui_enable = data[IDX_ENABLE_VUI] & 0x01;
+#ifndef DISABLE_SEI
     mEncParams.s_out_strm_prms.i4_sei_enable_flag = data[IDX_ENABLE_SEI] & 0x01;
 
+#endif
     mEncParams.e_arch_type = ((data[IDX_ARCH_TYPE] & 0x03) == 0x00) ? ARCH_ARM_NONEON : ARCH_NA;
     mIsForceIdrEnabled = data[IDX_ENABLE_FORCE_IDR] & 0x01;
     mIsDynamicBitrateChangeEnabled = data[IDX_ENABLE_DYNAMIC_BITRATE] & 0x01;

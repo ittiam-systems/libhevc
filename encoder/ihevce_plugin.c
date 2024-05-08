@@ -354,6 +354,7 @@ IHEVCE_PLUGIN_STATUS_T ihevce_set_def_params(ihevce_static_cfg_params_t *ps_para
     ps_params->s_out_strm_prms.i4_codec_profile = 1;
     ps_params->s_out_strm_prms.i4_codec_tier = 0;
     ps_params->s_out_strm_prms.i4_codec_type = 0;
+#ifndef DISABLE_SEI
     ps_params->s_out_strm_prms.i4_sei_buffer_period_flags = 0;
     ps_params->s_out_strm_prms.i4_sei_enable_flag = 0;
     ps_params->s_out_strm_prms.i4_sei_payload_enable_flag = 0;
@@ -364,6 +365,7 @@ IHEVCE_PLUGIN_STATUS_T ihevce_set_def_params(ihevce_static_cfg_params_t *ps_para
     ps_params->s_out_strm_prms.i4_sei_recovery_point_flags = 0;
     ps_params->s_out_strm_prms.i4_sei_mastering_disp_colour_vol_flags = 0;
     ps_params->s_out_strm_prms.i4_decoded_pic_hash_sei_flag = 0;
+#endif
     ps_params->s_out_strm_prms.i4_sps_at_cdr_enable = 1;
     ps_params->s_out_strm_prms.i4_vui_enable = 0;
     /*Set the interoperability flag to 0*/

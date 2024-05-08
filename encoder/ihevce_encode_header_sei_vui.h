@@ -40,6 +40,7 @@
 /* Function Macros                                                           */
 /*****************************************************************************/
 
+#ifndef DISABLE_SEI
 /**
 ******************************************************************************
  *  @brief   Macro to calculate the CRC for a bit index
@@ -92,17 +93,6 @@ typedef enum
 /*****************************************************************************/
 /* Extern Function Declarations                                              */
 /*****************************************************************************/
-
-WORD32 ihevce_generate_sub_layer_hrd_params(
-    bitstrm_t *ps_bitstrm,
-    sub_lyr_hrd_params_t *ps_sub_lyr_hrd_params,
-    hrd_params_t *ps_hrd_params,
-    WORD32 cpb_cnt_minus1);
-
-WORD32
-    ihevce_generate_hrd_params(bitstrm_t *ps_bitstrm, hrd_params_t *ps_hrd_params, sps_t *ps_sps);
-
-WORD32 ihevce_generate_vui(bitstrm_t *ps_bitstrm, sps_t *ps_sps, vui_t s_vui);
 
 WORD32 ihevce_put_buf_period_sei_params(
     buf_period_sei_params_t *ps_bp_sei, vui_t *ps_vui_params, bitstrm_t *ps_bitstrm);
@@ -163,6 +153,18 @@ WORD32 ihevce_populate_hash_sei(
     WORD32 uv_strd,
     WORD32 i4_frame_pos_x,
     WORD32 i4_frame_pos_y);
+#endif
+
+WORD32 ihevce_generate_sub_layer_hrd_params(
+    bitstrm_t *ps_bitstrm,
+    sub_lyr_hrd_params_t *ps_sub_lyr_hrd_params,
+    hrd_params_t *ps_hrd_params,
+    WORD32 cpb_cnt_minus1);
+
+WORD32
+    ihevce_generate_hrd_params(bitstrm_t *ps_bitstrm, hrd_params_t *ps_hrd_params, sps_t *ps_sps);
+
+WORD32 ihevce_generate_vui(bitstrm_t *ps_bitstrm, sps_t *ps_sps, vui_t s_vui);
 
 WORD32 ihevce_populate_vui(
     vui_t *ps_vui,

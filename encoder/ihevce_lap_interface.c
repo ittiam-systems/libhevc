@@ -548,7 +548,9 @@ void ihevce_lap_parse_sync_cmd(
     WORD32 *pi4_tag_parse = pi4_cmd_buf;
     WORD32 i4_cmd_size = ps_lap_inp_buf->s_input_buf.i4_cmd_buf_size;
     WORD32 i4_buf_id = ps_lap_inp_buf->s_input_buf.i4_buf_id;
+#ifndef DISABLE_SEI
     UWORD32 u4_num_sei = 0;
+#endif
     WORD32 i4_end_flag = 0;
 
     while(i4_cmd_size >= 4)
@@ -568,7 +570,9 @@ void ihevce_lap_parse_sync_cmd(
             (*pi4_flush_check) = 1;
             pi4_tag_parse += 2;
             i4_cmd_size -= 8;
+#ifndef DISABLE_SEI
             u4_num_sei++;
+#endif
             break;
         case IHEVCE_SYNCH_API_FORCE_IDR_TAG:
             if(i4_cmd_size < 8 || pi4_tag_parse[1])
@@ -583,7 +587,9 @@ void ihevce_lap_parse_sync_cmd(
             (*pi4_force_idr_check) = 1;
             pi4_tag_parse += 2;
             i4_cmd_size -= 8;
+#ifndef DISABLE_SEI
             u4_num_sei++;
+#endif
             break;
         case IHEVCE_SYNCH_API_END_TAG:
             i4_end_flag = 1;
@@ -597,9 +603,11 @@ void ihevce_lap_parse_sync_cmd(
         if(i4_end_flag)
             break;
     }
+#ifndef DISABLE_SEI
     if(u4_num_sei > MAX_NUMBER_OF_SEI_PAYLOAD)  //Checking for max number of SEI messages.
         ps_hle_ctxt->ihevce_cmds_error_report(
             ps_hle_ctxt->pv_cmd_err_cb_handle, IHEVCE_SYNCH_ERR_TOO_MANY_SEI_MSG, 1, i4_buf_id);
+#endif
 
     if(!i4_end_flag)
         ps_hle_ctxt->ihevce_cmds_error_report(

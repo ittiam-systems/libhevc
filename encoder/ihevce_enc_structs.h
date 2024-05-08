@@ -1589,8 +1589,10 @@ typedef struct
     /** Buffer pointer for CTB level information in pre intra pass*/
     ihevce_ed_ctb_l1_t *ps_ed_ctb_l1;
 
+#ifndef DISABLE_SEI
     /** vps parameters activated by current slice  */
     sei_params_t s_sei;
+#endif
 
     /** nal_type for the slice to be encoded  */
     WORD32 i4_slice_nal_type;
@@ -1826,6 +1828,7 @@ typedef struct
     ULWORD64 i8_frame_inter_cost;
 } s_pic_level_acc_info_t;
 
+#ifndef DISABLE_SEI
 typedef struct
 {
     UWORD32 u4_target_bit_rate_sei_entropy;
@@ -1833,6 +1836,7 @@ typedef struct
     UWORD32 u4_dbf_entropy;
 
 } s_pic_level_sei_info_t;
+#endif
 /**
 ******************************************************************************
 *  @brief  ME pass and Main enocde pass shared variables and buffers
@@ -1912,12 +1916,14 @@ typedef struct
 
 } me_enc_rdopt_ctxt_t;
 
+#ifndef DISABLE_SEI
 typedef struct
 {
     UWORD32 u4_payload_type;
     UWORD32 u4_payload_length;
     UWORD8 *pu1_sei_payload;
 } sei_payload_t;
+#endif
 
 typedef struct
 {
@@ -1954,8 +1960,10 @@ typedef struct
     /** vps parameters activated by current slice  */
     vps_t *ps_vps;
 
+#ifndef DISABLE_SEI
     /** vps parameters activated by current slice  */
     sei_params_t s_sei;
+#endif
 
     /* Flag to indicate if AUD NAL is present */
     WORD8 i1_aud_present_flag;
@@ -2019,9 +2027,11 @@ typedef struct
 
     WORD32 i4_is_end_of_idr_gop;
 
+#ifndef DISABLE_SEI
     sei_payload_t as_sei_payload[MAX_NUMBER_OF_SEI_PAYLOAD];
 
     UWORD32 u4_num_sei_payload;
+#endif
     /* Flag used only in mres single output case to flush out one res and start with next */
     WORD32 i4_out_flush_flag;
 
