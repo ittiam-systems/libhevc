@@ -76,12 +76,10 @@
 /* Maximum number of processor groups supported */
 #define MAX_NUMBER_PROC_GRPS 4
 
-#ifndef DISABLE_SEI
 /** @brief maximum length of CC User Data in a single frame */
 #define MAX_SEI_PAYLOAD_PER_TLV (0x200)
 
 #define MAX_NUMBER_OF_SEI_PAYLOAD (10)
-#endif
 
 #define IHEVCE_COMMANDS_TAG_MASK (0x0000FFFF)
 
@@ -181,10 +179,8 @@ typedef enum
     IHEVCE_SYNCH_API_END_TAG = 0xFFFF,
     IHEVCE_SYNCH_API_FLUSH_TAG = 0x21,
     IHEVCE_SYNCH_API_FORCE_IDR_TAG = 0x22,
-#ifndef DISABLE_SEI
     IHEVCE_SYNCH_API_REG_KEYFRAME_SEI_TAG = 0x23,
     IHEVCE_SYNCH_API_REG_ALLFRAME_SEI_TAG = 0x24,
-#endif
     IHEVCE_SYNCH_API_SET_RES_TAG = 0x25
 } IHEVCE_SYNCH_API_COMMAND_TAG_T;
 
@@ -196,9 +192,7 @@ typedef enum
     IHEVCE_SYNCH_ERR_NO_PADDING = IHEVCE_SYNCH_ERROR_START + 0x14,
     IHEVCE_SYNCH_ERR_WRONG_LENGTH = IHEVCE_SYNCH_ERROR_START + 0x15,
     IHEVCE_SYNCH_ERR_FREQ_FORCE_IDR_RECEIVED = IHEVCE_SYNCH_ERROR_START + 0x16,
-#ifndef DISABLE_SEI
     IHEVCE_SYNCH_ERR_TOO_MANY_SEI_MSG = IHEVCE_SYNCH_ERROR_START + 0x17,
-#endif
     IHEVCE_SYNCH_ERR_SET_RES_NOT_SUPPORTED = IHEVCE_SYNCH_ERROR_START + 0x18
 } IHEVCE_SYNCH_ERROR_TAG_T;
 
@@ -443,7 +437,6 @@ typedef struct
     /** Enable VUI output  1: enable 0 : disable */
     WORD32 i4_vui_enable;
 
-#ifndef DISABLE_SEI
     /** Enable specific SEI messages in the stream
      *  1: enable 0 : disable
      */
@@ -473,7 +466,6 @@ typedef struct
      *  1: enable 0 : disable
      */
     WORD32 i4_sei_mastering_disp_colour_vol_flags;
-#endif
 
     /**
      * Array to store the display_primaries_x values
@@ -505,7 +497,6 @@ typedef struct
      */
     UWORD32 u4_min_display_mastering_luminance;
 
-#ifndef DISABLE_SEI
     /**
      * Enable Content Level Light Info
      */
@@ -525,7 +516,6 @@ typedef struct
      *  3 : Checksum, 2 : CRC, 1 : MD5, 0 : disable
      */
     WORD32 i4_decoded_pic_hash_sei_flag;
-#endif
 
     /** Enable specific AUD messages in the stream
      *  1: enable 0 : disable
