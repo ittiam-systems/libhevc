@@ -3650,12 +3650,19 @@ WORD32 ihevcd_ctl(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             ret = ihevcd_get_vui_params(ps_codec_obj, (void *)pv_api_ip,
                                         (void *)pv_api_op);
             break;
-#ifndef DISABLE_SEI
         case IHEVCD_CXA_CMD_CTL_GET_SEI_MASTERING_PARAMS:
+#ifndef DISABLE_SEI
             ret = ihevcd_get_sei_mastering_params(ps_codec_obj, (void *)pv_api_ip,
                                         (void *)pv_api_op);
-            break;
+#else
+            {
+                ihevcd_cxa_ctl_get_sei_mastering_params_op_t *ps_op =
+                        (ihevcd_cxa_ctl_get_sei_mastering_params_op_t *)pv_api_op;
+                ps_op->u4_error_code = IHEVCD_SEI_MASTERING_PARAMS_NOT_FOUND;
+                return IV_FAIL;
+            }
 #endif
+            break;
         case IHEVCD_CXA_CMD_CTL_SET_PROCESSOR:
             ret = ihevcd_set_processor(ps_codec_obj, (void *)pv_api_ip,
                             (void *)pv_api_op);

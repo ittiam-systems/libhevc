@@ -3013,7 +3013,6 @@ int main(WORD32 argc, CHAR *argv[])
             /*************************************************************************/
             /* Get SEI mastering display color volume parameters                     */
             /*************************************************************************/
-#ifndef DISABLE_SEI
             if(1 == ps_video_decode_op->u4_output_present)
             {
 
@@ -3038,8 +3037,6 @@ int main(WORD32 argc, CHAR *argv[])
                 }
 
             }
-
-#endif
 
             if((1 == s_app_ctx.display) &&
                             (1 == ps_video_decode_op->u4_output_present))
