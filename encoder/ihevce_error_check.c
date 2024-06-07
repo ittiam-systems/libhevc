@@ -360,7 +360,6 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : u2_sei_max_cll %d \n", ps_static_cfg_prms->s_out_strm_prms.u2_sei_max_cll);
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : i4_sei_recovery_point_flags %d \n", ps_static_cfg_prms->s_out_strm_prms.i4_sei_recovery_point_flags);
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : i4_sei_mastering_disp_colour_vol_flags %d \n", ps_static_cfg_prms->s_out_strm_prms.i4_sei_mastering_disp_colour_vol_flags);
-#endif
             for(i4_i = 0; i4_i < 3; i4_i++)
                 PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : u2_display_primaries_x[i4_i] %d \n", ps_static_cfg_prms->s_out_strm_prms.au2_display_primaries_x[i4_i]);
             for(i4_i = 0; i4_i < 3; i4_i++)
@@ -369,7 +368,6 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : u2_white_point_y %d \n", ps_static_cfg_prms->s_out_strm_prms.u2_white_point_y);
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : u4_max_display_mastering_luminance %d \n", ps_static_cfg_prms->s_out_strm_prms.u4_max_display_mastering_luminance);
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : u4_min_display_mastering_luminance %d \n", ps_static_cfg_prms->s_out_strm_prms.u4_min_display_mastering_luminance);
-#ifndef DISABLE_SEI
             PRINTF(ps_sys_api->pv_cb_handle, i4_res_id, i4_br_id, "IHEVCE : i4_sei_hash_flags %d \n", ps_static_cfg_prms->s_out_strm_prms.i4_decoded_pic_hash_sei_flag);
 #endif
 
