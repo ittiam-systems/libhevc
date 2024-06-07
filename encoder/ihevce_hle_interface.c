@@ -521,6 +521,9 @@ IV_API_CALL_STATUS_T ihevce_query_io_buf_req(
 
     ps_input_bufs_req->i4_min_size_asynch_ctrl_bufs =
         ((MAX_SEI_PAYLOAD_PER_TLV + 16) * (MAX_NUMBER_OF_SEI_PAYLOAD - 6)) + 16;
+#else
+    ps_input_bufs_req->i4_min_size_synch_ctrl_bufs = 16;
+    ps_input_bufs_req->i4_min_size_asynch_ctrl_bufs = 16;
 #endif
 
     for(i4_resolution_id_ctr = 0; i4_resolution_id_ctr < i4_num_resolutions; i4_resolution_id_ctr++)
