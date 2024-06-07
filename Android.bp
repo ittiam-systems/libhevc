@@ -424,7 +424,6 @@ cc_test {
     host_supported: true,
     cflags: [
         "-DPROFILE_ENABLE",
-        "-DDISABLE_SEI",
         "-DARM",
         "-fPIC",
         "-DMD5_DISABLE",
@@ -811,7 +810,6 @@ cc_test {
     host_supported: true,
     cflags: [
         "-DARM",
-        "-DDISABLE_SEI",
         "-fPIC",
         "-Wall",
         "-Werror",

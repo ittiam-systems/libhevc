@@ -203,9 +203,7 @@ typedef struct
 
     ihevce_static_cfg_params_t s_static_cfg_prms;
 
-#ifndef DISABLE_SEI
     char ai1_sei_payload_path[STR_LEN];
-#endif
 
 } appl_ctxt_t;
 
