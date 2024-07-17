@@ -712,8 +712,6 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
     }
 
     {
-        WORD32 sub_gop_size = (1 << ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers)
-                              << ps_static_cfg_prms->s_src_prms.i4_field_pic;
         WORD32 i4_max_idr_period, i4_min_idr_period, i4_max_cra_period, i4_max_i_period;
         WORD32 i4_max_i_distance;
         WORD32 i4_min_i_distance = 0, i4_non_zero_idr_period = 0x7FFFFFFF,
@@ -723,6 +721,12 @@ WORD32 ihevce_hle_validate_static_params(ihevce_static_cfg_params_t *ps_static_c
         i4_max_cra_period = ps_static_cfg_prms->s_coding_tools_prms.i4_max_cra_open_gop_period;
         i4_max_i_period = ps_static_cfg_prms->s_coding_tools_prms.i4_max_i_open_gop_period;
         i4_max_i_distance = MAX(MAX(i4_max_idr_period, i4_max_cra_period), i4_max_i_period);
+        WORD32 num_b_frms =
+                (1 << ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers) - 1;
+        if (i4_max_i_distance <= num_b_frms)
+            ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers = 0;
+        WORD32 sub_gop_size = (1 << ps_static_cfg_prms->s_coding_tools_prms.i4_max_temporal_layers)
+                << ps_static_cfg_prms->s_src_prms.i4_field_pic;
 
         if(sub_gop_size > 1)
         {
