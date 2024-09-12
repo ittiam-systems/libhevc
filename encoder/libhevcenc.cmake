@@ -95,7 +95,9 @@ list(
 include_directories(${HEVC_ROOT}/encoder)
 
 # arm/x86 sources
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}"
+if("${SYSTEM_NAME}" STREQUAL "Darwin")
+  message("Assembly optimizations not supported for MacOS")
+elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}"
                                                      STREQUAL "aarch32")
   list(
     APPEND

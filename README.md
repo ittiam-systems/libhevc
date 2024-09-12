@@ -7,6 +7,8 @@ Supports:
 - aarch32/aarch64 on Linux.
 - aarch32/aarch64 on Android.
 - x86_32/x86_64 on Linux.
+- aarch64 on Mac.
+- x86_64 on Mac.
 
 ## Native Builds
 Use the following commands for building on the target machine
@@ -51,3 +53,29 @@ $ make
 $ cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch32_toolchain.cmake
 $ make
 ```
+
+### Building for android
+NOTE: This assumes that you are building on a machine that has
+ [Android NDK](https://developer.android.com/ndk/downloads).
+
+```
+$ cd external/libhevc
+$ mkdir build
+$ cd build
+```
+
+#### Armv7 (32-bit)
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android_toolchain.cmake\
+        -DHEVC_ANDROID_NDK_PATH=/opt/android-ndk-r26d/\
+        -DANDROID_ABI=armeabi-v7a\
+        -DANDROID_PLATFORM=android-23 ../
+    make
+
+#### Armv8 (64-bit)
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android_toolchain.cmake\
+        -DHEVC_ANDROID_NDK_PATH=/opt/android-ndk-r26d/\
+        -DANDROID_ABI=arm64-v8a\
+        -DANDROID_PLATFORM=android-23 ../
+    make

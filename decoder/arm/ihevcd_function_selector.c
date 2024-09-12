@@ -110,8 +110,13 @@ void ihevcd_init_function_ptr(void *pv_codec)
             break;
         case ARCH_ARMV8_GENERIC:
         default:
+#ifdef DARWIN
+            ihevcd_init_function_ptr_noneon(ps_codec);
+            break;
+#else
             ihevcd_init_function_ptr_av8(ps_codec);
             break;
+#endif
     }
 #endif
 }

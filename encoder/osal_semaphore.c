@@ -49,6 +49,10 @@
 /* System include files */
 #include <stdio.h>
 
+#ifdef DARWIN
+#include <string.h>
+#include <stdlib.h>
+#endif
 #include <semaphore.h>
 #include <errno.h>
 
@@ -119,6 +123,25 @@ void *osal_sem_create(IN void *osal_handle, IN osal_sem_attr_t *attr)
         sem_handle->hdl = handle;
 
         /* Create a sempahore */
+#ifdef DARWIN
+        static int sem_counter = 0;
+        char sem_name[32];
+        snprintf(sem_name, sizeof(sem_name), "/osal_sem_%d", sem_counter++);
+
+        sem_t *sem = sem_open(sem_name, O_CREAT, 0644, attr->value);
+        if(sem == SEM_FAILED){
+            handle->free(sem_handle->mmr_handle, sem_handle);
+            return 0;
+        }
+        sem_handle->sem_handle = sem;
+        sem_handle->sem_name = strdup(sem_name);
+        if(sem_handle->sem_name == NULL){
+            sem_close(sem);
+            sem_unlink(sem_name);
+            handle->free(sem_handle->mmr_handle, sem_handle);
+            return 0;
+        }
+#else
         if(-1 == sem_init(
                      &(sem_handle->sem_handle), /* Semaphore handle     */
                      0, /* Shared only between threads */
@@ -127,6 +150,7 @@ void *osal_sem_create(IN void *osal_handle, IN osal_sem_attr_t *attr)
             handle->free(sem_handle->mmr_handle, sem_handle);
             return 0;
         }
+#endif
 
         return sem_handle;
     }
@@ -171,11 +195,20 @@ WORD32 osal_sem_destroy(IN void *sem_handle)
             return OSAL_ERROR;
 
         /* Destroy the semaphore */
+#ifdef DARWIN
+        if(0 == sem_close(handle->sem_handle) && 0 == sem_unlink(handle->sem_name))
+        {
+            free(handle->sem_name);
+            handle->hdl->free(handle->mmr_handle, handle);
+            return OSAL_SUCCESS;
+        }
+#else
         if(0 == sem_destroy(&(handle->sem_handle)))
         {
             handle->hdl->free(handle->mmr_handle, handle);
             return OSAL_SUCCESS;
         }
+#endif
 
         return OSAL_ERROR;
     }
@@ -219,7 +252,11 @@ WORD32 osal_sem_wait(IN void *sem_handle)
         sem_handle_t *handle = (sem_handle_t *)sem_handle;
 
         /* Wait on Semaphore object infinitly */
+#ifdef DARWIN
+        return sem_wait(handle->sem_handle);
+#else
         return sem_wait(&(handle->sem_handle));
+#endif
     }
 }
 
@@ -258,7 +295,11 @@ WORD32 osal_sem_post(IN void *sem_handle)
         sem_handle_t *handle = (sem_handle_t *)sem_handle;
 
         /* Semaphore Post */
+#ifdef DARWIN
+        return sem_post(handle->sem_handle);
+#else
         return sem_post(&(handle->sem_handle));
+#endif
     }
 }
 
@@ -297,8 +338,13 @@ WORD32 osal_sem_count(IN void *sem_handle, OUT WORD32 *count)
     {
         sem_handle_t *handle = (sem_handle_t *)sem_handle;
 
+#ifdef DARWIN
+        if(-1 == sem_getvalue(handle->sem_handle, count))
+            return OSAL_ERROR;
+#else
         if(-1 == sem_getvalue(&(handle->sem_handle), count))
             return OSAL_ERROR;
+#endif
 
         return OSAL_SUCCESS;
     }

@@ -66,7 +66,9 @@
 #include <unistd.h>
 #include <math.h>
 #include <sched.h> /*for CPU_SET, etc.. */
-#include <linux/unistd.h>
+#ifndef DARWIN
+#include<linux/unistd.h>
+#endif
 #include <sys/syscall.h>
 
 /* User include files */
@@ -296,14 +298,19 @@ WORD32 osal_thread_sleep(IN UWORD32 milli_seconds)
         timer.tv_sec = milli_seconds / 1000;
         milli_seconds -= (timer.tv_sec * 1000);
         timer.tv_nsec = milli_seconds * MEGA_CONST;
-
+#ifdef DARWIN
+        if(0 == nanosleep(&timer, NULL))
+        {
+            return OSAL_SUCCESS;
+        }
+#else
         /* Using Monotonic clock to sleep, also flag is set to 0 for relative */
         /* time to current clock time                                         */
         if(0 == clock_nanosleep(CLOCK_MONOTONIC, 0, &timer, NULL))
         {
             return OSAL_SUCCESS;
         }
-
+#endif
         return OSAL_ERROR;
     }
 }
@@ -703,5 +710,11 @@ void osal_print_last_error(IN const STRWORD8 *string)
 
 WORD32 osal_get_current_tid(void)
 {
+#ifdef DARWIN
+    uint64_t tid;
+    pthread_threadid_np(NULL, &tid);
+    return tid;
+#else
     return syscall(__NR_gettid);
+#endif
 }

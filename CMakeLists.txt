@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.9.1)
 project(libhevc C CXX)
-enable_language(ASM)
+
+if(NOT DEFINED SYSTEM_NAME)
+  set(SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME})
+endif()
+
+if(NOT DEFINED SYSTEM_PROCESSOR)
+  set(SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
+endif()
+
+if(NOT "${SYSTEM_NAME}" STREQUAL "Darwin")
+  enable_language(ASM)
+endif()
 
 set(HEVC_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(HEVC_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
