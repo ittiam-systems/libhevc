@@ -33,7 +33,7 @@ list(
 include_directories(${HEVC_ROOT}/decoder)
 
 # arm/x86 sources
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "arm64")
   list(
     APPEND
     LIBHEVCDEC_ASMS
@@ -47,7 +47,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_luma.s")
 
   include_directories(${HEVC_ROOT}/decoder/arm64)
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch32")
+elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
   list(
     APPEND
     LIBHEVCDEC_ASMS

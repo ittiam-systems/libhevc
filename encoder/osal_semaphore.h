@@ -56,7 +56,12 @@
 /* typedef integer.                                                          */
 typedef struct
 {
+#ifdef DARWIN
+    sem_t *sem_handle; /* Semaphore handle                       */
+    char *sem_name; /* Semaphore name                       */
+#else
     sem_t sem_handle; /* Semaphore handle                       */
+#endif
     void *mmr_handle; /* Pointer to memory manager handle       */
     osal_t *hdl; /* Associated OSAL handle                 */
 

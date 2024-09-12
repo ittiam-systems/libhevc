@@ -62,7 +62,7 @@ list(
 include_directories(${HEVC_ROOT}/common)
 
 # arm/x86 sources
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "arm64")
   list(
     APPEND
     LIBHEVC_COMMON_ASMS
@@ -135,7 +135,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_uni.s")
 
   include_directories(${HEVC_ROOT}/common/arm64 ${HEVC_ROOT}/common/arm)
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch32")
+elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
   list(
     APPEND
     LIBHEVC_COMMON_ASMS
