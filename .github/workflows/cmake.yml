@@ -26,6 +26,20 @@ jobs:
             build-system: cmake
             cmake-opts: ''
 
+          - name: ubuntu-latest-clang-cmake-asan-fuzzer
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build-system: cmake
+            cmake-opts: '-DSANITIZE=fuzzer-no-link,address'
+
+          - name: ubuntu-latest-clang-cmake-ninja
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build-system: cmake
+            cmake-opts: '-G Ninja'
+
           - name: macos-latest-clang-cmake
             os: macos-latest
             cc: clang
@@ -37,6 +51,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install Linux dependencies
+      if: startsWith(matrix.os,'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
 
     - name: Configure CMake
       env:
