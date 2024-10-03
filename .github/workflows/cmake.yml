@@ -53,7 +53,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Linux dependencies
-      if: startsWith(matrix.os,'ubuntu')
+      if: startsWith(matrix.os,'ubuntu') && contains(matrix.cmake-opts,'-G Ninja')
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build
