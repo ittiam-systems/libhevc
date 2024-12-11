@@ -356,6 +356,15 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
             ps_dec_op->s_disp_frm_buf.u4_v_ht =
                             ps_dec_op->s_disp_frm_buf.u4_y_ht / 2;
         }
+        else if(IV_GRAY == ps_codec->e_chroma_fmt)
+        {
+            ps_dec_op->s_disp_frm_buf.u4_u_strd = 0;
+            ps_dec_op->s_disp_frm_buf.u4_v_strd = 0;
+            ps_dec_op->s_disp_frm_buf.u4_u_wd = 0;
+            ps_dec_op->s_disp_frm_buf.u4_v_wd = 0;
+            ps_dec_op->s_disp_frm_buf.u4_u_ht = 0;
+            ps_dec_op->s_disp_frm_buf.u4_v_ht = 0;
+        }
 
     }
     else if(ps_codec->i4_flush_mode)

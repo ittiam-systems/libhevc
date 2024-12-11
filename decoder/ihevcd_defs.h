@@ -454,6 +454,7 @@ enum
 #define MIN_OUT_BUFS_RGB565     1
 #define MIN_OUT_BUFS_RGBA8888   1
 #define MIN_OUT_BUFS_420SP      2
+#define MIN_OUT_BUFS_GRAY       1
 
 /**
  ****************************************************************************

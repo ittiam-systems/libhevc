@@ -186,7 +186,8 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth] = ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth - 1];
             ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth] = ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth - 1];
         }
-        if(trafo_depth == 0 || log2_trafo_size > 2)
+        if ((CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && log2_trafo_size > 2) ||
+            ps_sps->i1_chroma_format_idc == 3)
         {
             ctxt_idx = IHEVC_CAB_CBCR_IDX + trafo_depth;
             /* CBF for Cb/Cr is sent only if the parent CBF for Cb/Cr is non-zero */
@@ -599,15 +600,17 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
         *pu1_coeff_data++ = value << (BIT_DEPTH_LUMA - num_bits);
     }
 
-    num_bits = ps_sps->i1_pcm_sample_bit_depth_chroma;
-
-    for(i = 0; i < (1 << (log2_cb_size << 1)) >> 1; i++)
+    if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
     {
-        TRACE_CABAC_CTXT("pcm_sample_chroma", ps_cabac->u4_range, 0);
-        BITS_PARSE("pcm_sample_chroma", value, ps_bitstrm, num_bits);
+        num_bits = ps_sps->i1_pcm_sample_bit_depth_chroma;
 
-        // ps_pcmsample_t->i1_pcm_sample_chroma[i] = value;
-        *pu1_coeff_data++ = value << (BIT_DEPTH_CHROMA - num_bits);
+        for (i = 0; i < (1 << (log2_cb_size << 1)) >> 1; i++) {
+            TRACE_CABAC_CTXT("pcm_sample_chroma", ps_cabac->u4_range, 0);
+            BITS_PARSE("pcm_sample_chroma", value, ps_bitstrm, num_bits);
+
+            // ps_pcmsample_t->i1_pcm_sample_chroma[i] = value;
+            *pu1_coeff_data++ = value << (BIT_DEPTH_CHROMA - num_bits);
+        }
     }
 
     ps_codec->s_parse.pv_tu_coeff_data = pu1_coeff_data;
@@ -1116,22 +1119,21 @@ IHEVCD_ERROR_T ihevcd_parse_coding_unit_intra(codec_t *ps_codec,
             }
             cnt++;
         }
-        TRACE_CABAC_CTXT("intra_chroma_pred_mode", ps_cabac->u4_range, IHEVC_CAB_CHROMA_PRED_MODE);
-        value = ihevcd_cabac_decode_bin(ps_cabac,
-                                        ps_bitstrm,
-                                        IHEVC_CAB_CHROMA_PRED_MODE);
-        ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx = 4;
-        if(value)
-        {
-            ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx =
-                            ihevcd_cabac_decode_bypass_bins(ps_cabac,
-                                                            ps_bitstrm, 2);
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc) {
+            TRACE_CABAC_CTXT("intra_chroma_pred_mode", ps_cabac->u4_range, IHEVC_CAB_CHROMA_PRED_MODE);
+            value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm,
+                    IHEVC_CAB_CHROMA_PRED_MODE);
+            ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx = 4;
+            if (value) {
+                ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx =
+                        ihevcd_cabac_decode_bypass_bins(ps_cabac, ps_bitstrm,
+                                2);
+            }
+            AEV_TRACE("intra_chroma_pred_mode",
+                    ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx,
+                    ps_cabac->u4_range);
+
         }
-        AEV_TRACE("intra_chroma_pred_mode",
-                  ps_codec->s_parse.s_cu.i4_intra_chroma_pred_mode_idx,
-                  ps_cabac->u4_range);
-
-
         ihevcd_intra_pred_mode_prediction(ps_codec, log2_cb_size, x0, y0);
     }
     STATS_UPDATE_PU_SIZE(ps_pu);
@@ -2070,7 +2072,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
     {
         WORD32 c_idx;
         WORD32 sao_type_idx = 0;
-        for(c_idx = 0; c_idx < 3; c_idx++)
+        for(c_idx = 0; c_idx < (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc ? 3 : 1); c_idx++)
         {
             if((ps_slice_hdr->i1_slice_sao_luma_flag && c_idx == 0) || (ps_slice_hdr->i1_slice_sao_chroma_flag && c_idx > 0))
             {

@@ -50,6 +50,7 @@
 
 #include "iv.h"
 #include "ivd.h"
+#include "ihevc_defs.h"
 #include "ihevcd_cxa.h"
 #include "ithread.h"
 
@@ -227,6 +228,9 @@ typedef struct
     WORD32  quit;
     WORD32  paused;
 
+    /* Enable YUV formats  */
+    UWORD32 u4_enable_yuv_formats;
+
     /* Active threads present*/
     UWORD32 i4_active_threads;
 
@@ -281,6 +285,7 @@ typedef enum
     PICLEN,
     PICLEN_FILE,
 
+    ENABLE_YUV_FORMAT,
     KEEP_THREADS_ACTIVE,
 }ARGUMENT_T;
 
@@ -347,6 +352,8 @@ static const argument_t argument_mapping[] =
         "Set Architecture. Supported values  ARM_NONEON, ARM_A9Q, ARM_A7, ARM_A5, ARM_NEONINTR, X86_GENERIC, X86_SSSE3, X86_SSE4 \n" },
     { "--",  "--soc", SOC,
         "Set SOC. Supported values  GENERIC, HISI_37X \n" },
+    { "--",  "--enable_yuv_format", ENABLE_YUV_FORMAT,
+        "Enable specific YUV formats" },
     {"--", "--keep_threads_active", KEEP_THREADS_ACTIVE,
         "Keep threads active"},
 };
@@ -1060,6 +1067,16 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
         }
 #endif
     }
+    else if(ps_app_ctx->e_output_chroma_format == IV_GRAY)
+    {
+        UWORD8 *buf;
+        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
+        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
+        {
+            fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd, ps_op_file);
+            buf += s_dump_disp_frm_buf.u4_y_strd;
+        }
+    }
     else if(ps_app_ctx->e_output_chroma_format == IV_RGBA_8888)
     {
         UWORD8 *buf;
@@ -1193,7 +1210,6 @@ ARGUMENT_T get_argument(CHAR *name)
 void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
 {
     ARGUMENT_T arg;
-
     arg = get_argument(argument);
     switch(arg)
     {
@@ -1248,6 +1264,9 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_UV;
             else if((strcmp(value, "YUV_420SP_VU")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_VU;
+            else if((strcmp(value, "GRAY")) == 0 &&
+                    (ps_app_ctx->u4_enable_yuv_formats & (1 << CHROMA_FMT_IDC_MONOCHROME)))
+                ps_app_ctx->e_output_chroma_format = IV_GRAY;
             else
             {
                 printf("\nInvalid colour format setting it to IV_YUV_420P\n");
@@ -1341,6 +1360,10 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
 
         case PICLEN_FILE:
             sscanf(value, "%s", ps_app_ctx->ac_piclen_fname);
+            break;
+
+        case ENABLE_YUV_FORMAT:
+            sscanf(value, "%d", &ps_app_ctx->u4_enable_yuv_formats);
             break;
 
         case KEEP_THREADS_ACTIVE:
@@ -2170,6 +2193,7 @@ int main(WORD32 argc, CHAR *argv[])
             s_create_ip.s_ivd_create_ip_t.u4_size = sizeof(ihevcd_cxa_create_ip_t);
             s_create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
             s_create_ip.u4_enable_frame_info = s_app_ctx.u4_frame_info_enable;
+            s_create_ip.u4_enable_yuv_formats = s_app_ctx.u4_enable_yuv_formats;
             s_create_ip.u4_keep_threads_active = s_app_ctx.i4_active_threads;
 
 
@@ -2416,6 +2440,13 @@ int main(WORD32 argc, CHAR *argv[])
                 {
                     s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
                     s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[2] = 0;
+                    break;
+                }
+                case IV_GRAY:
+                {
+                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[1] = 0;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;
                 }

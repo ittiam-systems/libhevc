@@ -693,6 +693,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
         /* Chroma */
 
+        if (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
         {
             UWORD32 u4_no_loop_filter_flag;
             WORD32 loop_filter_bit_pos;
@@ -1114,7 +1115,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
         }
 
-        if(ps_slice_hdr_top_left->i1_slice_sao_chroma_flag)
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && ps_slice_hdr_top_left->i1_slice_sao_chroma_flag)
         {
             if(0 == ps_sao->b3_cb_type_idx)
             {
@@ -1435,7 +1436,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 }
             }
         }
-        else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
+        else if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && ((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag)))
         {
             for(row = 0; row < sao_ht_chroma; row++)
             {
@@ -1761,7 +1762,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
         }
 
-        if(0 != sao_wd_chroma)
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 != sao_wd_chroma)
         {
             if(ps_slice_hdr_top->i1_slice_sao_chroma_flag)
             {
@@ -2360,7 +2361,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
         }
 
-        if(0 != sao_ht_chroma)
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 != sao_ht_chroma)
         {
             if(ps_slice_hdr_left->i1_slice_sao_chroma_flag)
             {
@@ -2995,7 +2996,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
         }
 
-        if((0 != sao_wd_chroma) && (0 != sao_ht_chroma))
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && (0 != sao_wd_chroma) && (0 != sao_ht_chroma))
         {
             if(ps_sao_ctxt->ps_slice_hdr->i1_slice_sao_chroma_flag)
             {
@@ -3415,7 +3416,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         }
 
         /* Chroma */
-        if(no_loop_filter_enabled_chroma)
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && no_loop_filter_enabled_chroma)
         {
             UWORD32 u4_no_loop_filter_flag;
             WORD32 loop_filter_bit_pos;

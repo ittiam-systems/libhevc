@@ -36,7 +36,7 @@
 #define ivd_api_function ihevcd_cxa_api_function
 const IV_COLOR_FORMAT_T supportedColorFormats[] = {
     IV_YUV_420P,   IV_YUV_420SP_UV, IV_YUV_420SP_VU,
-    IV_YUV_422ILE, IV_RGB_565,      IV_RGBA_8888};
+    IV_YUV_422ILE, IV_GRAY, IV_RGB_565,      IV_RGBA_8888};
 
 /* Decoder ignores invalid arch, i.e. for arm build, if SSSE3 is requested,
  * decoder defaults to a supported configuration. So same set of supported
@@ -228,6 +228,10 @@ void Codec::allocFrame() {
       break;
     case IV_YUV_422ILE:
       sizes[0] = mWidth * mHeight * 2;
+      num_bufs = 1;
+      break;
+    case IV_GRAY:
+      sizes[0] = mWidth * mHeight;
       num_bufs = 1;
       break;
     case IV_RGB_565:

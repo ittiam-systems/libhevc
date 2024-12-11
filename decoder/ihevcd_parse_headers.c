@@ -1506,13 +1506,24 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     {
         return IHEVCD_INVALID_PARAMETER;
     }
-    ps_sps->i1_chroma_format_idc = value;
 
-    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV420)
-    {
-        ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
-        return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+    switch(value) {
+        case CHROMA_FMT_IDC_MONOCHROME: {
+                if (!(ps_codec->u4_enable_yuv_formats & (1 << CHROMA_FMT_IDC_MONOCHROME))) {
+                    ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+                    return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+                }
+            }
+            break;
+        case CHROMA_FMT_IDC_YUV420:
+            break;
+        default: {
+                ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+                return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+            }
+            break;
     }
+    ps_sps->i1_chroma_format_idc = value;
 
     if(CHROMA_FMT_IDC_YUV444_PLANES == ps_sps->i1_chroma_format_idc)
     {
