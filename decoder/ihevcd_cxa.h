@@ -71,8 +71,8 @@ IV_API_CALL_STATUS_T ihevcd_cxa_api_function(iv_obj_t *ps_handle,
 /*****************************************************************************/
 /* Enums                                                                     */
 /*****************************************************************************/
-/* Codec Error codes for HEVC  Decoder                                       */
 
+/* Codec Error codes for HEVC  Decoder                                       */
 
 typedef enum {
     /**
@@ -181,6 +181,26 @@ typedef struct {
      * enable_threads
      */
     UWORD32                                  u4_keep_threads_active;
+
+    /**
+     * Bitmask specifying the set of supported YUV output formats.
+     *
+     * Use a bitwise OR to enable multiple formats.
+     * The bit positions are defined by the CHROMA_FMT_IDC_* constants.
+     *
+     * Bit positions and corresponding values:
+     * (1 << CHROMA_FMT_IDC_MONOCHROME):        1  (YUV 4:0:0)
+     * (1 << CHROMA_FMT_IDC_YUV420):            2  (YUV 4:2:0)
+     * (1 << CHROMA_FMT_IDC_YUV422):            4  (YUV 4:2:2)
+     * (1 << CHROMA_FMT_IDC_YUV444):            8  (YUV 4:4:4)
+     * (1 << CHROMA_FMT_IDC_YUV444_PLANES):     16 (YUV 4:4:4)
+     *
+     * Example (Enable 4:0:0 and 4:2:0):
+     * (1 << CHROMA_FMT_IDC_MONOCHROME) | (1 << CHROMA_FMT_IDC_YUV420)
+     *
+     * NOTE: If this field is set to 0, YUV 4:2:0 will be enabled by default.
+     */
+    UWORD32                                 u4_enable_yuv_formats;
 }ihevcd_cxa_create_ip_t;
 
 

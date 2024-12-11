@@ -496,7 +496,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     /* Chroma Veritcal Edge */
 
-    if(0 == i4_is_last_ctb_x)
+    if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 == i4_is_last_ctb_x)
     {
 
         /* Top CTB's slice header */
@@ -643,7 +643,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     /* Chroma Horizontal Edge */
 
-    if(0 == i4_is_last_ctb_y)
+    if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 == i4_is_last_ctb_y)
     {
 
         /* Left CTB's slice header */

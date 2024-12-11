@@ -1907,6 +1907,11 @@ struct _codec_t
     UWORD32 u4_bitsbuf_size_dynamic;
 
     /**
+     * Bitmask specifying the set of supported YUV output formats
+     */
+    UWORD32 u4_enable_yuv_formats;
+
+    /**
      * Pointer to hold TU data for a set of CTBs or a picture
      */
     void *pv_tu_data;

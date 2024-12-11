@@ -403,6 +403,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                         (ps_slice_hdr->i1_slice_type > 2))
             return IHEVCD_IGNORE_SLICE;
 
+
         if(ps_pps->i1_output_flag_present_flag)
         {
             BITS_PARSE("pic_output_flag", value, ps_bitstrm, 1);
@@ -569,8 +570,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
             BITS_PARSE("slice_sao_luma_flag", value, ps_bitstrm, 1);
             ps_slice_hdr->i1_slice_sao_luma_flag = value;
 
-            BITS_PARSE("slice_sao_chroma_flag", value, ps_bitstrm, 1);
-            ps_slice_hdr->i1_slice_sao_chroma_flag = value;
+            if (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc) {
+                BITS_PARSE("slice_sao_chroma_flag", value, ps_bitstrm, 1);
+                ps_slice_hdr->i1_slice_sao_chroma_flag = value;
+            }
 
         }
 

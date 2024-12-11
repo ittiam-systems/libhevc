@@ -711,11 +711,10 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
         u1_luma_pred_mode = ps_tu->b6_luma_intra_mode;
         u1_chroma_pred_mode = ps_tu->b3_chroma_intra_mode_idx;
 
-        if(u1_chroma_pred_mode != 7)
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && u1_chroma_pred_mode != 7)
             num_comp = 2; /* Y and UV */
         else
             num_comp = 1; /* Y */
-
 
         pcm_flag = 0;
 
