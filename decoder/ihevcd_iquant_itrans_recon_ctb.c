@@ -1110,6 +1110,20 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                         trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1,
                                         ps_sps->i1_chroma_format_idc);
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                        /* call reference filtering */
+                        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+                        {
+                            ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_filtering_fptr(
+                                            pu1_ref_sub_out,
+                                            trans_size,
+                                            pu1_ref_sub_out,
+                                            u1_chroma_pred_mode,
+                                            (ps_sps->i1_intra_smoothing_disabled_flag << 3
+                                                            | ps_sps->i1_strong_intra_smoothing_enable_flag));
+                        }
+#endif
+
                         /* use the look up to get the function idx */
                         chroma_pred_func_idx =
                                         g_i4_ip_funcs[u1_chroma_pred_mode];
