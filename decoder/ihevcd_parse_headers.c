@@ -2655,8 +2655,7 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
         return IHEVCD_INVALID_PARAMETER;
     }
 
-    if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
-                    || ps_pps->i1_cross_component_prediction_enabled_flag
+    if(ps_pps->i1_cross_component_prediction_enabled_flag
                     || ps_pps->i1_chroma_qp_offset_list_enabled_flag)
     {
         // TODO: decoder does not yet supports these tool-sets

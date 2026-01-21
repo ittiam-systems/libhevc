@@ -211,7 +211,12 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     transform_skip_flag = 0;
     if(ps_pps->i1_transform_skip_enabled_flag &&
        !ps_codec->s_parse.s_cu.i4_cu_transquant_bypass &&
-       (log2_trafo_size == 2))
+#ifdef ENABLE_MAIN_REXT_PROFILE
+       (log2_trafo_size <= ps_pps->i1_log2_max_transform_skip_block_size_minus2 + 2)
+#else
+       (log2_trafo_size == 2)
+#endif
+       )
     {
         WORD32 ctxt_idx;
 
