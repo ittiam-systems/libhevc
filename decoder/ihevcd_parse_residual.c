@@ -578,7 +578,18 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                 //coeff_pos = pu1_scan_coeff[n];
                 /* derive the context inc as per section 9.3.3.1.4 */
                 sig_ctxinc = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                if(ps_codec->s_parse.ps_sps->i1_transform_skip_context_enabled_flag
+                                && (ps_codec->s_parse.s_cu.i4_cu_transquant_bypass
+                                                || transform_skip_flag))
+                {
+                    sig_coeff_base_ctxt = IHEVC_CAB_COEFF_FLAG;
+                    sig_coeff_base_ctxt += (0 == c_idx) ? 42 : 43;
+                }
+                else if(2 == log2_trafo_size)
+#else
                 if(2 == log2_trafo_size)
+#endif
                 {
 
                     /* 4x4 transform size increment uses lookup */
