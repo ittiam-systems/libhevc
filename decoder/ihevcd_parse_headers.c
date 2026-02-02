@@ -1525,7 +1525,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     }
     ps_sps->i1_chroma_format_idc = value;
 
-    if(CHROMA_FMT_IDC_YUV444_PLANES == ps_sps->i1_chroma_format_idc)
+    if(CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
     {
         BITS_PARSE("separate_colour_plane_flag", value, ps_bitstrm, 1);
         ps_sps->i1_separate_colour_plane_flag = value;
@@ -1940,15 +1940,32 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             return IHEVCD_INVALID_PARAMETER;
         }
     }
+    else if (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+    if(ps_sps->i1_transform_skip_rotation_enabled_flag
+                    || ps_sps->i1_transform_skip_context_enabled_flag
+                    || ps_sps->i1_implicit_rdpcm_enabled_flag
+                    || ps_sps->i1_explicit_rdpcm_enabled_flag
+                    || ps_sps->i1_extended_precision_processing_flag
+                    || ps_sps->i1_intra_smoothing_disabled_flag
+                    || ps_sps->i1_use_high_precision_pred_wt
+                    || ps_sps->i1_fast_rice_adaptation_enabled_flag
+                    || ps_sps->i1_align_cabac_before_bypass)
+    {
+        // TODO: decoder does not yet supports these tool-sets
+        return IHEVCD_INVALID_PARAMETER;
+    }
     if(ps_sps->i1_sps_multilayer_extension_flag || ps_sps->i1_sps_3d_extension_flag
                     || ps_sps->i1_sps_scc_extension_flag)
     {
+        // TODO: add support for parsing these syntax elements
         return IHEVCD_INVALID_PARAMETER;
     }
 #else
     if(ps_sps->i1_sps_range_extension_flag || ps_sps->i1_sps_multilayer_extension_flag
                     || ps_sps->i1_sps_3d_extension_flag || ps_sps->i1_sps_scc_extension_flag)
     {
+        // TODO: add support for parsing these syntax elements
         return IHEVCD_INVALID_PARAMETER;
     }
 #endif
@@ -2600,15 +2617,29 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
             return IHEVCD_INVALID_PARAMETER;
         }
     }
+    else if (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
+                        || ps_pps->i1_cross_component_prediction_enabled_flag
+                        || ps_pps->i1_chroma_qp_offset_list_enabled_flag
+                        || ps_pps->i1_log2_sao_ofst_scale_luma
+                        || ps_pps->i1_log2_sao_ofst_scale_chroma)
+        {
+            // TODO: decoder does not yet supports these tool-sets
+            return IHEVCD_INVALID_PARAMETER;
+        }
+    }
     if(ps_pps->i1_pps_multilayer_extension_flag || ps_pps->i1_pps_3d_extension_flag
                     || ps_pps->i1_pps_scc_extension_flag)
     {
+        // TODO: add support for parsing these syntax elements
         return IHEVCD_INVALID_PARAMETER;
     }
 #else
     if(ps_pps->i1_pps_range_extension_flag || ps_pps->i1_pps_multilayer_extension_flag
                     || ps_pps->i1_pps_3d_extension_flag || ps_pps->i1_pps_scc_extension_flag)
     {
+        // TODO: add support for parsing these syntax elements
         return IHEVCD_INVALID_PARAMETER;
     }
 #endif
