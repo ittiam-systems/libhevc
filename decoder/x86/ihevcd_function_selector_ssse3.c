@@ -157,6 +157,7 @@ void ihevcd_init_function_ptr_ssse3(void *pv_codec)
     ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_rgb565_fptr              =  &ihevcd_fmt_conv_420sp_to_rgb565;
     ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420sp_fptr               =  &ihevcd_fmt_conv_420sp_to_420sp;
     ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420p_fptr                =  &ihevcd_fmt_conv_420sp_to_420p;
+    ps_codec->s_func_selector.ihevcd_fmt_conv_444sp_to_444p_fptr                =  &ihevcd_fmt_conv_444sp_to_444p;
     ps_codec->s_func_selector.ihevcd_itrans_recon_dc_luma_fptr                  =  &ihevcd_itrans_recon_dc_luma_ssse3;
     ps_codec->s_func_selector.ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma_ssse3;
 }
