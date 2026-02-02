@@ -572,6 +572,27 @@ void ihevcd_fmt_conv_400_to_420sp(UWORD8 *pu1_y_src,
     return;
 }
 
+void ihevcd_fmt_conv_400_to_444p(UWORD8 *pu1_y_src,
+                                 UWORD8 *pu1_y_dst,
+                                 UWORD8 *pu1_u_dst,
+                                 UWORD8 *pu1_v_dst,
+                                 WORD32 wd,
+                                 WORD32 ht,
+                                 WORD32 src_y_strd,
+                                 WORD32 dst_y_strd,
+                                 WORD32 dst_uv_strd)
+{
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+    for(int i = 0; i < ht; i++)
+    {
+        memset(pu1_u_dst, 128, wd);
+        memset(pu1_v_dst, 128, wd);
+        pu1_u_dst += dst_uv_strd;
+        pu1_v_dst += dst_uv_strd;
+    }
+    return;
+}
+
 /**
 *******************************************************************************
 *
@@ -800,6 +821,199 @@ void ihevcd_fmt_conv_420sp_to_420p(UWORD8 *pu1_y_src,
     return;
 }
 
+void ihevcd_fmt_conv_420sp_to_444p(UWORD8 *pu1_y_src,
+                                   UWORD8 *pu1_uv_src,
+                                   UWORD8 *pu1_y_dst,
+                                   UWORD8 *pu1_u_dst,
+                                   UWORD8 *pu1_v_dst,
+                                   WORD32 wd,
+                                   WORD32 ht,
+                                   WORD32 src_y_strd,
+                                   WORD32 src_uv_strd,
+                                   WORD32 dst_y_strd,
+                                   WORD32 dst_uv_strd,
+                                   WORD32 is_u_first)
+{
+    UWORD8 *pu1_u_src, *pu1_v_src;
+    WORD32 i, j;
+
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+
+    /* de-interleave U and V and copy to destination */
+    if(is_u_first)
+    {
+        pu1_u_src = (UWORD8 *)pu1_uv_src;
+        pu1_v_src = (UWORD8 *)pu1_uv_src + 1;
+    }
+    else
+    {
+        pu1_u_src = (UWORD8 *)pu1_uv_src + 1;
+        pu1_v_src = (UWORD8 *)pu1_uv_src;
+    }
+
+    for(i = 0; i < ht; i += 2)
+    {
+        for(j = 0; j < wd; j += 2)
+        {
+            pu1_u_dst[j] = pu1_u_src[j];
+            pu1_u_dst[j + 1] = pu1_u_src[j];
+            pu1_u_dst[j + dst_uv_strd] = pu1_u_src[j];
+            pu1_u_dst[j + dst_uv_strd + 1] = pu1_u_src[j];
+
+            pu1_v_dst[j] = pu1_v_src[j];
+            pu1_v_dst[j + 1] = pu1_v_src[j];
+            pu1_v_dst[j + dst_uv_strd] = pu1_v_src[j];
+            pu1_v_dst[j + dst_uv_strd + 1] = pu1_v_src[j];
+        }
+
+        pu1_u_dst += (2 * dst_uv_strd);
+        pu1_v_dst += (2 * dst_uv_strd);
+        pu1_u_src += src_uv_strd;
+        pu1_v_src += src_uv_strd;
+    }
+    return;
+}
+
+/**
+*******************************************************************************
+*
+* @brief Function to convert a YUV 4:4:4 sp buffer to YUV 4:4:4 planar buffer
+*
+* @par   Description
+* This function handles the format conversion from a 4:4:4 semi planar input buffer
+* to a 4:4:4 planar output buffer.
+*
+* @param[in] pu1_y_src
+*   Input Y pointer
+*
+* @param[in] pu1_uv_src
+*   Input UV pointer (UV is interleaved)
+*
+* @param[in] pu1_y_dst
+*   Output Y pointer
+*
+* @param[in] pu1_u_dst
+*   Output U pointer
+*
+* @param[in] pu1_v_dst
+*   Output V pointer
+*
+* @param[in] wd
+*   Width
+*
+* @param[in] ht
+*   Height
+*
+* @param[in] src_y_strd
+*   Input Y Stride
+*
+* @param[in] src_uv_strd
+*   Input UV stride
+*
+* @param[in] dst_y_strd
+*   Output Y stride
+*
+* @param[in] dst_uv_strd
+*   Output U or V stride
+*
+* @returns none
+*
+* @remarks none
+*
+*******************************************************************************
+*/
+void ihevcd_fmt_conv_444sp_to_444p(UWORD8 *pu1_y_src,
+                                   UWORD8 *pu1_uv_src,
+                                   UWORD8 *pu1_y_dst,
+                                   UWORD8 *pu1_u_dst,
+                                   UWORD8 *pu1_v_dst,
+                                   WORD32 wd,
+                                   WORD32 ht,
+                                   WORD32 src_y_strd,
+                                   WORD32 src_uv_strd,
+                                   WORD32 dst_y_strd,
+                                   WORD32 dst_uv_strd)
+{
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+
+    /* de-interleave U and V and copy to destination */
+    UWORD8 *pu1_u_src = (UWORD8*)pu1_uv_src;
+    UWORD8 *pu1_v_src = (UWORD8*)pu1_uv_src + 1;
+
+    for(WORD32 i = 0; i < ht; i++)
+    {
+        for(WORD32 j = 0; j < wd; j++)
+        {
+            pu1_u_dst[j] = pu1_u_src[j * 2];
+            pu1_v_dst[j] = pu1_v_src[j * 2];
+        }
+        pu1_u_dst += dst_uv_strd;
+        pu1_v_dst += dst_uv_strd;
+        pu1_u_src += src_uv_strd;
+        pu1_v_src += src_uv_strd;
+    }
+    return;
+}
+
+void ihevcd_fmt_conv_444sp_to_420p(UWORD8 *pu1_y_src,
+                                   UWORD8 *pu1_uv_src,
+                                   UWORD8 *pu1_y_dst,
+                                   UWORD8 *pu1_u_dst,
+                                   UWORD8 *pu1_v_dst,
+                                   WORD32 wd,
+                                   WORD32 ht,
+                                   WORD32 src_y_strd,
+                                   WORD32 src_uv_strd,
+                                   WORD32 dst_y_strd,
+                                   WORD32 dst_uv_strd)
+{
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+
+    for(WORD32 i = 0; i < ht; i += 2)
+    {
+        for(WORD32 j = 0; j < wd; j += 2)
+        {
+            pu1_u_dst[j / 2] = pu1_uv_src[j * 2];
+            pu1_v_dst[j / 2] = pu1_uv_src[j * 2 + 1];
+        }
+        pu1_u_dst += dst_uv_strd;
+        pu1_v_dst += dst_uv_strd;
+        pu1_uv_src += (src_uv_strd * 2);
+    }
+    return;
+}
+
+void ihevcd_fmt_conv_444sp_to_420sp(UWORD8 *pu1_y_src,
+                                    UWORD8 *pu1_uv_src,
+                                    UWORD8 *pu1_y_dst,
+                                    UWORD8 *pu1_uv_dst,
+                                    WORD32 wd,
+                                    WORD32 ht,
+                                    WORD32 src_y_strd,
+                                    WORD32 src_uv_strd,
+                                    WORD32 dst_y_strd,
+                                    WORD32 dst_uv_strd)
+{
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+
+    /* de-interleave U and V and copy to destination */
+    UWORD8 *pu1_u_src = (UWORD8*)pu1_uv_src;
+    UWORD8 *pu1_v_src = (UWORD8*)pu1_uv_src + 1;
+
+    for(WORD32 i = 0; i < ht; i += 2)
+    {
+        for(WORD32 j = 0; j < wd; j += 2)
+        {
+            pu1_uv_dst[j] = pu1_u_src[j * 2];
+            pu1_uv_dst[j + 1] = pu1_v_src[j * 2];
+        }
+
+        pu1_uv_dst += dst_uv_strd;
+        pu1_u_src += (src_uv_strd * 2);
+        pu1_v_src += (src_uv_strd * 2);
+    }
+    return;
+}
 
 
 /**
