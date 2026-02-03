@@ -216,7 +216,11 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
     num_luma_samples = (wd + PAD_WD) * (ht + PAD_HT);
 
     /* Account for chroma */
-    num_samples = num_luma_samples * 3 / 2;
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+        num_samples = num_luma_samples;
+    else {
+        num_samples = num_luma_samples * 3 / 2;
+    }
 
     /* Number of bytes in reference pictures */
     size = num_samples * max_dpb_size;
@@ -298,7 +302,7 @@ WORD32 ihevcd_get_pic_mv_bank_size(WORD32 num_luma_samples)
 *
 *******************************************************************************
 */
-WORD32 ihevcd_get_tu_data_size(WORD32 num_luma_samples)
+WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples)
 {
 
 
@@ -308,7 +312,13 @@ WORD32 ihevcd_get_tu_data_size(WORD32 num_luma_samples)
     num_ctb = num_luma_samples / (MIN_CTB_SIZE * MIN_CTB_SIZE);
 
     num_luma_tu = num_luma_samples / (MIN_TU_SIZE * MIN_TU_SIZE);
-    num_chroma_tu = num_luma_tu >> 1;
+    sps_t *ps_sps = ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id;
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+    {
+        num_chroma_tu = 0;
+    } else {
+        num_chroma_tu = num_luma_tu >> 1;
+    }
 
     num_tu = num_luma_tu + num_chroma_tu;
     tu_data_size = 0;
@@ -459,12 +469,15 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     UWORD8 *pu1_buf;
     pic_buf_t *ps_pic_buf;
     WORD32 pic_buf_size_allocated;
+    WORD32 h_samp_factor, v_samp_factor;
 
 
 
 
     /* Initialize Pic buffer manager */
     ps_sps = ps_codec->s_parse.ps_sps;
+    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
 
     /* Compute the number of Pic buffers needed */
     max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
@@ -496,7 +509,12 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
         luma_samples = (ps_codec->i4_strd) *
                         (ps_sps->i2_pic_height_in_luma_samples + PAD_HT);
 
-        chroma_samples = luma_samples / 2;
+        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+        {
+            chroma_samples = 0;
+        } else {
+            chroma_samples = luma_samples * 2 / (h_samp_factor * v_samp_factor);
+        }
 
         /* Try to add as many buffers as possible since memory is already allocated */
         /* If the number of buffers that can be added is less than max_num_bufs
@@ -515,8 +533,15 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
             ps_pic_buf->pu1_luma = pu1_buf + ps_codec->i4_strd * PAD_TOP + PAD_LEFT;
             pu1_buf += luma_samples;
 
-            ps_pic_buf->pu1_chroma = pu1_buf + ps_codec->i4_strd * (PAD_TOP / 2) + PAD_LEFT;
-            pu1_buf += chroma_samples;
+            if(chroma_samples)
+            {
+                ps_pic_buf->pu1_chroma = pu1_buf + ps_codec->i4_strd * (PAD_TOP / 2) + PAD_LEFT;
+                pu1_buf += chroma_samples;
+            }
+            else
+            {
+                ps_pic_buf->pu1_chroma = NULL;
+            }
 
             /* Pad boundary pixels (one pixel on all sides) */
             /* This ensures SAO does not read uninitialized pixels */
@@ -542,21 +567,24 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
                 pu1_buf += strd * ht;
                 memset(pu1_buf - 1, 0, wd + 2);
 
-                pu1_buf = ps_pic_buf->pu1_chroma;
-                ht >>= 1;
-                for(i = 0; i < ht; i++)
+                if (ps_pic_buf->pu1_chroma)
                 {
-                    pu1_buf[-1] = 0;
-                    pu1_buf[-2] = 0;
-                    pu1_buf[wd] = 0;
-                    pu1_buf[wd + 1] = 0;
-                    pu1_buf += strd;
-                }
-                pu1_buf = ps_pic_buf->pu1_chroma;
-                memset(pu1_buf - strd - 2, 0, wd + 4);
+                    pu1_buf = ps_pic_buf->pu1_chroma;
+                    ht >>= 1;
+                    for(i = 0; i < ht; i++)
+                    {
+                        pu1_buf[-1] = 0;
+                        pu1_buf[-2] = 0;
+                        pu1_buf[wd] = 0;
+                        pu1_buf[wd + 1] = 0;
+                        pu1_buf += strd;
+                    }
+                    pu1_buf = ps_pic_buf->pu1_chroma;
+                    memset(pu1_buf - strd - 2, 0, wd + 4);
 
-                pu1_buf += strd * ht;
-                memset(pu1_buf - 2, 0, wd + 4);
+                    pu1_buf += strd * ht;
+                    memset(pu1_buf - 2, 0, wd + 4);
+                }
             }
 
             buf_ret = ihevc_buf_mgr_add((buf_mgr_t *)ps_codec->pv_pic_buf_mgr, ps_pic_buf, i);
@@ -964,7 +992,9 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     if(0 == ps_codec->u4_pic_cnt)
     {
         memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
-        memset(ps_cur_pic->pu1_chroma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples / 2);
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME) {
+            memset(ps_cur_pic->pu1_chroma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples / 2);
+        }
     }
 
     /* Fill the remaining entries of the reference lists with the nearest POC
@@ -1080,7 +1110,10 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
         ctb_luma_min_tu_cnt = pic_size / (MIN_TU_SIZE * MIN_TU_SIZE);
 
-        ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt >> 1;
+        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+            ctb_chroma_min_tu_cnt = 0;
+        else
+            ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt >> 1;
 
         ctb_min_tu_cnt = ctb_luma_min_tu_cnt + ctb_chroma_min_tu_cnt;
 

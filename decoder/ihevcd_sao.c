@@ -364,6 +364,9 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
 
         }
 
+        /* Chroma */
+        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+        {
         if(0 == ps_sao->b3_cb_type_idx)
         {
             for(row = 0; row < sao_ht_chroma; row++)
@@ -517,7 +520,7 @@ void ihevcd_sao_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
 
         }
-
+        }
     }
 }
 

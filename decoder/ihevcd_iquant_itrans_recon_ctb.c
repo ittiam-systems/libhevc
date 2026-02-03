@@ -734,7 +734,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
             tu_y_offset = tu_x + tu_y * pic_strd;
             pu1_y_dst += tu_x + tu_y * pic_strd;
-            pu1_uv_dst += tu_x + (tu_y >> 1) * pic_strd;
 
             /* First byte points to number of coded blocks */
             pu1_tu_coeff_data++;
@@ -754,25 +753,29 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     pu1_buf += cb_size;
                 }
 
-                pu1_uv_dst = pu1_uv_dst + chroma_yuv420sp_vu_u_offset;
-
-                /* U */
-                for(i = 0; i < cb_size / 2; i++)
+                if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
                 {
-                    for(j = 0; j < cb_size / 2; j++)
+                    pu1_uv_dst += tu_x + (tu_y >> 1) * pic_strd;
+                    pu1_uv_dst = pu1_uv_dst + chroma_yuv420sp_vu_u_offset;
+
+                    /* U */
+                    for(i = 0; i < cb_size / 2; i++)
                     {
-                        pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                        for(j = 0; j < cb_size / 2; j++)
+                        {
+                            pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                        }
                     }
-                }
 
-                pu1_uv_dst = pu1_uv_dst + 1 + chroma_yuv420sp_vu_v_offset;
+                    pu1_uv_dst = pu1_uv_dst + 1 + chroma_yuv420sp_vu_v_offset;
 
-                /* V */
-                for(i = 0; i < cb_size / 2; i++)
-                {
-                    for(j = 0; j < cb_size / 2; j++)
+                    /* V */
+                    for(i = 0; i < cb_size / 2; i++)
                     {
-                        pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                        for(j = 0; j < cb_size / 2; j++)
+                        {
+                            pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                        }
                     }
                 }
             }

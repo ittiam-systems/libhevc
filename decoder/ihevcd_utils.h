@@ -40,7 +40,7 @@
 WORD32 ihevcd_get_lvl_idx(WORD32 level);
 WORD32 ihevcd_get_dpb_size(WORD32 level, WORD32 pic_size);
 WORD32 ihevcd_get_pic_mv_bank_size(WORD32 num_luma_samples);
-WORD32 ihevcd_get_tu_data_size(WORD32 num_luma_samples);
+WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples);
 WORD32 ihevcd_nctb_cnt(codec_t *ps_codec, sps_t *ps_sps);
 WORD32 ihevcd_get_max_luma_samples(WORD32 level);
 IHEVCD_ERROR_T ihevcd_get_tile_pos(pps_t *ps_pps,

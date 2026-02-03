@@ -163,30 +163,33 @@ void ihevcd_ilf_pad_frame(deblk_ctxt_t *ps_deblk_ctxt, sao_ctxt_t *ps_sao_ctxt)
                 if(0 == i4_ctb_x)
                 {
                     WORD32 pad_ht_luma;
-                    WORD32 pad_ht_chroma;
 
                     pad_ht_luma = ctb_size;
                     pad_ht_luma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
-                    pad_ht_chroma = ctb_size / 2;
-                    pad_ht_chroma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
                     /* Pad left after 1st CTB is processed */
                     ps_codec->s_func_selector.ihevc_pad_left_luma_fptr(pu1_cur_ctb_luma - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_luma, PAD_LEFT);
-                    ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(pu1_cur_ctb_chroma - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_LEFT);
+                    if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                    {
+                        WORD32 pad_ht_chroma = ctb_size / 2;
+                        pad_ht_chroma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
+                        ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(pu1_cur_ctb_chroma - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_LEFT);
+                    }
                 }
                 else if((ps_sps->i2_pic_wd_in_ctb - 1) == i4_ctb_x)
                 {
                     WORD32 pad_ht_luma;
-                    WORD32 pad_ht_chroma;
                     WORD32 cols_remaining = ps_sps->i2_pic_width_in_luma_samples - (i4_ctb_x << ps_sps->i1_log2_ctb_size);
 
                     pad_ht_luma = ctb_size;
                     pad_ht_luma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
-                    pad_ht_chroma = ctb_size / 2;
-                    pad_ht_chroma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
                     /* Pad right after last CTB in the current row is processed */
                     ps_codec->s_func_selector.ihevc_pad_right_luma_fptr(pu1_cur_ctb_luma + cols_remaining - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_luma, PAD_RIGHT);
-                    ps_codec->s_func_selector.ihevc_pad_right_chroma_fptr(pu1_cur_ctb_chroma + cols_remaining - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_RIGHT);
-
+                    if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                    {
+                        WORD32 pad_ht_chroma = ctb_size / 2;
+                        pad_ht_chroma += (ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y ? 8 : 0;
+                        ps_codec->s_func_selector.ihevc_pad_right_chroma_fptr(pu1_cur_ctb_chroma + cols_remaining - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_RIGHT);
+                    }
 
                     if((ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y)
                     {
@@ -195,14 +198,20 @@ void ihevcd_ilf_pad_frame(deblk_ctxt_t *ps_deblk_ctxt, sao_ctxt_t *ps_sao_ctxt)
                         /* Hence moving top padding to to end of frame, Moving it to second row also results in problems when there is only one row */
                         /* Pad top after padding left and right for current rows after processing 1st CTB row */
                         ihevc_pad_top(ps_deblk_ctxt->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP);
-                        ihevc_pad_top(ps_deblk_ctxt->pu1_cur_pic_chroma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP / 2);
+                        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                        {
+                            ihevc_pad_top(ps_deblk_ctxt->pu1_cur_pic_chroma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP / 2);
+                        }
 
                         pu1_buf = ps_deblk_ctxt->pu1_cur_pic_luma + ps_codec->i4_strd * ps_sps->i2_pic_height_in_luma_samples - PAD_LEFT;
                         /* Pad top after padding left and right for current rows after processing 1st CTB row */
                         ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
 
-                        pu1_buf = ps_deblk_ctxt->pu1_cur_pic_chroma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples / 2) - PAD_LEFT;
-                        ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT / 2);
+                        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                        {
+                            pu1_buf = ps_deblk_ctxt->pu1_cur_pic_chroma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples / 2) - PAD_LEFT;
+                            ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT / 2);
+                        }
                     }
                 }
             }

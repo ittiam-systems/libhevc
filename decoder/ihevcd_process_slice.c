@@ -974,9 +974,12 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                 + (ps_proc->i4_ctb_x * ctb_size
                                 + ps_proc->i4_ctb_y * ctb_size
                                 * ps_codec->i4_strd);
-                ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
-                                + ps_proc->i4_ctb_x * ctb_size
-                                + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
+                if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                {
+                    ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
+                                    + ps_proc->i4_ctb_x * ctb_size
+                                    + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
+                }
 
                 ihevcd_iquant_itrans_recon_ctb(ps_proc);
             }
@@ -1212,17 +1215,17 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                         + (ps_proc->i4_ctb_x * ctb_size
                                         + ps_proc->i4_ctb_y * ctb_size
                                         * ps_codec->i4_strd);
-                        ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
-                                        + ps_proc->i4_ctb_x * ctb_size
-                                        + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
 
                         pad_ht_luma = ctb_size;
                         pad_ht_luma += (ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y ? 8 : 0;
-                        pad_ht_chroma = ctb_size / 2;
                         /* Pad left after 1st CTB is processed */
                         ps_codec->s_func_selector.ihevc_pad_left_luma_fptr(ps_proc->pu1_cur_ctb_luma - 8 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_luma, PAD_LEFT);
                         if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                         {
+                            ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
+                                            + ps_proc->i4_ctb_x * ctb_size
+                                            + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
+                            pad_ht_chroma = ctb_size / 2;
                             ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(ps_proc->pu1_cur_ctb_chroma - 16 * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_LEFT);
                         }
                     }
@@ -1237,12 +1240,14 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                         + (ps_proc->i4_ctb_x * ctb_size
                                         + ps_proc->i4_ctb_y * ctb_size
                                         * ps_codec->i4_strd);
-                        ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
-                                        + ps_proc->i4_ctb_x * ctb_size
-                                        + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
-
+                        if (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                        {
+                            ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
+                                            + ps_proc->i4_ctb_x * ctb_size
+                                            + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
+                            pad_ht_chroma = ctb_size / 2;
+                        }
                         pad_ht_luma = ctb_size;
-                        pad_ht_chroma = ctb_size / 2;
                         if((ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y)
                         {
                             pad_ht_luma += 8;
