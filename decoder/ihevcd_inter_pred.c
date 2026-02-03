@@ -163,6 +163,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     WORD32 next_ctb_idx;
     WORD8(*coeff)[8];
     WORD32  chroma_yuv420sp_vu;
+    WORD32 num_comp;
 
     PROFILE_DISABLE_INTER_PRED();
     ps_codec = ps_proc->ps_codec;
@@ -211,6 +212,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     chroma_offset_l1_cb = 0;
     chroma_offset_l1_cr = 0;
 
+    num_comp = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME ? 1 : 2;
+
     for(pu_indx = 0; pu_indx < i4_pu_cnt; pu_indx++, ps_pu++)
     {
         /* If the PU is intra then proceed to the next */
@@ -233,15 +236,20 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
             ps_pic_buf_l0 = (pic_buf_t *)((ps_slice_hdr->as_ref_pic_list0[ps_pu->mv.i1_l0_ref_idx].pv_pic_buf));
 
             ref_pic_luma_l0 = ps_pic_buf_l0->pu1_luma;
-            ref_pic_chroma_l0 = ps_pic_buf_l0->pu1_chroma;
 
             luma_weight_l0 = ps_slice_hdr->s_wt_ofst.i2_luma_weight_l0[ps_pu->mv.i1_l0_ref_idx];
-            chroma_weight_l0_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l0_cb[ps_pu->mv.i1_l0_ref_idx];
-            chroma_weight_l0_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l0_cr[ps_pu->mv.i1_l0_ref_idx];
 
             luma_offset_l0 = ps_slice_hdr->s_wt_ofst.i2_luma_offset_l0[ps_pu->mv.i1_l0_ref_idx];
-            chroma_offset_l0_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l0_cb[ps_pu->mv.i1_l0_ref_idx];
-            chroma_offset_l0_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l0_cr[ps_pu->mv.i1_l0_ref_idx];
+
+            if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+            {
+                ref_pic_chroma_l0 = ps_pic_buf_l0->pu1_chroma;
+                chroma_weight_l0_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l0_cb[ps_pu->mv.i1_l0_ref_idx];
+                chroma_weight_l0_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l0_cr[ps_pu->mv.i1_l0_ref_idx];
+
+                chroma_offset_l0_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l0_cb[ps_pu->mv.i1_l0_ref_idx];
+                chroma_offset_l0_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l0_cr[ps_pu->mv.i1_l0_ref_idx];
+            }
         }
 
         if(ps_pu->b2_pred_mode != PRED_L0)
@@ -249,19 +257,24 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
             pic_buf_t *ps_pic_buf_l1;
             ps_pic_buf_l1 = (pic_buf_t *)((ps_slice_hdr->as_ref_pic_list1[ps_pu->mv.i1_l1_ref_idx].pv_pic_buf));
             ref_pic_luma_l1 = ps_pic_buf_l1->pu1_luma;
-            ref_pic_chroma_l1 = ps_pic_buf_l1->pu1_chroma;
 
             luma_weight_l1 = ps_slice_hdr->s_wt_ofst.i2_luma_weight_l1[ps_pu->mv.i1_l1_ref_idx];
-            chroma_weight_l1_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l1_cb[ps_pu->mv.i1_l1_ref_idx];
-            chroma_weight_l1_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l1_cr[ps_pu->mv.i1_l1_ref_idx];
 
             luma_offset_l1 = ps_slice_hdr->s_wt_ofst.i2_luma_offset_l1[ps_pu->mv.i1_l1_ref_idx];
-            chroma_offset_l1_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l1_cb[ps_pu->mv.i1_l1_ref_idx];
-            chroma_offset_l1_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l1_cr[ps_pu->mv.i1_l1_ref_idx];
+
+            if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+            {
+                ref_pic_chroma_l1 = ps_pic_buf_l1->pu1_chroma;
+                chroma_weight_l1_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l1_cb[ps_pu->mv.i1_l1_ref_idx];
+                chroma_weight_l1_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_weight_l1_cr[ps_pu->mv.i1_l1_ref_idx];
+
+                chroma_offset_l1_cb = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l1_cb[ps_pu->mv.i1_l1_ref_idx];
+                chroma_offset_l1_cr = ps_slice_hdr->s_wt_ofst.i2_chroma_offset_l1_cr[ps_pu->mv.i1_l1_ref_idx];
+            }
         }
 
         /*luma and chroma components*/
-        for(clr_indx = 0; clr_indx < 2; clr_indx++)
+        for(clr_indx = 0; clr_indx < num_comp; clr_indx++)
         {
             PROFILE_DISABLE_INTER_PRED_LUMA(clr_indx);
             PROFILE_DISABLE_INTER_PRED_CHROMA(clr_indx);
