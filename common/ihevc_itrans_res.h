@@ -102,5 +102,7 @@ ihevc_itrans_res_32x32_ft ihevc_itrans_res_32x32;
 
 ihevc_res_4x4_transform ihevc_res_4x4_rotate;
 ihevc_res_nxn_transform ihevc_res_nxn_copy;
+ihevc_res_nxn_transform ihevc_res_nxn_rdpcm_horz;
+ihevc_res_nxn_transform ihevc_res_nxn_rdpcm_vert;
 
 #endif /*_IHEVC_ITRANS_RES_H_*/

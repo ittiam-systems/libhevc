@@ -950,8 +950,8 @@ void ihevc_intra_pred_luma_dc(UWORD8 *pu1_ref,
 * @param[in] nt
 *  integer Transform Block size
 *
-* @param[in] mode
-*  integer intraprediction mode
+* @param[in] disable_boundary_filter
+*  disable boundary filtering
 *
 * @returns
 *
@@ -967,17 +967,16 @@ void ihevc_intra_pred_luma_horz(UWORD8 *pu1_ref,
                                 UWORD8 *pu1_dst,
                                 WORD32 dst_strd,
                                 WORD32 nt,
-                                WORD32 mode)
+                                WORD32 disable_boundary_filter)
 {
 
     WORD32 row, col;
     WORD32 two_nt;
     WORD16 s2_predpixel;
-    UNUSED(mode);
     UNUSED(src_strd);
     two_nt = 2 * nt;
 
-    if(nt == 32)
+    if(nt == 32 || disable_boundary_filter)
     {
         for(row = 0; row < nt; row++)
             for(col = 0; col < nt; col++)
@@ -1030,8 +1029,8 @@ void ihevc_intra_pred_luma_horz(UWORD8 *pu1_ref,
 * @param[in] nt
 *  integer Transform Block size
 *
-* @param[in] mode
-*  integer intraprediction mode
+* @param[in] disable_boundary_filter
+*  disable boundary filtering
 *
 * @returns
 *
@@ -1047,15 +1046,14 @@ void ihevc_intra_pred_luma_ver(UWORD8 *pu1_ref,
                                UWORD8 *pu1_dst,
                                WORD32 dst_strd,
                                WORD32 nt,
-                               WORD32 mode)
+                               WORD32 disable_boundary_filter)
 {
     WORD32 row, col;
     WORD16 s2_predpixel;
     WORD32 two_nt = 2 * nt;
-    UNUSED(mode);
     UNUSED(src_strd);
 
-    if(nt == 32)
+    if(nt == 32 || disable_boundary_filter)
     {
         /* Replication to next columns*/
         for(row = 0; row < nt; row++)

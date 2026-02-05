@@ -35,6 +35,8 @@
  *  - ihevc_itrans_res_32x32()
  *  - ihevc_res_4x4_rotate()
  *  - ihevc_res_nxn_copy()
+ *  - ihevc_res_nxn_rdpcm_horz()
+ *  - ihevc_res_nxn_rdpcm_vert()
  *
  * @remarks
  *  None
@@ -2396,6 +2398,92 @@ void ihevc_res_nxn_copy(WORD16 *pi2_src,
             for(j = 0; j < trans_size; j++)
             {
                 pi2_dst[j * dst_strd] = pi2_src[(j * src_strd + i)];
+            }
+        }
+        pi2_dst++;
+        zero_cols = zero_cols >> 1;
+    }
+}
+
+
+void ihevc_res_nxn_rdpcm_horz(WORD16 *pi2_src,
+                              WORD16 *pi2_dst,
+                              WORD32 src_strd,
+                              WORD32 dst_strd,
+                              WORD32 trans_size,
+                              WORD32 zero_cols)
+{
+    WORD32 i, j;
+
+    /* Checking for Zero Cols */
+    if((zero_cols & 1) == 1)
+    {
+        for(j = 0; j < trans_size; j++)
+        {
+            pi2_dst[j * dst_strd] = 0;
+        }
+    }
+    else
+    {
+        for(j = 0; j < trans_size; j++)
+        {
+            pi2_dst[j * dst_strd] = pi2_src[j * src_strd];
+        }
+    }
+    pi2_dst++;
+    zero_cols >>= 1;
+
+    for(i = 1; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if((zero_cols & 1) == 1)
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = pi2_dst[j * dst_strd - 1];
+            }
+        }
+        else
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = pi2_src[j * src_strd + i] + pi2_dst[j * dst_strd - 1];
+            }
+        }
+        pi2_dst++;
+        zero_cols >>= 1;
+    }
+}
+
+
+void ihevc_res_nxn_rdpcm_vert(WORD16 *pi2_src,
+                              WORD16 *pi2_dst,
+                              WORD32 src_strd,
+                              WORD32 dst_strd,
+                              WORD32 trans_size,
+                              WORD32 zero_cols)
+{
+    WORD32 i, j;
+
+    for(i = 0; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if((zero_cols & 1) == 1)
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = 0;
+            }
+        }
+        else
+        {
+            WORD16 acc = pi2_src[i];
+
+            pi2_dst[0] = acc;
+            for(j = 1; j < trans_size; j++)
+            {
+                acc += pi2_src[j * src_strd + i];
+                pi2_dst[j * dst_strd] = acc;
             }
         }
         pi2_dst++;

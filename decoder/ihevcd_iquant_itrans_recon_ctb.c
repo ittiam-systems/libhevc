@@ -202,7 +202,8 @@ typedef void (*PF_IQITRECON_PLANE)(process_ctxt_t *ps_proc,
                                    WORD32 func_idx,
                                    WORD32 log2_trans_size,
                                    CHROMA_PLANE_ID_T chroma_plane,
-                                   WORD8 intra_flag);
+                                   WORD8 intra_flag,
+                                   WORD8 intra_pred_mode);
 
 /* Returns number of ai2_level read from ps_sblk_coeff */
 UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
@@ -602,7 +603,8 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
                                                 WORD32 func_idx,
                                                 WORD32 log2_trans_size,
                                                 CHROMA_PLANE_ID_T chroma_plane,
-                                                WORD8 intra_flag)
+                                                WORD8 intra_flag,
+                                                WORD8 intra_pred_mode)
 {
     sps_t *ps_sps = ps_proc->ps_sps;
     pps_t *ps_pps = ps_proc->ps_pps;
@@ -651,7 +653,8 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
                                                      WORD32 func_idx,
                                                      WORD32 log2_trans_size,
                                                      CHROMA_PLANE_ID_T chroma_plane,
-                                                     WORD8 intra_flag)
+                                                     WORD8 intra_flag,
+                                                     WORD8 intra_pred_mode)
 {
     sps_t *ps_sps = ps_proc->ps_sps;
     pps_t *ps_pps = ps_proc->ps_pps;
@@ -660,7 +663,11 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     WORD16 *pi2_res = ps_proc->pi2_res_luma_buf;
     WORD16 *pi2_res_uv = ps_proc->pi2_res_chroma_buf;
     WORD32 alpha = 0;
-    WORD16 *residue = chroma_plane == NULL_PLANE ? pi2_res : pi2_res_uv;
+    WORD16 *residue_out_base = chroma_plane == NULL_PLANE ? pi2_res : pi2_res_uv;
+    WORD16 *residue_out = residue_out_base;
+    // if both rdpcm and rotate are to be applied, share the output residue buffer between the
+    // two transforms
+    WORD16 *residue_out_intrmdt = residue_out_base + (TRANS_SIZE_4 * TRANS_SIZE_4);
 
     if(chroma_plane == U_PLANE && ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0)
     {
@@ -676,17 +683,42 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     {
         if(ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag)
         {
-            if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
+            WORD8 rotate = ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4
+                            && intra_flag;
+            WORD8 rdpcm = ps_sps->i1_implicit_rdpcm_enabled_flag && intra_flag
+                            && (intra_pred_mode == 10 || intra_pred_mode == 26);
+            WORD16 *src_residue = ps_pl_tu_ctxt->pi2_tu_coeff;
+            WORD16 src_residue_strd = ps_pl_tu_ctxt->tu_coeff_stride;
+
+            if(rotate)
             {
-                ihevc_res_4x4_rotate(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
-                                     ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
-                                     ps_pl_tu_ctxt->zero_cols);
+                ihevc_res_4x4_rotate(src_residue, rdpcm ? residue_out_intrmdt : residue_out,
+                                     src_residue_strd, trans_size, ps_pl_tu_ctxt->zero_cols);
+                ps_pl_tu_ctxt->zero_cols =
+                                gau4_ihevcd_4_bit_reverse[ps_pl_tu_ctxt->zero_cols & 0xF];
+                src_residue = residue_out_intrmdt;
+                src_residue_strd = trans_size;
             }
-            else
+
+            if(rdpcm)
             {
-                ihevc_res_nxn_copy(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
-                                   ps_pl_tu_ctxt->tu_coeff_stride, trans_size, trans_size,
-                                   ps_pl_tu_ctxt->zero_cols);
+                if(intra_pred_mode == 10)
+                {
+                    ihevc_res_nxn_rdpcm_horz(src_residue, residue_out, src_residue_strd, trans_size,
+                                             trans_size, ps_pl_tu_ctxt->zero_cols);
+                    ps_pl_tu_ctxt->zero_cols = (1 << CTZ(~ps_pl_tu_ctxt->zero_cols)) - 1;
+                }
+                else
+                {
+                    ihevc_res_nxn_rdpcm_vert(src_residue, residue_out, src_residue_strd, trans_size,
+                                             trans_size, ps_pl_tu_ctxt->zero_cols);
+                }
+            }
+
+            if(!rdpcm && !rotate)
+            {
+                ihevc_res_nxn_copy(src_residue, residue_out, src_residue_strd, trans_size,
+                                   trans_size, ps_pl_tu_ctxt->zero_cols);
             }
         }
         else
@@ -696,34 +728,35 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
             {
                 WORD32 func_tmp_idx = chroma_plane != NULL_PLANE ? func_idx - 4 : func_idx;
                 ps_codec->apf_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
-                                                       ps_proc->pi2_itrans_intrmd_buf, residue,
-                                                       ps_pl_tu_ctxt->tu_coeff_stride,
-                                                       trans_size, ps_pl_tu_ctxt->zero_cols,
+                                                       ps_proc->pi2_itrans_intrmd_buf, residue_out,
+                                                       ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
+                                                       ps_pl_tu_ctxt->zero_cols,
                                                        ps_pl_tu_ctxt->zero_rows);
             }
             else /* DC only */
             {
-                ps_codec->apf_itrans_res_dc(residue, trans_size, log2_trans_size,
+                ps_codec->apf_itrans_res_dc(residue_out, trans_size, log2_trans_size,
                                             ps_pl_tu_ctxt->coeff_value);
             }
+            ps_pl_tu_ctxt->zero_cols = 0;
         }
         if(!alpha)
         {
-            ps_codec->apf_recon[func_idx](residue, ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
-                                          trans_size, ps_pl_tu_ctxt->pred_strd,
-                                          ps_pl_tu_ctxt->dst_strd, 0);
+            ps_codec->apf_recon[func_idx](residue_out, ps_pl_tu_ctxt->pu1_pred,
+                                          ps_pl_tu_ctxt->pu1_dst, trans_size,
+                                          ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                          ps_pl_tu_ctxt->zero_cols);
         }
     }
     if(alpha)
     {
         if(0 == ps_pl_tu_ctxt->cbf)
         {
-            memset(residue, 0, trans_size * trans_size * sizeof(WORD16));
+            memset(residue_out, 0, trans_size * trans_size * sizeof(WORD16));
         }
         ihevc_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, ps_pl_tu_ctxt->pu1_pred,
                                    ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
-                                   trans_size, ps_pl_tu_ctxt->pred_strd,
-                                   ps_pl_tu_ctxt->dst_strd);
+                                   trans_size, ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd);
     }
 }
 
@@ -732,7 +765,8 @@ PF_IQITRECON_PLANE get_iqitrec_func(process_ctxt_t *ps_proc,
                                     tu_plane_iq_it_recon_ctxt_t *ps_pl_tu_ctxt,
                                     WORD32 log2_trans_size,
                                     CHROMA_PLANE_ID_T chroma_plane,
-                                    WORD8 intra_flag)
+                                    WORD8 intra_flag,
+                                    WORD8 intra_pred_mode)
 {
     sps_t *ps_sps = ps_proc->ps_sps;
     pps_t *ps_pps = ps_proc->ps_pps;
@@ -742,6 +776,9 @@ PF_IQITRECON_PLANE get_iqitrec_func(process_ctxt_t *ps_proc,
                     && (ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag))
     {
         if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
+            return ihevcd_iquant_itrans_resi_recon_tu_plane;
+        if(ps_sps->i1_implicit_rdpcm_enabled_flag && intra_flag
+                        && (intra_pred_mode == 10 || intra_pred_mode == 26))
             return ihevcd_iquant_itrans_resi_recon_tu_plane;
     }
     if(ps_pps->i1_cross_component_prediction_enabled_flag)
@@ -774,6 +811,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     WORD32 luma_nbr_flags_4x4[4] = { 0 };
     WORD32 chroma_nbr_flags = 0;
     WORD32 chroma_nbr_flags_subtu = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    WORD32 disable_boundary_filter = 0;
+#endif
     UWORD8 u1_luma_pred_mode_first_tu = 0;
     /* Pointers for generating 2d coeffs from coeff-map */
     UWORD8 *pu1_tu_coeff_data;
@@ -1330,8 +1370,25 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         /* use the look up to get the function idx */
                         luma_pred_func_idx = g_i4_ip_funcs[u1_luma_pred_mode];
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                        if(ps_sps->i1_implicit_rdpcm_enabled_flag && ps_tu->b1_transquant_bypass
+                                        && (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26))
+                            disable_boundary_filter = 1;
+#endif
                         /* call the intra prediction function */
-                        ps_codec->apf_intra_pred_luma[luma_pred_func_idx](pu1_ref_sub_out, 1, y_cb_tu.pu1_pred, y_cb_tu.pred_strd, trans_size, u1_luma_pred_mode);
+                        ps_codec->apf_intra_pred_luma[luma_pred_func_idx](
+                                        pu1_ref_sub_out, 1,
+                                        y_cb_tu.pu1_pred,
+                                        y_cb_tu.pred_strd,
+                                        trans_size,
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                                        (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26) ?
+                                                        disable_boundary_filter :
+                                                        u1_luma_pred_mode
+#else
+                                        u1_luma_pred_mode
+#endif
+                                        );
                     }
                     else
                     {
@@ -1458,20 +1515,22 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 #ifdef ENABLE_MAIN_REXT_PROFILE
                 iqitrecon_fptr = get_iqitrec_func(
                                 ps_proc, ps_tu, ps_cb_tu, log2_trans_size,
-                                c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag);
+                                c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag,
+                                c_idx == 0 ? u1_luma_pred_mode : u1_chroma_pred_mode);
 #endif
                 /* IQ, IT and Recon for Y if c_idx == 0, and U if c_idx !=0 */
                 iqitrecon_fptr(ps_proc, ps_tu, ps_cb_tu, func_idx, log2_trans_size,
-                               c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag);
+                               c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag,
+                               c_idx == 0 ? u1_luma_pred_mode : u1_chroma_pred_mode);
                 /* IQ, IT and Recon for V */
                 if(c_idx != 0)
                 {
 #ifdef ENABLE_MAIN_REXT_PROFILE
                     iqitrecon_fptr = get_iqitrec_func(ps_proc, ps_tu, ps_cr_tu, log2_trans_size,
-                                                      V_PLANE, intra_flag);
+                                                      V_PLANE, intra_flag, u1_chroma_pred_mode);
 #endif
                     iqitrecon_fptr(ps_proc, ps_tu, ps_cr_tu, func_idx, log2_trans_size, V_PLANE,
-                                   intra_flag);
+                                   intra_flag, u1_chroma_pred_mode);
                 }
                 }
                 while(c_idx != 0 && ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422
