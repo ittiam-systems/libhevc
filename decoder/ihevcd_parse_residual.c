@@ -744,7 +744,23 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         /* At this level u4_sig_coeff_map is non-zero i.e. has atleast one non-zero coeff */
         last_sig_scan_pos = (31 - CLZ(u4_sig_coeff_map));
         first_sig_scan_pos = CTZ(u4_sig_coeff_map);
-        sign_hidden = (((last_sig_scan_pos - first_sig_scan_pos) > 3) && !ps_codec->s_parse.s_cu.i4_cu_transquant_bypass);
+
+        if(ps_codec->s_parse.s_cu.i4_cu_transquant_bypass
+                        || (PRED_MODE_INTRA == ps_codec->s_parse.s_cu.i4_pred_mode
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                                        && ps_codec->s_parse.ps_sps->i1_implicit_rdpcm_enabled_flag
+#else
+                                        && 0
+#endif
+                                        && transform_skip_flag
+                                        && (intra_pred_mode == 10 || intra_pred_mode == 26)))
+        {
+            sign_hidden = 0;
+        }
+        else
+        {
+            sign_hidden = ((last_sig_scan_pos - first_sig_scan_pos) > 3);
+        }
 
         u4_coeff_abs_level_greater2_map = 0;
 
