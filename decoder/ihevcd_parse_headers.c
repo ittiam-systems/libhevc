@@ -1872,7 +1872,86 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         }
     }
 
-    BITS_PARSE("sps_extension_flag", value, ps_bitstrm, 1);
+    BITS_PARSE("sps_extension_present_flag", value, ps_bitstrm, 1);
+    ps_sps->i1_sps_extension_present_flag = value;
+
+    if(ps_sps->i1_sps_extension_present_flag)
+    {
+        BITS_PARSE("sps_range_extension_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_sps_range_extension_flag = value;
+
+        BITS_PARSE("sps_multilayer_extension_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_sps_multilayer_extension_flag = value;
+
+        BITS_PARSE("sps_3d_extension_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_sps_3d_extension_flag = value;
+
+        BITS_PARSE("sps_scc_extension_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_sps_scc_extension_flag = value;
+
+        BITS_PARSE("sps_extension_4bits", value, ps_bitstrm, 4);
+        ps_sps->i1_sps_extension_4bits = value;
+    }
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    if(ps_sps->i1_sps_range_extension_flag)
+    {
+        /* ITU-T H.265 Section 7.3.2.2.2 Range extension sequence parameter set syntax */
+        BITS_PARSE("transform_skip_rotation_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_transform_skip_rotation_enabled_flag = value;
+
+        BITS_PARSE("transform_skip_context_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_transform_skip_context_enabled_flag = value;
+
+        BITS_PARSE("implicit_rdpcm_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_implicit_rdpcm_enabled_flag = value;
+
+        BITS_PARSE("explicit_rdpcm_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_explicit_rdpcm_enabled_flag = value;
+
+        BITS_PARSE("extended_precision_processing_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_extended_precision_processing_flag = value;
+
+        BITS_PARSE("intra_smoothing_disabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_intra_smoothing_disabled_flag = value;
+
+        BITS_PARSE("high_precision_offsets_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_use_high_precision_pred_wt = value;
+
+        BITS_PARSE("persistent_rice_adaptation_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_fast_rice_adaptation_enabled_flag = value;
+
+        BITS_PARSE("cabac_bypass_alignment_enabled_flag", value, ps_bitstrm, 1);
+        ps_sps->i1_align_cabac_before_bypass = value;
+    }
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420
+                    || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+    {
+        if(ps_sps->i1_transform_skip_rotation_enabled_flag
+                        || ps_sps->i1_transform_skip_context_enabled_flag
+                        || ps_sps->i1_implicit_rdpcm_enabled_flag
+                        || ps_sps->i1_explicit_rdpcm_enabled_flag
+                        || ps_sps->i1_extended_precision_processing_flag
+                        || ps_sps->i1_intra_smoothing_disabled_flag
+                        || ps_sps->i1_use_high_precision_pred_wt
+                        || ps_sps->i1_fast_rice_adaptation_enabled_flag
+                        || ps_sps->i1_align_cabac_before_bypass)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
+    }
+    if(ps_sps->i1_sps_multilayer_extension_flag || ps_sps->i1_sps_3d_extension_flag
+                    || ps_sps->i1_sps_scc_extension_flag)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+#else
+    if(ps_sps->i1_sps_range_extension_flag || ps_sps->i1_sps_multilayer_extension_flag
+                    || ps_sps->i1_sps_3d_extension_flag || ps_sps->i1_sps_scc_extension_flag)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+#endif
 
     if((UWORD8 *)ps_bitstrm->pu4_buf > ps_bitstrm->pu1_buf_max)
     {
@@ -2442,8 +2521,97 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
     BITS_PARSE("slice_header_extension_present_flag", value, ps_bitstrm, 1);
     ps_pps->i1_slice_header_extension_present_flag = value;
-    /* Not present in HM */
-    BITS_PARSE("pps_extension_flag", value, ps_bitstrm, 1);
+
+    BITS_PARSE("pps_extension_present_flag", value, ps_bitstrm, 1);
+    ps_pps->i1_pps_extension_present_flag = value;
+
+    if(ps_pps->i1_pps_extension_present_flag)
+    {
+        BITS_PARSE("pps_range_extension_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_pps_range_extension_flag = value;
+
+        BITS_PARSE("pps_multilayer_extension_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_pps_multilayer_extension_flag = value;
+
+        BITS_PARSE("pps_3d_extension_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_pps_3d_extension_flag = value;
+
+        BITS_PARSE("pps_scc_extension_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_pps_scc_extension_flag = value;
+
+        BITS_PARSE("pps_extension_4bits", value, ps_bitstrm, 4);
+        ps_pps->i1_pps_extension_4bits = value;
+    }
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    if(ps_pps->i1_pps_range_extension_flag)
+    {
+        /* ITU-T H.265 Section 7.3.2.3.2 Range extension PPS syntax */
+        if(ps_pps->i1_transform_skip_enabled_flag)
+        {
+            UEV_PARSE("log2_max_transform_skip_block_size_minus2", value, ps_bitstrm);
+            ps_pps->i1_log2_max_transform_skip_block_size_minus2 = value;
+        }
+
+        BITS_PARSE("cross_component_prediction_enabled_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_cross_component_prediction_enabled_flag = value;
+
+        // Parse other bits to maintain bitstream alignment
+        BITS_PARSE("chroma_qp_offset_list_enabled_flag", value, ps_bitstrm, 1);
+        ps_pps->i1_chroma_qp_offset_list_enabled_flag = value;
+
+        if(ps_pps->i1_chroma_qp_offset_list_enabled_flag)
+        {
+            UEV_PARSE("diff_cu_chroma_qp_offset_depth", value, ps_bitstrm);
+            ps_pps->i4_diff_cu_chroma_qp_offset_depth = value;
+
+            UEV_PARSE("chroma_qp_offset_list_len_minus1", value, ps_bitstrm);
+            ps_pps->i4_chroma_qp_offset_list_len_minus1 = value;
+
+            for(int i = 0; i <= ps_pps->i4_chroma_qp_offset_list_len_minus1; i++)
+            {
+                // cb_qp_offset_list[i] (se-v)
+                SEV_PARSE("cb_qp_offset_list", value, ps_bitstrm);
+                ps_pps->i4_cb_qp_offset_list[i] = value;
+
+                // cr_qp_offset_list[i] (se-v)
+                SEV_PARSE("cr_qp_offset_list", value, ps_bitstrm);
+                ps_pps->i4_cr_qp_offset_list[i] = value;
+            }
+        }
+
+        // log2_sao_offset_scale_luma (ue-v)
+        UEV_PARSE("log2_sao_ofst_scale_luma", value, ps_bitstrm);
+        ps_pps->i1_log2_sao_ofst_scale_luma = value;
+
+        // log2_sao_offset_scale_chroma (ue-v)
+        UEV_PARSE("log2_sao_ofst_scale_chroma", value, ps_bitstrm);
+        ps_pps->i1_log2_sao_ofst_scale_chroma = value;
+    }
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420
+                   || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+    {
+        if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
+                        || ps_pps->i1_cross_component_prediction_enabled_flag
+                        || ps_pps->i1_chroma_qp_offset_list_enabled_flag
+                        || ps_pps->i1_log2_sao_ofst_scale_luma
+                        || ps_pps->i1_log2_sao_ofst_scale_chroma)
+        {
+            return IHEVCD_INVALID_PARAMETER;
+        }
+    }
+    if(ps_pps->i1_pps_multilayer_extension_flag || ps_pps->i1_pps_3d_extension_flag
+                    || ps_pps->i1_pps_scc_extension_flag)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+#else
+    if(ps_pps->i1_pps_range_extension_flag || ps_pps->i1_pps_multilayer_extension_flag
+                    || ps_pps->i1_pps_3d_extension_flag || ps_pps->i1_pps_scc_extension_flag)
+    {
+        return IHEVCD_INVALID_PARAMETER;
+    }
+#endif
 
     if((UWORD8 *)ps_bitstrm->pu4_buf > ps_bitstrm->pu1_buf_max)
         return IHEVCD_INVALID_PARAMETER;
