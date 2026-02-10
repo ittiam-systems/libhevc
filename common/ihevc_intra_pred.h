@@ -159,7 +159,7 @@ typedef void ihevc_intra_pred_ref_filtering_ft(UWORD8 *pu1_src,
                                                WORD32 nt,
                                                UWORD8 *pu1_dst,
                                                WORD32 mode,
-                                               WORD32 strong_intra_smoothing_enable_flag);
+                                               WORD32 intra_smoothing_flags);
 
 typedef void ihevc_hbd_intra_pred_luma_planar_ft(
                 UWORD16 *pu2_ref,

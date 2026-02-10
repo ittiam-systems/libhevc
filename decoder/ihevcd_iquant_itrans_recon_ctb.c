@@ -992,9 +992,17 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                         /* call reference filtering */
                         ps_codec->s_func_selector.ihevc_intra_pred_ref_filtering_fptr(
-                                        pu1_ref_sub_out, trans_size,
                                         pu1_ref_sub_out,
-                                        u1_luma_pred_mode, ps_sps->i1_strong_intra_smoothing_enable_flag);
+                                        trans_size,
+                                        pu1_ref_sub_out,
+                                        u1_luma_pred_mode,
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                                        (ps_sps->i1_intra_smoothing_disabled_flag << 3
+                                                        | ps_sps->i1_strong_intra_smoothing_enable_flag)
+#else
+                                        ps_sps->i1_strong_intra_smoothing_enable_flag
+#endif
+                                        );
 
                         /* use the look up to get the function idx */
                         luma_pred_func_idx = g_i4_ip_funcs[u1_luma_pred_mode];

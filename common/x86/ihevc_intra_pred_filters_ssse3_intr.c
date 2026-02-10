@@ -377,6 +377,11 @@ void ihevc_intra_pred_luma_ref_substitution_ssse3(UWORD8 *pu1_top_left,
 * @param[in] mode
 *  integer intraprediction mode
 *
+* @param[in] intra_smoothing_flags
+*  integer bit 3 indicates if intra smoothing is enabled/disabled
+*          unconditionally. this is applicable to frext profiles only
+*          bit 0 indicates strong intra smoothing enabled/disabled
+*
 * @returns
 *
 * @remarks
@@ -389,7 +394,7 @@ void ihevc_intra_pred_ref_filtering_ssse3(UWORD8 *pu1_src,
                                           WORD32 nt,
                                           UWORD8 *pu1_dst,
                                           WORD32 mode,
-                                          WORD32 strong_intra_smoothing_enable_flag)
+                                          WORD32 intra_smoothing_flags)
 {
     WORD32 filter_flag;
     WORD32 i; /* Generic indexing variable */
@@ -402,9 +407,10 @@ void ihevc_intra_pred_ref_filtering_ssse3(UWORD8 *pu1_src,
     __m128i src_temp1, src_temp2, src_temp3, src_temp7;
     __m128i src_temp4, src_temp5, src_temp6, src_temp8;
 
-    //WORD32 strong_intra_smoothing_enable_flag  = 1;
-
-    filter_flag = gau1_intra_pred_ref_filter[mode] & (1 << (CTZ(nt) - 2));
+    WORD32 intra_smoothing_disabled = (intra_smoothing_flags >> 3);
+    WORD32 strong_intra_smoothing_enable_flag = intra_smoothing_flags & 1;
+    filter_flag = intra_smoothing_disabled ?
+                    0 : (gau1_intra_pred_ref_filter[mode] & (1 << (CTZ(nt) - 2)));
     if(0 == filter_flag)
     {
         if(pu1_src == pu1_dst)
