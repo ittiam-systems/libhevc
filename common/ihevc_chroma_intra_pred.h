@@ -126,7 +126,8 @@ typedef void ihevc_intra_pred_chroma_ref_substitution_ft(UWORD8 *pu1_top_left,
                                                          WORD32 nt,
                                                          WORD32 nbr_flags,
                                                          UWORD8 *pu1_dst,
-                                                         WORD32 dst_strd);
+                                                         WORD32 dst_strd,
+                                                         WORD32 chroma_format_idc);
 
 typedef void ihevc_intra_pred_chroma_ref_filtering_ft(UWORD8 *pu1_src,
                                                       WORD32 nt,

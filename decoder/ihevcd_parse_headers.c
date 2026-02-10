@@ -1971,7 +1971,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                     || ps_sps->i1_transform_skip_context_enabled_flag
                     || ps_sps->i1_implicit_rdpcm_enabled_flag
                     || ps_sps->i1_explicit_rdpcm_enabled_flag
-                    || ps_sps->i1_intra_smoothing_disabled_flag
                     || ps_sps->i1_fast_rice_adaptation_enabled_flag)
     {
         // TODO: decoder does not yet supports these tool-sets

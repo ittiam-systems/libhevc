@@ -6244,7 +6244,8 @@ UWORD8 ihevce_distortion_based_intra_chroma_mode_selector(
                     u1_trans_size,
                     nbr_flags,
                     pu1_ref_sub_out,
-                    1);
+                    1,
+                    CHROMA_FMT_IDC_YUV420);
 
                 /* use the look up to get the function idx */
                 chrm_pred_func_idx = g_i4_ip_funcs[u1_chrm_mode];
@@ -6636,7 +6637,8 @@ void ihevce_intra_chroma_pred_mode_selector(
                     trans_size,
                     nbr_flags,
                     (UWORD8 *)ps_ctxt->pv_ref_sub_out,
-                    1);
+                    1,
+                    CHROMA_FMT_IDC_YUV420);
 
                 /* use the look up to get the function idx */
                 chrm_pred_func_idx = g_i4_ip_funcs[best_chrm_mode];
@@ -7396,7 +7398,8 @@ LWORD64 ihevce_chroma_cu_prcs_rdopt(
                                 trans_size,
                                 nbr_flags,
                                 (UWORD8 *)ps_ctxt->pv_ref_sub_out,
-                                1);
+                                1,
+                                CHROMA_FMT_IDC_YUV420);
 
                             /* use the look up to get the function idx */
                             chrm_pred_func_idx = g_i4_ip_funcs[chrm_pred_mode];
@@ -9418,7 +9421,8 @@ void ihevce_final_rdopt_mode_prcs(
                             chroma_trans_size,
                             nbr_flags,
                             (UWORD8 *)ps_ctxt->pv_ref_sub_out,
-                            1);
+                            1,
+                            CHROMA_FMT_IDC_YUV420);
 
                         /* use the look up to get the function idx */
                         chrm_pred_func_idx = g_i4_ip_funcs[chroma_pred_mode];

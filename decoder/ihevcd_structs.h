@@ -736,7 +736,7 @@ typedef struct
     /**
      * Chroma pred mode index to be used to compute intra pred mode for chroma
      */
-    WORD32 i4_intra_chroma_pred_mode_idx;
+    WORD32 ai4_intra_chroma_pred_mode_idx[4];
     /**
      * Maximum transform depth
      */

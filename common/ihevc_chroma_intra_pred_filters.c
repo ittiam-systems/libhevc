@@ -64,6 +64,7 @@
 
 #include "ihevc_typedefs.h"
 #include "ihevc_macros.h"
+#include "ihevc_defs.h"
 #include "ihevc_func_selector.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_intra_pred.h"
@@ -129,7 +130,8 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
                                               WORD32 nt,
                                               WORD32 nbr_flags,
                                               UWORD8 *pu1_dst,
-                                              WORD32 dst_strd)
+                                              WORD32 dst_strd,
+                                              WORD32 chroma_format_idc)
 {
     UWORD8 pu1_ref_u, pu1_ref_v;
     WORD32 dc_val, i, j;
@@ -206,7 +208,7 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
             // U-V interleaved Top-top right samples
         }
 
-        if(nt == 4)
+        if(nt == 4 || (nt == 8 && chroma_format_idc == CHROMA_FMT_IDC_YUV444))
         {
             /* 1 bit extraction for all the neighboring blocks */
             tp_left = (nbr_flags & 0x10000) >> 16;
@@ -274,8 +276,9 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
 
             }
         }
-        else if(nt == 8)
+        else if(nt == 8 || (nt == 16 && chroma_format_idc == CHROMA_FMT_IDC_YUV444))
         {
+            WORD32 sub_sample = chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 2 : 1;
             WORD32 nbr_flags_temp = 0;
             nbr_flags_temp = ((nbr_flags & 0xC) >> 2) + ((nbr_flags & 0xC0) >> 4)
                             + ((nbr_flags & 0x300) >> 4)
@@ -285,16 +288,16 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
             /* compute trailing zeors based on nbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
-                nbr_id_from_bl = look_up_trailing_zeros(nbr_flags_temp & 0XF) * 4; /* for bottom left and left */
-                if(nbr_id_from_bl == 32)
-                    nbr_id_from_bl = 16;
-                if(nbr_id_from_bl == 16)
+                nbr_id_from_bl = look_up_trailing_zeros(nbr_flags_temp & 0XF) * (4 * sub_sample); /* for bottom left and left */
+                if(nbr_id_from_bl == 32 * sub_sample)
+                    nbr_id_from_bl = 16 * sub_sample;
+                if(nbr_id_from_bl == 16 * sub_sample)
                 {
                     /* for top left : 1 pel per nbr bit */
                     if(!((nbr_flags_temp >> 8) & 0x1))
                     {
                         nbr_id_from_bl++;
-                        nbr_id_from_bl += look_up_trailing_zeros((nbr_flags_temp >> 4) & 0xF) * 4; /* top and top right;  8 pels per nbr bit */
+                        nbr_id_from_bl += look_up_trailing_zeros((nbr_flags_temp >> 4) & 0xF) * 4 * sub_sample; /* top and top right;  8 pels per nbr bit */
 
                     }
                 }
@@ -313,14 +316,14 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
             }
 
             /* for the loop of 4*Nt+1 pixels (excluding pixels computed from reverse substitution) */
-            while(nbr_id_from_bl < ((T8C_4NT)+1))
+            while(nbr_id_from_bl < ((T8C_4NT * sub_sample)+1))
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Divide by 8 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> 2); /*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2)); /*+ (nbr_id_from_bl & 0x1);*/
 
                 /* The Top-left flag is at the last bit location of nbr_flags*/
-                if(nbr_id_from_bl == (T8C_4NT / 2))
+                if(nbr_id_from_bl == (T8C_4NT * sub_sample / 2))
                 {
                     get_bits = GET_BIT(nbr_flags_temp, 8);
 
@@ -339,22 +342,23 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
                         UWORD16 *pu2_dst;
                         /* 8 pel substitution (other than TL) */
                         pu2_dst = (UWORD16 *)&pu1_dst[(2 * nbr_id_from_bl) - 2];
-                        ihevc_memset_16bit((UWORD16 *)(pu1_dst + (2 * nbr_id_from_bl)), pu2_dst[0], 4);
+                        ihevc_memset_16bit((UWORD16 *)(pu1_dst + (2 * nbr_id_from_bl)), pu2_dst[0], 4 * sub_sample);
                     }
 
                 }
-                nbr_id_from_bl += (nbr_id_from_bl == (T8C_4NT / 2)) ? 1 : 4;
+                nbr_id_from_bl += (nbr_id_from_bl == (T8C_4NT * sub_sample / 2)) ? 1 : 4 * sub_sample;
             }
 
         }
-        else if(nt == 16)
+        else if(nt == 16 || (nt == 32 && chroma_format_idc == CHROMA_FMT_IDC_YUV444))
         {
+            WORD32 sub_sample = chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 2 : 1;
             /* compute trailing ones based on mbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 4 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
-                nbr_id_from_bl = look_up_trailing_zeros((nbr_flags & 0XFF)) * 4; /* for bottom left and left */
+                nbr_id_from_bl = look_up_trailing_zeros((nbr_flags & 0XFF)) * 4 * sub_sample; /* for bottom left and left */
 
-                if(nbr_id_from_bl == 32)
+                if(nbr_id_from_bl == 32 * sub_sample)
                 {
                     /* for top left : 1 pel per nbr bit */
                     if(!((nbr_flags >> 16) & 0x1))
@@ -362,7 +366,7 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
                         /* top left not available */
                         nbr_id_from_bl++;
                         /* top and top right;  4 pels per nbr bit */
-                        nbr_id_from_bl += look_up_trailing_zeros((nbr_flags >> 8) & 0xFF) * 4;
+                        nbr_id_from_bl += look_up_trailing_zeros((nbr_flags >> 8) & 0xFF) * 4 * sub_sample;
                     }
                 }
                 /* Reverse Substitution Process*/
@@ -380,14 +384,14 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
             }
 
             /* for the loop of 4*Nt+1 pixels (excluding pixels computed from reverse substitution) */
-            while(nbr_id_from_bl < ((T16C_4NT)+1))
+            while(nbr_id_from_bl < ((T16C_4NT * sub_sample)+1))
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Devide by 4 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> 2); /*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2)); /*+ (nbr_id_from_bl & 0x1);*/
 
                 /* The Top-left flag is at the last bit location of nbr_flags*/
-                if(nbr_id_from_bl == (T16C_4NT / 2))
+                if(nbr_id_from_bl == (T16C_4NT * sub_sample / 2))
                 {
                     get_bits = GET_BIT(nbr_flags, 16);
                     /* only pel substitution for TL */
@@ -405,11 +409,11 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
                         UWORD16 *pu2_dst;
                         /* 4 pel substitution (other than TL) */
                         pu2_dst = (UWORD16 *)&pu1_dst[(2 * nbr_id_from_bl) - 2];
-                        ihevc_memset_16bit((UWORD16 *)(pu1_dst + (2 * nbr_id_from_bl)), pu2_dst[0], 4);
+                        ihevc_memset_16bit((UWORD16 *)(pu1_dst + (2 * nbr_id_from_bl)), pu2_dst[0], 4 * sub_sample);
                     }
 
                 }
-                nbr_id_from_bl += (nbr_id_from_bl == (T16C_4NT / 2)) ? 1 : 4;
+                nbr_id_from_bl += (nbr_id_from_bl == (T16C_4NT * sub_sample / 2)) ? 1 : 4 * sub_sample;
             }
         }
     }
