@@ -18,6 +18,7 @@
  * Originally developed and contributed by Ittiam Systems Pvt. Ltd, Bangalore
  */
 #include <algorithm>
+#include <stdint.h>
 #include <memory>
 #include <string.h>
 
