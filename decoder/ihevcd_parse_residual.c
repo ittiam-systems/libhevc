@@ -311,7 +311,8 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     scan_idx = SCAN_DIAG_UPRIGHT;
     if(PRED_MODE_INTRA == ps_codec->s_parse.s_cu.i4_pred_mode)
     {
-        if((2 == log2_trafo_size) || ((3 == log2_trafo_size) && (0 == c_idx)))
+        int is_YUV444 = ps_codec->s_parse.ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444;
+        if((2 == log2_trafo_size) || ((3 == log2_trafo_size) && (0 == c_idx || is_YUV444)))
         {
             if((6 <= intra_pred_mode) &&
                (14 >= intra_pred_mode))

@@ -556,6 +556,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     pps_t *ps_pps;
     WORD32 intra_flag;
     UWORD8 *pu1_pic_intra_flag;
+    WORD32 h_samp_factor, v_samp_factor;
+    WORD32 chroma_pixel_strd = 2;
+
     /*************************************************************************/
     /* Contanis scaling matrix offset in the following order in a 1D buffer  */
     /* Entries that are listed as UNUSED are invalid combinations where      */
@@ -653,6 +656,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
         /* Starting from msb 2nd bit to (1+ctb_size/4) bit, set 1 if top avail,or 0 */
 
     }
+
+    h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     /* Applying Inverse transform on all the TU's in CTB */
     for(tu_cnt = 0; tu_cnt < ps_proc->i4_ctb_tu_cnt; tu_cnt++, ps_tu++)
@@ -754,26 +760,29 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                 if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
                 {
-                    pu1_uv_dst += tu_x + (tu_y >> 1) * pic_strd;
+                    WORD32 chroma_strd = (pic_strd * chroma_pixel_strd) / h_samp_factor;
+
+                    pu1_uv_dst += (tu_x * chroma_pixel_strd / h_samp_factor)
+                                    + (tu_y * chroma_pixel_strd * pic_strd / (h_samp_factor * v_samp_factor));
                     pu1_uv_dst = pu1_uv_dst + chroma_yuv420sp_vu_u_offset;
 
                     /* U */
-                    for(i = 0; i < cb_size / 2; i++)
+                    for(i = 0; i < cb_size / v_samp_factor; i++)
                     {
-                        for(j = 0; j < cb_size / 2; j++)
+                        for(j = 0; j < cb_size / h_samp_factor; j++)
                         {
-                            pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                            pu1_uv_dst[i * chroma_strd + chroma_pixel_strd * j] = *pu1_buf++;
                         }
                     }
 
                     pu1_uv_dst = pu1_uv_dst + 1 + chroma_yuv420sp_vu_v_offset;
 
                     /* V */
-                    for(i = 0; i < cb_size / 2; i++)
+                    for(i = 0; i < cb_size / v_samp_factor; i++)
                     {
-                        for(j = 0; j < cb_size / 2; j++)
+                        for(j = 0; j < cb_size / h_samp_factor; j++)
                         {
-                            pu1_uv_dst[i * pic_strd + 2 * j] = *pu1_buf++;
+                            pu1_uv_dst[i * chroma_strd + chroma_pixel_strd * j] = *pu1_buf++;
                         }
                     }
                 }
@@ -791,12 +800,13 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
         {
             if(0 == pcm_flag)
             {
-                /* Initializing variables */
-                pred_strd = pic_strd;
-                dst_strd = pic_strd;
 
                 if(c_idx == 0) /* Y */
                 {
+                    /* Initializing variables */
+                    pred_strd = pic_strd;
+                    dst_strd = pic_strd;
+
                     log2_y_trans_size_minus_2 = ps_tu->b3_size;
                     trans_size = 1 << (log2_y_trans_size_minus_2 + 2);
                     log2_trans_size = log2_y_trans_size_minus_2 + 2;
@@ -847,17 +857,41 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 }
                 else /* UV interleaved */
                 {
+                    /* Initializing variables */
+                    pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
+                    dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
+                    const WORD16 *pi2_ihevcd_chroma_qp =
+                                    CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc ?
+                                                    gai2_ihevcd_chroma_qp_444 :
+                                                    gai2_ihevcd_chroma_qp;
+
                     /* Chroma :If Transform size is 4x4, keep 4x4 else do transform on (trans_size/2 x trans_size/2) */
                     if(ps_tu->b3_size == 0)
                     {
-                        /* Chroma 4x4 is present with 4th luma 4x4 block. For this case chroma postion has to be (luma pos x- 4,luma pos y- 4) */
                         log2_uv_trans_size_minus_2 = ps_tu->b3_size;
-                        tu_uv_offset = (tu_x - 4) + ((tu_y - 4) / 2) * pic_strd;
+                        if(CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
+                        {
+                            tu_uv_offset = (tu_x * chroma_pixel_strd)
+                                            + (tu_y * chroma_pixel_strd * pic_strd);
+                        }
+                        else if(CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc)
+                        {
+                            /* Chroma 4x4 is present with 4th luma 4x4 block. For this case chroma postion has to be (luma pos x - 4, luma pos y - 4) */
+                            tu_uv_offset = (tu_x - 4) + ((tu_y - 4) / 2) * pic_strd;
+                        }
                     }
                     else
                     {
-                        log2_uv_trans_size_minus_2 = ps_tu->b3_size - 1;
-                        tu_uv_offset = tu_x + (tu_y >> 1) * pic_strd;
+                        if(CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
+                        {
+                            log2_uv_trans_size_minus_2 = ps_tu->b3_size;
+                        }
+                        else if(CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc)
+                        {
+                            log2_uv_trans_size_minus_2 = ps_tu->b3_size - 1;
+                        }
+                        tu_uv_offset = (tu_x * chroma_pixel_strd / h_samp_factor)
+                                        + (tu_y * chroma_pixel_strd * pic_strd / (h_samp_factor * v_samp_factor));
                     }
                     trans_size = 1 << (log2_uv_trans_size_minus_2 + 2);
                     log2_trans_size = log2_uv_trans_size_minus_2 + 2;
@@ -900,8 +934,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     chroma_qp_idx = ps_tu->b7_qp + i1_chroma_pic_qp_offset
                                     + i1_chroma_slice_qp_offset;
                     chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
-                    qp_div = gai2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
-                    qp_rem = gai2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
+                    qp_div = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
+                    qp_rem = pi2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
 
                     /* QP for V */
                     i1_chroma_pic_qp_offset = ps_pps->i1_pic_cr_qp_offset;
@@ -911,8 +945,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     chroma_qp_idx = ps_tu->b7_qp + i1_chroma_pic_qp_offset
                                     + i1_chroma_slice_qp_offset;
                     chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
-                    qp_div_v = gai2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
-                    qp_rem_v = gai2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
+                    qp_div_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
+                    qp_rem_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
 
                     /* Unpacking coeffs */
                     transform_skip_flag = pu1_tu_coeff_data[1] & 1;
@@ -969,9 +1003,19 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         if(trans_size == 4)
                             luma_nbr_flags_4x4[(ps_tu->b4_pos_x % 2) + (ps_tu->b4_pos_y % 2) * 2] = luma_nbr_flags;
 
-                        if((ps_tu->b4_pos_x % 2 == 0) && (ps_tu->b4_pos_y % 2 == 0))
+                        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
                         {
                             chroma_nbr_flags = luma_nbr_flags;
+                        }
+                        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+                        {
+                            if(ps_tu->b4_pos_y % 2 == 0)
+                                chroma_nbr_flags = luma_nbr_flags;
+                        }
+                        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+                        {
+                            if(((ps_tu->b4_pos_x % 2 == 0) && (ps_tu->b4_pos_y % 2 == 0)))
+                                chroma_nbr_flags = luma_nbr_flags;
                         }
 
                         /* Initializing nbr pointers */
@@ -1019,7 +1063,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                          *      1         4         4     4         4
                          *
                          * Generating chroma_nbr_flags depending upon the transform size */
-                        if(ps_tu->b3_size == 0)
+                        if(ps_tu->b3_size == 0 && ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
                         {
                             /* Take TL,T,L flags of First luma 4x4 block */
                             chroma_nbr_flags = (luma_nbr_flags_4x4[0] & 0x10FF0);
@@ -1030,16 +1074,19 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
 
                         /* Initializing nbr pointers */
-                        pu1_top = pu1_pred_orig - pic_strd;
+                        pu1_top = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor);
                         pu1_left = pu1_pred_orig - 2;
-                        pu1_top_left = pu1_pred_orig - pic_strd - 2;
+                        pu1_top_left = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor) - 2;
 
                         /* Chroma pred  mode derivation from luma pred mode */
                         {
                             tu_t *ps_tu_tmp = ps_tu;
-                            while(!ps_tu_tmp->b1_first_tu_in_cu)
+                            if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV444)
                             {
-                                ps_tu_tmp--;
+                                while(!ps_tu_tmp->b1_first_tu_in_cu)
+                                {
+                                    ps_tu_tmp--;
+                                }
                             }
                             u1_luma_pred_mode_first_tu = ps_tu_tmp->b6_luma_intra_mode;
                         }
@@ -1049,8 +1096,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         {
                             u1_chroma_pred_mode = gau1_intra_pred_chroma_modes[u1_chroma_pred_mode];
 
-                            if(u1_chroma_pred_mode ==
-                                                            u1_luma_pred_mode_first_tu)
+                            if(u1_chroma_pred_mode == u1_luma_pred_mode_first_tu)
                             {
                                 u1_chroma_pred_mode = INTRA_ANGULAR(34);
                             }
@@ -1059,7 +1105,10 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         /* call the chroma reference array substitution */
                         ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_substitution_fptr(
                                         pu1_top_left,
-                                        pu1_top, pu1_left, pic_strd, trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1);
+                                        pu1_top, pu1_left,
+                                        (pic_strd * chroma_pixel_strd / h_samp_factor),
+                                        trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1,
+                                        ps_sps->i1_chroma_format_idc);
 
                         /* use the look up to get the function idx */
                         chroma_pred_func_idx =

@@ -38,5 +38,6 @@ extern const WORD16 gai2_ihevcd_chroma_qp[];
 
 extern const UWORD8 gau1_intra_pred_chroma_modes[];
 
+extern const WORD16 gai2_ihevcd_chroma_qp_444[];
 
 #endif /*_IHEVCD_COMMON_TABLES_H_*/
