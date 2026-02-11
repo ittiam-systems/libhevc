@@ -187,7 +187,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth] = ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth - 1];
         }
         if ((CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && log2_trafo_size > 2) ||
-            ps_sps->i1_chroma_format_idc == 3)
+            ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
         {
             ctxt_idx = IHEVC_CAB_CBCR_IDX + trafo_depth;
             /* CBF for Cb/Cr is sent only if the parent CBF for Cb/Cr is non-zero */

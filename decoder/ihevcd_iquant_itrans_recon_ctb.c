@@ -550,9 +550,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     /* nbr avail map for CTB */
     /* 1st bit points to neighbor (left/top_left/bot_left) */
     /* 1Tb starts at 2nd bit from msb of 2nd value in array, followed by number of min_tu's in that ctb */
-    UWORD32 au4_intra_nbr_avail[MAX_CTB_SIZE / MIN_TU_SIZE
-                    + 2 /* Top nbr + bot nbr */]; UWORD32
-                    top_avail_bits;
+    UWORD32 au4_intra_nbr_avail[MAX_CTB_SIZE / MIN_TU_SIZE + 2 /* Top nbr + bot nbr */];
+    UWORD32 top_avail_bits;
     sps_t *ps_sps;
     pps_t *ps_pps;
     WORD32 intra_flag;
