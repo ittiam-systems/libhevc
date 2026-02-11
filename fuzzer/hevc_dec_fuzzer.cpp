@@ -32,11 +32,15 @@
 #include "iv.h"
 #include "ivd.h"
 
+#include "fuzzer/FuzzedDataProvider.h"
+
 #define NELEMENTS(x) (sizeof(x) / sizeof(x[0]))
 #define ivd_api_function ihevcd_cxa_api_function
 const IV_COLOR_FORMAT_T supportedColorFormats[] = {
     IV_YUV_420P,   IV_YUV_420SP_UV, IV_YUV_420SP_VU,
     IV_YUV_422ILE, IV_GRAY, IV_RGB_565,      IV_RGBA_8888};
+
+const uint32_t enableYuvFormatBitFields[] = {0, 1, 2, 3};
 
 /* Decoder ignores invalid arch, i.e. for arm build, if SSSE3 is requested,
  * decoder defaults to a supported configuration. So same set of supported
@@ -45,17 +49,10 @@ const IVD_ARCH_T supportedArchitectures[] = {
     ARCH_ARM_NONEON,  ARCH_ARM_A9Q,   ARCH_ARM_NEONINTR, ARCH_ARMV8_GENERIC,
     ARCH_X86_GENERIC, ARCH_X86_SSSE3, ARCH_X86_SSE42};
 
-enum {
-  OFFSET_COLOR_FORMAT = 6,
-  OFFSET_NUM_CORES,
-  OFFSET_ARCH,
-  /* Should be the last entry */
-  OFFSET_MAX,
-};
-
 const static int kMaxNumDecodeCalls = 100;
 const static int kSupportedColorFormats = NELEMENTS(supportedColorFormats);
 const static int kSupportedArchitectures = NELEMENTS(supportedArchitectures);
+const static int kEnableYuvFormatBitFields = NELEMENTS(enableYuvFormatBitFields);
 const static int kMaxCores = 4;
 void *iv_aligned_malloc(void *ctxt, WORD32 alignment, WORD32 size) {
   void *buf = NULL;
@@ -73,33 +70,32 @@ void iv_aligned_free(void *ctxt, void *buf) {
 
 class Codec {
  public:
-  Codec(IV_COLOR_FORMAT_T colorFormat, size_t numCores);
+  Codec(FuzzedDataProvider &fdp);
   ~Codec();
 
-  void createCodec();
+  void createCodec(FuzzedDataProvider &fdp);
   void deleteCodec();
   void resetCodec();
-  void setCores();
+  void setCores(FuzzedDataProvider &fdp);
   void allocFrame();
   void freeFrame();
   void decodeHeader(const uint8_t *data, size_t size);
   IV_API_CALL_STATUS_T decodeFrame(const uint8_t *data, size_t size,
                                    size_t *bytesConsumed);
   void setParams(IVD_VIDEO_DECODE_MODE_T mode);
-  void setArchitecture(IVD_ARCH_T arch);
+  void setArchitecture(FuzzedDataProvider &fdp);
 
  private:
   IV_COLOR_FORMAT_T mColorFormat;
-  size_t mNumCores;
   iv_obj_t *mCodec;
   ivd_out_bufdesc_t mOutBufHandle;
   uint32_t mWidth;
   uint32_t mHeight;
 };
 
-Codec::Codec(IV_COLOR_FORMAT_T colorFormat, size_t numCores) {
-  mColorFormat = colorFormat;
-  mNumCores = numCores;
+Codec::Codec(FuzzedDataProvider &fdp) {
+  mColorFormat =
+      (IV_COLOR_FORMAT_T)fdp.PickValueInArray(supportedColorFormats);
   mCodec = nullptr;
   mWidth = 0;
   mHeight = 0;
@@ -109,7 +105,7 @@ Codec::Codec(IV_COLOR_FORMAT_T colorFormat, size_t numCores) {
 
 Codec::~Codec() {}
 
-void Codec::createCodec() {
+void Codec::createCodec(FuzzedDataProvider &fdp) {
   IV_API_CALL_STATUS_T ret;
   ihevcd_cxa_create_ip_t create_ip{};
   ihevcd_cxa_create_op_t create_op{};
@@ -123,6 +119,7 @@ void Codec::createCodec() {
   create_ip.s_ivd_create_ip_t.pf_aligned_free = iv_aligned_free;
   create_ip.s_ivd_create_ip_t.pv_mem_ctxt = NULL;
   create_ip.s_ivd_create_ip_t.u4_size = sizeof(ihevcd_cxa_create_ip_t);
+  create_ip.u4_enable_yuv_formats = fdp.PickValueInArray(enableYuvFormatBitFields);
   create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
 
   ret = ivd_api_function(NULL, (void *)&create_ip, (void *)&create_op);
@@ -157,14 +154,13 @@ void Codec::resetCodec() {
   ivd_api_function(mCodec, (void *)&s_ctl_ip, (void *)&s_ctl_op);
 }
 
-void Codec::setCores() {
+void Codec::setCores(FuzzedDataProvider &fdp) {
   ihevcd_cxa_ctl_set_num_cores_ip_t s_ctl_ip{};
   ihevcd_cxa_ctl_set_num_cores_op_t s_ctl_op{};
-
   s_ctl_ip.e_cmd = IVD_CMD_VIDEO_CTL;
   s_ctl_ip.e_sub_cmd =
       (IVD_CONTROL_API_COMMAND_TYPE_T)IHEVCD_CXA_CMD_CTL_SET_NUM_CORES;
-  s_ctl_ip.u4_num_cores = mNumCores;
+  s_ctl_ip.u4_num_cores = (fdp.ConsumeIntegral<uint8_t>() % kMaxCores) + 1;
   s_ctl_ip.u4_size = sizeof(ihevcd_cxa_ctl_set_num_cores_ip_t);
   s_ctl_op.u4_size = sizeof(ihevcd_cxa_ctl_set_num_cores_op_t);
 
@@ -187,14 +183,13 @@ void Codec::setParams(IVD_VIDEO_DECODE_MODE_T mode) {
   ivd_api_function(mCodec, (void *)&s_ctl_ip, (void *)&s_ctl_op);
 }
 
-void Codec::setArchitecture(IVD_ARCH_T arch) {
+void Codec::setArchitecture(FuzzedDataProvider &fdp) {
   ihevcd_cxa_ctl_set_processor_ip_t s_ctl_ip{};
   ihevcd_cxa_ctl_set_processor_op_t s_ctl_op{};
-
   s_ctl_ip.e_cmd = IVD_CMD_VIDEO_CTL;
   s_ctl_ip.e_sub_cmd =
       (IVD_CONTROL_API_COMMAND_TYPE_T)IHEVCD_CXA_CMD_CTL_SET_PROCESSOR;
-  s_ctl_ip.u4_arch = arch;
+  s_ctl_ip.u4_arch = (IVD_ARCH_T)fdp.PickValueInArray(supportedArchitectures);
   s_ctl_ip.u4_soc = SOC_GENERIC;
   s_ctl_ip.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_ip_t);
   s_ctl_op.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_op_t);
@@ -351,20 +346,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 1) {
     return 0;
   }
-  size_t colorFormatOfst = std::min((size_t)OFFSET_COLOR_FORMAT, size - 1);
-  size_t numCoresOfst = std::min((size_t)OFFSET_NUM_CORES, size - 1);
-  size_t architectureOfst = std::min((size_t)OFFSET_ARCH, size - 1);
-  size_t architectureIdx = data[architectureOfst] % kSupportedArchitectures;
-  IVD_ARCH_T arch = (IVD_ARCH_T)supportedArchitectures[architectureIdx];
-  size_t colorFormatIdx = data[colorFormatOfst] % kSupportedColorFormats;
-  IV_COLOR_FORMAT_T colorFormat =
-      (IV_COLOR_FORMAT_T)(supportedColorFormats[colorFormatIdx]);
-  uint32_t numCores = (data[numCoresOfst] % kMaxCores) + 1;
+  FuzzedDataProvider fdp(data, size);
+
   size_t numDecodeCalls = 0;
-  Codec *codec = new Codec(colorFormat, numCores);
-  codec->createCodec();
-  codec->setArchitecture(arch);
-  codec->setCores();
+  Codec *codec = new Codec(fdp);
+  codec->createCodec(fdp);
+  codec->setArchitecture(fdp);
+  codec->setCores(fdp);
   codec->decodeHeader(data, size);
   codec->setParams(IVD_DECODE_FRAME);
   codec->allocFrame();
