@@ -224,17 +224,6 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                 return (IV_FAIL);
             }
 
-            /* Shared display mode is supported only for 420SP and 420P formats */
-            if((ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420P)
-                            && (ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420SP_UV)
-                            && (ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420SP_VU)
-                            && ps_ip->s_ivd_create_ip_t.u4_share_disp_buf == 1)
-            {
-                ps_op->s_ivd_create_op_t.u4_error_code |= 1 << IVD_UNSUPPORTEDPARAM;
-                ps_op->s_ivd_create_op_t.u4_error_code |=
-                                IVD_INIT_DEC_FAILED;
-                return (IV_FAIL);
-            }
 
             if((ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420P)
                             && (ps_ip->s_ivd_create_ip_t.e_output_format
@@ -253,6 +242,19 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                 ps_op->s_ivd_create_op_t.u4_error_code |=
                                 IVD_INIT_DEC_COL_FMT_NOT_SUPPORTED;
 
+                return (IV_FAIL);
+            }
+
+            /* Shared display mode is supported only for 420SP and 420P formats */
+            if((ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420P)
+                            && (ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420SP_UV)
+                            && (ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420SP_VU)
+                            && ps_ip->s_ivd_create_ip_t.u4_share_disp_buf == 1)
+            {
+                ps_op->s_ivd_create_op_t.u4_error_code |= 1
+                                << IVD_UNSUPPORTEDPARAM;
+                ps_op->s_ivd_create_op_t.u4_error_code |=
+                                IVD_INIT_DEC_FAILED;
                 return (IV_FAIL);
             }
 
@@ -1781,19 +1783,21 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
     {
         sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
+
         /* To hold SAO left buffer for luma */
         size  = sizeof(UWORD8) * (MAX(ht, wd));
 
         /* To hold SAO left buffer for chroma */
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * (MAX(ht, wd));
         }
+
         /* To hold SAO top buffer for luma */
         size += sizeof(UWORD8) * wd;
 
         /* To hold SAO top buffer for chroma */
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * wd;
         }
@@ -1802,7 +1806,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         size += sizeof(UWORD8) * max_ctb_rows;
 
         /* To hold SAO top left chroma pixel value last output ctb in a row*/
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * max_ctb_rows * 2;
         }
@@ -1811,7 +1815,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         size += sizeof(UWORD8) * max_ctb_rows;
 
         /* To hold SAO top left pixel chroma for current ctb-column array*/
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * max_ctb_rows * 2;
         }
@@ -1820,7 +1824,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         size += sizeof(UWORD8) * max_ctb_cols;
 
         /* To hold SAO top right pixel chroma pixel value last output ctb in a row*/
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * max_ctb_cols * 2;
         }
@@ -1829,10 +1833,11 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         size += sizeof(UWORD8) * max_ctb_rows;
 
         /*To hold SAO botton bottom left pixels for chroma*/
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             size += sizeof(UWORD8) * max_ctb_rows * 2;
         }
+
         size = ALIGN64(size);
 
         pu1_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
@@ -1846,7 +1851,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_left_luma = (UWORD8 *)pu1_buf;
         pu1_buf += MAX(ht, wd);
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
@@ -1855,6 +1860,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_left_chroma = (UWORD8 *)pu1_buf;
             pu1_buf += MAX(ht, wd);
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_luma = (UWORD8 *)pu1_buf;
@@ -1862,7 +1868,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_luma = (UWORD8 *)pu1_buf;
         pu1_buf += wd;
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
@@ -1871,6 +1877,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_chroma = (UWORD8 *)pu1_buf;
             pu1_buf += wd;
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_luma_top_left_ctb = (UWORD8 *)pu1_buf;
@@ -1878,7 +1885,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_luma_top_left_ctb = (UWORD8 *)pu1_buf;
         pu1_buf += ht / MIN_CTB_SIZE;
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
@@ -1887,6 +1894,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_chroma_top_left_ctb = (UWORD8 *)pu1_buf;
             pu1_buf += (ht / MIN_CTB_SIZE) * 2;
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_luma_curr_ctb = (UWORD8 *)pu1_buf;
@@ -1894,32 +1902,30 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_luma_curr_ctb = (UWORD8 *)pu1_buf;
         pu1_buf += ht / MIN_CTB_SIZE;
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
                 ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_chroma_curr_ctb = (UWORD8 *)pu1_buf;
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_chroma_curr_ctb = (UWORD8 *)pu1_buf;
-
             pu1_buf += (ht / MIN_CTB_SIZE) * 2;
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_luma_top_right = (UWORD8 *)pu1_buf;
         }
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_luma_top_right = (UWORD8 *)pu1_buf;
-
         pu1_buf += wd / MIN_CTB_SIZE;
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
                 ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_chroma_top_right = (UWORD8 *)pu1_buf;
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_chroma_top_right = (UWORD8 *)pu1_buf;
-
             pu1_buf += (wd / MIN_CTB_SIZE) * 2;
         }
 
@@ -1929,17 +1935,15 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_luma_bot_left = (UWORD8 *)pu1_buf;
         }
         ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_luma_bot_left = (UWORD8 *)pu1_buf;
-
         pu1_buf += (ht / MIN_CTB_SIZE);
 
-        if (ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < MAX_PROCESS_THREADS; i++)
             {
                 ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_left_chroma_bot_left = (UWORD8 *)pu1_buf;
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_left_chroma_bot_left = (UWORD8 *)pu1_buf;
-
             pu1_buf += (ht / MIN_CTB_SIZE) * 2;
         }
     }

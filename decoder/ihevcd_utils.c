@@ -216,10 +216,21 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
     num_luma_samples = (wd + PAD_WD) * (ht + PAD_HT);
 
     /* Account for chroma */
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
-        num_samples = num_luma_samples;
-    else {
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        num_samples = num_luma_samples * 3;
+    }
+    else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+    {
+        num_samples = num_luma_samples * 2;
+    }
+    else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+    {
         num_samples = num_luma_samples * 3 / 2;
+    }
+    else
+    {
+        num_samples = num_luma_samples;
     }
 
     /* Number of bytes in reference pictures */
@@ -305,19 +316,29 @@ WORD32 ihevcd_get_pic_mv_bank_size(WORD32 num_luma_samples)
 WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples)
 {
 
-
+    sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
     WORD32 tu_data_size;
     WORD32 num_ctb;
     WORD32 num_luma_tu, num_chroma_tu, num_tu;
     num_ctb = num_luma_samples / (MIN_CTB_SIZE * MIN_CTB_SIZE);
 
     num_luma_tu = num_luma_samples / (MIN_TU_SIZE * MIN_TU_SIZE);
-    sps_t *ps_sps = ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id;
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        num_chroma_tu = num_luma_tu << 1;
+    }
+    else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+    {
+        num_chroma_tu = num_luma_tu;
+    }
+    else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+    {
+        num_chroma_tu = num_luma_tu >> 1;
+    }
+    else
     {
         num_chroma_tu = 0;
-    } else {
-        num_chroma_tu = num_luma_tu >> 1;
     }
 
     num_tu = num_luma_tu + num_chroma_tu;
@@ -476,6 +497,7 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
 
     /* Initialize Pic buffer manager */
     ps_sps = ps_codec->s_parse.ps_sps;
+
     h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
     v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
 
@@ -509,10 +531,12 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
         luma_samples = (ps_codec->i4_strd) *
                         (ps_sps->i2_pic_height_in_luma_samples + PAD_HT);
 
-        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+        if(CHROMA_FMT_IDC_MONOCHROME == ps_sps->i1_chroma_format_idc)
         {
             chroma_samples = 0;
-        } else {
+        }
+        else
+        {
             chroma_samples = luma_samples * 2 / (h_samp_factor * v_samp_factor);
         }
 
@@ -962,7 +986,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         pu1_cur_pic_luma = pu1_buf;
 
         pu1_buf = ps_cur_pic->pu1_chroma;
-
         pu1_cur_pic_chroma = pu1_buf;
 
 #ifndef DISABLE_SEI
@@ -992,8 +1015,11 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     if(0 == ps_codec->u4_pic_cnt)
     {
         memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
-        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME) {
-            memset(ps_cur_pic->pu1_chroma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples / 2);
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+        {
+            memset(ps_cur_pic->pu1_chroma,
+                   128,
+                   (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples / 2);
         }
     }
 
@@ -1110,10 +1136,22 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
         ctb_luma_min_tu_cnt = pic_size / (MIN_TU_SIZE * MIN_TU_SIZE);
 
-        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
-            ctb_chroma_min_tu_cnt = 0;
-        else
+        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+        {
+            ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt << 1;
+        }
+        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+        {
+            ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt;
+        }
+        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+        {
             ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt >> 1;
+        }
+        else
+        {
+            ctb_chroma_min_tu_cnt = 0;
+        }
 
         ctb_min_tu_cnt = ctb_luma_min_tu_cnt + ctb_chroma_min_tu_cnt;
 

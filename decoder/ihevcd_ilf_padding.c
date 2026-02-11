@@ -154,8 +154,7 @@ void ihevcd_ilf_pad_frame(deblk_ctxt_t *ps_deblk_ctxt, sao_ctxt_t *ps_sao_ctxt)
             {
                 UWORD8 *pu1_cur_ctb_luma = ps_deblk_ctxt->pu1_cur_pic_luma
                                 + (i4_ctb_x * ctb_size
-                                                + i4_ctb_y * ctb_size
-                                                                * ps_codec->i4_strd);
+                                + i4_ctb_y * ctb_size * ps_codec->i4_strd);
                 UWORD8 *pu1_cur_ctb_chroma = ps_deblk_ctxt->pu1_cur_pic_chroma
                                 + i4_ctb_x * ctb_size
                                 + (i4_ctb_y * ctb_size * ps_codec->i4_strd / 2);
@@ -194,6 +193,7 @@ void ihevcd_ilf_pad_frame(deblk_ctxt_t *ps_deblk_ctxt, sao_ctxt_t *ps_sao_ctxt)
                     if((ps_sps->i2_pic_ht_in_ctb - 1) == i4_ctb_y)
                     {
                         UWORD8 *pu1_buf;
+
                         /* Since SAO is shifted by 8x8, chroma padding can not be done till second row is processed */
                         /* Hence moving top padding to to end of frame, Moving it to second row also results in problems when there is only one row */
                         /* Pad top after padding left and right for current rows after processing 1st CTB row */

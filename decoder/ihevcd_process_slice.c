@@ -1240,7 +1240,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                         + (ps_proc->i4_ctb_x * ctb_size
                                         + ps_proc->i4_ctb_y * ctb_size
                                         * ps_codec->i4_strd);
-                        if (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
+                        if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                         {
                             ps_proc->pu1_cur_ctb_chroma = ps_proc->pu1_cur_pic_chroma
                                             + ps_proc->i4_ctb_x * ctb_size
@@ -1277,10 +1277,9 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                 ihevc_pad_top(ps_proc->pu1_cur_pic_chroma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP / 2);
                             }
 
+                            /* Pad bottom after padding left and right for current rows after processing 1st CTB row */
                             pu1_buf = ps_proc->pu1_cur_pic_luma + ps_codec->i4_strd * ps_sps->i2_pic_height_in_luma_samples - PAD_LEFT;
-                            /* Pad top after padding left and right for current rows after processing 1st CTB row */
                             ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
-
                             if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                             {
                                 pu1_buf = ps_proc->pu1_cur_pic_chroma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples / 2) - PAD_LEFT;

@@ -1264,8 +1264,7 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_UV;
             else if((strcmp(value, "YUV_420SP_VU")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_VU;
-            else if((strcmp(value, "GRAY")) == 0 &&
-                    (ps_app_ctx->u4_enable_yuv_formats & (1 << CHROMA_FMT_IDC_MONOCHROME)))
+            else if((strcmp(value, "GRAY")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_GRAY;
             else
             {
