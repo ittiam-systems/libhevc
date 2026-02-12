@@ -44,12 +44,6 @@
 #define LOGO_WD_Y       LOGO_WD
 #define LOGO_HT_Y       LOGO_HT
 
-#define LOGO_WD_RGBA8888       160
-#define LOGO_HT_RGBA8888       64
-
-#define LOGO_WD_RGB565       160
-#define LOGO_HT_RGB565       64
-
 #define LOGO_WD_444_UV  LOGO_WD
 #define LOGO_HT_444_UV  LOGO_HT
 
@@ -62,15 +56,6 @@
 
 #define LOGO_WD_420SP_VU  (LOGO_WD)
 #define LOGO_HT_420SP_VU  (LOGO_HT >> 1)
-
-#define LOGO_WD_422_UV  (LOGO_WD >> 1)
-#define LOGO_HT_422_UV  (LOGO_HT)
-
-#define LOGO_WD_422V_UV  (LOGO_WD)
-#define LOGO_HT_422V_UV  (LOGO_HT >> 1)
-
-#define LOGO_WD_411_UV  (LOGO_WD >> 2)
-#define LOGO_HT_411_UV  (LOGO_HT)
 
 #define LOGO_CODEC_WD 80
 #define LOGO_CODEC_HT  24
@@ -91,18 +76,6 @@
 
 #define LOGO_CODEC_WD_420SP_VU  (LOGO_CODEC_WD)
 #define LOGO_CODEC_HT_420SP_VU  (LOGO_CODEC_HT >> 1)
-
-#define LOGO_CODEC_WD_422_UV  (LOGO_CODEC_WD >> 1)
-#define LOGO_CODEC_HT_422_UV  (LOGO_CODEC_HT)
-
-#define LOGO_CODEC_WD_422V_UV  (LOGO_CODEC_WD)
-#define LOGO_CODEC_HT_422V_UV  (LOGO_CODEC_HT >> 1)
-
-#define LOGO_CODEC_WD_411_UV  (LOGO_CODEC_WD >> 2)
-#define LOGO_CODEC_HT_411_UV  (LOGO_CODEC_HT)
-
-
-
 
 #define START_X_ITT_LOGO        0
 #define START_Y_ITT_LOGO        0

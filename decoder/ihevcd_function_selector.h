@@ -181,8 +181,6 @@ typedef struct
     ihevc_sao_edge_offset_class2_chroma_ft *ihevc_sao_edge_offset_class2_chroma_fptr;
     ihevc_sao_edge_offset_class3_ft *ihevc_sao_edge_offset_class3_fptr;
     ihevc_sao_edge_offset_class3_chroma_ft *ihevc_sao_edge_offset_class3_chroma_fptr;
-    ihevcd_fmt_conv_420sp_to_rgba8888_ft *ihevcd_fmt_conv_420sp_to_rgba8888_fptr;
-    ihevcd_fmt_conv_420sp_to_rgb565_ft *ihevcd_fmt_conv_420sp_to_rgb565_fptr;
     ihevcd_fmt_conv_420sp_to_420sp_ft *ihevcd_fmt_conv_420sp_to_420sp_fptr;
     ihevcd_fmt_conv_420sp_to_420p_ft *ihevcd_fmt_conv_420sp_to_420p_fptr;
     ihevcd_fmt_conv_444sp_to_444p_ft *ihevcd_fmt_conv_444sp_to_444p_fptr;
