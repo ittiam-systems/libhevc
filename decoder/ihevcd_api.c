@@ -227,10 +227,6 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
 
             if((ps_ip->s_ivd_create_ip_t.e_output_format != IV_YUV_420P)
                             && (ps_ip->s_ivd_create_ip_t.e_output_format
-                                            != IV_YUV_422ILE)
-                            && (ps_ip->s_ivd_create_ip_t.e_output_format
-                                            != IV_RGB_565)
-                            && (ps_ip->s_ivd_create_ip_t.e_output_format
                                             != IV_YUV_420SP_UV)
                             && (ps_ip->s_ivd_create_ip_t.e_output_format
                                             != IV_YUV_420SP_VU)
@@ -2591,12 +2587,6 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     ps_ctl_op->u4_min_num_in_bufs = MIN_IN_BUFS;
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420;
-    else if(ps_codec->e_chroma_fmt == IV_YUV_422ILE)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422ILE;
-    else if(ps_codec->e_chroma_fmt == IV_RGB_565)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_RGB565;
-    else if(ps_codec->e_chroma_fmt == IV_RGBA_8888)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_RGBA8888;
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420SP;
@@ -2665,24 +2655,6 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) >> 2;
         ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) >> 2;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_YUV_422ILE)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 2;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_RGB_565)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 2;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_RGBA_8888)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 4;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
@@ -2759,12 +2731,6 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     ps_ctl_op->u4_min_num_in_bufs = MIN_IN_BUFS;
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420;
-    else if(ps_codec->e_chroma_fmt == IV_YUV_422ILE)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422ILE;
-    else if(ps_codec->e_chroma_fmt == IV_RGB_565)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_RGB565;
-    else if(ps_codec->e_chroma_fmt == IV_RGBA_8888)
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_RGBA8888;
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420SP;
@@ -2843,24 +2809,6 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) >> 2;
         ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) >> 2;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_YUV_422ILE)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 2;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_RGB_565)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 2;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
-    }
-    else if(ps_codec->e_chroma_fmt == IV_RGBA_8888)
-    {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * 4;
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))

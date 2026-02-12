@@ -43,27 +43,6 @@
 #define COEFF3          -6664
 #define COEFF4          16530
 
-typedef void ihevcd_fmt_conv_420sp_to_rgba8888_ft(UWORD8 *pu1_y_src,
-                                                  UWORD8 *pu1_uv_src,
-                                                  UWORD32 *pu4_rgba_dst,
-                                                  WORD32 wd,
-                                                  WORD32 ht,
-                                                  WORD32 src_y_strd,
-                                                  WORD32 src_uv_strd,
-                                                  WORD32 dst_strd,
-                                                  WORD32 is_u_first);
-
-typedef void ihevcd_fmt_conv_420sp_to_rgb565_ft(UWORD8 *pu1_y_src,
-                                                UWORD8 *pu1_uv_src,
-                                                UWORD16 *pu2_rgb_dst,
-                                                WORD32 wd,
-                                                WORD32 ht,
-                                                WORD32 src_y_strd,
-                                                WORD32 src_uv_strd,
-                                                WORD32 dst_strd,
-                                                WORD32 is_u_first);
-
-
 typedef void ihevcd_fmt_conv_420sp_to_420sp_ft(UWORD8 *pu1_y_src,
                                                UWORD8 *pu1_uv_src,
                                                UWORD8 *pu1_y_dst,
@@ -100,19 +79,15 @@ typedef void ihevcd_fmt_conv_444sp_to_444p_ft(UWORD8 *pu1_y_src,
                                               WORD32 dst_uv_strd);
 
 /* C function declarations */
-ihevcd_fmt_conv_420sp_to_rgba8888_ft ihevcd_fmt_conv_420sp_to_rgba8888;
-ihevcd_fmt_conv_420sp_to_rgb565_ft ihevcd_fmt_conv_420sp_to_rgb565;
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p;
 ihevcd_fmt_conv_444sp_to_444p_ft ihevcd_fmt_conv_444sp_to_444p;
 
 /* A9Q function declarations */
-ihevcd_fmt_conv_420sp_to_rgba8888_ft ihevcd_fmt_conv_420sp_to_rgba8888_a9q;
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_a9q;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_a9q;
 
 /* A9A function declarations */
-ihevcd_fmt_conv_420sp_to_rgba8888_ft ihevcd_fmt_conv_420sp_to_rgba8888_a9a;
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_a9a;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_a9a;
 
@@ -123,7 +98,6 @@ ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_ssse3;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_sse42;
 
 /* armv8 function declarations */
-ihevcd_fmt_conv_420sp_to_rgba8888_ft ihevcd_fmt_conv_420sp_to_rgba8888_av8;
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_av8;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_av8;
 

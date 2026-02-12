@@ -327,7 +327,7 @@ static const argument_t argument_mapping[] =
     { "--", "--save_chksum",            SAVE_CHKSUM,
         "Save Check sum file\n" },
     { "--",  "--chroma_format",          CHROMA_FORMAT,
-        "Output Chroma format Supported values YUV_420P, YUV_422ILE, RGB_565, YUV_420SP_UV, YUV_420SP_VU\n" },
+        "Output Chroma format Supported values YUV_420P, YUV_420SP_UV, YUV_420SP_VU, GRAY\n" },
     { "-n", "--num_frames",             NUM_FRAMES,
         "Number of frames to be decoded\n" },
     { "--", "--num_cores",              NUM_CORES,
@@ -1077,28 +1077,6 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             buf += s_dump_disp_frm_buf.u4_y_strd;
         }
     }
-    else if(ps_app_ctx->e_output_chroma_format == IV_RGBA_8888)
-    {
-        UWORD8 *buf;
-
-        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd * 4, ps_op_file);
-            buf += s_dump_disp_frm_buf.u4_y_strd * 4;
-        }
-    }
-    else
-    {
-        UWORD8 *buf;
-
-        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_strd * 2, ps_op_file);
-            buf += s_dump_disp_frm_buf.u4_y_strd * 2;
-        }
-    }
 
     fflush(ps_op_file);
     fflush(ps_op_chksum_file);
@@ -1254,12 +1232,6 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
         case CHROMA_FORMAT:
             if((strcmp(value, "YUV_420P")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420P;
-            else if((strcmp(value, "YUV_422ILE")) == 0)
-                ps_app_ctx->e_output_chroma_format = IV_YUV_422ILE;
-            else if((strcmp(value, "RGB_565")) == 0)
-                ps_app_ctx->e_output_chroma_format = IV_RGB_565;
-            else if((strcmp(value, "RGBA_8888")) == 0)
-                ps_app_ctx->e_output_chroma_format = IV_RGBA_8888;
             else if((strcmp(value, "YUV_420SP_UV")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_UV;
             else if((strcmp(value, "YUV_420SP_VU")) == 0)
@@ -2445,27 +2417,6 @@ int main(WORD32 argc, CHAR *argv[])
                 case IV_GRAY:
                 {
                     s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = 0;
-                    s_ctl_op.u4_min_out_buf_size[2] = 0;
-                    break;
-                }
-                case IV_YUV_422ILE:
-                {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT * 2;
-                    s_ctl_op.u4_min_out_buf_size[1] = 0;
-                    s_ctl_op.u4_min_out_buf_size[2] = 0;
-                    break;
-                }
-                case IV_RGBA_8888:
-                {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT * 4;
-                    s_ctl_op.u4_min_out_buf_size[1] = 0;
-                    s_ctl_op.u4_min_out_buf_size[2] = 0;
-                    break;
-                }
-                case IV_RGB_565:
-                {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT * 2;
                     s_ctl_op.u4_min_out_buf_size[1] = 0;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;

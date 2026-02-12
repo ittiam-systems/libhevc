@@ -151,8 +151,6 @@ void ihevcd_init_function_ptr_a9q(codec_t *ps_codec)
     ps_codec->s_func_selector.ihevc_sao_edge_offset_class2_chroma_fptr          =  &ihevc_sao_edge_offset_class2_chroma_a9q;
     ps_codec->s_func_selector.ihevc_sao_edge_offset_class3_fptr                 =  &ihevc_sao_edge_offset_class3_a9q;
     ps_codec->s_func_selector.ihevc_sao_edge_offset_class3_chroma_fptr          =  &ihevc_sao_edge_offset_class3_chroma_a9q;
-    ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_rgba8888_fptr            =  &ihevcd_fmt_conv_420sp_to_rgba8888_a9q;
-    ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_rgb565_fptr              =  &ihevcd_fmt_conv_420sp_to_rgb565;
     ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420sp_fptr               =  &ihevcd_fmt_conv_420sp_to_420sp;
     ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420p_fptr                =  &ihevcd_fmt_conv_420sp_to_420p_a9q;
     ps_codec->s_func_selector.ihevcd_fmt_conv_444sp_to_444p_fptr                =  &ihevcd_fmt_conv_444sp_to_444p;
