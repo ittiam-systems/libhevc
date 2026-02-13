@@ -84,6 +84,7 @@ void ihevcd_init_function_ptr_a9q(codec_t *ps_codec)
     ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_substitution_fptr       =  &ihevc_intra_pred_luma_ref_substitution_a9q;
     ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_subst_all_avlble_fptr   =  &ihevc_intra_pred_luma_ref_subst_all_avlble;
     ps_codec->s_func_selector.ihevc_intra_pred_ref_filtering_fptr               =  &ihevc_intra_pred_ref_filtering_neonintr;
+    ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_filtering_fptr        =  &ihevc_intra_pred_chroma_ref_filtering;
     ps_codec->s_func_selector.ihevc_intra_pred_chroma_dc_fptr                   =  &ihevc_intra_pred_chroma_dc_a9q;
     ps_codec->s_func_selector.ihevc_intra_pred_chroma_horz_fptr                 =  &ihevc_intra_pred_chroma_horz_a9q;
     ps_codec->s_func_selector.ihevc_intra_pred_chroma_mode2_fptr                =  &ihevc_intra_pred_chroma_mode2_a9q;

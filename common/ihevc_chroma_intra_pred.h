@@ -128,6 +128,12 @@ typedef void ihevc_intra_pred_chroma_ref_substitution_ft(UWORD8 *pu1_top_left,
                                                          UWORD8 *pu1_dst,
                                                          WORD32 dst_strd);
 
+typedef void ihevc_intra_pred_chroma_ref_filtering_ft(UWORD8 *pu1_src,
+                                                      WORD32 nt,
+                                                      UWORD8 *pu1_dst,
+                                                      WORD32 mode,
+                                                      WORD32 intra_smoothing_flags);
+
 typedef void ihevc_hbd_intra_pred_chroma_planar_ft(
                 UWORD16 *pu2_ref,
                 WORD32 src_strd,
@@ -240,6 +246,7 @@ ihevc_intra_pred_chroma_mode_11_to_17_ft ihevc_intra_pred_chroma_mode_11_to_17;
 ihevc_intra_pred_chroma_mode_19_to_25_ft ihevc_intra_pred_chroma_mode_19_to_25;
 ihevc_intra_pred_chroma_mode_27_to_33_ft ihevc_intra_pred_chroma_mode_27_to_33;
 ihevc_intra_pred_chroma_ref_substitution_ft ihevc_intra_pred_chroma_ref_substitution;
+ihevc_intra_pred_chroma_ref_filtering_ft ihevc_intra_pred_chroma_ref_filtering;
 
 ihevc_hbd_intra_pred_chroma_planar_ft ihevc_hbd_intra_pred_chroma_planar;
 ihevc_hbd_intra_pred_chroma_dc_ft ihevc_hbd_intra_pred_chroma_dc;
