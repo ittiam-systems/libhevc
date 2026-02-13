@@ -306,3 +306,85 @@ void ihevc_chroma_recon_16x16(WORD16 *pi2_src,
     }
 }
 
+/**
+ *******************************************************************************
+ *
+ * @brief
+ *  This function performs reconstruction for 32x32 input block
+ *
+ * @par Description:
+ *  Performs reconstruction of 32x32 input block by adding adding prediction
+ * data to input and clipping it to 8 bit
+ *
+ * @param[in] pi2_src
+ *  Input 32x32 coefficients
+ *
+ * @param[in] pu1_pred
+ *  Prediction 32x32 block
+ *
+ * @param[out] pu1_dst
+ *  Output 32x32 block
+ *
+ * @param[in] src_strd
+ *  Input stride
+ *
+ * @param[in] pred_strd
+ *  Prediction stride
+ *
+ * @param[in] dst_strd
+ *  Output Stride
+ *
+ * @param[in] shift
+ *  Output shift
+ *
+ * @param[in] zero_cols
+ *  Zero columns in pi2_tmp
+ *
+ * @returns  Void
+ *
+ * @remarks
+ *  None
+ *
+ *******************************************************************************
+ */
+
+
+void ihevc_chroma_recon_32x32(WORD16 *pi2_src,
+                              UWORD8 *pu1_pred,
+                              UWORD8 *pu1_dst,
+                              WORD32 src_strd,
+                              WORD32 pred_strd,
+                              WORD32 dst_strd,
+                              WORD32 zero_cols)
+{
+    WORD32 i, j;
+    WORD32 trans_size;
+
+    trans_size = TRANS_SIZE_32;
+
+    /* Reconstruction */
+
+    for(i = 0; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if((zero_cols & 1) == 1)
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pu1_dst[j * dst_strd] = pu1_pred[j * pred_strd];
+            }
+        }
+        else
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pu1_dst[j * dst_strd] =
+                                CLIP_U8(pi2_src[j * src_strd] + pu1_pred[j * pred_strd]);
+            }
+        }
+        pi2_src++;
+        pu1_dst += 2;
+        pu1_pred += 2;
+        zero_cols = zero_cols >> 1;
+    }
+}

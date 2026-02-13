@@ -117,6 +117,7 @@ void ihevcd_init_function_ptr_av8(codec_t *ps_codec)
     ps_codec->s_func_selector.ihevc_chroma_itrans_recon_4x4_fptr                =  &ihevc_chroma_itrans_recon_4x4;
     ps_codec->s_func_selector.ihevc_chroma_itrans_recon_8x8_fptr                =  &ihevc_chroma_itrans_recon_8x8;
     ps_codec->s_func_selector.ihevc_chroma_itrans_recon_16x16_fptr              =  &ihevc_chroma_itrans_recon_16x16;
+    ps_codec->s_func_selector.ihevc_chroma_itrans_recon_32x32_fptr              =  &ihevc_chroma_itrans_recon_32x32;
     ps_codec->s_func_selector.ihevc_recon_4x4_ttype1_fptr                       =  &ihevc_recon_4x4_ttype1;
     ps_codec->s_func_selector.ihevc_recon_4x4_fptr                              =  &ihevc_recon_4x4;
     ps_codec->s_func_selector.ihevc_recon_8x8_fptr                              =  &ihevc_recon_8x8;
@@ -125,6 +126,7 @@ void ihevcd_init_function_ptr_av8(codec_t *ps_codec)
     ps_codec->s_func_selector.ihevc_chroma_recon_4x4_fptr                       =  &ihevc_chroma_recon_4x4;
     ps_codec->s_func_selector.ihevc_chroma_recon_8x8_fptr                       =  &ihevc_chroma_recon_8x8;
     ps_codec->s_func_selector.ihevc_chroma_recon_16x16_fptr                     =  &ihevc_chroma_recon_16x16;
+    ps_codec->s_func_selector.ihevc_chroma_recon_32x32_fptr                     =  &ihevc_chroma_recon_32x32;
     ps_codec->s_func_selector.ihevc_memcpy_mul_8_fptr                           =  &ihevc_memcpy_mul_8_av8;
     ps_codec->s_func_selector.ihevc_memcpy_fptr                                 =  &ihevc_memcpy_av8;
     ps_codec->s_func_selector.ihevc_memset_mul_8_fptr                           =  &ihevc_memset_mul_8_av8;
