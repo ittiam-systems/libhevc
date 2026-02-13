@@ -29,6 +29,7 @@ list(
   "${HEVC_ROOT}/common/ihevc_chroma_iquant_itrans_recon.c"
   "${HEVC_ROOT}/common/ihevc_chroma_recon.c"
   "${HEVC_ROOT}/common/ihevc_chroma_itrans_recon_16x16.c"
+  "${HEVC_ROOT}/common/ihevc_chroma_itrans_recon_32x32.c"
   "${HEVC_ROOT}/common/ihevc_chroma_itrans_recon_8x8.c"
   "${HEVC_ROOT}/common/ihevc_buf_mgr.c"
   "${HEVC_ROOT}/common/ihevc_disp_mgr.c"
