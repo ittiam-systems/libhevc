@@ -38,7 +38,7 @@
 #define ivd_api_function ihevcd_cxa_api_function
 const IV_COLOR_FORMAT_T supportedColorFormats[] = {
     IV_YUV_420P,   IV_YUV_420SP_UV, IV_YUV_420SP_VU,
-    IV_GRAY, IV_RGBA_8888};
+    IV_GRAY};
 
 const uint32_t enableYuvFormatBitFields[] = {0, 1, 2, 3};
 
@@ -223,10 +223,6 @@ void Codec::allocFrame() {
       break;
     case IV_GRAY:
       sizes[0] = mWidth * mHeight;
-      num_bufs = 1;
-      break;
-    case IV_RGBA_8888:
-      sizes[0] = mWidth * mHeight * 4;
       num_bufs = 1;
       break;
     case IV_YUV_420P:
