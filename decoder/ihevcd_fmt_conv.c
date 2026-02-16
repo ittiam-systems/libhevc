@@ -268,7 +268,6 @@ void ihevcd_fmt_conv_luma_copy(UWORD8 *pu1_y_src,
 *
 *******************************************************************************
 */
-
 void ihevcd_fmt_conv_400_to_420p(UWORD8 *pu1_y_src,
                                  UWORD8 *pu1_y_dst,
                                  UWORD8 *pu1_u_dst,
@@ -799,6 +798,9 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     sps_t *ps_sps;
     WORD32 disable_luma_copy;
     WORD32 crop_unit_x, crop_unit_y;
+    WORD32 h_samp_factor, v_samp_factor;
+    WORD32 src_chroma_pixel_strd = 2;
+    WORD32 src_chroma_row_stride;
 
     if(0 == num_rows)
         return ret;
@@ -806,6 +808,9 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     /* In case processing is disabled, then no need to format convert/copy */
     PROFILE_DISABLE_FMT_CONV();
     ps_sps = ps_proc->ps_sps;
+
+    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
 
     crop_unit_x = 1;
     crop_unit_y = 1;
@@ -827,10 +832,11 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     /* Take care of cropping */
     pu1_luma    += ps_codec->i4_strd * ps_sps->i2_pic_crop_top_offset * crop_unit_y + ps_sps->i2_pic_crop_left_offset * crop_unit_x;
 
-    /* Left offset is multiplied by 2 because buffer is UV interleaved */
+    src_chroma_row_stride = (ps_codec->i4_strd * src_chroma_pixel_strd / h_samp_factor);
     if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
     {
-        pu1_chroma  += ps_codec->i4_strd * ps_sps->i2_pic_crop_top_offset + ps_sps->i2_pic_crop_left_offset * 2;
+        pu1_chroma += (ps_sps->i2_pic_crop_top_offset * src_chroma_row_stride)
+                        + ps_sps->i2_pic_crop_left_offset * src_chroma_pixel_strd;
     }
     is_u_first = (IV_YUV_420SP_UV == ps_codec->e_ref_chroma_fmt) ? 1 : 0;
 
@@ -847,7 +853,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
         pu1_y_src   = pu1_luma + cur_row * ps_codec->i4_strd;
         if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
         {
-            pu1_uv_src  = pu1_chroma + (cur_row / 2) * ps_codec->i4_strd;
+            pu1_uv_src = pu1_chroma + ((cur_row / v_samp_factor) * src_chroma_row_stride);
         }
 
         /* In case of shared mode, with 420P output, get chroma destination */
@@ -869,11 +875,20 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
             }
         }
         pu1_y_dst_tmp  = pu1_y_dst  + cur_row * ps_codec->i4_disp_strd;
-        if(IV_GRAY != ps_codec->e_chroma_fmt)
+        if(IV_YUV_444P == ps_codec->e_chroma_fmt)
         {
-            pu1_uv_dst_tmp = pu1_u_dst  + (cur_row / 2) * ps_codec->i4_disp_strd;
-            pu1_u_dst_tmp = pu1_u_dst  + (cur_row / 2) * ps_codec->i4_disp_strd / 2;
-            pu1_v_dst_tmp = pu1_v_dst  + (cur_row / 2) * ps_codec->i4_disp_strd / 2;
+            pu1_u_dst_tmp = pu1_u_dst + cur_row * ps_codec->i4_disp_strd;
+            pu1_v_dst_tmp = pu1_v_dst + cur_row * ps_codec->i4_disp_strd;
+        }
+        else if(IV_YUV_420P == ps_codec->e_chroma_fmt)
+        {
+            pu1_u_dst_tmp = pu1_u_dst + (cur_row / 2) * ps_codec->i4_disp_strd / 2;
+            pu1_v_dst_tmp = pu1_v_dst + (cur_row / 2) * ps_codec->i4_disp_strd / 2;
+        }
+        else if(IV_YUV_420SP_UV == ps_codec->e_chroma_fmt
+                        || IV_YUV_420SP_VU == ps_codec->e_chroma_fmt)
+        {
+            pu1_uv_dst_tmp = pu1_u_dst + (cur_row / 2) * ps_codec->i4_disp_strd;
         }
 
         /* In case of multi threaded implementation, format conversion might be called
@@ -924,7 +939,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
             }
         }
 
-
         if((IV_YUV_420SP_UV == ps_codec->e_chroma_fmt) || (IV_YUV_420SP_VU == ps_codec->e_chroma_fmt))
         {
             if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
@@ -952,26 +966,62 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                                              ps_codec->i4_strd,
                                              ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
             }
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+            {
+                ihevcd_fmt_conv_444sp_to_420sp(pu1_y_src, pu1_uv_src,
+                                               pu1_y_dst_tmp, pu1_uv_dst_tmp,
+                                               ps_codec->i4_disp_wd, num_rows,
+                                               ps_codec->i4_strd, src_chroma_row_stride,
+                                               ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
+            }
         }
         else if(IV_GRAY == ps_codec->e_chroma_fmt)
         {
             ihevcd_fmt_conv_luma_copy(pu1_y_src,
-                          pu1_y_dst_tmp,
-                          ps_codec->i4_disp_wd,
-                          num_rows,
-                          ps_codec->i4_strd,
-                          ps_codec->i4_disp_strd);
+                                       pu1_y_dst_tmp,
+                                       ps_codec->i4_disp_wd, num_rows,
+                                       ps_codec->i4_strd,
+                                       ps_codec->i4_disp_strd);
+        }
+        else if(IV_YUV_444P == ps_codec->e_chroma_fmt)
+        {
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+            {
+                ps_codec->s_func_selector.ihevcd_fmt_conv_444sp_to_444p_fptr(
+                                pu1_y_src, pu1_uv_src,
+                                pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                                ps_codec->i4_disp_wd, num_rows,
+                                ps_codec->i4_strd, src_chroma_row_stride,
+                                ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
+            }
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+            {
+                ihevcd_fmt_conv_400_to_444p(pu1_y_src,
+                                            pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                                            ps_codec->i4_disp_wd, num_rows,
+                                            ps_codec->i4_strd,
+                                            ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
+            }
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+            {
+                ihevcd_fmt_conv_420sp_to_444p(pu1_y_src, pu1_uv_src,
+                                              pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                                              ps_codec->i4_disp_wd, num_rows,
+                                              ps_codec->i4_strd, ps_codec->i4_strd,
+                                              ps_codec->i4_disp_strd, ps_codec->i4_disp_strd, is_u_first);
+            }
         }
         else if(IV_YUV_420P == ps_codec->e_chroma_fmt)
         {
-            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME) {
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+            {
                 ihevcd_fmt_conv_400_to_420p(pu1_y_src,
                                             pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
                                             ps_codec->i4_disp_wd, num_rows,
                                             ps_codec->i4_strd,
                                             ps_codec->i4_disp_strd, (ps_codec->i4_disp_strd / 2));
             }
-            else
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
             {
                 ihevcd_fmt_conv_420sp_to_420p_ft *fmt_conv_fptr;
                 if(ps_codec->i4_disp_wd >= MIN_FMT_CONV_SIMD_WIDTH)
@@ -999,15 +1049,20 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                     disable_luma_copy = 1;
                 }
                 fmt_conv_fptr(pu1_y_src, pu1_uv_src,
-                            pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
-                            ps_codec->i4_disp_wd,
-                            num_rows,
-                            ps_codec->i4_strd,
-                            ps_codec->i4_strd,
-                            ps_codec->i4_disp_strd,
-                            (ps_codec->i4_disp_strd / 2),
-                            is_u_first,
-                            disable_luma_copy);
+                              pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                              ps_codec->i4_disp_wd, num_rows,
+                              ps_codec->i4_strd, ps_codec->i4_strd,
+                              ps_codec->i4_disp_strd, (ps_codec->i4_disp_strd / 2),
+                              is_u_first,
+                              disable_luma_copy);
+            }
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+            {
+                ihevcd_fmt_conv_444sp_to_420p(pu1_y_src, pu1_uv_src,
+                                              pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                                              ps_codec->i4_disp_wd, num_rows,
+                                              ps_codec->i4_strd, src_chroma_row_stride,
+                                              ps_codec->i4_disp_strd, ps_codec->i4_disp_strd / 2);
             }
         }
     }

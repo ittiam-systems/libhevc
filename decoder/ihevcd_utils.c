@@ -491,8 +491,7 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     pic_buf_t *ps_pic_buf;
     WORD32 pic_buf_size_allocated;
     WORD32 h_samp_factor, v_samp_factor;
-
-
+    WORD32 chroma_pixel_strd = 2;
 
 
     /* Initialize Pic buffer manager */
@@ -559,7 +558,9 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
 
             if(chroma_samples)
             {
-                ps_pic_buf->pu1_chroma = pu1_buf + ps_codec->i4_strd * (PAD_TOP / 2) + PAD_LEFT;
+                ps_pic_buf->pu1_chroma = pu1_buf
+                                + (ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
+                                + (PAD_LEFT * chroma_pixel_strd / h_samp_factor);
                 pu1_buf += chroma_samples;
             }
             else
@@ -591,23 +592,24 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
                 pu1_buf += strd * ht;
                 memset(pu1_buf - 1, 0, wd + 2);
 
-                if (ps_pic_buf->pu1_chroma)
+                if(ps_pic_buf->pu1_chroma)
                 {
                     pu1_buf = ps_pic_buf->pu1_chroma;
-                    ht >>= 1;
+                    ht /= v_samp_factor;
+                    WORD32 chroma_strd_scale = chroma_pixel_strd / h_samp_factor;
                     for(i = 0; i < ht; i++)
                     {
                         pu1_buf[-1] = 0;
                         pu1_buf[-2] = 0;
-                        pu1_buf[wd] = 0;
-                        pu1_buf[wd + 1] = 0;
-                        pu1_buf += strd;
+                        pu1_buf[wd * chroma_strd_scale] = 0;
+                        pu1_buf[wd * chroma_strd_scale + 1] = 0;
+                        pu1_buf += (strd * chroma_strd_scale);
                     }
                     pu1_buf = ps_pic_buf->pu1_chroma;
-                    memset(pu1_buf - strd - 2, 0, wd + 4);
+                    memset(pu1_buf - (strd * chroma_strd_scale) - 2, 0, wd * chroma_strd_scale + 4);
 
-                    pu1_buf += strd * ht;
-                    memset(pu1_buf - 2, 0, wd + 4);
+                    pu1_buf += (strd * chroma_strd_scale) * ht;
+                    memset(pu1_buf - 2, 0, wd * chroma_strd_scale + 4);
                 }
             }
 
@@ -639,7 +641,8 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
                 break;
             }
             ps_pic_buf->pu1_luma += ps_codec->i4_strd * PAD_TOP + PAD_LEFT;
-            ps_pic_buf->pu1_chroma += ps_codec->i4_strd * (PAD_TOP / 2) + PAD_LEFT;
+            ps_pic_buf->pu1_chroma += (ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
+                            + (PAD_LEFT * chroma_pixel_strd / h_samp_factor);
         }
     }
 
@@ -793,6 +796,8 @@ IHEVCD_ERROR_T ihevcd_check_out_buf_size(codec_t *ps_codec)
 
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
         u4_min_num_out_bufs = MIN_OUT_BUFS_420;
+    else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
+        u4_min_num_out_bufs = MIN_OUT_BUFS_444;
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
         u4_min_num_out_bufs = MIN_OUT_BUFS_420SP;
@@ -804,6 +809,12 @@ IHEVCD_ERROR_T ihevcd_check_out_buf_size(codec_t *ps_codec)
         au4_min_out_buf_size[0] = (wd * ht);
         au4_min_out_buf_size[1] = (wd * ht) >> 2;
         au4_min_out_buf_size[2] = (wd * ht) >> 2;
+    }
+    else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
+    {
+        au4_min_out_buf_size[0] = (wd * ht);
+        au4_min_out_buf_size[1] = (wd * ht);
+        au4_min_out_buf_size[2] = (wd * ht);
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
@@ -867,6 +878,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     pic_buf_t *ps_cur_pic;
     slice_header_t *ps_slice_hdr;
     UWORD8 *pu1_cur_pic_luma, *pu1_cur_pic_chroma;
+    WORD32 h_samp_factor, v_samp_factor;
+    WORD32 chroma_pixel_strd = 2;
     WORD32 i;
 
     ps_codec->s_parse.i4_error_code = IHEVCD_SUCCESS;
@@ -878,7 +891,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     memset(ps_codec->s_parse.pu1_pic_intra_flag, 0, num_min_cu);
     memset(ps_codec->s_parse.pu1_pic_no_loop_filter_flag, 0, num_min_cu);
 
-
+    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
 
     if(0 == ps_codec->s_parse.i4_first_pic_init)
     {
@@ -995,7 +1009,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         {
             memset(ps_cur_pic->pu1_chroma,
                    128,
-                   (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples / 2);
+                   (((ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor))
+                                   * ps_sps->i2_pic_height_in_luma_samples / v_samp_factor));
         }
     }
 
