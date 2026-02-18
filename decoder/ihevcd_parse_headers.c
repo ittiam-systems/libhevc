@@ -165,7 +165,7 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
     }
     ps_wt_ofst->i1_luma_log2_weight_denom = u4_value;
 
-    if(ps_sps->i1_chroma_format_idc != 0)
+    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
     {
         SEV_PARSE("delta_chroma_log2_weight_denom", value, ps_bitstrm);
         if((value < -7) || (value > 7))
@@ -189,7 +189,7 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
 
 
 
-    if(ps_sps->i1_chroma_format_idc != 0)
+    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
     {
         for(i = 0; i < ps_slice_hdr->i1_num_ref_idx_l0_active; i++)
         {
@@ -289,7 +289,7 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
             ps_wt_ofst->i1_luma_weight_l1_flag[i] = value;
         }
 
-        if(ps_sps->i1_chroma_format_idc != 0)
+        if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
             for(i = 0; i < ps_slice_hdr->i1_num_ref_idx_l1_active; i++)
             {
@@ -2041,6 +2041,11 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         {
             crop_unit_x = 2;
             crop_unit_y = 2;
+        }
+        else if(CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
+        {
+            crop_unit_x = 2;
+            crop_unit_y = 1;
         }
 
         disp_wd = ps_sps->i2_pic_width_in_luma_samples;
