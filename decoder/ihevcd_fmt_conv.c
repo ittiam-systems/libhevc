@@ -809,8 +809,8 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     PROFILE_DISABLE_FMT_CONV();
     ps_sps = ps_proc->ps_sps;
 
-    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
-    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     crop_unit_x = 1;
     crop_unit_y = 1;
@@ -819,6 +819,11 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     {
         crop_unit_x = 2;
         crop_unit_y = 2;
+    }
+    else if(CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
+    {
+        crop_unit_x = 2;
+        crop_unit_y = 1;
     }
 
     ps_disp_pic = ps_codec->ps_disp_buf;

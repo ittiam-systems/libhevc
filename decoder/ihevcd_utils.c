@@ -497,8 +497,8 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     /* Initialize Pic buffer manager */
     ps_sps = ps_codec->s_parse.ps_sps;
 
-    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
-    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     /* Compute the number of Pic buffers needed */
     max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
@@ -891,8 +891,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     memset(ps_codec->s_parse.pu1_pic_intra_flag, 0, num_min_cu);
     memset(ps_codec->s_parse.pu1_pic_no_loop_filter_flag, 0, num_min_cu);
 
-    h_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
-    v_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     if(0 == ps_codec->s_parse.i4_first_pic_init)
     {
