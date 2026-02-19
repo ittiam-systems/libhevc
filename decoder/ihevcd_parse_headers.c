@@ -988,6 +988,22 @@ static WORD32 ihevcd_parse_vui_parameters(bitstrm_t *ps_bitstrm,
     return ret;
 }
 
+static WORD32 ihevcd_get_profile(profile_tier_lvl_t *ps_ptl)
+{
+    WORD32 profile = IHEVC_PROFILE_UNKNOWN;
+
+    if(ps_ptl->i1_profile_idc == 1 || ps_ptl->ai1_profile_compatibility_flag[1] == 1)
+        profile = IHEVC_PROFILE_MAIN;
+    else if(ps_ptl->i1_profile_idc == 3 || ps_ptl->ai1_profile_compatibility_flag[3] == 1)
+        profile = IHEVC_PROFILE_MAIN_STILL;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    else if(ps_ptl->i1_profile_idc == 4 || ps_ptl->ai1_profile_compatibility_flag[4] == 1)
+        profile = IHEVC_PROFILE_MAIN_REXT;
+#endif
+
+    return profile;
+}
+
 /**
 *******************************************************************************
 *
@@ -1507,12 +1523,20 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return IHEVCD_INVALID_PARAMETER;
     }
 
+    WORD32 profile = ihevcd_get_profile(&ps_sps->s_ptl.s_ptl_gen);
+    if(profile == IHEVC_PROFILE_UNKNOWN)
+    {
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
+    }
+
     switch(value) {
         case CHROMA_FMT_IDC_MONOCHROME: {
                 if (!(ps_codec->u4_enable_yuv_formats & (1 << CHROMA_FMT_IDC_MONOCHROME))) {
                     ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
                     return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
                 }
+                if(profile != IHEVC_PROFILE_MAIN_REXT)
+                    return IHEVCD_INVALID_PARAMETER;
             }
             break;
         case CHROMA_FMT_IDC_YUV420:
@@ -1924,8 +1948,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         BITS_PARSE("cabac_bypass_alignment_enabled_flag", value, ps_bitstrm, 1);
         ps_sps->i1_align_cabac_before_bypass = value;
     }
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420
-                    || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+    if(profile != IHEVC_PROFILE_MAIN_REXT)
     {
         if(ps_sps->i1_transform_skip_rotation_enabled_flag
                         || ps_sps->i1_transform_skip_context_enabled_flag
@@ -1941,37 +1964,30 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     }
     if(ps_sps->i1_extended_precision_processing_flag || ps_sps->i1_align_cabac_before_bypass)
     {
-        // main, main-rext 8-bit profiles require these fields to be off
+        // main-rext 8-bit profiles require these fields to be off
         return IHEVCD_INVALID_PARAMETER;
     }
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444
-                    || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+    if(ps_sps->i1_transform_skip_rotation_enabled_flag
+                    || ps_sps->i1_transform_skip_context_enabled_flag
+                    || ps_sps->i1_implicit_rdpcm_enabled_flag
+                    || ps_sps->i1_explicit_rdpcm_enabled_flag
+                    || ps_sps->i1_intra_smoothing_disabled_flag
+                    || ps_sps->i1_fast_rice_adaptation_enabled_flag)
     {
-        if(ps_sps->i1_transform_skip_rotation_enabled_flag
-                        || ps_sps->i1_transform_skip_context_enabled_flag
-                        || ps_sps->i1_implicit_rdpcm_enabled_flag
-                        || ps_sps->i1_explicit_rdpcm_enabled_flag
-                        || ps_sps->i1_extended_precision_processing_flag
-                        || ps_sps->i1_intra_smoothing_disabled_flag
-                        || ps_sps->i1_fast_rice_adaptation_enabled_flag
-                        || ps_sps->i1_align_cabac_before_bypass)
-        {
-            // TODO: decoder does not yet supports these tool-sets
-            return IHEVCD_INVALID_PARAMETER;
-        }
+        // TODO: decoder does not yet supports these tool-sets
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
     if(ps_sps->i1_sps_multilayer_extension_flag || ps_sps->i1_sps_3d_extension_flag
                     || ps_sps->i1_sps_scc_extension_flag)
     {
-        // TODO: add support for parsing these syntax elements
-        return IHEVCD_INVALID_PARAMETER;
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
 #else
     if(ps_sps->i1_sps_range_extension_flag || ps_sps->i1_sps_multilayer_extension_flag
                     || ps_sps->i1_sps_3d_extension_flag || ps_sps->i1_sps_scc_extension_flag)
     {
         // TODO: add support for parsing these syntax elements
-        return IHEVCD_INVALID_PARAMETER;
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
 #endif
 
@@ -2594,6 +2610,11 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
             UEV_PARSE("chroma_qp_offset_list_len_minus1", value, ps_bitstrm);
             ps_pps->i4_chroma_qp_offset_list_len_minus1 = value;
+            if(ps_pps->i4_chroma_qp_offset_list_len_minus1 < 0
+                            || ps_pps->i4_chroma_qp_offset_list_len_minus1 > 5)
+            {
+                return IHEVCD_INVALID_PARAMETER;
+            }
 
             for(int i = 0; i <= ps_pps->i4_chroma_qp_offset_list_len_minus1; i++)
             {
@@ -2615,8 +2636,9 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
         UEV_PARSE("log2_sao_ofst_scale_chroma", value, ps_bitstrm);
         ps_pps->i1_log2_sao_ofst_scale_chroma = value;
     }
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420
-                   || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME)
+
+    WORD32 profile = ihevcd_get_profile(&ps_sps->s_ptl.s_ptl_gen);
+    if(profile != IHEVC_PROFILE_MAIN_REXT)
     {
         if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
                         || ps_pps->i1_cross_component_prediction_enabled_flag
@@ -2630,33 +2652,29 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     if(ps_pps->i1_log2_sao_ofst_scale_luma
                    || ps_pps->i1_log2_sao_ofst_scale_chroma)
     {
-        // main, main-rext 8-bit profiles require these fields to be off
+        // main-rext 8-bit profiles require these fields to be off
         return IHEVCD_INVALID_PARAMETER;
     }
 
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444
-                    || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+    if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
+                    || ps_pps->i1_cross_component_prediction_enabled_flag
+                    || ps_pps->i1_chroma_qp_offset_list_enabled_flag)
     {
-        if(ps_pps->i1_log2_max_transform_skip_block_size_minus2
-                        || ps_pps->i1_cross_component_prediction_enabled_flag
-                        || ps_pps->i1_chroma_qp_offset_list_enabled_flag)
-        {
-            // TODO: decoder does not yet supports these tool-sets
-            return IHEVCD_INVALID_PARAMETER;
-        }
+        // TODO: decoder does not yet supports these tool-sets
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
     if(ps_pps->i1_pps_multilayer_extension_flag || ps_pps->i1_pps_3d_extension_flag
                     || ps_pps->i1_pps_scc_extension_flag)
     {
         // TODO: add support for parsing these syntax elements
-        return IHEVCD_INVALID_PARAMETER;
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
 #else
     if(ps_pps->i1_pps_range_extension_flag || ps_pps->i1_pps_multilayer_extension_flag
                     || ps_pps->i1_pps_3d_extension_flag || ps_pps->i1_pps_scc_extension_flag)
     {
         // TODO: add support for parsing these syntax elements
-        return IHEVCD_INVALID_PARAMETER;
+        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
 #endif
 

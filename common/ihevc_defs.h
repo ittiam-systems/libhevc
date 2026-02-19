@@ -40,7 +40,10 @@
 /*****************************************************************************/
 enum
 {
+    IHEVC_PROFILE_UNKNOWN = -1,
     IHEVC_PROFILE_MAIN = 0,
+    IHEVC_PROFILE_MAIN_STILL = 1,
+    IHEVC_PROFILE_MAIN_REXT = 2,
 };
 
 enum
