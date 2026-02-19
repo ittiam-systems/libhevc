@@ -128,5 +128,10 @@ typedef enum
      */
     IHEVCD_SEI_MASTERING_PARAMS_NOT_FOUND,
 
+    /**
+     * Feature not supported
+     */
+    IHEVCD_UNSUPPORTED_TOOL_SET,
+
 }IHEVCD_ERROR_T;
 #endif /* _IHEVCD_ERROR_H_ */

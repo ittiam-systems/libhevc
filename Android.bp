@@ -41,6 +41,7 @@ cc_library_static {
     cflags: [
         "-D_LIB",
         "-fPIC",
+        "-DENABLE_MAIN_REXT_PROFILE",
 
         "-O3",
         "-DANDROID",

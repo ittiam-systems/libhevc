@@ -76,3 +76,4 @@ endif()
 
 add_library(libhevcdec STATIC ${LIBHEVC_COMMON_SRCS} ${LIBHEVC_COMMON_ASMS}
                               ${LIBHEVCDEC_ASMS} ${LIBHEVCDEC_SRCS})
+target_compile_definitions(libhevcdec PRIVATE ENABLE_MAIN_REXT_PROFILE)
