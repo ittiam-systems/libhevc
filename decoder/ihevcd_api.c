@@ -1407,7 +1407,8 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
         /* Max inter pred size */
         ntaps_luma = 8;
-        inter_pred_tmp_buf_size = sizeof(WORD16) * (MAX_CTB_SIZE + ntaps_luma) * MAX_CTB_SIZE;
+        // For yuv 4:4:4 chroma the inter pred buffer size for one CTB will be double of luma
+        inter_pred_tmp_buf_size = sizeof(WORD16) * (MAX_CTB_SIZE + ntaps_luma) * MAX_CTB_SIZE * 2;
 
         inter_pred_tmp_buf_size = ALIGN64(inter_pred_tmp_buf_size);
 
