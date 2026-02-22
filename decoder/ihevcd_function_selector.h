@@ -71,18 +71,6 @@
 #define D_ARCH_MIPS_GENERIC         15
 #define D_ARCH_MIPS_32              16
 
-void ihevcd_init_arch(void *pv_codec);
-
-void ihevcd_init_function_ptr(void *pv_codec);
-
-void ihevcd_init_function_ptr_generic(void *pv_codec);
-void ihevcd_init_function_ptr_ssse3(void *pv_codec);
-void ihevcd_init_function_ptr_sse42(void *pv_codec);
-
-#ifndef DISABLE_AVX2
-void ihevcd_init_function_ptr_avx2(void *pv_codec);
-#endif
-
 typedef struct
 {
     ihevc_deblk_chroma_horz_ft *ihevc_deblk_chroma_horz_fptr;
@@ -187,5 +175,29 @@ typedef struct
     ihevcd_itrans_recon_dc_luma_ft *ihevcd_itrans_recon_dc_luma_fptr;
     ihevcd_itrans_recon_dc_chroma_ft *ihevcd_itrans_recon_dc_chroma_fptr;
 }func_selector_t;
+
+void ihevcd_init_arch(void *pv_codec);
+
+void ihevcd_init_function_ptr(void *pv_codec);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector);
+void ihevcd_init_function_ptr_ssse3(func_selector_t *ps_func_selector);
+void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector);
+
+#ifndef DISABLE_AVX2
+void ihevcd_init_function_ptr_avx2(func_selector_t *ps_func_selector);
+#endif
+
+void ihevcd_init_function_ptr_neonintr(func_selector_t *ps_func_selector);
+void ihevcd_init_function_ptr_noneon(func_selector_t *ps_func_selector);
+void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector);
+void ihevcd_init_function_ptr_av8(func_selector_t *ps_func_selector);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _IHEVCD_FUNCTION_SELECTOR_H_ */

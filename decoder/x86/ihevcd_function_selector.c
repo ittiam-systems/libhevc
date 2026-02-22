@@ -64,23 +64,23 @@ void ihevcd_init_function_ptr(void *pv_codec)
     switch(ps_codec->e_processor_arch)
     {
         case ARCH_X86_GENERIC:
-            ihevcd_init_function_ptr_generic(pv_codec);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             break;
         case ARCH_X86_SSSE3:
-            ihevcd_init_function_ptr_ssse3(pv_codec);
+            ihevcd_init_function_ptr_ssse3(&ps_codec->s_func_selector);
             break;
         case ARCH_X86_SSE42:
-            ihevcd_init_function_ptr_sse42(pv_codec);
+            ihevcd_init_function_ptr_sse42(&ps_codec->s_func_selector);
             break;
         case ARCH_X86_AVX2:
 #ifndef DISABLE_AVX2
-            ihevcd_init_function_ptr_avx2(pv_codec);
+            ihevcd_init_function_ptr_avx2(&ps_codec->s_func_selector);
 #else
-            ihevcd_init_function_ptr_sse42(pv_codec);
+            ihevcd_init_function_ptr_sse42(&ps_codec->s_func_selector);
 #endif
             break;
         default:
-            ihevcd_init_function_ptr_ssse3(pv_codec);
+            ihevcd_init_function_ptr_ssse3(&ps_codec->s_func_selector);
             break;
     }
 }
