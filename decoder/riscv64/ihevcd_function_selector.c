@@ -54,9 +54,7 @@
 #include "ihevc_dpb_mgr.h"
 #include "ihevc_error.h"
 
-#include "ihevcd_defs.h"
 #include "ihevcd_function_selector.h"
-#include "ihevcd_structs.h"
 
 void ihevcd_init_function_ptr(void *pv_codec)
 {
@@ -65,7 +63,7 @@ void ihevcd_init_function_ptr(void *pv_codec)
     {
         default:
         case ARCH_RISCV64_GENERIC:
-            ihevcd_init_function_ptr_generic(pv_codec);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
     }
 }
 
