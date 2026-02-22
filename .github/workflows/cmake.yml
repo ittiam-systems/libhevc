@@ -26,6 +26,13 @@ jobs:
             build-system: cmake
             cmake-opts: ''
 
+          - name: ubuntu-24.04-arm-clang-cmake
+            os: ubuntu-24.04-arm
+            cc: clang
+            cxx: clang++
+            build-system: cmake
+            cmake-opts: ''
+
           - name: ubuntu-latest-clang-cmake-asan-fuzzer
             os: ubuntu-latest
             cc: clang
