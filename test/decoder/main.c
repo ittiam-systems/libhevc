@@ -1413,7 +1413,7 @@ void read_cfg_file(vid_dec_ctx_t *ps_app_ctx, FILE *fp_cfg_file)
         argument[0] = '\0';
         /* Reading Input File Name */
         sscanf(line, "%s %s %s", argument, value, description);
-        if(argument[0] == '\0')
+        if(argument[0] == '\0' || argument[0] == '#')
             continue;
 
         parse_argument(ps_app_ctx, argument, value);
