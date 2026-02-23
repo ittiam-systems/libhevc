@@ -989,6 +989,7 @@ void ihevcd_update_function_ptr(codec_t *ps_codec)
     ps_codec->apf_itrans_recon[5] = (pf_itrans_recon)ps_codec->s_func_selector.ihevc_chroma_itrans_recon_4x4_fptr;
     ps_codec->apf_itrans_recon[6] = (pf_itrans_recon)ps_codec->s_func_selector.ihevc_chroma_itrans_recon_8x8_fptr;
     ps_codec->apf_itrans_recon[7] = (pf_itrans_recon)ps_codec->s_func_selector.ihevc_chroma_itrans_recon_16x16_fptr;
+    ps_codec->apf_itrans_recon[8] = (pf_itrans_recon)ps_codec->s_func_selector.ihevc_chroma_itrans_recon_32x32_fptr;
 
     /* Init recon function array */
     ps_codec->apf_recon[0] = (pf_recon)ps_codec->s_func_selector.ihevc_recon_4x4_ttype1_fptr;
@@ -999,6 +1000,7 @@ void ihevcd_update_function_ptr(codec_t *ps_codec)
     ps_codec->apf_recon[5] = (pf_recon)ps_codec->s_func_selector.ihevc_chroma_recon_4x4_fptr;
     ps_codec->apf_recon[6] = (pf_recon)ps_codec->s_func_selector.ihevc_chroma_recon_8x8_fptr;
     ps_codec->apf_recon[7] = (pf_recon)ps_codec->s_func_selector.ihevc_chroma_recon_16x16_fptr;
+    ps_codec->apf_recon[8] = (pf_recon)ps_codec->s_func_selector.ihevc_chroma_recon_32x32_fptr;
 
     /* Init itrans_recon_dc function array */
     ps_codec->apf_itrans_recon_dc[0] = (pf_itrans_recon_dc)ps_codec->s_func_selector.ihevcd_itrans_recon_dc_luma_fptr;

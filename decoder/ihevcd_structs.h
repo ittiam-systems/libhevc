@@ -2218,10 +2218,10 @@ struct _codec_t
     pf_intra_pred apf_intra_pred_chroma[11];
 
     /**  Funtion pointers for itrans_recon leaf level functions */
-    pf_itrans_recon apf_itrans_recon[8];
+    pf_itrans_recon apf_itrans_recon[9];
 
     /**  Funtion pointers for recon leaf level functions */
-    pf_recon apf_recon[8];
+    pf_recon apf_recon[9];
 
     /**  Funtion pointers for itrans_recon_dc leaf level functions */
     pf_itrans_recon_dc apf_itrans_recon_dc[2];
