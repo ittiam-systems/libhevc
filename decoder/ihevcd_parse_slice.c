@@ -1150,7 +1150,6 @@ IHEVCD_ERROR_T ihevcd_parse_coding_unit_intra(codec_t *ps_codec,
                 TRACE_CABAC_CTXT("intra_chroma_pred_mode", ps_cabac->u4_range, IHEVC_CAB_CHROMA_PRED_MODE);
                 value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm,
                                                 IHEVC_CAB_CHROMA_PRED_MODE);
-                // TODO: this needs to be an array of elements
                 ps_codec->s_parse.s_cu.ai4_intra_chroma_pred_mode_idx[i] = 4;
                 if(value)
                 {
