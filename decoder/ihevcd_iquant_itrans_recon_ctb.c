@@ -1006,8 +1006,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     func_idx = 1 + 4 + log2_uv_trans_size_minus_2; /* DST func + Y funcs + cur func index*/
 
                     /* Handle error cases where 64x64 TU is signalled which results in 32x32 chroma.
-                     * By limiting func_idx to 7, max of 16x16 chroma is called */
-                    func_idx = MIN(func_idx, 7);
+                     * Limit func_idx based on allowed max chroma tu size */
+                    func_idx = MIN(func_idx, (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 8 : 7);
 
                     e_trans_type = (TRANSFORM_TYPE)(log2_uv_trans_size_minus_2 + 1);
                     /* QP for U */
@@ -1078,7 +1078,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                        so that SIMD functions can load 64 bits. Also some SIMD
                        modules read few bytes before the start of the array, so
                        allocate 16 extra bytes at the start */
-                    UWORD8 au1_ref_sub_out[16 + (MAX_TU_SIZE * 2 * 2) + 8] = {0};
+                    UWORD8 au1_ref_sub_out[16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8] = {0};
                     UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16];
                     UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
                     WORD32 luma_pred_func_idx, chroma_pred_func_idx;
