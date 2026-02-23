@@ -42,6 +42,7 @@ endif()
 include("${HEVC_ROOT}/cmake/utils.cmake")
 
 libhevc_add_compile_options()
+libhevc_add_gtest()
 libhevc_add_definitions()
 libhevc_set_link_libraries()
 
@@ -54,3 +55,5 @@ include("${HEVC_ROOT}/test/encoder/hevcenc.cmake")
 
 include("${HEVC_ROOT}/fuzzer/hevc_dec_fuzzer.cmake")
 include("${HEVC_ROOT}/fuzzer/hevc_enc_fuzzer.cmake")
+
+include("${HEVC_ROOT}/tests/common/common.cmake")
