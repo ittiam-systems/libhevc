@@ -54,6 +54,20 @@ jobs:
             build-system: cmake
             cmake-opts: ''
 
+          - name: ubuntu-latest-cross-aarch64-cmake
+            os: ubuntu-latest
+            cc: aarch64-linux-gnu-gcc
+            cxx: aarch64-linux-gnu-g++
+            build-system: cmake
+            cmake-opts: '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch64_toolchain.cmake'
+
+          - name: ubuntu-latest-cross-aarch32-cmake
+            os: ubuntu-latest
+            cc: arm-linux-gnueabihf-gcc
+            cxx: arm-linux-gnueabihf-g++
+            build-system: cmake
+            cmake-opts: '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch32_toolchain.cmake'
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -64,6 +78,18 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build
+
+    - name: Install cross-aarch64 dependencies
+      if: startsWith(matrix.os,'ubuntu') && contains(matrix.cmake-opts,'aarch64')
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+    - name: Install cross-arm dependencies
+      if: startsWith(matrix.os,'ubuntu') && contains(matrix.cmake-opts,'aarch32')
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
     - name: Configure CMake
       env:
