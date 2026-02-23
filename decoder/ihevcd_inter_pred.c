@@ -70,25 +70,6 @@
 #include "ihevc_inter_pred.h"
 #include "ihevcd_profile.h"
 
-static WORD8 gai1_luma_filter[4][NTAPS_LUMA] =
-{
-    { 0, 0, 0, 64, 0, 0, 0, 0 },
-    { -1, 4, -10, 58, 17, -5, 1, 0 },
-    { -1, 4, -11, 40, 40, -11, 4, -1 },
-    { 0, 1, -5, 17, 58, -10, 4, -1 } };
-
-/* The filter uses only the first four elements in each array */
-static WORD8 gai1_chroma_filter[8][NTAPS_LUMA] =
-{
-    { 0, 64, 0, 0, 0, 0, 0, 0 },
-    { -2, 58, 10, -2, 0, 0, 0, 0 },
-    { -4, 54, 16, -2, 0, 0, 0, 0 },
-    { -6, 46, 28, -4, 0, 0, 0, 0 },
-    { -4, 36, 36, -4, 0, 0, 0, 0 },
-    { -4, 28, 46, -6, 0, 0, 0, 0 },
-    { -2, 16, 54, -4, 0, 0, 0, 0 },
-    { -2, 10, 58, -2, 0, 0, 0, 0 } };
-
 /**
 *******************************************************************************
 *
@@ -328,7 +309,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 pu1_dst = pu1_dst_luma + pu_y * ref_strd + pu_x;
 
                 ntaps = NTAPS_LUMA;
-                coeff = gai1_luma_filter;
+                coeff = gai1_ihevc_luma_filter;
             }
 
             else
@@ -374,7 +355,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                 (pu_x * chroma_pixel_strd / h_samp_factor);
 
                 ntaps = NTAPS_CHROMA;
-                coeff = gai1_chroma_filter;
+                coeff = gai1_ihevc_chroma_filter;
             }
 
             if(ps_pu->b2_pred_mode != PRED_L1)

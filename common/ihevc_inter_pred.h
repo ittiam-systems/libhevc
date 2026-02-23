@@ -46,6 +46,9 @@
 #define REF_WIDTH 1280
 #define REF_HEIGHT 720
 
+extern WORD8 gai1_ihevc_luma_filter[4][NTAPS_LUMA];
+extern WORD8 gai1_ihevc_chroma_filter[8][NTAPS_LUMA];
+
 /*****************************************************************************/
 /* Function Declarations                                                     */
 /*****************************************************************************/
