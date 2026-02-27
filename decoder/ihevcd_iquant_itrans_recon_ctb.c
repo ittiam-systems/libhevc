@@ -678,14 +678,14 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     /* Inter 8 x 8 Y, 8 x 8 U, 8 x 8 V                                       */
     /* Intra 16x16 Y, 16x16 U, 16x16 V                                       */
     /* Inter 16x16 Y, 16x16 U, 16x16 V                                       */
-    /* Intra 32x32 Y, UNUSED,  UNUSED                                        */
-    /* Inter 32x32 Y, UNUSED,  UNUSED                                        */
+    /* Intra 32x32 Y, 32x32 U, 32x32 V                                       */
+    /* Inter 32x32 Y, 32x32 U, 32x32 V                                       */
     /* UNUSED,        UNUSED,  UNUSED                                        */
     /* UNUSED,        UNUSED,  UNUSED                                        */
     /*************************************************************************/
     static const WORD32 scaling_mat_offset[] =
       { 0, 16, 32, 48, 64, 80, 96, 160, 224, 288, 352, 416, 480, 736, 992,
-        1248, 1504, 1760, 2016, 0, 0, 3040, 0, 0, 0, 0, 0, 0, 0, 0};
+        1248, 1504, 1760, 2016, 3040, 4064, 5088, 6112, 7136, 0, 0, 0, 0, 0, 0};
 
     PROFILE_DISABLE_IQ_IT_RECON_INTRA_PRED();
 

@@ -196,7 +196,7 @@
     m_scaling_mat_size = 6 * TRANS_SIZE_4 * TRANS_SIZE_4;                    \
     m_scaling_mat_size += 6 * TRANS_SIZE_8 * TRANS_SIZE_8;                   \
     m_scaling_mat_size += 6 * TRANS_SIZE_16 * TRANS_SIZE_16;                 \
-    m_scaling_mat_size += 2 * TRANS_SIZE_32 * TRANS_SIZE_32;                 \
+    m_scaling_mat_size += 6 * TRANS_SIZE_32 * TRANS_SIZE_32;                 \
 }
 
 /**
