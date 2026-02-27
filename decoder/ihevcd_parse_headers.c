@@ -75,11 +75,12 @@
 
 #define COPY_DEFAULT_SCALING_LIST(pi2_scaling_mat)                                                                                      \
 {                                                                                                                                       \
-    WORD32 scaling_mat_offset[]={0, 16, 32, 48, 64, 80, 96, 160, 224, 288, 352, 416, 480, 736, 992, 1248, 1504, 1760, 2016, 3040};      \
+    WORD32 scaling_mat_offset[] = {0,   16,  32,  48,   64,   80,   96,   160,  224,  288,  352,  416,                                  \
+                                   480, 736, 992, 1248, 1504, 1760, 2016, 3040, 4064, 5088, 6112, 7136};                                \
                                                                                                                                         \
     /* scaling matrix for 4x4 */                                                                                                        \
     memcpy(pi2_scaling_mat, gi2_flat_scale_mat_32x32, 6*16*sizeof(WORD16));                                                             \
-/* scaling matrix for 8x8 */                                                                                                            \
+    /* scaling matrix for 8x8 */                                                                                                        \
     memcpy(pi2_scaling_mat + scaling_mat_offset[6], gi2_intra_default_scale_mat_8x8, 64*sizeof(WORD16));                                \
     memcpy(pi2_scaling_mat + scaling_mat_offset[7], gi2_intra_default_scale_mat_8x8, 64*sizeof(WORD16));                                \
     memcpy(pi2_scaling_mat + scaling_mat_offset[8], gi2_intra_default_scale_mat_8x8, 64*sizeof(WORD16));                                \
@@ -95,12 +96,17 @@
     memcpy(pi2_scaling_mat + scaling_mat_offset[17], gi2_inter_default_scale_mat_16x16, 256*sizeof(WORD16));                            \
     /* scaling matrix for 32x32 */                                                                                                      \
     memcpy(pi2_scaling_mat + scaling_mat_offset[18], gi2_intra_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
-    memcpy(pi2_scaling_mat + scaling_mat_offset[19], gi2_inter_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
+    memcpy(pi2_scaling_mat + scaling_mat_offset[19], gi2_intra_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
+    memcpy(pi2_scaling_mat + scaling_mat_offset[20], gi2_intra_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
+    memcpy(pi2_scaling_mat + scaling_mat_offset[21], gi2_inter_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
+    memcpy(pi2_scaling_mat + scaling_mat_offset[22], gi2_inter_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
+    memcpy(pi2_scaling_mat + scaling_mat_offset[23], gi2_inter_default_scale_mat_32x32, 1024*sizeof(WORD16));                           \
 }
 
 #define COPY_FLAT_SCALING_LIST(pi2_scaling_mat)                                                                                         \
 {                                                                                                                                       \
-    WORD32 scaling_mat_offset[]={0, 16, 32, 48, 64, 80, 96, 160, 224, 288, 352, 416, 480, 736, 992, 1248, 1504, 1760, 2016, 3040};      \
+    WORD32 scaling_mat_offset[] = {0,   16,  32,  48,   64,   80,   96,   160,  224,  288,  352,  416,                                  \
+                                   480, 736, 992, 1248, 1504, 1760, 2016, 3040, 4064, 5088, 6112, 7136};                                \
                                                                                                                                         \
     /* scaling matrix for 4x4 */                                                                                                        \
     memcpy(pi2_scaling_mat, gi2_flat_scale_mat_32x32, 6*16*sizeof(WORD16));                                                             \
@@ -110,8 +116,10 @@
     memcpy(pi2_scaling_mat + scaling_mat_offset[12], gi2_flat_scale_mat_32x32, 3*256*sizeof(WORD16));                                   \
     memcpy(pi2_scaling_mat + scaling_mat_offset[15], gi2_flat_scale_mat_32x32, 3*256*sizeof(WORD16));                                   \
     /* scaling matrix for 32x32 */                                                                                                      \
-    memcpy(pi2_scaling_mat + scaling_mat_offset[18], gi2_flat_scale_mat_32x32, 1024*sizeof(WORD16));                                    \
-    memcpy(pi2_scaling_mat + scaling_mat_offset[19], gi2_flat_scale_mat_32x32, 1024*sizeof(WORD16));                                    \
+    for (WORD32 i = 0; i < 6; i++)                                                                                                      \
+    {                                                                                                                                   \
+        memcpy(pi2_scaling_mat + scaling_mat_offset[18 + i], gi2_flat_scale_mat_32x32, 1024*sizeof(WORD16));                            \
+    }                                                                                                                                   \
 }
 
 /* Function declarations */
@@ -1182,7 +1190,7 @@ static IHEVCD_ERROR_T ihevcd_profile_tier_level(bitstrm_t *ps_bitstrm,
 *
 *******************************************************************************
 */
-IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_mat)
+IHEVCD_ERROR_T ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_mat, WORD8 chroma_format_idc)
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     WORD32 size_id;
@@ -1191,15 +1199,16 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
     UWORD32 u4_value;
     WORD32 next_coef;
     WORD32 coef_num;
-    WORD32 i, j, offset;
+    WORD32 i, j, k, offset;
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
     WORD16 *pi2_scaling_mat_offset;
-    WORD32 scaling_mat_offset[] = { 0, 16, 32, 48, 64, 80, 96, 160, 224, 288, 352, 416, 480, 736, 992, 1248, 1504, 1760, 2016, 3040 };
+    WORD32 scaling_mat_offset[] = {0,   16,  32,  48,   64,   80,   96,   160,  224,  288,  352,  416,
+                                   480, 736, 992, 1248, 1504, 1760, 2016, 3040, 4064, 5088, 6112, 7136};
     UWORD8 *scan_table;
 
     for(size_id = 0; size_id < 4; size_id++)
     {
-        for(matrix_id = 0; matrix_id < ((size_id == 3) ? 2 : 6); matrix_id++)
+        for(matrix_id = 0; matrix_id < 6; matrix_id += (size_id == 3) ? 3 : 1)
         {
             WORD32 scaling_list_pred_mode_flag;
             WORD32 scaling_list_delta_coef;
@@ -1213,14 +1222,24 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
                 WORD32 num_elements;
                 UEV_PARSE("scaling_list_pred_matrix_id_delta", u4_value,
                           ps_bitstrm);
-                if(u4_value > matrix_id)
+                if(size_id <= 2)
                 {
-                    return IHEVCD_INVALID_PARAMETER;
+                    if(u4_value > matrix_id)
+                        return IHEVCD_INVALID_PARAMETER;
+                }
+                else
+                {
+                    if(u4_value > matrix_id / 3)
+                        return IHEVCD_INVALID_PARAMETER;
                 }
 
                 num_elements = (1 << (4 + (size_id << 1)));
                 if(0 != u4_value)
-                    memmove(pi2_scaling_mat_offset, pi2_scaling_mat_offset - u4_value * num_elements, num_elements * sizeof(WORD16));
+                {
+                    memmove(pi2_scaling_mat_offset,
+                            pi2_scaling_mat_offset - (u4_value * (size_id == 3 ? 3 : 1)) * num_elements,
+                            num_elements * sizeof(WORD16));
+                }
             }
             else
             {
@@ -1308,6 +1327,40 @@ IHEVCD_ERROR_T  ihevcd_scaling_list_data(codec_t *ps_codec, WORD16 *pi2_scaling_
                     }
                 }
             }
+        }
+    }
+    // derive 32x32 CbCr scaling list from 16x16 CbCr scaling list
+    if(chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        WORD32 matrix_ids[] = { 1, 2, 4, 5 };
+        WORD16 *pi2_ref_scaling_mat;
+
+        scan_table = (UWORD8 *)gapv_ihevc_invscan[2];
+        for(i = 0; i < 4; i++)
+        {
+            matrix_id = matrix_ids[i];
+            pi2_ref_scaling_mat = pi2_scaling_mat + scaling_mat_offset[2 * 6 + matrix_id];
+            pi2_scaling_mat_offset = pi2_scaling_mat + scaling_mat_offset[3 * 6 + matrix_id];
+
+            for(j = 0; j < 64; j++)
+            {
+                offset = scan_table[j];
+                offset = (offset >> 3) * 16 * 2 + (offset & 0x7) * 2;
+                // the index 0 value may be overwritten by scaling_list_dc_coef. pick its alternative
+                next_coef = offset == 0 ? pi2_ref_scaling_mat[1] : pi2_ref_scaling_mat[offset];
+
+                offset = scan_table[j];
+                offset = (offset >> 3) * 32 * 4 + (offset & 0x7) * 4;
+
+                for(k = 0; k < 4; k++)
+                {
+                    pi2_scaling_mat_offset[offset + k * 32] = next_coef;
+                    pi2_scaling_mat_offset[offset + 1 + k * 32] = next_coef;
+                    pi2_scaling_mat_offset[offset + 2 + k * 32] = next_coef;
+                    pi2_scaling_mat_offset[offset + 3 + k * 32] = next_coef;
+                }
+            }
+            pi2_scaling_mat_offset[0] = pi2_ref_scaling_mat[0];
         }
     }
 
@@ -1784,7 +1837,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i1_sps_scaling_list_data_present_flag = value;
 
         if(ps_sps->i1_sps_scaling_list_data_present_flag)
-            ihevcd_scaling_list_data(ps_codec, ps_sps->pi2_scaling_mat);
+            ihevcd_scaling_list_data(ps_codec, ps_sps->pi2_scaling_mat, ps_sps->i1_chroma_format_idc);
     }
     else
     {
@@ -2548,7 +2601,7 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     if(ps_pps->i1_pps_scaling_list_data_present_flag)
     {
         COPY_DEFAULT_SCALING_LIST(ps_pps->pi2_scaling_mat);
-        ihevcd_scaling_list_data(ps_codec, ps_pps->pi2_scaling_mat);
+        ihevcd_scaling_list_data(ps_codec, ps_pps->pi2_scaling_mat, ps_sps->i1_chroma_format_idc);
     }
 
     BITS_PARSE("lists_modification_present_flag", value, ps_bitstrm, 1);

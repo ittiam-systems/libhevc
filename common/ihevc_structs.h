@@ -2573,8 +2573,8 @@ typedef struct
     /* Inter 8 x 8 Y, 8 x 8 U, 8 x 8 V                                       */
     /* Intra 16x16 Y, 16x16 U, 16x16 V                                       */
     /* Inter 16x16 Y, 16x16 U, 16x16 V                                       */
-    /* Intra 32x32 Y                                                         */
-    /* Inter 32x32 Y                                                         */
+    /* Intra 32x32 Y, 32x32 U, 32x32 V                                       */
+    /* Inter 32x32 Y, 32x32 U, 32x32 V                                       */
     /*************************************************************************/
     WORD16 *pi2_scaling_mat;
 
@@ -2649,8 +2649,8 @@ typedef struct
     /* Inter 8 x 8 Y, 8 x 8 U, 8 x 8 V                                       */
     /* Intra 16x16 Y, 16x16 U, 16x16 V                                       */
     /* Inter 16x16 Y, 16x16 U, 16x16 V                                       */
-    /* Intra 32x32 Y                                                         */
-    /* Inter 32x32 Y                                                         */
+    /* Intra 32x32 Y, 32x32 U, 32x32 V                                       */
+    /* Inter 32x32 Y, 32x32 U, 32x32 V                                       */
     /*************************************************************************/
     WORD16 *pi2_scaling_mat;
 
