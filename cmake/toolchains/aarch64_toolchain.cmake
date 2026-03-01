@@ -11,3 +11,6 @@ set(CMAKE_C_COMPILER_AR
 set(CMAKE_CXX_COMPILER_AR
     aarch64-linux-gnu-gcc-ar
     CACHE FILEPATH "Archiver")
+
+# Build all binaries as static, so that they can be run using qemu
+set(CMAKE_EXE_LINKER_FLAGS "-static")
