@@ -2020,8 +2020,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         // main-rext 8-bit profiles require these fields to be off
         return IHEVCD_INVALID_PARAMETER;
     }
-    if(ps_sps->i1_transform_skip_rotation_enabled_flag
-                    || ps_sps->i1_implicit_rdpcm_enabled_flag
+    if(ps_sps->i1_implicit_rdpcm_enabled_flag
                     || ps_sps->i1_explicit_rdpcm_enabled_flag
                     || ps_sps->i1_fast_rice_adaptation_enabled_flag)
     {

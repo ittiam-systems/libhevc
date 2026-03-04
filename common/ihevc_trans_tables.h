@@ -116,4 +116,6 @@ extern const WORD16 g_ai2_ihevc_trans_intr_4[4][8];
 
 extern const UWORD8 IHEVCE_CHROMA_SHUFFLEMASK_HBD[8];
 
+extern MEM_ALIGN16 const UWORD32 gau4_ihevcd_4_bit_reverse[16];
+
 #endif /*_IHEVC_TRANS_TABLES_H_*/

@@ -33,6 +33,8 @@
  *  - ihevc_itrans_res_8x8()
  *  - ihevc_itrans_res_16x16()
  *  - ihevc_itrans_res_32x32()
+ *  - ihevc_res_4x4_rotate()
+ *  - ihevc_res_nxn_copy()
  *
  * @remarks
  *  None
@@ -2327,6 +2329,77 @@ void ihevc_itrans_res_32x32(WORD16 *pi2_src,
         /************************************************************************************************/
         /************************************END - IT_RECON_32x32****************************************/
         /************************************************************************************************/
+    }
+}
+
+
+void ihevc_res_4x4_rotate(WORD16 *pi2_src,
+                          WORD16 *pi2_dst,
+                          WORD32 src_strd,
+                          WORD32 dst_strd,
+                          WORD32 zero_cols)
+{
+    WORD32 i, j;
+    WORD32 trans_size;
+
+    trans_size = TRANS_SIZE_4;
+
+    WORD32 offset = trans_size * src_strd - 1;
+
+    zero_cols = gau4_ihevcd_4_bit_reverse[zero_cols & 0xF];
+
+    for(i = 0; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if((zero_cols & 1) == 1)
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = 0;
+            }
+        }
+        else
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = pi2_src[offset - (j * src_strd + i)];
+            }
+        }
+        pi2_dst++;
+        zero_cols = zero_cols >> 1;
+    }
+}
+
+
+void ihevc_res_nxn_copy(WORD16 *pi2_src,
+                        WORD16 *pi2_dst,
+                        WORD32 src_strd,
+                        WORD32 dst_strd,
+                        WORD32 trans_size,
+                        WORD32 zero_cols)
+{
+
+    WORD32 i, j;
+
+    for(i = 0; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if((zero_cols & 1) == 1)
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = 0;
+            }
+        }
+        else
+        {
+            for(j = 0; j < trans_size; j++)
+            {
+                pi2_dst[j * dst_strd] = pi2_src[(j * src_strd + i)];
+            }
+        }
+        pi2_dst++;
+        zero_cols = zero_cols >> 1;
     }
 }
 
