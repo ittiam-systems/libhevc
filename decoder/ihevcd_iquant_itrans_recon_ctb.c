@@ -658,10 +658,9 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     codec_t *ps_codec = ps_proc->ps_codec;
     WORD8 trans_size = 1 << log2_trans_size;
     WORD16 *pi2_res = ps_proc->pi2_res_luma_buf;
-    WORD16 *pi2_res_uv = ps_proc->pi2_res_chroma_buf + chroma_plane;
+    WORD16 *pi2_res_uv = ps_proc->pi2_res_chroma_buf;
     WORD32 alpha = 0;
     WORD16 *residue = chroma_plane == NULL_PLANE ? pi2_res : pi2_res_uv;
-    WORD32 residue_row_strd = chroma_plane == NULL_PLANE ? trans_size : (trans_size * 2);
 
     if(chroma_plane == U_PLANE && ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0)
     {
@@ -680,13 +679,13 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
             if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
             {
                 ihevc_res_4x4_rotate(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
-                                     ps_pl_tu_ctxt->tu_coeff_stride, residue_row_strd,
+                                     ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
                                      ps_pl_tu_ctxt->zero_cols);
             }
             else
             {
                 ihevc_res_nxn_copy(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
-                                   ps_pl_tu_ctxt->tu_coeff_stride, residue_row_strd, trans_size,
+                                   ps_pl_tu_ctxt->tu_coeff_stride, trans_size, trans_size,
                                    ps_pl_tu_ctxt->zero_cols);
             }
         }
@@ -699,19 +698,19 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
                 ps_codec->apf_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
                                                        ps_proc->pi2_itrans_intrmd_buf, residue,
                                                        ps_pl_tu_ctxt->tu_coeff_stride,
-                                                       residue_row_strd, ps_pl_tu_ctxt->zero_cols,
+                                                       trans_size, ps_pl_tu_ctxt->zero_cols,
                                                        ps_pl_tu_ctxt->zero_rows);
             }
             else /* DC only */
             {
-                ps_codec->apf_itrans_res_dc(residue, residue_row_strd, log2_trans_size,
+                ps_codec->apf_itrans_res_dc(residue, trans_size, log2_trans_size,
                                             ps_pl_tu_ctxt->coeff_value);
             }
         }
         if(!alpha)
         {
             ps_codec->apf_recon[func_idx](residue, ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
-                                          residue_row_strd, ps_pl_tu_ctxt->pred_strd,
+                                          trans_size, ps_pl_tu_ctxt->pred_strd,
                                           ps_pl_tu_ctxt->dst_strd, 0);
         }
     }
@@ -719,17 +718,11 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     {
         if(0 == ps_pl_tu_ctxt->cbf)
         {
-            for(WORD32 j = 0; j < trans_size; j++)
-            {
-                for(WORD32 i = 0; i < trans_size; i++)
-                {
-                    residue[j * residue_row_strd + i] = 0;
-                }
-            }
+            memset(residue, 0, trans_size * trans_size * sizeof(WORD16));
         }
         ihevc_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, ps_pl_tu_ctxt->pu1_pred,
                                    ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
-                                   trans_size * 2, ps_pl_tu_ctxt->pred_strd,
+                                   trans_size, ps_pl_tu_ctxt->pred_strd,
                                    ps_pl_tu_ctxt->dst_strd);
     }
 }
