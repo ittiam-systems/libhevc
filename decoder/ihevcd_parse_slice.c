@@ -181,11 +181,27 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
         {
             ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth] = 0;
             ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth] = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+            {
+                ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth] = 0;
+                ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth] = 0;
+            }
+#endif
         }
         else
         {
             ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth] = ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth - 1];
             ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth] = ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth - 1];
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+            {
+                ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth] =
+                                ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth - 1];
+                ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth] =
+                                ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth - 1];
+            }
+#endif
         }
         if ((CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && log2_trafo_size > 2) ||
             ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
@@ -198,6 +214,16 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                 value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
                 AEV_TRACE("cbf_cb", value, ps_cabac->u4_range);
                 ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth] = value;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422
+                                && (!split_transform_flag || log2_trafo_size == 3))
+                {
+                    TRACE_CABAC_CTXT("cbf_cb", ps_cabac->u4_range, ctxt_idx);
+                    value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                    AEV_TRACE("cbf_cb", value, ps_cabac->u4_range);
+                    ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth] = value;
+                }
+#endif
             }
 
             if((trafo_depth == 0) || ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth - 1])
@@ -206,6 +232,16 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                 value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
                 AEV_TRACE("cbf_cr", value, ps_cabac->u4_range);
                 ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth] = value;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422
+                                && (!split_transform_flag || log2_trafo_size == 3))
+                {
+                    TRACE_CABAC_CTXT("cbf_cr", ps_cabac->u4_range, ctxt_idx);
+                    value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                    AEV_TRACE("cbf_cr", value, ps_cabac->u4_range);
+                    ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth] = value;
+                }
+#endif
             }
         }
         if(split_transform_flag)
@@ -249,6 +285,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             WORD32 ctb_x_base;
             WORD32 ctb_y_base;
             WORD32 cu_qp_delta_abs;
+            WORD32 cbf_chroma;
 
 
 
@@ -256,11 +293,19 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             cu_qp_delta_abs = 0;
             ctb_x_base = ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size;
             ctb_y_base = ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size;
+            cbf_chroma = ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth]
+                            || ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth];
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+            {
+                cbf_chroma |= ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth]
+                                || ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth];
+            }
+#endif
 
             if((ps_codec->s_parse.s_cu.i4_pred_mode == PRED_MODE_INTRA) ||
                             (trafo_depth != 0) ||
-                            (ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth]) ||
-                            (ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth]))
+                            (cbf_chroma))
             {
                 ctxt_idx = IHEVC_CAB_CBF_LUMA_IDX;
                 ctxt_idx += (trafo_depth == 0) ? 1 : 0;
@@ -279,7 +324,13 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             /* Initialize ps_tu to default values */
             /* If required change this to WORD32 packed write */
             ps_tu->b1_cb_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b1_cb_cbf_subtu1 = 0;
+#endif
             ps_tu->b1_cr_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b1_cr_cbf_subtu1 = 0;
+#endif
             ps_tu->b1_y_cbf = 0;
             ps_tu->b4_pos_x = ((x0 - ctb_x_base) >> 2);
             ps_tu->b4_pos_y = ((y0 - ctb_y_base) >> 2);
@@ -297,9 +348,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             ps_tu->b3_chroma_intra_mode_idx = chroma_intra_pred_mode_idx;
 
             /* Section:7.3.12  Transform unit syntax inlined here */
-            if(ps_codec->s_parse.s_cu.i1_cbf_luma ||
-                            ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth] ||
-                            ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth])
+            if(ps_codec->s_parse.s_cu.i1_cbf_luma || cbf_chroma)
             {
                 WORD32 intra_pred_mode_chroma;
                 if(ps_pps->i1_cu_qp_delta_enabled_flag && !ps_codec->s_parse.i4_is_cu_qp_delta_coded)
@@ -370,6 +419,10 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         intra_pred_mode_chroma = INTRA_ANGULAR(34);
                     }
                 }
+                if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+                {
+                    intra_pred_mode_chroma = gau1_intra_pred_chroma_modes_422[intra_pred_mode_chroma];
+                }
                 if(log2_trafo_size > 2 || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
                 {
                     WORD32 trafo_offset = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 0 : 1);
@@ -403,6 +456,13 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size_c, 1, intra_pred_mode_chroma);
                     }
 #ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth])
+                    {
+                        ps_tu->b1_cb_cbf_subtu1 = 1;
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 1, intra_pred_mode_chroma);
+                    }
+#endif
+#ifdef ENABLE_MAIN_REXT_PROFILE
                     if(ps_pps->i1_cross_component_prediction_enabled_flag
                                     && ps_codec->s_parse.s_cu.i1_cbf_luma
                                     && (ps_codec->s_parse.s_cu.i4_pred_mode == PRED_MODE_INTER
@@ -429,6 +489,13 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         ps_tu->b1_cr_cbf = 1;
                         ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size_c, 2, intra_pred_mode_chroma);
                     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth])
+                    {
+                        ps_tu->b1_cr_cbf_subtu1 = 1;
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 1, intra_pred_mode_chroma);
+                    }
+#endif
                 }
                 else if(blk_idx == 3)
                 {
@@ -437,12 +504,26 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         ps_tu->b1_cb_cbf = 1;
                         ihevcd_parse_residual_coding(ps_codec, cu_x_base, cu_y_base, log2_trafo_size, 1, intra_pred_mode_chroma);
                     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cb_subtu[trafo_depth])
+                    {
+                        ps_tu->b1_cb_cbf_subtu1 = 1;
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size, 1, intra_pred_mode_chroma);
+                    }
+#endif
 
                     if(ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth])
                     {
                         ps_tu->b1_cr_cbf = 1;
                         ihevcd_parse_residual_coding(ps_codec, cu_x_base, cu_y_base, log2_trafo_size, 2, intra_pred_mode_chroma);
                     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth])
+                    {
+                        ps_tu->b1_cr_cbf_subtu1 = 1;
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size, 1, intra_pred_mode_chroma);
+                    }
+#endif
                 }
                 else
                 {
@@ -452,7 +533,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             }
             else
             {
-                if((3 != blk_idx) && (2 == log2_trafo_size && ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420))
+                if((3 != blk_idx) && (2 == log2_trafo_size && ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV444))
                 {
                     ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
                 }
@@ -1092,7 +1173,13 @@ IHEVCD_ERROR_T ihevcd_parse_coding_unit_intra(codec_t *ps_codec,
 
         ps_tu = ps_codec->s_parse.ps_tu;
         ps_tu->b1_cb_cbf = 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b1_cb_cbf_subtu1 = 1;
+#endif
         ps_tu->b1_cr_cbf = 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b1_cr_cbf_subtu1 = 1;
+#endif
         ps_tu->b1_y_cbf = 1;
         ps_tu->b4_pos_x = ((x0 - ctb_x_base) >> 2);
         ps_tu->b4_pos_y = ((y0 - ctb_y_base) >> 2);
@@ -1439,7 +1526,13 @@ IHEVCD_ERROR_T  ihevcd_parse_coding_unit(codec_t *ps_codec,
         ctb_y_base = ps_codec->s_parse.i4_ctb_y << ps_sps->i1_log2_ctb_size;
 
         ps_tu->b1_cb_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b1_cb_cbf_subtu1 = 0;
+#endif
         ps_tu->b1_cr_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b1_cr_cbf_subtu1 = 0;
+#endif
         ps_tu->b1_y_cbf = 0;
         ps_tu->b4_pos_x = ((x0 - ctb_x_base) >> 2);
         ps_tu->b4_pos_y = ((y0 - ctb_y_base) >> 2);
@@ -1740,7 +1833,13 @@ IHEVCD_ERROR_T  ihevcd_parse_coding_unit(codec_t *ps_codec,
 
                 ps_tu = ps_codec->s_parse.ps_tu;
                 ps_tu->b1_cb_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                ps_tu->b1_cb_cbf_subtu1 = 0;
+#endif
                 ps_tu->b1_cr_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                ps_tu->b1_cr_cbf_subtu1 = 0;
+#endif
                 ps_tu->b1_y_cbf = 0;
                 ps_tu->b4_pos_x = ((x0 - ctb_x_base) >> 2);
                 ps_tu->b4_pos_y = ((y0 - ctb_y_base) >> 2);
@@ -2374,7 +2473,13 @@ void ihevcd_set_ctb_skip(codec_t *ps_codec)
         {
             ps_tu = ps_codec->s_parse.ps_tu;
             ps_tu->b1_cb_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b1_cb_cbf_subtu1 = 0;
+#endif
             ps_tu->b1_cr_cbf = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b1_cr_cbf_subtu1 = 0;
+#endif
             ps_tu->b1_y_cbf = 0;
             ps_tu->b4_pos_x = pu_x >> 2;
             ps_tu->b4_pos_y = pu_y >> 2;

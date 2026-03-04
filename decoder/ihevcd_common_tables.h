@@ -34,10 +34,12 @@
 #ifndef _IHEVCD_COMMON_TABLES_H_
 #define _IHEVCD_COMMON_TABLES_H_
 
-extern const WORD16 gai2_ihevcd_chroma_qp[];
+extern const WORD16 gai2_ihevcd_chroma_qp_420[];
 
 extern const UWORD8 gau1_intra_pred_chroma_modes[];
 
-extern const WORD16 gai2_ihevcd_chroma_qp_444[];
+extern const UWORD8 gau1_intra_pred_chroma_modes_422[];
+
+extern const WORD16 gai2_ihevcd_chroma_qp_clip[];
 
 #endif /*_IHEVCD_COMMON_TABLES_H_*/

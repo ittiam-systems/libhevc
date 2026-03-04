@@ -972,7 +972,10 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
     if(NULL == s_dump_disp_frm_buf.pv_y_buf)
         return;
 
-    if(ps_app_ctx->e_output_chroma_format == IV_YUV_420P)
+    if(ps_app_ctx->e_output_chroma_format == IV_YUV_420P
+                    || ps_app_ctx->e_output_chroma_format == IV_YUV_444P
+                    || ps_app_ctx->e_output_chroma_format == IV_YUV_422P
+                    || ps_app_ctx->e_output_chroma_format == IV_GRAY)
     {
 #if DUMP_SINGLE_BUF
         {
@@ -994,17 +997,20 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
                 buf += s_dump_disp_frm_buf.u4_y_strd;
             }
 
-            buf = (UWORD8 *)s_dump_disp_frm_buf.pv_u_buf;
-            for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
+            if(ps_app_ctx->e_output_chroma_format != IV_GRAY)
             {
-                fwrite(buf, 1, s_dump_disp_frm_buf.u4_u_wd, ps_op_file);
-                buf += s_dump_disp_frm_buf.u4_u_strd;
-            }
-            buf = (UWORD8 *)s_dump_disp_frm_buf.pv_v_buf;
-            for(i = 0; i < s_dump_disp_frm_buf.u4_v_ht; i++)
-            {
-                fwrite(buf, 1, s_dump_disp_frm_buf.u4_v_wd, ps_op_file);
-                buf += s_dump_disp_frm_buf.u4_v_strd;
+                buf = (UWORD8*)s_dump_disp_frm_buf.pv_u_buf;
+                for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
+                {
+                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_u_wd, ps_op_file);
+                    buf += s_dump_disp_frm_buf.u4_u_strd;
+                }
+                buf = (UWORD8*)s_dump_disp_frm_buf.pv_v_buf;
+                for(i = 0; i < s_dump_disp_frm_buf.u4_v_ht; i++)
+                {
+                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_v_wd, ps_op_file);
+                    buf += s_dump_disp_frm_buf.u4_v_strd;
+                }
             }
 
         }
@@ -1012,27 +1018,30 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
         if(0 != chksum_save)
         {
             UWORD8 au1_y_chksum[16];
-            UWORD8 au1_u_chksum[16];
-            UWORD8 au1_v_chksum[16];
             calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_y_buf,
                            s_dump_disp_frm_buf.u4_y_strd,
                            s_dump_disp_frm_buf.u4_y_wd,
                            s_dump_disp_frm_buf.u4_y_ht,
                            au1_y_chksum);
-            calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_u_buf,
-                           s_dump_disp_frm_buf.u4_u_strd,
-                           s_dump_disp_frm_buf.u4_u_wd,
-                           s_dump_disp_frm_buf.u4_u_ht,
-                           au1_u_chksum);
-            calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_v_buf,
-                           s_dump_disp_frm_buf.u4_v_strd,
-                           s_dump_disp_frm_buf.u4_v_wd,
-                           s_dump_disp_frm_buf.u4_v_ht,
-                           au1_v_chksum);
-
             fwrite(au1_y_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
-            fwrite(au1_u_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
-            fwrite(au1_v_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
+
+            if(ps_app_ctx->e_output_chroma_format != IV_GRAY)
+            {
+                UWORD8 au1_u_chksum[16];
+                UWORD8 au1_v_chksum[16];
+                calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_u_buf,
+                               s_dump_disp_frm_buf.u4_u_strd,
+                               s_dump_disp_frm_buf.u4_u_wd,
+                               s_dump_disp_frm_buf.u4_u_ht,
+                               au1_u_chksum);
+                calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_v_buf,
+                               s_dump_disp_frm_buf.u4_v_strd,
+                               s_dump_disp_frm_buf.u4_v_wd,
+                               s_dump_disp_frm_buf.u4_v_ht,
+                               au1_v_chksum);
+                fwrite(au1_u_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
+                fwrite(au1_v_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
+            }
         }
 #endif
     }
@@ -1066,38 +1075,6 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             }
         }
 #endif
-    }
-    else if(ps_app_ctx->e_output_chroma_format == IV_GRAY)
-    {
-        UWORD8 *buf;
-        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd, ps_op_file);
-            buf += s_dump_disp_frm_buf.u4_y_strd;
-        }
-    }
-    else if(ps_app_ctx->e_output_chroma_format == IV_YUV_444P)
-    {
-        UWORD32 i;
-        UWORD8 *buf_y = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf_y, 1, s_dump_disp_frm_buf.u4_y_wd, ps_op_file);
-            buf_y += s_dump_disp_frm_buf.u4_y_strd;
-        }
-        UWORD8 *buf_u = (UWORD8 *)s_dump_disp_frm_buf.pv_u_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
-        {
-            fwrite(buf_u, 1, s_dump_disp_frm_buf.u4_u_wd, ps_op_file);
-            buf_u += s_dump_disp_frm_buf.u4_u_strd;
-        }
-        UWORD8 *buf_v = (UWORD8 *)s_dump_disp_frm_buf.pv_v_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_v_ht; i++)
-        {
-            fwrite(buf_v, 1, s_dump_disp_frm_buf.u4_v_wd, ps_op_file);
-            buf_v += s_dump_disp_frm_buf.u4_v_strd;
-        }
     }
 
     fflush(ps_op_file);
@@ -1262,6 +1239,8 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_VU;
             else if((strcmp(value, "GRAY")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_GRAY;
+            else if((strcmp(value, "YUV_422P")) == 0)
+                ps_app_ctx->e_output_chroma_format = IV_YUV_422P;
             else
             {
                 printf("\nInvalid colour format setting it to IV_YUV_420P\n");
@@ -2436,6 +2415,13 @@ int main(WORD32 argc, CHAR *argv[])
                     s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
                     s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
+                    break;
+                }
+                case IV_YUV_422P:
+                {
+                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
                     break;
                 }
                 case IV_YUV_444P:

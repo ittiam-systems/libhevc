@@ -233,7 +233,9 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                             && (ps_ip->s_ivd_create_ip_t.e_output_format
                                             != IV_GRAY)
                             && (ps_ip->s_ivd_create_ip_t.e_output_format
-                                            != IV_YUV_444P))
+                                            != IV_YUV_444P)
+                            && (ps_ip->s_ivd_create_ip_t.e_output_format
+                                             != IV_YUV_422P))
             {
                 ps_op->s_ivd_create_op_t.u4_error_code |= 1
                                 << IVD_UNSUPPORTEDPARAM;
@@ -1437,7 +1439,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
         size =  inter_pred_tmp_buf_size * 2;
 #ifdef ENABLE_MAIN_REXT_PROFILE
-        size += (res_buf_size * 2);
+        size += (res_buf_size * 4);
 #endif
         size += pic_pu_idx_map_size;
         size *= MAX_PROCESS_THREADS;
@@ -1460,6 +1462,9 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
             ps_codec->as_process[i].pi2_res_chroma_buf = (WORD16 *)pu1_buf;
             pu1_buf += res_buf_size;
+
+            ps_codec->as_process[i].pi2_invscan_out_subtu = (WORD16 *)pu1_buf;
+            pu1_buf += (res_buf_size * 2);
 #endif
 
             /* Inverse transform intermediate and inverse scan output buffers reuse inter pred scratch buffers */
@@ -2640,6 +2645,8 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420;
     else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_444;
+    else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
+        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422;
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420SP;
@@ -2728,6 +2735,12 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_out_buf_size[1] = 0;
         ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
+    else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
+    {
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
+        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) >> 1;
+    }
     ps_ctl_op->u4_pic_ht = ht;
     ps_ctl_op->u4_pic_wd = wd;
     ps_ctl_op->u4_frame_rate = 30000;
@@ -2792,6 +2805,8 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420;
     else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_444;
+    else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
+        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422;
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_420SP;
@@ -2907,6 +2922,12 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] =
                         ps_ctl_op->u4_min_out_buf_size[2] = 0;
+    }
+    else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
+    {
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
+        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) >> 1;
     }
     ps_codec->i4_num_disp_bufs = ps_ctl_op->u4_num_disp_bufs;
 
