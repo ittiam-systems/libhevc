@@ -18,6 +18,7 @@ list(
   "${HEVC_ROOT}/common/ihevc_trans_tables.c"
   "${HEVC_ROOT}/common/ihevc_recon.c"
   "${HEVC_ROOT}/common/ihevc_itrans.c"
+  "${HEVC_ROOT}/common/ihevc_itrans_res.c"
   "${HEVC_ROOT}/common/ihevc_itrans_recon.c"
   "${HEVC_ROOT}/common/ihevc_iquant_recon.c"
   "${HEVC_ROOT}/common/ihevc_iquant_itrans_recon.c"

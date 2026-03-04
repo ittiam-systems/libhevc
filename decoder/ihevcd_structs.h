@@ -1590,6 +1590,14 @@ typedef void (*pf_intra_pred)(UWORD8 *pu1_ref,
                               WORD32 nt,
                               WORD32 mode);
 
+typedef void (*pf_itrans_res)(WORD16 *pi2_src,
+                              WORD16 *pi2_tmp,
+                              WORD16 *pi2_dst,
+                              WORD32 i4_src_strd,
+                              WORD32 i4_dst_strd,
+                              WORD32 zero_cols,
+                              WORD32 zero_rows);
+
 typedef void (*pf_itrans_recon)(WORD16 *pi2_src,
                                 WORD16 *pi2_tmp,
                                 UWORD8 *pu1_pred,
@@ -1614,6 +1622,11 @@ typedef void (*pf_itrans_recon_dc)(UWORD8 *pu1_pred,
                                    WORD32 dst_strd,
                                    WORD32 log2_trans_size,
                                    WORD16 i2_coeff_value);
+
+typedef void (*pf_itrans_res_dc)(WORD16 *pi2_dst,
+                                 WORD32 dst_strd,
+                                 WORD32 log2_trans_size,
+                                 WORD16 i2_coeff_value);
 
 
 typedef void (*pf_sao_luma)(UWORD8 *,
@@ -2217,6 +2230,9 @@ struct _codec_t
     /**  Funtion pointers for inter_pred_chroma leaf level functions */
     pf_intra_pred apf_intra_pred_chroma[11];
 
+    /** Funtion pointers for itrans leaf level functions */
+    pf_itrans_res apf_itrans_res[5];
+
     /**  Funtion pointers for itrans_recon leaf level functions */
     pf_itrans_recon apf_itrans_recon[9];
 
@@ -2225,6 +2241,9 @@ struct _codec_t
 
     /**  Funtion pointers for itrans_recon_dc leaf level functions */
     pf_itrans_recon_dc apf_itrans_recon_dc[2];
+
+    /**  Funtion pointers for itrans dc leaf level functions */
+    pf_itrans_res_dc apf_itrans_res_dc;
 
     /**  Funtion pointers for sao_luma leaf level functions */
     pf_sao_luma apf_sao_luma[4];
