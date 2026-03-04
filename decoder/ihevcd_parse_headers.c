@@ -2096,6 +2096,23 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return (IHEVCD_ERROR_T)IVD_STREAM_WIDTH_HEIGHT_NOT_SUPPORTED;
     }
 
+    // limit format conversions
+    if(ps_codec->e_chroma_fmt == IV_YUV_444P
+                    && ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV444)
+    {
+        return (IHEVCD_ERROR_T)IVD_INIT_DEC_COL_FMT_NOT_SUPPORTED;
+    }
+    if(ps_codec->e_chroma_fmt == IV_YUV_422P
+                    && ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV422)
+    {
+        return (IHEVCD_ERROR_T)IVD_INIT_DEC_COL_FMT_NOT_SUPPORTED;
+    }
+    if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV || ps_codec->e_chroma_fmt == IV_YUV_420SP_VU)
+                    && ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV420)
+    {
+        return (IHEVCD_ERROR_T)IVD_INIT_DEC_COL_FMT_NOT_SUPPORTED;
+    }
+
     /* Update display width and display height */
     {
         WORD32 disp_wd, disp_ht;

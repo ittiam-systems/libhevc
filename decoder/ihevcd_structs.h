@@ -751,11 +751,17 @@ typedef struct
      * Cb CBF
      */
     UWORD8 ai1_cbf_cb[MAX_TRAFO_DEPTH];
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    UWORD8 ai1_cbf_cb_subtu[MAX_TRAFO_DEPTH];
+#endif
 
     /**
      * Cr CBF
      */
     UWORD8 ai1_cbf_cr[MAX_TRAFO_DEPTH];
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    UWORD8 ai1_cbf_cr_subtu[MAX_TRAFO_DEPTH];
+#endif
 
     /**
      * Intra split flag
@@ -1476,6 +1482,9 @@ typedef struct
 
     /** Buffer to hold output of inverse scan */
     WORD16 *pi2_invscan_out;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    WORD16 *pi2_invscan_out_subtu;
+#endif
 
     /**
      *  Top availability for current CTB level
