@@ -1420,6 +1420,28 @@ typedef struct
      */
     UWORD32    b3_chroma_intra_mode_idx    : 3;
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    /**
+     *  Cb CCP alpha magnitude
+     */
+    UWORD32    b3_cb_log2_res_scale_abs_plus1    : 3;
+
+    /**
+     *  Cb CCP alpha sign
+     */
+    UWORD32    b1_cb_log2_res_sign          : 1;
+
+    /**
+     *  Cr CCP alpha magnitude
+     */
+    UWORD32    b3_cr_log2_res_scale_abs_plus1    : 3;
+
+    /**
+     *  Cr CCP alpha sign
+     */
+    UWORD32    b1_cr_log2_res_sign          : 1;
+#endif
+
 }tu_t;
 
 /**

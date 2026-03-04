@@ -286,6 +286,12 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             ps_tu->b1_transquant_bypass = ps_codec->s_parse.s_cu.i4_cu_transquant_bypass;
             ps_tu->b3_size = (log2_trafo_size - 2);
             ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b3_cb_log2_res_scale_abs_plus1 = 0;
+            ps_tu->b1_cb_log2_res_sign = 0;
+            ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
+            ps_tu->b1_cr_log2_res_sign = 0;
+#endif
 
             ps_tu->b6_luma_intra_mode = intra_pred_mode;
             ps_tu->b3_chroma_intra_mode_idx = chroma_intra_pred_mode_idx;
@@ -369,12 +375,55 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                     WORD32 trafo_offset = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 0 : 1);
                     WORD32 log2_trafo_size_c = MAX(2, log2_trafo_size - trafo_offset);
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_pps->i1_cross_component_prediction_enabled_flag
+                                    && ps_codec->s_parse.s_cu.i1_cbf_luma
+                                    && (ps_codec->s_parse.s_cu.i4_pred_mode == PRED_MODE_INTER
+                                                    || chroma_intra_pred_mode_idx == 4))
+                    {
+                        ctxt_idx = IHEVC_CAB_CCP_LOG2_RES_ABS;
+                        TRACE_CABAC_CTXT("log2_res_scale_abs_plus1", ps_cabac->u4_range, ctxt_idx);
+                        value = ihevcd_cabac_decode_bins_tunary(ps_cabac, ps_bitstrm, 4, ctxt_idx,
+                                                                0, 3);
+                        AEV_TRACE("log2_res_scale_abs_plus1", value, ps_cabac->u4_range);
+
+                        if(value != 0)
+                        {
+                            ctxt_idx = IHEVC_CAB_CCP_RES_SIGN_FLAG;
+                            TRACE_CABAC_CTXT("res_scale_sign_flag", ps_cabac->u4_range, ctxt_idx);
+                            ps_tu->b1_cb_log2_res_sign = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                            AEV_TRACE("res_scale_sign_flag", value, ps_cabac->u4_range);
+                            ps_tu->b3_cb_log2_res_scale_abs_plus1 = value;
+                        }
+                    }
+#endif
                     if(ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth])
                     {
                         ps_tu->b1_cb_cbf = 1;
                         ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size_c, 1, intra_pred_mode_chroma);
                     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_pps->i1_cross_component_prediction_enabled_flag
+                                    && ps_codec->s_parse.s_cu.i1_cbf_luma
+                                    && (ps_codec->s_parse.s_cu.i4_pred_mode == PRED_MODE_INTER
+                                                    || chroma_intra_pred_mode_idx == 4))
+                    {
+                        ctxt_idx = IHEVC_CAB_CCP_LOG2_RES_ABS + 4;
+                        TRACE_CABAC_CTXT("log2_res_scale_abs_plus1", ps_cabac->u4_range, ctxt_idx);
+                        value = ihevcd_cabac_decode_bins_tunary(ps_cabac, ps_bitstrm, 4, ctxt_idx,
+                                                                0, 3);
+                        AEV_TRACE("log2_res_scale_abs_plus1", value, ps_cabac->u4_range);
 
+                        if(value != 0)
+                        {
+                            ctxt_idx = IHEVC_CAB_CCP_RES_SIGN_FLAG + 1;
+                            TRACE_CABAC_CTXT("res_scale_sign_flag", ps_cabac->u4_range, ctxt_idx);
+                            ps_tu->b1_cr_log2_res_sign = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                            AEV_TRACE("res_scale_sign_flag", value, ps_cabac->u4_range);
+                            ps_tu->b3_cr_log2_res_scale_abs_plus1 = value;
+                        }
+                    }
+#endif
                     if(ps_codec->s_parse.s_cu.ai1_cbf_cr[trafo_depth])
                     {
                         ps_tu->b1_cr_cbf = 1;
@@ -1052,6 +1101,12 @@ IHEVCD_ERROR_T ihevcd_parse_coding_unit_intra(codec_t *ps_codec,
         ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
         ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
         ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b3_cb_log2_res_scale_abs_plus1 = 0;
+        ps_tu->b1_cb_log2_res_sign = 0;
+        ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
+        ps_tu->b1_cr_log2_res_sign = 0;
+#endif
 
         /* Set the first TU in CU flag */
         {
@@ -1393,6 +1448,12 @@ IHEVCD_ERROR_T  ihevcd_parse_coding_unit(codec_t *ps_codec,
         ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
         ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
         ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_tu->b3_cb_log2_res_scale_abs_plus1 = 0;
+        ps_tu->b1_cb_log2_res_sign = 0;
+        ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
+        ps_tu->b1_cr_log2_res_sign = 0;
+#endif
 
         /* Set the first TU in CU flag */
         {
@@ -1688,6 +1749,12 @@ IHEVCD_ERROR_T  ihevcd_parse_coding_unit(codec_t *ps_codec,
                 ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
                 ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
                 ps_tu->b6_luma_intra_mode   = ps_codec->s_parse.s_cu.ai4_intra_luma_pred_mode[0];
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                ps_tu->b3_cb_log2_res_scale_abs_plus1 = 0;
+                ps_tu->b1_cb_log2_res_sign = 0;
+                ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
+                ps_tu->b1_cr_log2_res_sign = 0;
+#endif
 
                 /* Set the first TU in CU flag */
                 {
@@ -2316,6 +2383,12 @@ void ihevcd_set_ctb_skip(codec_t *ps_codec)
             ps_tu->b7_qp = ps_codec->s_parse.u4_qp;
             ps_tu->b3_chroma_intra_mode_idx = INTRA_PRED_CHROMA_IDX_NONE;
             ps_tu->b6_luma_intra_mode   = INTRA_PRED_NONE;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+            ps_tu->b3_cb_log2_res_scale_abs_plus1 = 0;
+            ps_tu->b1_cb_log2_res_sign = 0;
+            ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
+            ps_tu->b1_cr_log2_res_sign = 0;
+#endif
             ps_tu->b1_first_tu_in_cu = 1;
 
             ps_codec->s_parse.ps_tu++;
