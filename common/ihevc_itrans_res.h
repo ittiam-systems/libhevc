@@ -79,6 +79,19 @@ typedef void ihevc_itrans_res_32x32_ft(WORD16 *pi2_src,
                                        WORD32 zero_cols,
                                        WORD32 zero_rows);
 
+typedef void ihevc_res_4x4_transform(WORD16 *pi2_src,
+                                     WORD16 *pi2_dst,
+                                     WORD32 src_strd,
+                                     WORD32 dst_strd,
+                                     WORD32 zero_cols);
+
+typedef void ihevc_res_nxn_transform(WORD16 *pi2_src,
+                                     WORD16 *pi2_dst,
+                                     WORD32 src_strd,
+                                     WORD32 dst_strd,
+                                     WORD32 trans_size,
+                                     WORD32 zero_cols);
+
 /* C function declarations */
 ihevc_itrans_res_4x4_ttype1_ft ihevc_itrans_res_4x4_ttype1;
 ihevc_itrans_res_4x4_ft ihevc_itrans_res_4x4;
@@ -86,5 +99,8 @@ ihevcd_itrans_res_dc_ft ihevcd_itrans_res_dc;
 ihevc_itrans_res_8x8_ft ihevc_itrans_res_8x8;
 ihevc_itrans_res_16x16_ft ihevc_itrans_res_16x16;
 ihevc_itrans_res_32x32_ft ihevc_itrans_res_32x32;
+
+ihevc_res_4x4_transform ihevc_res_4x4_rotate;
+ihevc_res_nxn_transform ihevc_res_nxn_copy;
 
 #endif /*_IHEVC_ITRANS_RES_H_*/

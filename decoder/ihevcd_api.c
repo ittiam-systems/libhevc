@@ -1414,6 +1414,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
     {
         WORD32 inter_pred_tmp_buf_size, ntaps_luma;
+        WORD32 res_buf_size;
         WORD32 pic_pu_idx_map_size;
 
         /* Max inter pred size */
@@ -1423,11 +1424,15 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
         inter_pred_tmp_buf_size = ALIGN64(inter_pred_tmp_buf_size);
 
+        res_buf_size = sizeof(WORD16) * (MAX_TU_SIZE * MAX_TU_SIZE);
+        res_buf_size = ALIGN64(res_buf_size);
+
         /* To hold pu_index w.r.t. frame level pu_t array for a CTB */
         pic_pu_idx_map_size = sizeof(WORD32) * (18 * 18);
         pic_pu_idx_map_size = ALIGN64(pic_pu_idx_map_size);
 
         size =  inter_pred_tmp_buf_size * 2;
+        size += (res_buf_size * 3);
         size += pic_pu_idx_map_size;
         size *= MAX_PROCESS_THREADS;
 
@@ -1442,6 +1447,12 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
 
             ps_codec->as_process[i].pi2_inter_pred_tmp_buf2 = (WORD16 *)pu1_buf;
             pu1_buf += inter_pred_tmp_buf_size;
+
+            ps_codec->as_process[i].pi2_res_luma_buf = (WORD16 *)pu1_buf;
+            pu1_buf += res_buf_size;
+
+            ps_codec->as_process[i].pi2_res_chroma_buf = (WORD16 *)pu1_buf;
+            pu1_buf += (res_buf_size * 2);
 
             /* Inverse transform intermediate and inverse scan output buffers reuse inter pred scratch buffers */
             ps_codec->as_process[i].pi2_itrans_intrmd_buf =

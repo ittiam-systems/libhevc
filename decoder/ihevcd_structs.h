@@ -1465,6 +1465,13 @@ typedef struct
     /** Intermediate buffer to be used during inverse transform */
     WORD16 *pi2_itrans_intrmd_buf;
 
+    /**
+     * residue buffer to be store output of inverse transform.
+     * Only used for frext tool sets
+     */
+    WORD16 *pi2_res_luma_buf;
+    WORD16 *pi2_res_chroma_buf;
+
     /** Buffer to hold output of inverse scan */
     WORD16 *pi2_invscan_out;
 

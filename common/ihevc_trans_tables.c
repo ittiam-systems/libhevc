@@ -877,6 +877,12 @@ const WORD16 g_ai2_ihevc_trans_intr_4[4][8] =
 
 const UWORD8 IHEVCE_CHROMA_SHUFFLEMASK_HBD[8] = { 0x00, 0x01, 0x04, 0x05,
     0x08, 0x09, 0x0C, 0x0D };
+
+const UWORD32 gau4_ihevcd_4_bit_reverse[] =
+{
+    0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
+};
+
 #ifndef DISABLE_AVX2
 const WORD32 g_ai4_ihevc_trans_8_intr_avx2[7][8] =
 { /* 4*32 = 128 bit */

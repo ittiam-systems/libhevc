@@ -80,8 +80,6 @@
 #include "ihevcd_statistics.h"
 #include "ihevcd_itrans_recon_dc.h"
 
-static const UWORD32 gau4_ihevcd_4_bit_reverse[] = { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
-
 
 /* Globals */
 static const WORD32 g_i4_ip_funcs[MAX_NUM_IP_MODES] =
@@ -198,6 +196,14 @@ typedef struct
 /*****************************************************************************/
 /* Function Prototypes                                                       */
 /*****************************************************************************/
+typedef void (*PF_IQITRECON_PLANE)(process_ctxt_t *ps_proc,
+                                   tu_t *ps_tu,
+                                   tu_plane_iq_it_recon_ctxt_t *ps_pl_tu_ctxt,
+                                   WORD32 func_idx,
+                                   WORD32 log2_trans_size,
+                                   CHROMA_PLANE_ID_T chroma_plane,
+                                   WORD8 intra_flag);
+
 /* Returns number of ai2_level read from ps_sblk_coeff */
 UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
                              WORD32 log2_trans_size,
@@ -595,7 +601,8 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
                                                 tu_plane_iq_it_recon_ctxt_t *ps_pl_tu_ctxt,
                                                 WORD32 func_idx,
                                                 WORD32 log2_trans_size,
-                                                CHROMA_PLANE_ID_T chroma_plane)
+                                                CHROMA_PLANE_ID_T chroma_plane,
+                                                WORD8 intra_flag)
 {
     sps_t *ps_sps = ps_proc->ps_sps;
     pps_t *ps_pps = ps_proc->ps_pps;
@@ -637,6 +644,86 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
     }
 }
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
+                                                     tu_t *ps_tu,
+                                                     tu_plane_iq_it_recon_ctxt_t *ps_pl_tu_ctxt,
+                                                     WORD32 func_idx,
+                                                     WORD32 log2_trans_size,
+                                                     CHROMA_PLANE_ID_T chroma_plane,
+                                                     WORD8 intra_flag)
+{
+    sps_t *ps_sps = ps_proc->ps_sps;
+    pps_t *ps_pps = ps_proc->ps_pps;
+    codec_t *ps_codec = ps_proc->ps_codec;
+    WORD8 trans_size = 1 << log2_trans_size;
+    WORD16 *pi2_res = ps_proc->pi2_res_luma_buf;
+    WORD16 *pi2_res_uv = ps_proc->pi2_res_chroma_buf + chroma_plane;
+    WORD16 *residue = chroma_plane == NULL_PLANE ? pi2_res : pi2_res_uv;
+    WORD32 residue_row_strd = chroma_plane == NULL_PLANE ? trans_size : (trans_size * 2);
+
+    if(1 == ps_pl_tu_ctxt->cbf)
+    {
+        if(ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag)
+        {
+            if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
+            {
+                ihevc_res_4x4_rotate(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
+                                     ps_pl_tu_ctxt->tu_coeff_stride, residue_row_strd,
+                                     ps_pl_tu_ctxt->zero_cols);
+            }
+            else
+            {
+                ihevc_res_nxn_copy(ps_pl_tu_ctxt->pi2_tu_coeff, residue,
+                                   ps_pl_tu_ctxt->tu_coeff_stride, residue_row_strd, trans_size,
+                                   ps_pl_tu_ctxt->zero_cols);
+            }
+        }
+        else
+        {
+            /* iQuant, iTrans */
+            if(0 == ps_pl_tu_ctxt->coeff_type)
+            {
+                WORD32 func_tmp_idx = chroma_plane != NULL_PLANE ? func_idx - 4 : func_idx;
+                ps_codec->apf_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
+                                                       ps_proc->pi2_itrans_intrmd_buf, residue,
+                                                       ps_pl_tu_ctxt->tu_coeff_stride,
+                                                       residue_row_strd, ps_pl_tu_ctxt->zero_cols,
+                                                       ps_pl_tu_ctxt->zero_rows);
+            }
+            else /* DC only */
+            {
+                ps_codec->apf_itrans_res_dc(residue, residue_row_strd, log2_trans_size,
+                                            ps_pl_tu_ctxt->coeff_value);
+            }
+        }
+        ps_codec->apf_recon[func_idx](residue, ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
+                                      residue_row_strd, ps_pl_tu_ctxt->pred_strd,
+                                      ps_pl_tu_ctxt->dst_strd, 0);
+    }
+}
+
+PF_IQITRECON_PLANE get_iqitrec_func(process_ctxt_t *ps_proc,
+                                    tu_t *ps_tu,
+                                    tu_plane_iq_it_recon_ctxt_t *ps_pl_tu_ctxt,
+                                    WORD32 log2_trans_size,
+                                    CHROMA_PLANE_ID_T chroma_plane,
+                                    WORD8 intra_flag)
+{
+    sps_t *ps_sps = ps_proc->ps_sps;
+    pps_t *ps_pps = ps_proc->ps_pps;
+    WORD8 trans_size = 1 << log2_trans_size;
+
+    if(1 == ps_pl_tu_ctxt->cbf
+                    && (ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag))
+    {
+        if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
+            return ihevcd_iquant_itrans_resi_recon_tu_plane;
+    }
+    return ihevcd_iquant_itrans_recon_tu_plane;
+}
+#endif
+
 WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 {
     WORD16 *pi2_scaling_mat;
@@ -667,6 +754,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     UWORD8 *pu1_pic_intra_flag;
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
+    PF_IQITRECON_PLANE iqitrecon_fptr = ihevcd_iquant_itrans_recon_tu_plane;
 
     /*************************************************************************/
     /* Contanis scaling matrix offset in the following order in a 1D buffer  */
@@ -1232,15 +1320,23 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 /* Updating number of transform types */
                 STATS_UPDATE_ALL_TRANS(e_trans_type, c_idx);
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                iqitrecon_fptr = get_iqitrec_func(
+                                ps_proc, ps_tu, &y_cb_tu, log2_trans_size,
+                                c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag);
+#endif
                 /* IQ, IT and Recon for Y if c_idx == 0, and U if c_idx !=0 */
-                ihevcd_iquant_itrans_recon_tu_plane(ps_proc, ps_tu, &y_cb_tu, func_idx,
-                                                    log2_trans_size,
-                                                    c_idx != 0 ? U_PLANE : NULL_PLANE);
+                iqitrecon_fptr(ps_proc, ps_tu, &y_cb_tu, func_idx, log2_trans_size,
+                               c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag);
                 /* IQ, IT and Recon for V */
                 if(c_idx != 0)
                 {
-                    ihevcd_iquant_itrans_recon_tu_plane(ps_proc, ps_tu, &cr_tu, func_idx,
-                                                        log2_trans_size, V_PLANE);
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    iqitrecon_fptr = get_iqitrec_func(ps_proc, ps_tu, &cr_tu, log2_trans_size,
+                                                      V_PLANE, intra_flag);
+#endif
+                    iqitrecon_fptr(ps_proc, ps_tu, &cr_tu, func_idx, log2_trans_size, V_PLANE,
+                                   intra_flag);
                 }
             }
 
