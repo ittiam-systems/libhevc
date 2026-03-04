@@ -388,3 +388,75 @@ void ihevc_chroma_recon_32x32(WORD16 *pi2_src,
         zero_cols = zero_cols >> 1;
     }
 }
+
+/**
+ ******************************************************************************
+ *
+ * @brief Constructs chroma recon with Cross Component Prediction (CCP)
+ *
+ * @par   Description
+ * This routine uses reconstructed luma residual samples to predict chroma
+ * residual samples as per HEVC Specification Section 8.6.6. It scales the
+ * luma residual by a signaled alpha value and adds it to the chroma residual
+ * prior to final reconstruction.
+ *
+ * @param[in]   pi2_luma_res
+ * pointer to the luma residual
+ *
+ * @param[in] pi2_chroma_res
+ * pointer to the chroma residual
+ *
+ * @param[in] pu1_pred
+ * prediction block
+ *
+ * @param[in] pu1_dst
+ * destination block
+ *
+ * @param[in]   alpha
+ * scaling factor for the luma residual
+ *
+ * @param[in]   trans_size
+ * transform size
+ *
+ * @param[in]   luma_res_stride
+ * stride of the luma residual buffer
+ *
+ * @param[in]   chroma_res_stride
+ * stride of the chroma residual buffer
+ *
+ * @param[in] pred_strd
+ *  Prediction stride
+ *
+ * @param[in] dst_strd
+ *  Output Stride
+ *
+ * @return      success or failure error code
+ *
+ ******************************************************************************
+ */
+void ihevc_chroma_recon_nxn_ccp(WORD16 *pi2_luma_res,
+                                WORD16 *pi2_chroma_res,
+                                UWORD8 *pu1_pred,
+                                UWORD8 *pu1_dst,
+                                WORD32 alpha,
+                                WORD32 trans_size,
+                                WORD32 luma_res_stride,
+                                WORD32 chroma_res_stride,
+                                WORD32 pred_stride,
+                                WORD32 dst_stride)
+{
+    WORD32 i, j;
+
+    for(i = 0; i < trans_size; i++)
+    {
+        for(j = 0; j < trans_size; j++)
+        {
+            WORD32 res = (alpha * pi2_luma_res[j]) >> 3;
+            pu1_dst[j * 2] = CLIP_U8(pu1_pred[j * 2] + (pi2_chroma_res[j] + res));
+        }
+        pi2_luma_res += luma_res_stride;
+        pi2_chroma_res += chroma_res_stride;
+        pu1_dst += dst_stride;
+        pu1_pred += pred_stride;
+    }
+}

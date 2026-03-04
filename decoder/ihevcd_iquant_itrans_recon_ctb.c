@@ -659,9 +659,20 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     WORD8 trans_size = 1 << log2_trans_size;
     WORD16 *pi2_res = ps_proc->pi2_res_luma_buf;
     WORD16 *pi2_res_uv = ps_proc->pi2_res_chroma_buf + chroma_plane;
+    WORD32 alpha = 0;
     WORD16 *residue = chroma_plane == NULL_PLANE ? pi2_res : pi2_res_uv;
     WORD32 residue_row_strd = chroma_plane == NULL_PLANE ? trans_size : (trans_size * 2);
 
+    if(chroma_plane == U_PLANE && ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0)
+    {
+        alpha = (1 << (ps_tu->b3_cb_log2_res_scale_abs_plus1 - 1))
+                        * (1 - 2 * ps_tu->b1_cb_log2_res_sign);
+    }
+    else if(chroma_plane == V_PLANE && ps_tu->b3_cr_log2_res_scale_abs_plus1 != 0)
+    {
+        alpha = (1 << (ps_tu->b3_cr_log2_res_scale_abs_plus1 - 1))
+                        * (1 - 2 * ps_tu->b1_cr_log2_res_sign);
+    }
     if(1 == ps_pl_tu_ctxt->cbf)
     {
         if(ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag)
@@ -697,9 +708,29 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
                                             ps_pl_tu_ctxt->coeff_value);
             }
         }
-        ps_codec->apf_recon[func_idx](residue, ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
-                                      residue_row_strd, ps_pl_tu_ctxt->pred_strd,
-                                      ps_pl_tu_ctxt->dst_strd, 0);
+        if(!alpha)
+        {
+            ps_codec->apf_recon[func_idx](residue, ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
+                                          residue_row_strd, ps_pl_tu_ctxt->pred_strd,
+                                          ps_pl_tu_ctxt->dst_strd, 0);
+        }
+    }
+    if(alpha)
+    {
+        if(0 == ps_pl_tu_ctxt->cbf)
+        {
+            for(WORD32 j = 0; j < trans_size; j++)
+            {
+                for(WORD32 i = 0; i < trans_size; i++)
+                {
+                    residue[j * residue_row_strd + i] = 0;
+                }
+            }
+        }
+        ihevc_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, ps_pl_tu_ctxt->pu1_pred,
+                                   ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
+                                   trans_size * 2, ps_pl_tu_ctxt->pred_strd,
+                                   ps_pl_tu_ctxt->dst_strd);
     }
 }
 
@@ -718,6 +749,15 @@ PF_IQITRECON_PLANE get_iqitrec_func(process_ctxt_t *ps_proc,
                     && (ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag))
     {
         if(ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4 && intra_flag)
+            return ihevcd_iquant_itrans_resi_recon_tu_plane;
+    }
+    if(ps_pps->i1_cross_component_prediction_enabled_flag)
+    {
+        if((chroma_plane == NULL_PLANE
+                        && (ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0
+                                        || ps_tu->b3_cr_log2_res_scale_abs_plus1 != 0))
+                        || (chroma_plane == V_PLANE && ps_tu->b3_cr_log2_res_scale_abs_plus1 != 0)
+                        || (chroma_plane == U_PLANE && ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0))
             return ihevcd_iquant_itrans_resi_recon_tu_plane;
     }
     return ihevcd_iquant_itrans_recon_tu_plane;
