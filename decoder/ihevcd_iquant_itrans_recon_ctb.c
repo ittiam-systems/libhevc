@@ -190,6 +190,18 @@ typedef struct
      */
     UWORD8 transform_skip_flag;
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    /**
+     * is explicit rdpcm enabled
+     */
+    UWORD8 explicit_rdpcm_flag;
+
+    /**
+     * explicit rdpcm dir
+     */
+    UWORD8 explicit_rdpcm_dir;
+#endif
+
 } tu_plane_iq_it_recon_ctxt_t;
 
 
@@ -248,7 +260,11 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
     u1_scan_type = *pu1_tu_coeff_data++;
     /* 0th bit has trans_skip */
     trans_skip = u1_scan_type & 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    u1_scan_type = (u1_scan_type & 0xF) >> 1;
+#else
     u1_scan_type >>= 1;
+#endif
 
     pi2_sblk_ptr = pi2_tu_coeff;
 
@@ -685,8 +701,9 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
         {
             WORD8 rotate = ps_sps->i1_transform_skip_rotation_enabled_flag && trans_size == 4
                             && intra_flag;
-            WORD8 rdpcm = ps_sps->i1_implicit_rdpcm_enabled_flag && intra_flag
-                            && (intra_pred_mode == 10 || intra_pred_mode == 26);
+            WORD8 rdpcm = (ps_sps->i1_implicit_rdpcm_enabled_flag && intra_flag
+                            && (intra_pred_mode == 10 || intra_pred_mode == 26))
+                            || ps_pl_tu_ctxt->explicit_rdpcm_flag;
             WORD16 *src_residue = ps_pl_tu_ctxt->pi2_tu_coeff;
             WORD16 src_residue_strd = ps_pl_tu_ctxt->tu_coeff_stride;
 
@@ -702,7 +719,11 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
 
             if(rdpcm)
             {
-                if(intra_pred_mode == 10)
+                WORD8 rdpcm_dir =
+                                ps_pl_tu_ctxt->explicit_rdpcm_flag ?
+                                                ps_pl_tu_ctxt->explicit_rdpcm_dir :
+                                                intra_pred_mode != 10;
+                if(rdpcm_dir == 0)
                 {
                     ihevc_res_nxn_rdpcm_horz(src_residue, residue_out, src_residue_strd, trans_size,
                                              trans_size, ps_pl_tu_ctxt->zero_cols);
@@ -779,6 +800,8 @@ PF_IQITRECON_PLANE get_iqitrec_func(process_ctxt_t *ps_proc,
             return ihevcd_iquant_itrans_resi_recon_tu_plane;
         if(ps_sps->i1_implicit_rdpcm_enabled_flag && intra_flag
                         && (intra_pred_mode == 10 || intra_pred_mode == 26))
+            return ihevcd_iquant_itrans_resi_recon_tu_plane;
+        if(ps_pl_tu_ctxt->explicit_rdpcm_flag)
             return ihevcd_iquant_itrans_resi_recon_tu_plane;
     }
     if(ps_pps->i1_cross_component_prediction_enabled_flag)
@@ -1109,6 +1132,10 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     y_cb_tu.dst_strd = pic_strd;
                     y_cb_tu.cbf = ps_tu->b1_y_cbf;
                     y_cb_tu.transform_skip_flag = pu1_tu_coeff_data[1] & 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    y_cb_tu.explicit_rdpcm_flag = (pu1_tu_coeff_data[1] >> 4) & 1;
+                    y_cb_tu.explicit_rdpcm_dir = (pu1_tu_coeff_data[1] >> 5) & 1;
+#endif
                     /* Unpacking coeffs */
                     if(1 == y_cb_tu.cbf)
                     {
@@ -1214,6 +1241,10 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                     /* Unpacking coeffs */
                     y_cb_tu.transform_skip_flag = pu1_tu_coeff_data[1] & 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    y_cb_tu.explicit_rdpcm_flag = (pu1_tu_coeff_data[1] >> 4) & 1;
+                    y_cb_tu.explicit_rdpcm_dir = (pu1_tu_coeff_data[1] >> 5) & 1;
+#endif
                     if(1 == y_cb_tu.cbf)
                     {
                         pu1_tu_coeff_data = ihevcd_unpack_coeffs(
@@ -1235,6 +1266,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         cb_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cb_sub_tu.cbf = ps_tu->b1_cb_cbf_subtu1;
                         cb_sub_tu.transform_skip_flag = pu1_tu_coeff_data[1] & 1;
+                        cb_sub_tu.explicit_rdpcm_flag = (pu1_tu_coeff_data[1] >> 4) & 1;
+                        cb_sub_tu.explicit_rdpcm_dir = (pu1_tu_coeff_data[1] >> 5) & 1;
                         if(1 == cb_sub_tu.cbf)
                         {
                             pu1_tu_coeff_data = ihevcd_unpack_coeffs(
@@ -1249,6 +1282,10 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 #endif
 
                     cr_tu.transform_skip_flag = pu1_tu_coeff_data[1] & 1;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    cr_tu.explicit_rdpcm_flag = (pu1_tu_coeff_data[1] >> 4) & 1;
+                    cr_tu.explicit_rdpcm_dir = (pu1_tu_coeff_data[1] >> 5) & 1;
+#endif
                     if(1 == cr_tu.cbf)
                     {
                         pu1_tu_coeff_data = ihevcd_unpack_coeffs(
@@ -1269,6 +1306,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         cr_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cr_sub_tu.cbf = ps_tu->b1_cr_cbf_subtu1;
                         cr_sub_tu.transform_skip_flag = pu1_tu_coeff_data[1] & 1;
+                        cr_sub_tu.explicit_rdpcm_flag = (pu1_tu_coeff_data[1] >> 4) & 1;
+                        cr_sub_tu.explicit_rdpcm_dir = (pu1_tu_coeff_data[1] >> 5) & 1;
                         if(1 == cr_sub_tu.cbf)
                         {
                             pu1_tu_coeff_data = ihevcd_unpack_coeffs(

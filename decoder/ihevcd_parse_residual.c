@@ -185,6 +185,9 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 {
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     WORD32 transform_skip_flag;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    WORD32 explicit_rdpcm_flag, explicit_rdpcm_dir;
+#endif
     WORD32 value;
     pps_t *ps_pps;
     WORD32 last_scan_pos, last_sub_blk;
@@ -209,6 +212,10 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 
     sign_data_hiding_flag = ps_pps->i1_sign_data_hiding_flag;
     transform_skip_flag = 0;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    explicit_rdpcm_flag = 0;
+    explicit_rdpcm_dir = 0;
+#endif
     if(ps_pps->i1_transform_skip_enabled_flag &&
        !ps_codec->s_parse.s_cu.i4_cu_transquant_bypass &&
 #ifdef ENABLE_MAIN_REXT_PROFILE
@@ -235,6 +242,29 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         AEV_TRACE("transform_skip_flag", value, ps_cabac->u4_range);
         transform_skip_flag = value;
     }
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    if(PRED_MODE_INTER == ps_codec->s_parse.s_cu.i4_pred_mode
+                    && ps_codec->s_parse.ps_sps->i1_explicit_rdpcm_enabled_flag
+                    && (transform_skip_flag || ps_codec->s_parse.s_cu.i4_cu_transquant_bypass))
+
+    {
+        WORD32 ctxt_idx = IHEVC_CAB_EXPLICIT_RDPCM_FLAG + (c_idx != 0);
+        TRACE_CABAC_CTXT("explicit_rdpcm_flag", ps_cabac->u4_range, ctxt_idx);
+        value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+        AEV_TRACE("explicit_rdpcm_flag", value, ps_cabac->u4_range);
+        explicit_rdpcm_flag = value;
+
+        if(explicit_rdpcm_flag)
+        {
+            ctxt_idx = IHEVC_CAB_EXPLICIT_RDPCM_DIR + (c_idx != 0);
+            TRACE_CABAC_CTXT("explicit_rdpcm_dir_flag", ps_cabac->u4_range, ctxt_idx);
+            value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+            AEV_TRACE("explicit_rdpcm_dir_flag", value, ps_cabac->u4_range);
+            explicit_rdpcm_dir = value;
+        }
+    }
+#endif
 
     /* code the last_coeff_x_prefix as tunary binarized code */
     {
@@ -349,9 +379,15 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         /* This will be updated later */
         *pi1_num_coded_subblks = 0;
 
-        /* Second WORD8 gives (scan idx << 1) | trans_skip */
         pi1_scan_idx = pi1_buf++;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        /* Second WORD8 gives (explicit_rdpcm_dir << 5) | (explicit_rdpcm_flag << 4) | (scan idx << 1) | trans_skip */
+        *pi1_scan_idx = (explicit_rdpcm_dir << 5) | (explicit_rdpcm_flag << 4) | (scan_idx << 1)
+                        | transform_skip_flag;
+#else
+        /* Second WORD8 gives (scan idx << 1) | trans_skip */
         *pi1_scan_idx = (scan_idx << 1) | transform_skip_flag;
+#endif
 
         /* Store the incremented pointer in pv_tu_coeff_data */
         ps_codec->s_parse.pv_tu_coeff_data = pi1_buf;
@@ -746,6 +782,9 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         first_sig_scan_pos = CTZ(u4_sig_coeff_map);
 
         if(ps_codec->s_parse.s_cu.i4_cu_transquant_bypass
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                        || explicit_rdpcm_flag
+#endif
                         || (PRED_MODE_INTRA == ps_codec->s_parse.s_cu.i4_pred_mode
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                         && ps_codec->s_parse.ps_sps->i1_implicit_rdpcm_enabled_flag
