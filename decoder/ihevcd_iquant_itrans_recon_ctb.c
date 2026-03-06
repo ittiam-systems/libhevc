@@ -1419,10 +1419,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         {
                             u1_chroma_pred_mode = gau1_intra_pred_chroma_modes_422[u1_chroma_pred_mode];
                         }
-
-                        /* use the look up to get the function idx */
-                        chroma_pred_func_idx =
-                                        g_i4_ip_funcs[u1_chroma_pred_mode];
                         }
 
                         /* call the chroma reference array substitution */
@@ -1446,6 +1442,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                                             | ps_sps->i1_strong_intra_smoothing_enable_flag));
                         }
 #endif
+
+                        /* use the look up to get the function idx */
+                        chroma_pred_func_idx = g_i4_ip_funcs[u1_chroma_pred_mode];
 
                         /* call the intra prediction function */
                         ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](pu1_ref_sub_out, 1, pu1_pred_orig, ps_cb_tu->pred_strd, trans_size, u1_chroma_pred_mode);
