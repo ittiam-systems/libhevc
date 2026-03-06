@@ -79,7 +79,7 @@ cc_library_static {
         "common/ihevc_iquant_itrans_recon.c",
         "common/ihevc_iquant_recon.c",
         "common/ihevc_itrans.c",
-        "common/ihevc_itrans_resi.c",
+        "common/ihevc_itrans_res.c",
         "common/ihevc_itrans_recon.c",
         "common/ihevc_itrans_recon_16x16.c",
         "common/ihevc_itrans_recon_32x32.c",
