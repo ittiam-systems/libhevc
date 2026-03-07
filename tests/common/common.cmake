@@ -14,4 +14,9 @@ libhevc_add_gtest_executable(
   SOURCES ${HEVC_ROOT}/tests/common/ihevc_itrans_res_test.cc
 )
 
+libhevc_add_gtest_executable(
+  ihevc_itrans_recon_test
+  SOURCES ${HEVC_ROOT}/tests/common/ihevc_itrans_recon_test.cc
+)
+
 include(GoogleTest)
