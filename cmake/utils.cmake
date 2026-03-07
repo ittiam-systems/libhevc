@@ -130,3 +130,23 @@ function(libhevc_add_gtest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(googletest)
 endfunction()
+
+# cmake-format: off
+# Adds a target for a gtest executable
+#
+# Arguments:
+# NAME: Name of the executable
+#
+# Optional Arguments:
+# SOURCES: Additional source files
+# cmake-format: on
+function(libhevc_add_gtest_executable NAME)
+  set(multi_value_args SOURCES)
+  cmake_parse_arguments(ARG "" "" "${multi_value_args}" ${ARGN})
+
+  libhevc_add_executable(
+    ${NAME} libhevcdec
+    SOURCES ${HEVC_ROOT}/tests/common/func_selector.cc
+            ${HEVC_ROOT}/tests/common/tests_common.cc ${ARG_SOURCES}
+    LIBS GTest::gtest_main)
+endfunction()
