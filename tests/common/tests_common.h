@@ -45,8 +45,9 @@ extern const std::vector<IVD_ARCH_T> ga_tst_arch;
 
 // Compare outputs
 template <typename T>
-static void compare_output(const std::vector<T> &ref, const std::vector<T> &test,
-                    int wd, int ht, int dst_strd) {
+static void compare_output(const std::vector<T> &ref,
+                           const std::vector<T> &test, int wd, int ht,
+                           int dst_strd) {
   int size_bytes = wd * sizeof(T);
   for (int i = 0; i < ht; ++i) {
     int cmp = memcmp(ref.data() + i * dst_strd, test.data() + i * dst_strd,

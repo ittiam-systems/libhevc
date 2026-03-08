@@ -120,8 +120,7 @@ TEST_P(LumaIntraPredTest, Run) {
     GTEST_SKIP() << "SIMD implementation is not matching C implementation for "
                     "ihevc_intra_pred_luma_horz_fptr";
     RunTest(&func_selector_t::ihevc_intra_pred_luma_horz_fptr);
-  }
-  else if (mode >= 11 && mode <= 17)
+  } else if (mode >= 11 && mode <= 17)
     RunTest(&func_selector_t::ihevc_intra_pred_luma_mode_11_to_17_fptr);
   else if (mode == 18 || mode == 34)
     RunTest(&func_selector_t::ihevc_intra_pred_luma_mode_18_34_fptr);
@@ -131,8 +130,7 @@ TEST_P(LumaIntraPredTest, Run) {
     GTEST_SKIP() << "SIMD implementation is not matching C implementation for "
                     "ihevc_intra_pred_luma_ver_fptr";
     RunTest(&func_selector_t::ihevc_intra_pred_luma_ver_fptr);
-  }
-  else if (mode >= 27 && mode <= 33)
+  } else if (mode >= 27 && mode <= 33)
     RunTest(&func_selector_t::ihevc_intra_pred_luma_mode_27_to_33_fptr);
   else
     FAIL() << "Invalid mode: " << mode;
