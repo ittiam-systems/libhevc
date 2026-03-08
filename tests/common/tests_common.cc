@@ -83,18 +83,17 @@ std::string get_arch_str(IVD_ARCH_T arch) {
   return arch_str;
 }
 
-
 const std::vector<IVD_ARCH_T> ga_tst_arch = {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
     defined(_M_IX86)
-  ARCH_X86_SSSE3,
-  ARCH_X86_SSE42,
+    ARCH_X86_SSSE3,
+    ARCH_X86_SSE42,
 #ifndef DISABLE_AVX2
-  ARCH_X86_AVX2,
+    ARCH_X86_AVX2,
 #endif // DISABLE_AVX2
 #elif defined(__aarch64__)
-  ARCH_ARMV8_GENERIC,
+    ARCH_ARMV8_GENERIC,
 #elif defined(__arm__)
-  ARCH_ARM_A9Q,
+    ARCH_ARM_A9Q,
 #endif
 };
