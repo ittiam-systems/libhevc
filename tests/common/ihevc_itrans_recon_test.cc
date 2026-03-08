@@ -42,10 +42,6 @@ protected:
   }
 
   template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
-    if (ref_func_selector == nullptr || tst_func_selector == nullptr) {
-      GTEST_SKIP() << "Function selector not available";
-    }
-
     std::mt19937 rng(0);
     std::uniform_int_distribution<int16_t> coeff_dist(-32768, 32767);
     std::uniform_int_distribution<uint8_t> pixel_dist(0, 255);
