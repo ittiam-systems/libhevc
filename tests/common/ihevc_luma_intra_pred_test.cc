@@ -79,17 +79,8 @@ protected:
   }
 
   template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
-    if (ref && ref->*func_ptr) {
-      (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, mode);
-    } else {
-      GTEST_SKIP() << "Reference function not available";
-    }
-    if (tst && tst->*func_ptr) {
-      (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, mode);
-    } else {
-      GTEST_SKIP() << "Test function not available";
-    }
-
+    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, mode);
+    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, mode);
     ASSERT_NO_FATAL_FAILURE(
         compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
   }
