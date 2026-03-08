@@ -15,13 +15,15 @@
 
 namespace {
 
-// Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch
-using ITransReconTestParam = std::tuple<int, int, IVD_ARCH_T>;
+// Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch,
+// non_zero_rows, non_zero_cols (number of non-zero rows/columns)
+using ITransReconTestParam = std::tuple<int, int, IVD_ARCH_T, int, int>;
 
 class ITransReconTest : public ::testing::TestWithParam<ITransReconTestParam> {
 protected:
   void SetUp() override {
-    std::tie(trans_size, ttype, arch) = GetParam();
+    std::tie(trans_size, ttype, arch, num_non_zero_rows, num_non_zero_cols) =
+        GetParam();
 
     src_strd = trans_size;
     pred_strd = trans_size;
@@ -48,24 +50,36 @@ protected:
     std::uniform_int_distribution<int16_t> coeff_dist(-32768, 32767);
     std::uniform_int_distribution<uint8_t> pixel_dist(0, 255);
 
-    for (auto &v : pi2_src)
-      v = coeff_dist(rng);
-    for (auto &v : pu1_pred)
-      v = pixel_dist(rng);
-
-    WORD32 non_zero_cols = 0;
-    WORD32 non_zero_rows = 0;
+    // Populate pi2_src so that the requested number of rows and columns
+    // are potentially non-zero. Rows [0, non_zero_rows) and columns
+    // [0, non_zero_cols) form the non-zero region; everything else is zero.
+    std::fill(pi2_src.begin(), pi2_src.end(), 0);
     for (int i = 0; i < trans_size; i++) {
       for (int j = 0; j < trans_size; j++) {
-        if (pi2_src[i * src_strd + j] != 0) {
-          non_zero_rows |= (1 << i);
-          non_zero_cols |= (1 << j);
+        if (i < num_non_zero_rows && j < num_non_zero_cols) {
+          pi2_src[i * src_strd + j] = coeff_dist(rng);
         }
       }
     }
 
-    WORD32 zero_cols = ~non_zero_cols;
-    WORD32 zero_rows = ~non_zero_rows;
+    for (auto &v : pu1_pred)
+      v = pixel_dist(rng);
+
+    WORD32 non_zero_rows_mask = 0;
+    for (int i = 0; i < num_non_zero_rows && i < trans_size; i++) {
+      non_zero_rows_mask |= (1u << i);
+    }
+
+    WORD32 non_zero_cols_mask = 0;
+    for (int j = 0; j < num_non_zero_cols && j < trans_size; j++) {
+      non_zero_cols_mask |= (1u << j);
+    }
+
+    WORD32 mask = (trans_size == 32)
+                      ? 0xFFFFFFFFu
+                      : ((static_cast<WORD32>(1u) << trans_size) - 1u);
+    WORD32 zero_cols = (~non_zero_cols_mask) & mask;
+    WORD32 zero_rows = (~non_zero_rows_mask) & mask;
 
     (ref_func_selector->*func_ptr)(
         pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_ref.data(),
@@ -86,7 +100,8 @@ protected:
   WORD32 src_strd;
   WORD32 pred_strd;
   WORD32 dst_strd;
-
+  WORD32 num_non_zero_rows;
+  WORD32 num_non_zero_cols;
   std::vector<WORD16> pi2_src;
   std::vector<WORD16> pi2_tmp;
   std::vector<UWORD8> pu1_pred;
@@ -117,25 +132,49 @@ TEST_P(ITransReconTest, Run) {
 
 std::string PrintITransReconTestParam(
     const testing::TestParamInfo<ITransReconTestParam> &info) {
-  int trans_size, ttype;
+  WORD32 trans_size, ttype, non_zero_rows, non_zero_cols;
   IVD_ARCH_T arch;
-  std::tie(trans_size, ttype, arch) = info.param;
+  std::tie(trans_size, ttype, arch, non_zero_rows, non_zero_cols) = info.param;
   std::stringstream ss;
-  ss << "size_" << trans_size << "_ttype_" << ttype << "_"
-     << get_arch_str(arch);
+  ss << "size_" << trans_size << "_ttype_" << ttype << "_nzr_" << non_zero_rows
+     << "_nzc_" << non_zero_cols << "_" << get_arch_str(arch);
   return ss.str();
 }
 
-INSTANTIATE_TEST_SUITE_P(ITransRecon4x4, ITransReconTest,
-                         ::testing::Combine(::testing::Values(4),
-                                            ::testing::Values(0, 1),
-                                            ::testing::ValuesIn(ga_tst_arch)),
-                         PrintITransReconTestParam);
+std::vector<ITransReconTestParam> GenerateITransReconTestParams() {
+  std::vector<ITransReconTestParam> params;
+  const WORD32 nz_options[] = {1, 2, 4, 8, 16, 32};
+
+  auto add_params_for_size = [&](int size, const int *ttypes, int num_ttypes) {
+    for (int t = 0; t < num_ttypes; t++) {
+      int ttype = ttypes[t];
+      for (auto arch : ga_tst_arch) {
+        for (WORD32 nnzr : nz_options) {
+          if (nnzr > size)
+            continue;
+          for (WORD32 nnzc : nz_options) {
+            if (nnzc > size)
+              continue;
+            params.emplace_back(size, ttype, arch, nnzr, nnzc);
+          }
+        }
+      }
+    }
+  };
+
+  const int ttypes4[] = {0, 1};
+  const int ttypesOther[] = {0};
+
+  add_params_for_size(4, ttypes4, 2);
+  add_params_for_size(8, ttypesOther, 1);
+  add_params_for_size(16, ttypesOther, 1);
+  add_params_for_size(32, ttypesOther, 1);
+
+  return params;
+}
 
 INSTANTIATE_TEST_SUITE_P(ITransRecon, ITransReconTest,
-                         ::testing::Combine(::testing::Values(8, 16, 32),
-                                            ::testing::Values(0),
-                                            ::testing::ValuesIn(ga_tst_arch)),
+                         ::testing::ValuesIn(GenerateITransReconTestParams()),
                          PrintITransReconTestParam);
 
 } // namespace
