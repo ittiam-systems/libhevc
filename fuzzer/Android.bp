@@ -9,6 +9,10 @@ package {
 
 cc_fuzz {
     name: "hevc_dec_fuzzer",
+    //TODO: b/485868924
+    defaults: [
+        "no_bti",
+    ],
     host_supported: true,
     srcs: [
         "hevc_dec_fuzzer.cpp",
@@ -41,6 +45,10 @@ cc_fuzz {
 
 cc_fuzz {
     name: "hevc_enc_fuzzer",
+    //TODO: b/485868924
+    defaults: [
+        "no_bti",
+    ],
     host_supported: true,
     srcs: [
         "hevc_enc_fuzzer.cpp",
