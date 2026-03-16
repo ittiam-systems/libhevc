@@ -1996,7 +1996,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i1_use_high_precision_pred_wt = value;
 
         BITS_PARSE("persistent_rice_adaptation_enabled_flag", value, ps_bitstrm, 1);
-        ps_sps->i1_fast_rice_adaptation_enabled_flag = value;
+        ps_sps->i1_persistent_rice_adaptation_enabled_flag = value;
 
         BITS_PARSE("cabac_bypass_alignment_enabled_flag", value, ps_bitstrm, 1);
         ps_sps->i1_align_cabac_before_bypass = value;
@@ -2009,7 +2009,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                         || ps_sps->i1_explicit_rdpcm_enabled_flag
                         || ps_sps->i1_extended_precision_processing_flag
                         || ps_sps->i1_intra_smoothing_disabled_flag
-                        || ps_sps->i1_fast_rice_adaptation_enabled_flag
+                        || ps_sps->i1_persistent_rice_adaptation_enabled_flag
                         || ps_sps->i1_align_cabac_before_bypass)
         {
             return IHEVCD_INVALID_PARAMETER;
@@ -2019,11 +2019,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     {
         // main-rext 8-bit profiles require these fields to be off
         return IHEVCD_INVALID_PARAMETER;
-    }
-    if(ps_sps->i1_fast_rice_adaptation_enabled_flag)
-    {
-        // TODO: decoder does not yet supports these tool-sets
-        return IHEVCD_UNSUPPORTED_TOOL_SET;
     }
     if(ps_sps->i1_sps_multilayer_extension_flag || ps_sps->i1_sps_3d_extension_flag
                     || ps_sps->i1_sps_scc_extension_flag)

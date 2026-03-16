@@ -119,6 +119,13 @@ typedef struct cab_ctxt
      */
     UWORD8 au1_ctxt_models_sync[IHEVC_CAB_CTXT_END];
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    /** golomb rice adaptation statistics */
+    WORD32 ai4_rice_stat_coeff[4];
+
+    WORD32 ai4_rice_stat_coeff_sync[4];
+#endif
+
 }cab_ctxt_t;
 
 typedef enum

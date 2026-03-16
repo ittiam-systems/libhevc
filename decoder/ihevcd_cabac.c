@@ -133,7 +133,12 @@ IHEVCD_ERROR_T ihevcd_cabac_init(cab_ctxt_t *ps_cabac,
                                  bitstrm_t *ps_bitstrm,
                                  WORD32 qp,
                                  WORD32 cabac_init_idc,
-                                 const UWORD8 *pu1_init_ctxt)
+                                 const UWORD8 *pu1_init_ctxt
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                                 ,
+                                 const WORD32 *pi4_rice_stat_coeff
+#endif
+                                 )
 {
     /* Sanity checks */
     ASSERT(ps_cabac != NULL);
@@ -162,6 +167,16 @@ IHEVCD_ERROR_T ihevcd_cabac_init(cab_ctxt_t *ps_cabac,
     memcpy(ps_cabac->au1_ctxt_models,
            pu1_init_ctxt,
            IHEVC_CAB_CTXT_END);
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    /* golomb rice statistics */
+    if(pi4_rice_stat_coeff)
+    {
+        memcpy(ps_cabac->ai4_rice_stat_coeff, pi4_rice_stat_coeff,
+               sizeof(ps_cabac->ai4_rice_stat_coeff));
+    }
+#endif
+
     DEBUG_RANGE_OFST("init", ps_cabac->u4_range, ps_cabac->u4_ofst);
 
     /*

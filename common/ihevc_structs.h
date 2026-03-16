@@ -2638,9 +2638,9 @@ typedef struct
     WORD8   i1_use_high_precision_pred_wt;
 
     /**
-     * fast_rice_adaptation_enabled_flag
+     * persistent_rice_adaptation_enabled_flag
      */
-    WORD8   i1_fast_rice_adaptation_enabled_flag;
+    WORD8   i1_persistent_rice_adaptation_enabled_flag;
 
     /**
      * cabac_bypass_alignment_enabled_flag
