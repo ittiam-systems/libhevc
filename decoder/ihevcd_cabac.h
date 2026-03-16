@@ -214,6 +214,10 @@ IHEVCD_ERROR_T    ihevcd_cabac_init
                 WORD32      slice_qp,
                 WORD32      cabac_init_idc,
                 const UWORD8      *pu1_init_ctxt
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                ,
+                const WORD32 *pi4_rice_stat_coeff
+#endif
 );
 
 

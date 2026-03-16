@@ -189,6 +189,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     WORD32 explicit_rdpcm_flag, explicit_rdpcm_dir;
 #endif
     WORD32 value;
+    sps_t *ps_sps;
     pps_t *ps_pps;
     WORD32 last_scan_pos, last_sub_blk;
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
@@ -208,6 +209,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     WORD32 sig_coeff_base_ctxt, abs_gt1_base_ctxt;
     UNUSED(x0);
     UNUSED(y0);
+    ps_sps = ps_codec->s_parse.ps_sps;
     ps_pps = ps_codec->s_parse.ps_pps;
 
     sign_data_hiding_flag = ps_pps->i1_sign_data_hiding_flag;
@@ -245,7 +247,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
     if(PRED_MODE_INTER == ps_codec->s_parse.s_cu.i4_pred_mode
-                    && ps_codec->s_parse.ps_sps->i1_explicit_rdpcm_enabled_flag
+                    && ps_sps->i1_explicit_rdpcm_enabled_flag
                     && (transform_skip_flag || ps_codec->s_parse.s_cu.i4_cu_transquant_bypass))
 
     {
@@ -346,7 +348,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     scan_idx = SCAN_DIAG_UPRIGHT;
     if(PRED_MODE_INTRA == ps_codec->s_parse.s_cu.i4_pred_mode)
     {
-        int is_YUV444 = ps_codec->s_parse.ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444;
+        int is_YUV444 = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444;
         if((2 == log2_trafo_size) || ((3 == log2_trafo_size) && (0 == c_idx || is_YUV444)))
         {
             if((6 <= intra_pred_mode) &&
@@ -515,6 +517,9 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         WORD32 rice_param;
         WORD32 xs, ys;
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        WORD8 i1_update_stats = ps_sps->i1_persistent_rice_adaptation_enabled_flag;
+#endif
 
         sub_blk_pos  = 0;
         if(i && (log2_trafo_size > 2))
@@ -615,7 +620,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                 /* derive the context inc as per section 9.3.3.1.4 */
                 sig_ctxinc = 0;
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                if(ps_codec->s_parse.ps_sps->i1_transform_skip_context_enabled_flag
+                if(ps_sps->i1_transform_skip_context_enabled_flag
                                 && (ps_codec->s_parse.s_cu.i4_cu_transquant_bypass
                                                 || transform_skip_flag))
                 {
@@ -787,7 +792,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 #endif
                         || (PRED_MODE_INTRA == ps_codec->s_parse.s_cu.i4_pred_mode
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                                        && ps_codec->s_parse.ps_sps->i1_implicit_rdpcm_enabled_flag
+                                        && ps_sps->i1_implicit_rdpcm_enabled_flag
 #else
                                         && 0
 #endif
@@ -838,7 +843,22 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 
         num_sig_coeff = 0;
         sum_abs_level = 0;
-        rice_param = 0;
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        WORD32 sb_type = 2 * (c_idx == 0 ? 1 : 0);
+        if(ps_sps->i1_persistent_rice_adaptation_enabled_flag)
+        {
+            if(!(transform_skip_flag == 0 && ps_codec->s_parse.s_cu.i4_cu_transquant_bypass == 0))
+            {
+                sb_type += 1;
+            }
+            rice_param = ps_cabac->ai4_rice_stat_coeff[sb_type] / 4;
+        }
+        else
+#endif
+        {
+            rice_param = 0;
+        }
         {
             UWORD32 clz;
             UWORD32 u4_sig_coeff_map_shift;
@@ -924,10 +944,36 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                     }
 
                     /* update the rice param based on coeff level */
-                    if((base_lvl > (3 << rice_param)) && (rice_param < 4))
+                    if(base_lvl > (3 << rice_param))
                     {
-                        rice_param++;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                        if(ps_sps->i1_persistent_rice_adaptation_enabled_flag)
+                        {
+                            rice_param += 1;
+                        }
+                        else
+#endif
+                        {
+                            rice_param = MIN((rice_param + 1), 4);
+                        }
                     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(i1_update_stats)
+                    {
+                        if(coeff_abs_level_remaining
+                                        >= (3 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
+                        {
+                            ps_cabac->ai4_rice_stat_coeff[sb_type]++;
+                        }
+                        else if((2 * coeff_abs_level_remaining
+                                        < (1 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
+                                        && ps_cabac->ai4_rice_stat_coeff[sb_type] > 0)
+                        {
+                            ps_cabac->ai4_rice_stat_coeff[sb_type]--;
+                        }
+                        i1_update_stats = 0;
+                    }
+#endif
 
                     /* Compute absolute level */
                     level = base_lvl;
