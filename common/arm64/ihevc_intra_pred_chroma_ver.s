@@ -87,16 +87,15 @@
 //    nt
 //    mode
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 .globl ihevc_intra_pred_chroma_ver_av8
 
 .type ihevc_intra_pred_chroma_ver_av8, %function
 
-ihevc_intra_pred_chroma_ver_av8:
+ENTRY ihevc_intra_pred_chroma_ver_av8
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
     push_v_regs
@@ -226,6 +225,7 @@ end_func:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

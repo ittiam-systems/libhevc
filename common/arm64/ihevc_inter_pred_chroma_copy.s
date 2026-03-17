@@ -91,14 +91,14 @@
 //x5 =>  ht
 //x6 =>  wd
 
+.include "ihevc_neon_macros.s"
 .text
-.align 4
 
 .globl ihevc_inter_pred_chroma_copy_av8
 
 .type ihevc_inter_pred_chroma_copy_av8, %function
 
-ihevc_inter_pred_chroma_copy_av8:
+ENTRY ihevc_inter_pred_chroma_copy_av8
 
     LSL         x12,x6,#1                   //wd << 1
     CMP         x5,#0                       //checks ht == 0
@@ -142,7 +142,8 @@ END_INNER_LOOP_WD_4:
     BGT         OUTER_LOOP_WD_4_HT_2
 
 END_LOOPS:
-    RET
+    EXIT_FUNC
+    ret
 
 OUTER_LOOP_WD_4_HT_2:
     SUBS        x4,x12,#0                   //checks wd == 0
@@ -251,6 +252,7 @@ INNER_LOOP_WD_16_HT_2:
     LD1         {v1.16b},[x7],x2            //vld1_u8(pu1_src_tmp)
     ST1         {v1.16b},[x6],x3            //vst1_u8(pu1_dst_tmp, tmp_src)
 
-    RET
+    EXIT_FUNC
+    ret
 
 

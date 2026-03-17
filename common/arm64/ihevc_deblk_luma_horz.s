@@ -36,8 +36,8 @@
 //*
 //*******************************************************************************/
 
+.include "ihevc_neon_macros.s"
 .text
-.align 4
 
 
 .extern gai4_ihevc_tc_table
@@ -46,7 +46,7 @@
 
 .type ihevc_deblk_luma_horz_av8, %function
 
-ihevc_deblk_luma_horz_av8:
+ENTRY ihevc_deblk_luma_horz_av8
     // stmfd sp!, {x3-x12,x14}
     sxtw        x5,w5
     sxtw        x6,w6
@@ -434,6 +434,7 @@ l1.2404:
     ldp         d10,d11,[sp],#16
     ldp         d8,d9,[sp],#16              // Loading d9 using { ldr d9,[sp]; add sp,sp,#8 } is giving bus error.
                                             // d8 is used as dummy register and loaded along with d9 using ldp. d8 is not used in the function.
+    EXIT_FUNC
     ret
 
     // x4=flag p
@@ -584,6 +585,7 @@ l1.2852:
     ldp         d10,d11,[sp],#16
     ldp         d8,d9,[sp],#16              // Loading d9 using { ldr d9,[sp]; add sp,sp,#8 } is giving bus error.
                                             // d8 is used as dummy register and loaded along with d9 using ldp. d8 is not used in the function.
+    EXIT_FUNC
     ret
 
 

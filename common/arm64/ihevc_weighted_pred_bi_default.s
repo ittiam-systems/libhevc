@@ -107,16 +107,15 @@
 //    x7 =>  lvl_shift2
 //    x8 =>  ht
 //    x9 =>  wd
-.text
-.align 4
 
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_weighted_pred_bi_default_av8
 
 .type ihevc_weighted_pred_bi_default_av8, %function
 
-ihevc_weighted_pred_bi_default_av8:
+ENTRY ihevc_weighted_pred_bi_default_av8
 
     ldr         w8,[sp,#0]
     ldr         w9,[sp,#8]
@@ -534,6 +533,7 @@ end_loops:
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

@@ -92,9 +92,8 @@
 //    mode
 //    pi1_coeff
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 .globl ihevc_intra_pred_chroma_planar_av8
@@ -103,7 +102,7 @@
 
 .type ihevc_intra_pred_chroma_planar_av8, %function
 
-ihevc_intra_pred_chroma_planar_av8:
+ENTRY ihevc_intra_pred_chroma_planar_av8
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
 
@@ -374,6 +373,7 @@ end_loop:
                                             // d8 is used as dummy register and loaded along with d14 using ldp. d8 is not used in the function.
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
+    EXIT_FUNC
     ret
 
 

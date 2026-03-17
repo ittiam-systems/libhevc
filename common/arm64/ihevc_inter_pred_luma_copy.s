@@ -71,16 +71,14 @@
 //    x11 =>  ht
 //    x16 => wd
 
-.text
-.align 4
-
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_inter_pred_luma_copy_av8
 
 .type ihevc_inter_pred_luma_copy_av8, %function
 
-ihevc_inter_pred_luma_copy_av8:
+ENTRY ihevc_inter_pred_luma_copy_av8
     // stmfd sp!, {x8-x16, lr}                //stack stores the values of the arguments
     stp         x19,x20,[sp, #-16]!
     mov         x16,x6                      //loads wd
@@ -125,6 +123,7 @@ end_loops:
 //  MRS x20,PMCCFILTR_EL0
     sub         x0,x20,x19
     ldp         x19,x20,[sp],#16
+    EXIT_FUNC
     ret
 
 
@@ -159,6 +158,7 @@ end_inner_loop_wd_8:
 //  MRS x20,PMCCFILTR_EL0
     sub         x0,x20,x19
     ldp         x19,x20,[sp],#16
+    EXIT_FUNC
     ret
 
 core_loop_wd_16:
@@ -192,6 +192,7 @@ end_inner_loop_wd_16:
 //  MRS x20,PMCCFILTR_EL0
     sub         x0,x20,x19
     ldp         x19,x20,[sp],#16
+    EXIT_FUNC
     ret
 
 

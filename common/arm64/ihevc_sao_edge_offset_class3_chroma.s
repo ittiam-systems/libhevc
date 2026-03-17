@@ -60,13 +60,12 @@
 //x7    =>    wd
 //x8=>    ht
 
-.text
-.p2align 2
 .include "ihevc_neon_macros.s"
+.text
 .globl gi1_table_edge_idx
 .globl ihevc_sao_edge_offset_class3_chroma_av8
 
-ihevc_sao_edge_offset_class3_chroma_av8:
+ENTRY ihevc_sao_edge_offset_class3_chroma_av8
 
 
     // STMFD sp!,{x4-x12,x14}            //stack stores the values of the arguments
@@ -1167,6 +1166,7 @@ END_LOOPS:
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

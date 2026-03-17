@@ -85,14 +85,14 @@
 //    x2 => ht
 //    x3 => pad_size
 
+.include "ihevc_neon_macros.s"
 .text
-.align 4
 
 .globl ihevc_pad_left_luma_av8
 
 .type ihevc_pad_left_luma_av8, %function
 
-ihevc_pad_left_luma_av8:
+ENTRY ihevc_pad_left_luma_av8
 
 loop_start_luma_left:
     // pad size is assumed to be pad_left = 80
@@ -148,6 +148,7 @@ loop_start_luma_left:
 
     bne         loop_start_luma_left
 
+    EXIT_FUNC
     ret
 
 
@@ -209,7 +210,7 @@ loop_start_luma_left:
 
 .type ihevc_pad_left_chroma_av8, %function
 
-ihevc_pad_left_chroma_av8:
+ENTRY ihevc_pad_left_chroma_av8
 
 
 loop_start_chroma_left:
@@ -266,6 +267,7 @@ loop_start_chroma_left:
 
     bne         loop_start_chroma_left
 
+    EXIT_FUNC
     ret
 
 
@@ -337,7 +339,7 @@ loop_start_chroma_left:
 
 .type ihevc_pad_right_luma_av8, %function
 
-ihevc_pad_right_luma_av8:
+ENTRY ihevc_pad_right_luma_av8
 
 
 loop_start_luma_right:
@@ -395,6 +397,7 @@ loop_start_luma_right:
 
     bne         loop_start_luma_right
 
+    EXIT_FUNC
     ret
 
 
@@ -455,7 +458,7 @@ loop_start_luma_right:
 
 .type ihevc_pad_right_chroma_av8, %function
 
-ihevc_pad_right_chroma_av8:
+ENTRY ihevc_pad_right_chroma_av8
 
 
 loop_start_chroma_right:
@@ -512,6 +515,7 @@ loop_start_chroma_right:
 
     bne         loop_start_chroma_right
 
+    EXIT_FUNC
     ret
 
 

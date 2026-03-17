@@ -85,9 +85,8 @@
 //x2 => *pu1_dst
 //x3 =>  dst_strd
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -97,7 +96,7 @@
 
 .type ihevc_intra_pred_luma_mode_27_to_33_av8, %function
 
-ihevc_intra_pred_luma_mode_27_to_33_av8:
+ENTRY ihevc_intra_pred_luma_mode_27_to_33_av8
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
 
@@ -554,6 +553,7 @@ end_loops:
     ldp         d14,d15,[sp],#16
     ldp         d12,d13,[sp],#16
     ldp         d9,d10,[sp],#16
+    EXIT_FUNC
     ret
 
 

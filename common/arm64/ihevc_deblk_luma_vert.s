@@ -37,8 +37,8 @@
 //*
 //*******************************************************************************/
 
+.include "ihevc_neon_macros.s"
 .text
-.align 4
 
 
 
@@ -49,7 +49,7 @@
 
 .type ihevc_deblk_luma_vert_av8, %function
 
-ihevc_deblk_luma_vert_av8:
+ENTRY ihevc_deblk_luma_vert_av8
 
     sxtw        x5,w5
     sxtw        x6,w6
@@ -450,6 +450,7 @@ l1.964:
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
     ldp         d8,d9,[sp],#16
+    EXIT_FUNC
     ret
 
 l1.968:
@@ -630,6 +631,7 @@ l1.1412:
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
     ldp         d8,d9,[sp],#16
+    EXIT_FUNC
     ret
 
 

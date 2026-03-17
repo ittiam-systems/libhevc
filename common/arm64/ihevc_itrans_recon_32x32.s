@@ -124,9 +124,8 @@
 //d5[2]= 43        d7[2]=9
 //d5[3]= 38        d7[3]=4
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -143,7 +142,7 @@
 
 .type ihevc_itrans_recon_32x32_av8, %function
 
-ihevc_itrans_recon_32x32_av8:
+ENTRY ihevc_itrans_recon_32x32_av8
 
     ldr         w11, [sp]
 
@@ -3042,6 +3041,7 @@ prediction_buffer:
     // ldmfd sp!,{x0-x12,pc}
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

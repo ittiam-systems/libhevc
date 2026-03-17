@@ -91,17 +91,16 @@
 //x3 =>  dst_strd
 
 
-.text
-.align 4
 
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_inter_pred_chroma_horz_w16out_av8
 
 
 .type ihevc_inter_pred_chroma_horz_w16out_av8, %function
 
-ihevc_inter_pred_chroma_horz_w16out_av8:
+ENTRY ihevc_inter_pred_chroma_horz_w16out_av8
 
     // stmfd sp!, {x4-x12, x14}                    //stack stores the values of the arguments
 
@@ -794,6 +793,7 @@ end_loops:
     ldp         d14,d15,[sp],#16
     ldp         d12,d13,[sp],#16
     ldp         d10,d11,[sp],#16
+    EXIT_FUNC
     ret
 
 
