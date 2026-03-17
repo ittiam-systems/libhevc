@@ -34,8 +34,8 @@
 //*
 //*******************************************************************************/
 
-.text
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -43,7 +43,7 @@
 
 .type ihevcd_itrans_recon_dc_luma_av8, %function
 
-ihevcd_itrans_recon_dc_luma_av8:
+ENTRY ihevcd_itrans_recon_dc_luma_av8
 
 //void ihevcd_itrans_recon_dc_luma(uword8 *pu1_pred,
 //                            uword8 *pu1_dst,
@@ -207,6 +207,7 @@ col_loop_4:
 end_loops:
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

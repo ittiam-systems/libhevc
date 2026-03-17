@@ -88,9 +88,8 @@
 //    nt
 //    mode
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -102,7 +101,7 @@
 
 .type ihevc_intra_pred_chroma_mode_11_to_17_av8, %function
 
-ihevc_intra_pred_chroma_mode_11_to_17_av8:
+ENTRY ihevc_intra_pred_chroma_mode_11_to_17_av8
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
 
@@ -617,6 +616,7 @@ end_func:
     ldp         x19, x20,[sp],#16
     ldp         d14,d15,[sp],#16
     ldp         d12,d13,[sp],#16
+    EXIT_FUNC
     ret
 
 

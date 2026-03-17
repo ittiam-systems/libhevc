@@ -105,10 +105,8 @@
 //    x12
 //    x11
 
-.text
-.align 4
-
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -123,7 +121,7 @@
 
 .type ihevc_itrans_recon_16x16_av8, %function
 
-ihevc_itrans_recon_16x16_av8:
+ENTRY ihevc_itrans_recon_16x16_av8
 
     ldr         w11, [sp]
     // stmfd sp!,{x4-x12,x14}
@@ -1226,6 +1224,7 @@ skip_last8rows_stage2_kernel2:
     // ldmfd sp!,{x4-x12,pc}
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

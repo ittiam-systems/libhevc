@@ -34,9 +34,8 @@
 //*
 //*******************************************************************************/
 
-.text
-
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -84,7 +83,7 @@
 
 .type ihevcd_fmt_conv_420sp_to_420p_av8, %function
 
-ihevcd_fmt_conv_420sp_to_420p_av8:
+ENTRY ihevcd_fmt_conv_420sp_to_420p_av8
     // STMFD sp!,{x4-x12, x14}
     push_v_regs
     stp         x19, x20,[sp,#-16]!
@@ -200,6 +199,7 @@ exit:
     // LDMFD sp!,{x4-x12, pc}
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

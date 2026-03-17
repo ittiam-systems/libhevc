@@ -69,14 +69,14 @@
 //    x1 => *pu1_src
 //    x2 => num_bytes
 
+.include "ihevc_neon_macros.s"
 .text
-.p2align 2
 
 
     .global ihevc_memcpy_mul_8_av8
 .type ihevc_memcpy_mul_8_av8, %function
 
-ihevc_memcpy_mul_8_av8:
+ENTRY ihevc_memcpy_mul_8_av8
 
 LOOP_NEON_MEMCPY_MUL_8:
     // Memcpy 8 bytes
@@ -85,6 +85,7 @@ LOOP_NEON_MEMCPY_MUL_8:
 
     SUBS        x2,x2,#8
     BNE         LOOP_NEON_MEMCPY_MUL_8
+    EXIT_FUNC
     ret
 
 
@@ -104,7 +105,7 @@ LOOP_NEON_MEMCPY_MUL_8:
     .global ihevc_memcpy_av8
 .type ihevc_memcpy_av8, %function
 
-ihevc_memcpy_av8:
+ENTRY ihevc_memcpy_av8
     SUBS        x2,x2,#8
     BLT         ARM_MEMCPY
 LOOP_NEON_MEMCPY:
@@ -126,6 +127,7 @@ LOOP_ARM_MEMCPY:
     SUBS        x2,x2,#1
     BNE         LOOP_ARM_MEMCPY
 MEMCPY_RETURN:
+    EXIT_FUNC
     ret
 
 
@@ -140,14 +142,13 @@ MEMCPY_RETURN:
 //    x2 => num_bytes
 
 .text
-.p2align 2
 
 
 
     .global ihevc_memset_mul_8_av8
 .type ihevc_memset_mul_8_av8, %function
 
-ihevc_memset_mul_8_av8:
+ENTRY ihevc_memset_mul_8_av8
 
 // Assumptions: numbytes is either 8, 16 or 32
     dup         v0.8b,w1
@@ -158,6 +159,7 @@ LOOP_MEMSET_MUL_8:
     SUBS        x2,x2,#8
     BNE         LOOP_MEMSET_MUL_8
 
+    EXIT_FUNC
     ret
 
 
@@ -176,7 +178,7 @@ LOOP_MEMSET_MUL_8:
     .global ihevc_memset_av8
 .type ihevc_memset_av8, %function
 
-ihevc_memset_av8:
+ENTRY ihevc_memset_av8
     SUBS        x2,x2,#8
     BLT         ARM_MEMSET
     dup         v0.8b,w1
@@ -198,6 +200,7 @@ LOOP_ARM_MEMSET:
     BNE         LOOP_ARM_MEMSET
 
 MEMSET_RETURN:
+    EXIT_FUNC
     ret
 
 
@@ -212,14 +215,13 @@ MEMSET_RETURN:
 //    x2 => num_words
 
 .text
-.p2align 2
 
 
 
     .global ihevc_memset_16bit_mul_8_av8
 .type ihevc_memset_16bit_mul_8_av8, %function
 
-ihevc_memset_16bit_mul_8_av8:
+ENTRY ihevc_memset_16bit_mul_8_av8
 
 // Assumptions: num_words is either 8, 16 or 32
 
@@ -231,6 +233,7 @@ LOOP_MEMSET_16BIT_MUL_8:
     SUBS        x2,x2,#8
     BNE         LOOP_MEMSET_16BIT_MUL_8
 
+    EXIT_FUNC
     ret
 
 
@@ -249,7 +252,7 @@ LOOP_MEMSET_16BIT_MUL_8:
     .global ihevc_memset_16bit_av8
 .type ihevc_memset_16bit_av8, %function
 
-ihevc_memset_16bit_av8:
+ENTRY ihevc_memset_16bit_av8
     SUBS        x2,x2,#8
     BLT         ARM_MEMSET_16BIT
     dup         v0.8h,w1
@@ -271,6 +274,7 @@ LOOP_ARM_MEMSET_16BIT:
     BNE         LOOP_ARM_MEMSET_16BIT
 
 MEMSET_16BIT_RETURN:
+    EXIT_FUNC
     ret
 
 

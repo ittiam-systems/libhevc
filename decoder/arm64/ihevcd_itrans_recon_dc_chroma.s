@@ -35,15 +35,15 @@
 //*******************************************************************************/
 
 
-.text
 .include "ihevc_neon_macros.s"
+.text
 
 
 .globl ihevcd_itrans_recon_dc_chroma_av8
 
 .type ihevcd_itrans_recon_dc_chroma_av8, %function
 
-ihevcd_itrans_recon_dc_chroma_av8:
+ENTRY ihevcd_itrans_recon_dc_chroma_av8
 
 //void ihevcd_itrans_recon_dc_chroma(uword8 *pu1_pred,
 //                            uword8 *pu1_dst,
@@ -215,6 +215,7 @@ col_loop_4chroma:
 end_loops_chroma:
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

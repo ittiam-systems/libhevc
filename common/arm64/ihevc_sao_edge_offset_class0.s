@@ -59,15 +59,14 @@
 //x9    =>    wd
 //x10=>    ht
 
-.text
-.p2align 2
 
 .include "ihevc_neon_macros.s"
+.text
 
 .globl gi1_table_edge_idx
 .globl ihevc_sao_edge_offset_class0_av8
 
-ihevc_sao_edge_offset_class0_av8:
+ENTRY ihevc_sao_edge_offset_class0_av8
 
 
     // STMFD sp!, {x4-x12, x14}            //stack stores the values of the arguments
@@ -338,6 +337,7 @@ END_LOOPS:
     // LDMFD sp!,{x4-x12,x15}              //Reload the registers from SP
     ldp         x19, x20,[sp], #16
 
+    EXIT_FUNC
     ret
 
 

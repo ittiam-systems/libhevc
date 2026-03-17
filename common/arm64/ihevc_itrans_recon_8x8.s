@@ -105,10 +105,8 @@
 //    zero_cols
 
 
-
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -123,7 +121,7 @@
 
 .type ihevc_itrans_recon_8x8_av8, %function
 
-ihevc_itrans_recon_8x8_av8:
+ENTRY ihevc_itrans_recon_8x8_av8
 ////register usage.extern        - loading and until idct of columns
 ////    cosine constants     -     d0
 ////    sine constants         -     d1
@@ -1030,6 +1028,7 @@ pred_buff_addition:
     // ldmfd sp!,{x4-x12,pc}
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

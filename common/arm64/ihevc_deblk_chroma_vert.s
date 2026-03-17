@@ -46,9 +46,8 @@
 //                             WORD32 filter_flag_p,
 //                             WORD32 filter_flag_q)
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -58,7 +57,7 @@
 
 .type ihevc_deblk_chroma_vert_av8, %function
 
-ihevc_deblk_chroma_vert_av8:
+ENTRY ihevc_deblk_chroma_vert_av8
     sxtw        x4,w4
     sxtw        x5,w5
     sxtw        x6,w6
@@ -205,6 +204,7 @@ l1.3204:
 l1.3228:
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

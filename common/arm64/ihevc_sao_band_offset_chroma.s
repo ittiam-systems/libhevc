@@ -61,14 +61,13 @@
 //x9    =>    wd 60
 //x10=>    ht 64
 
-.text
-.p2align 2
 .include "ihevc_neon_macros.s"
+.text
 
 .globl gu1_table_band_idx
 .globl ihevc_sao_band_offset_chroma_av8
 
-ihevc_sao_band_offset_chroma_av8:
+ENTRY ihevc_sao_band_offset_chroma_av8
     mov         x8,#0
     mov         x9,#0
     mov         x10,#0
@@ -424,6 +423,7 @@ END_LOOP:
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

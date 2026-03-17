@@ -65,12 +65,11 @@
 .include "ihevc_neon_macros.s"
 
 .text
-.p2align 2
 
 .globl gu1_table_band_idx
 .globl ihevc_sao_band_offset_luma_av8
 
-ihevc_sao_band_offset_luma_av8:
+ENTRY ihevc_sao_band_offset_luma_av8
 
     // STMFD sp!, {x4-x12, x14}            //stack stores the values of the arguments
 
@@ -244,6 +243,7 @@ HEIGHT_LOOP:
     ldp         d8,d15,[sp],#16             // Loading d15 using { ldr d15,[sp]; add sp,sp,#8 } is giving bus error.
                                             // d8 is used as dummy register and loaded along with d15 using ldp. d8 is not used in the function.
     ldp         d13,d14,[sp],#16
+    EXIT_FUNC
     ret
 
 

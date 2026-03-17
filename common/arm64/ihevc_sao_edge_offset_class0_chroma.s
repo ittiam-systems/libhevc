@@ -60,14 +60,13 @@
 //x9    =>    wd
 //x10=>    ht
 
-.text
-.p2align 2
 .include "ihevc_neon_macros.s"
+.text
 
 .globl gi1_table_edge_idx
 .globl ihevc_sao_edge_offset_class0_chroma_av8
 
-ihevc_sao_edge_offset_class0_chroma_av8:
+ENTRY ihevc_sao_edge_offset_class0_chroma_av8
 
     ldr         x8,[sp,#0]
     ldr         x9,[sp,#8]
@@ -477,6 +476,7 @@ END_LOOPS:
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

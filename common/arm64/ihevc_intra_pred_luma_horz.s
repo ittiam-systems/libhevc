@@ -84,9 +84,8 @@
 //x2 => *pu1_dst
 //x3 =>  dst_strd
 
-.text
-.align 4
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -94,7 +93,7 @@
 
 .type ihevc_intra_pred_luma_horz_av8, %function
 
-ihevc_intra_pred_luma_horz_av8:
+ENTRY ihevc_intra_pred_luma_horz_av8
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
 
@@ -189,6 +188,7 @@ core_loop_32:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
     b           end_func
 
@@ -269,6 +269,7 @@ core_loop_16:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
     b           end_func
 
@@ -315,6 +316,7 @@ core_loop_8:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
     b           end_func
 
@@ -350,6 +352,7 @@ core_loop_4:
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 end_func:
 

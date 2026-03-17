@@ -103,16 +103,15 @@
 //    x12 => *pi1_coeff
 //    x5 =>  ht
 //    x3 =>  wd
-.text
-.align 4
 
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_inter_pred_luma_vert_av8
 
 .type ihevc_inter_pred_luma_vert_av8, %function
 
-ihevc_inter_pred_luma_vert_av8:
+ENTRY ihevc_inter_pred_luma_vert_av8
 
     // stmfd sp!, {x4-x12, x14}    //stack stores the values of the arguments
 
@@ -428,6 +427,7 @@ end_loops:
     bne         lbl409
     ldp         x19, x20,[sp], #16
 
+    EXIT_FUNC
     ret
 lbl409:
     mov         x5, #4
@@ -518,5 +518,6 @@ end_inner_loop_wd_4:
     // ldmfd sp!, {x4-x12, x15}    //reload the registers from sp
     ldp         x19, x20,[sp], #16
 
+    EXIT_FUNC
     ret
 

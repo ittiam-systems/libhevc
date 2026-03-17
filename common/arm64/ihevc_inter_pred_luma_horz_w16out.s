@@ -107,16 +107,15 @@
 //x15 - #1
 //x16 - src_ptx1
 //x19 - loop_counter
-.text
-.align 4
 
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_inter_pred_luma_horz_w16out_av8
 
 .type ihevc_inter_pred_luma_horz_w16out_av8, %function
 
-ihevc_inter_pred_luma_horz_w16out_av8:
+ENTRY ihevc_inter_pred_luma_horz_w16out_av8
 
     // stmfd sp!, {x8-x16, x19}                //stack stores the values of the arguments
     push_v_regs
@@ -305,6 +304,7 @@ height_residue_4:
     bne         lbl280
     ldp         x19, x20,[sp], #16
     pop_v_regs
+    EXIT_FUNC
     ret
 lbl280:
 
@@ -365,6 +365,7 @@ end_inner_loop_height_residue_4:
     // ldmfd sp!,{x8-x16,pc}                  //reload the registers from sp
     ldp         x19, x20,[sp], #16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 outer_loop8_residual:
@@ -476,6 +477,7 @@ end_inner_loop_8:
     // ldmfd sp!,{x8-x16,pc}                  //reload the registers from sp
     ldp         x19, x20,[sp], #16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 
@@ -666,6 +668,7 @@ end_loops1:
     // ldmfd sp!,{x8-x16,pc}                  //reload the registers from sp
     ldp         x19, x20,[sp], #16
     pop_v_regs
+    EXIT_FUNC
     ret
 
 

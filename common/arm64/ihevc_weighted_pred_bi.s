@@ -134,16 +134,14 @@
 //    x14 =>    ht
 //    x7    =>    wd
 
-.text
-.align 4
-
 .include "ihevc_neon_macros.s"
+.text
 
 .globl ihevc_weighted_pred_bi_av8
 
 .type ihevc_weighted_pred_bi_av8, %function
 
-ihevc_weighted_pred_bi_av8:
+ENTRY ihevc_weighted_pred_bi_av8
 
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
 
@@ -307,6 +305,7 @@ end_loops:
     ldp         x21, x22,[sp],#16
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

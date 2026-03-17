@@ -86,10 +86,8 @@
 //    nt
 //    mode
 
-.text
-.align 4
-
 .include "ihevc_neon_macros.s"
+.text
 
 
 
@@ -101,7 +99,7 @@
 
 .type ihevc_intra_pred_chroma_mode_3_to_9_av8, %function
 
-ihevc_intra_pred_chroma_mode_3_to_9_av8:
+ENTRY ihevc_intra_pred_chroma_mode_3_to_9_av8
 
     // stmfd sp!, {x4-x12, x14}        //stack stores the values of the arguments
 
@@ -489,6 +487,7 @@ end_func:
     ldp         d8,d15,[sp],#16             // Loading d15 using { ldr d15,[sp]; add sp,sp,#8 } is giving bus error.
                                             // d8 is used as dummy register and loaded along with d15 using ldp. d8 is not used in the function.
     ldp         d13,d14,[sp],#16
+    EXIT_FUNC
     ret
 
 

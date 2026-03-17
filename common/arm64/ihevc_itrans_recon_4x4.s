@@ -100,10 +100,8 @@
 //    x6 => dst_strd
 //    x7 => zero_cols
 
-.text
-.align 4
-
 .include "ihevc_neon_macros.s"
+.text
 
 .set shift_stage1_idct ,   7
 .set shift_stage2_idct ,   12
@@ -116,7 +114,7 @@
 
 .type ihevc_itrans_recon_4x4_av8, %function
 
-ihevc_itrans_recon_4x4_av8:
+ENTRY ihevc_itrans_recon_4x4_av8
 
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
 
@@ -229,6 +227,7 @@ ihevc_itrans_recon_4x4_av8:
     // ldmfd sp!,{x4-x12,x15}                //reload the registers from sp
     ldp         x19, x20,[sp],#16
 
+    EXIT_FUNC
     ret
 
 

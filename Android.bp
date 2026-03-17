@@ -35,7 +35,6 @@ cc_library_headers {
 
 cc_library_static {
     name: "libhevcdec",
-    defaults: ["no_bti"],
     vendor_available: true,
     host_supported: true,
 
@@ -441,7 +440,6 @@ cc_binary {
 
 cc_library_static {
     name: "libhevcenc",
-    defaults: ["no_bti"],
     vendor_available: true,
     host_supported: true,
     cflags: [
