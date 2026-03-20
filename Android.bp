@@ -419,7 +419,7 @@ cc_library_static {
     min_sdk_version: "29",
 }
 
-cc_test {
+cc_binary {
     name: "hevcdec",
     host_supported: true,
     cflags: [
@@ -430,7 +430,6 @@ cc_test {
         "-Wall",
         "-Werror",
     ],
-    gtest: false,
     srcs: ["test/decoder/main.c"],
     static_libs: ["libhevcdec"],
     target: {
@@ -807,7 +806,7 @@ cc_library_static {
     min_sdk_version: "29",
 }
 
-cc_test {
+cc_binary {
     name: "hevcenc",
     host_supported: true,
     cflags: [
@@ -816,7 +815,6 @@ cc_test {
         "-Wall",
         "-Werror",
     ],
-    gtest: false,
     srcs: ["test/encoder/main.c"],
     static_libs: ["libhevcenc"],
     sanitize: {
