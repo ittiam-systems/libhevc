@@ -493,7 +493,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth])
                     {
                         ps_tu->b1_cr_cbf_subtu1 = 1;
-                        ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 1, intra_pred_mode_chroma);
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 2, intra_pred_mode_chroma);
                     }
 #endif
                 }
@@ -521,7 +521,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 && ps_codec->s_parse.s_cu.ai1_cbf_cr_subtu[trafo_depth])
                     {
                         ps_tu->b1_cr_cbf_subtu1 = 1;
-                        ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size, 1, intra_pred_mode_chroma);
+                        ihevcd_parse_residual_coding(ps_codec, x0, y0, log2_trafo_size, 2, intra_pred_mode_chroma);
                     }
 #endif
                 }
