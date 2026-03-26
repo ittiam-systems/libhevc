@@ -1324,6 +1324,14 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 WORD8 subtu_idx = 0;
                 do
                 {
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                if(subtu_idx != 0 && c_idx != 0)
+                {
+                    ps_cb_tu = &cb_sub_tu;
+                    ps_cr_tu = &cr_sub_tu;
+                    chroma_nbr_flags = chroma_nbr_flags_subtu;
+                }
+#endif
                 /***************************************************************/
                 /******************  Intra Prediction **************************/
                 /***************************************************************/
@@ -1431,16 +1439,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     }
                     else
                     {
-
-#ifdef ENABLE_MAIN_REXT_PROFILE
-                        if(subtu_idx != 0)
-                        {
-                            ps_cb_tu = &cb_sub_tu;
-                            ps_cr_tu = &cr_sub_tu;
-                            chroma_nbr_flags = chroma_nbr_flags_subtu;
-                        }
-#endif
-
                         /* In case of yuv420sp_vu, prediction happens as usual.         */
                         /* So point the pu1_pred pointer to original prediction pointer */
                         UWORD8 *pu1_pred_orig = ps_cb_tu->pu1_pred - chroma_yuv420sp_vu_u_offset;

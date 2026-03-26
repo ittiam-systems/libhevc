@@ -147,7 +147,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     WORD32 num_comp;
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
-    WORD32 is_yuv420, is_yuv444;
+    WORD32 is_yuv420, is_yuv422, is_yuv444;
 
     PROFILE_DISABLE_INTER_PRED();
     ps_codec = ps_proc->ps_codec;
@@ -198,6 +198,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
 
     num_comp = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_MONOCHROME ? 1 : 2;
     is_yuv420 = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 1 : 0;
+    is_yuv422 = (CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc) ? 1 : 0;
     is_yuv444 = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 0;
     h_samp_factor = is_yuv444 ? 1 : 2;
     v_samp_factor = is_yuv420 ? 2 : 1;
@@ -321,11 +322,11 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 {
                     mv = CLIP3(ps_pu->mv.s_l0_mv.i2_mvx, (-((MAX_CTB_SIZE + pu_x + 7) << 2)), ((ps_sps->i2_pic_width_in_luma_samples - pu_x + 7) << 2));
                     ai2_xint[0] = (pu_x *  chroma_pixel_strd / h_samp_factor) + (mv >> (2 + h_samp_factor - 1)) * chroma_pixel_strd;
-                    ai2_xfrac[0] = mv & (is_yuv420 ? 7 : 3);
+                    ai2_xfrac[0] = mv & (is_yuv444 ? 3 : 7);
 
                     mv = CLIP3(ps_pu->mv.s_l0_mv.i2_mvy, (-((MAX_CTB_SIZE + pu_y + 7) << 2)), ((ps_sps->i2_pic_height_in_luma_samples - pu_y + 7) << 2));
                     ai2_yint[0] = ((pu_y / v_samp_factor) + (mv >> (2 + v_samp_factor - 1)));
-                    ai2_yfrac[0] = mv & (is_yuv444 ? 3 : 7);
+                    ai2_yfrac[0] = mv & (is_yuv420 ? 7 : 3);
 
                     ref_pic_l0 = ref_pic_chroma_l0 + ai2_yint[0] * (ref_strd * chroma_pixel_strd / h_samp_factor) + ai2_xint[0];
 
@@ -338,11 +339,11 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 {
                     mv = CLIP3(ps_pu->mv.s_l1_mv.i2_mvx, (-((MAX_CTB_SIZE + pu_x + 7) << 2)), ((ps_sps->i2_pic_width_in_luma_samples - pu_x + 7) << 2));
                     ai2_xint[1] = (pu_x *  chroma_pixel_strd / h_samp_factor) + (mv >> (2 + h_samp_factor - 1)) * chroma_pixel_strd;
-                    ai2_xfrac[1] = mv & (is_yuv420 ? 7 : 3);
+                    ai2_xfrac[1] = mv & (is_yuv444 ? 3 : 7);
 
                     mv = CLIP3(ps_pu->mv.s_l1_mv.i2_mvy, (-((MAX_CTB_SIZE + pu_y + 7) << 2)), ((ps_sps->i2_pic_height_in_luma_samples - pu_y + 7) << 2));
                     ai2_yint[1] = ((pu_y / v_samp_factor) + (mv >> (2 + v_samp_factor - 1)));
-                    ai2_yfrac[1] = mv & (is_yuv444 ? 3 : 7);
+                    ai2_yfrac[1] = mv & (is_yuv420 ? 7 : 3);
 
                     ref_pic_l1 = ref_pic_chroma_l1 + ai2_yint[1] * (ref_strd * chroma_pixel_strd / h_samp_factor) + ai2_xint[1];
 
@@ -419,9 +420,9 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     func_dst_strd *= (chroma_pixel_strd / h_samp_factor);
                 }
                 func_coeff = ai2_xfrac[0] ? coeff[ai2_xfrac[0] << (is_yuv444 ? clr_indx : 0)]
-                                : coeff[ai2_yfrac[0] << (is_yuv444 ? clr_indx : 0)];
-                func_wd = pu_wd >> (is_yuv420 ? clr_indx : 0);
-                func_ht = pu_ht >> (is_yuv444 ? 0 : clr_indx);
+                                : coeff[ai2_yfrac[0] << (is_yuv420 ? 0 : clr_indx)];
+                func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
+                func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_ht += (ai2_xfrac[0] && ai2_yfrac[0]) ? ntaps - 1 : 0;
                 func_ptr1(func_src, func_dst, func_src_strd, func_dst_strd,
                           func_coeff, func_ht, func_wd);
@@ -445,9 +446,9 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 {
                     func_dst_strd *= (chroma_pixel_strd / h_samp_factor);
                 }
-                func_coeff = coeff[ai2_yfrac[0] << (is_yuv444 ? clr_indx : 0)];
-                func_wd = pu_wd >> (is_yuv420 ? clr_indx : 0);
-                func_ht = pu_ht >> (is_yuv444 ? 0 : clr_indx);
+                func_coeff = coeff[ai2_yfrac[0] << (is_yuv420 ? 0 : clr_indx)];
+                func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
+                func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_ptr2(func_src, func_dst, func_src_strd, func_dst_strd,
                           func_coeff, func_ht, func_wd);
             }
@@ -477,9 +478,9 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     func_dst_strd *= (chroma_pixel_strd / h_samp_factor);
                 }
                 func_coeff = ai2_xfrac[1] ? coeff[ai2_xfrac[1] << (is_yuv444 ? clr_indx : 0)]
-                                : coeff[ai2_yfrac[1] << (is_yuv444 ? clr_indx : 0)];
-                func_wd = pu_wd >> (is_yuv420 ? clr_indx : 0);
-                func_ht = pu_ht >> (is_yuv444 ? 0 : clr_indx);
+                                : coeff[ai2_yfrac[1] << (is_yuv420 ? 0 : clr_indx)];
+                func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
+                func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
 
                 func_ht += (ai2_xfrac[1] && ai2_yfrac[1]) ? ntaps - 1 : 0;
                 func_ptr3(func_src, func_dst, func_src_strd, func_dst_strd,
@@ -505,9 +506,9 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 {
                     func_dst_strd *= (chroma_pixel_strd / h_samp_factor);
                 }
-                func_coeff = coeff[ai2_yfrac[1] << (is_yuv444 ? clr_indx : 0)];
-                func_wd = pu_wd >> (is_yuv420 ? clr_indx : 0);
-                func_ht = pu_ht >> (is_yuv444 ? 0 : clr_indx);
+                func_coeff = coeff[ai2_yfrac[1] << (is_yuv420 ? 0 : clr_indx)];
+                func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
+                func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_ptr4(func_src, func_dst, func_src_strd, func_dst_strd,
                           func_coeff, func_ht, func_wd);
 
@@ -575,8 +576,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                                                                      shift,
                                                                                      lvl_shift1,
                                                                                      lvl_shift2,
-                                                                                     pu_ht >> (is_yuv444 ? 0 : clr_indx),
-                                                                                     pu_wd >> (is_yuv420 ? clr_indx : 0));
+                                                                                     pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                     pu_wd >> (is_yuv444 ? 0 : clr_indx));
                     }
                     else
                     {
@@ -597,8 +598,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                                                                      shift,
                                                                                      lvl_shift1,
                                                                                      lvl_shift2,
-                                                                                     pu_ht >> (is_yuv444 ? 0 : clr_indx),
-                                                                                     pu_wd >> (is_yuv420 ? clr_indx : 0));
+                                                                                     pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                     pu_wd >> (is_yuv444 ? 0 : clr_indx));
                     }
                 }
             }
@@ -652,8 +653,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                                                                       ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
                                                                                       shift,
                                                                                       lvl_shift1,
-                                                                                      pu_ht >> (is_yuv444 ? 0 : clr_indx),
-                                                                                      pu_wd >> (is_yuv420 ? clr_indx : 0));
+                                                                                      pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                      pu_wd >> (is_yuv444 ? 0 : clr_indx));
                     }
                     else
                     {
@@ -667,8 +668,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                                                                       ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
                                                                                       shift,
                                                                                       lvl_shift1,
-                                                                                      pu_ht >> (is_yuv444 ? 0 : clr_indx),
-                                                                                      pu_wd >> (is_yuv420 ? clr_indx : 0));
+                                                                                      pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                      pu_wd >> (is_yuv444 ? 0 : clr_indx));
                     }
                 }
             }
@@ -691,7 +692,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     func_src_strd *= (chroma_pixel_strd / h_samp_factor);
                     func_dst_strd *= (chroma_pixel_strd / h_samp_factor);
                 }
-                func_ht = pu_ht >> (is_yuv444 ? 0 : clr_indx);
+                func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_wd = pu_wd << (is_yuv444 ? clr_indx : 0);
 
                 ps_codec->s_func_selector.ihevc_weighted_pred_bi_default_fptr(pi2_tmp1,
