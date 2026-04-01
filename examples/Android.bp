@@ -1,0 +1,40 @@
+package {
+    default_applicable_licenses: ["external_libhevc_license"],
+}
+
+cc_binary {
+    name: "hevcdec",
+    host_supported: true,
+    cflags: [
+        "-DPROFILE_ENABLE",
+        "-DARM",
+        "-fPIC",
+        "-DMD5_DISABLE",
+        "-Wall",
+        "-Werror",
+    ],
+    srcs: ["decoder/main.c"],
+    static_libs: ["libhevcdec"],
+    target: {
+        darwin: {
+            enabled: false,
+        },
+    },
+}
+
+cc_binary {
+    name: "hevcenc",
+    host_supported: true,
+    cflags: [
+        "-DARM",
+        "-fPIC",
+        "-Wall",
+        "-Werror",
+    ],
+    srcs: ["encoder/main.c"],
+    static_libs: ["libhevcenc"],
+    sanitize: {
+        integer_overflow: true,
+        misc_undefined: ["bounds"],
+    },
+}
