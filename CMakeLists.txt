@@ -50,8 +50,8 @@ include("${HEVC_ROOT}/common/common.cmake")
 include("${HEVC_ROOT}/decoder/libhevcdec.cmake")
 include("${HEVC_ROOT}/encoder/libhevcenc.cmake")
 
-include("${HEVC_ROOT}/test/decoder/hevcdec.cmake")
-include("${HEVC_ROOT}/test/encoder/hevcenc.cmake")
+include("${HEVC_ROOT}/examples/decoder/hevcdec.cmake")
+include("${HEVC_ROOT}/examples/encoder/hevcenc.cmake")
 
 include("${HEVC_ROOT}/fuzzer/hevc_dec_fuzzer.cmake")
 include("${HEVC_ROOT}/fuzzer/hevc_enc_fuzzer.cmake")
