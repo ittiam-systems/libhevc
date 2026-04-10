@@ -128,6 +128,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     codec_t *ps_codec;
     slice_header_t *ps_slice_hdr;
 
+    ihevc_deblk_chroma_horz_ft *pf_deblk_chroma_horz;
+    ihevc_deblk_chroma_vert_ft *pf_deblk_chroma_vert;
+
     PROFILE_DISABLE_DEBLK();
 
     ps_sps = ps_deblk->ps_sps;
@@ -135,6 +138,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     ps_codec = ps_deblk->ps_codec;
     ps_slice_hdr = ps_deblk->ps_slice_hdr;
 
+    WORD32 is_yuv422 = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 ? 1 : 0;
     WORD32 is_yuv444 = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 1 : 0;
     WORD32 h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
     WORD32 v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
@@ -142,6 +146,17 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << ps_sps->i1_log2_ctb_size);
+
+    if(is_yuv422)
+    {
+        pf_deblk_chroma_horz = ps_codec->s_func_selector.ihevc_deblk_422chroma_horz_fptr;
+        pf_deblk_chroma_vert = ps_codec->s_func_selector.ihevc_deblk_422chroma_vert_fptr;
+    }
+    else
+    {
+        pf_deblk_chroma_horz = ps_codec->s_func_selector.ihevc_deblk_chroma_horz_fptr;
+        pf_deblk_chroma_vert = ps_codec->s_func_selector.ihevc_deblk_chroma_vert_fptr;
+    }
 
     /* strides are in units of number of bytes */
     /* ctb_size * ctb_size / 8 / 16 is the number of bytes needed per CTB */
@@ -616,29 +631,29 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.ihevc_deblk_chroma_vert_fptr(pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_q,
-                                                                               qp_p,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_q,
-                                                                               filter_p,
-                                                                               ps_sps->i1_chroma_format_idc);
+                        pf_deblk_chroma_vert(pu1_src,
+                                             chroma_strd,
+                                             qp_q,
+                                             qp_p,
+                                             ps_pps->i1_pic_cr_qp_offset,
+                                             ps_pps->i1_pic_cb_qp_offset,
+                                             i1_tc_offset_div2,
+                                             filter_q,
+                                             filter_p,
+                                             ps_sps->i1_chroma_format_idc);
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_deblk_chroma_vert_fptr(pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_p,
-                                                                               qp_q,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_p,
-                                                                               filter_q,
-                                                                               ps_sps->i1_chroma_format_idc);
+                        pf_deblk_chroma_vert(pu1_src,
+                                             chroma_strd,
+                                             qp_p,
+                                             qp_q,
+                                             ps_pps->i1_pic_cb_qp_offset,
+                                             ps_pps->i1_pic_cr_qp_offset,
+                                             i1_tc_offset_div2,
+                                             filter_p,
+                                             filter_q,
+                                             ps_sps->i1_chroma_format_idc);
                     }
                 }
 
@@ -695,7 +710,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 u4_bs |= u4_left_bs & 3;
             }
 
-            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420) {
+            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420 || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) {
                 /* Every alternate boundary strength value is used for chroma */
                 u4_bs &= 0x22222222;
             }
@@ -777,29 +792,29 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.ihevc_deblk_chroma_horz_fptr(pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_q,
-                                                                               qp_p,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_q,
-                                                                               filter_p,
-                                                                               ps_sps->i1_chroma_format_idc);
+                        pf_deblk_chroma_horz(pu1_src,
+                                             chroma_strd,
+                                             qp_q,
+                                             qp_p,
+                                             ps_pps->i1_pic_cr_qp_offset,
+                                             ps_pps->i1_pic_cb_qp_offset,
+                                             i1_tc_offset_div2,
+                                             filter_q,
+                                             filter_p,
+                                             ps_sps->i1_chroma_format_idc);
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_deblk_chroma_horz_fptr(pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_p,
-                                                                               qp_q,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_p,
-                                                                               filter_q,
-                                                                               ps_sps->i1_chroma_format_idc);
+                        pf_deblk_chroma_horz(pu1_src,
+                                             chroma_strd,
+                                             qp_p,
+                                             qp_q,
+                                             ps_pps->i1_pic_cb_qp_offset,
+                                             ps_pps->i1_pic_cr_qp_offset,
+                                             i1_tc_offset_div2,
+                                             filter_p,
+                                             filter_q,
+                                             ps_sps->i1_chroma_format_idc);
                     }
                 }
 
@@ -807,7 +822,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 u4_bs = u4_bs >> (2 * h_samp_factor);
                 col++;
             }
-            if(is_yuv444)
+            if(is_yuv444 || is_yuv422)
             {
                 if((64 == ctb_size) || ((32 == ctb_size) && (row & 1))) pu4_horz_bs++;
             }

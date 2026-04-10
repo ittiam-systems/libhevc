@@ -78,6 +78,8 @@ typedef struct
     ihevc_deblk_chroma_vert_ft *ihevc_deblk_chroma_vert_fptr;
     ihevc_deblk_luma_vert_ft *ihevc_deblk_luma_vert_fptr;
     ihevc_deblk_luma_horz_ft *ihevc_deblk_luma_horz_fptr;
+    ihevc_deblk_chroma_horz_ft *ihevc_deblk_422chroma_horz_fptr;
+    ihevc_deblk_chroma_vert_ft *ihevc_deblk_422chroma_vert_fptr;
 
     ihevc_inter_pred_ft *ihevc_inter_pred_chroma_copy_fptr;
     ihevc_inter_pred_w16out_ft *ihevc_inter_pred_chroma_copy_w16out_fptr;
