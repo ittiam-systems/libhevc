@@ -110,7 +110,7 @@ ENTRY ihevc_sao_edge_offset_class2_chroma_av8
     mov         x6, x22                     //Loads pi1_sao_offset_u
 
     mov         x22, x3                     //Store pu1_src_top in sp
-    SUB         sp,sp,#0xE0                 //Decrement the stack pointer to store some temp arr values
+    SUB         sp,sp,#0x120                //Decrement the stack pointer to store some temp arr values
 
     STRH        w10,[sp]                    //u1_src_top_left_tmp = pu1_src_top[wd - 2]
     SUB         x10,x8,#1                   //ht-1
@@ -376,7 +376,7 @@ SKIP_AU1_MASK_VAL:
     SUB         x8,x8,#2                    //pu1_src - src_strd - 2
     ADD         x3,x3,#16
 
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
     LD1         {v3.16b},[x8]               //pu1_top_row = vld1q_u8(pu1_src - src_strd - 2) || vld1q_u8(pu1_src_top_cpy - 2)
     //LD1 {v11.8b},[x8]                        //pu1_top_row = vld1q_u8(pu1_src - src_strd - 2) || vld1q_u8(pu1_src_top_cpy - 2)
     //SUB x8, x8,#8
@@ -748,7 +748,7 @@ PU1_SRC_LOOP:
 INNER_LOOP_DONE:
     mov         w8, w25                     //Loads ht
     xtn         v20.8b,  v20.8h             //vmovn_s16(pi2_tmp_cur_row.val[0])
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
 
     mov         x11, x17                    //Loads *pu1_src_left
     xtn2        v20.16b,  v18.8h            //vmovn_s16(pi2_tmp_cur_row.val[1])
@@ -804,7 +804,7 @@ SKIP_AU1_MASK_VAL_WD_16_HT_4:
     //SUB x8, x8,#8
 
     ADD         x3,x3,#16
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
     mov         w4, w25                     //Loads ht
     mov         x7, x24                     //Loads wd
     SUB         x7,x7,x6                    //(wd - col)
@@ -922,7 +922,7 @@ SIGN_UP_CHANGE_DONE_WD_16_HT_4:
     BNE         PU1_SRC_LOOP_WD_16_HT_4     //If not equal jump to PU1_SRC_LOOP_WD_16_HT_4
 
     mov         w8, w25                     //Loads ht
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
     mov         x11, x17                    //Loads *pu1_src_left
 
 SRC_LEFT_LOOP_WD_16_HT_4:
@@ -971,7 +971,7 @@ WIDTH_RESIDUE:
     //LD1 {v11.8b},[x8]                        //pu1_top_row = vld1q_u8(pu1_src - src_strd - 2)
     //SUB x8, x8,#8
 
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
     mov         w4, w25                     //Loads ht
     mov         w7, w24                     //Loads wd
     mov         x8, x26                     //Loads *pu1_src
@@ -1082,7 +1082,7 @@ SIGN_UP_CHANGE_DONE_RESIDUE:
 
     mov         w8, w25                     //Loads ht
     mov         x11, x17                    //Loads *pu1_src_left
-    ADD         x5,sp,#0x4B                 //*au1_src_left_tmp
+    ADD         x5,sp,#0x8A                 //*au1_src_left_tmp
 
 SRC_LEFT_LOOP_RESIDUE:
     LDR         w7, [x5],#4                 //au1_src_left_tmp[row]
@@ -1123,7 +1123,7 @@ SRC_TOP_LOOP:
     BNE         SRC_TOP_LOOP
 
 END_LOOPS:
-    ADD         sp,sp,#0xE0
+    ADD         sp,sp,#0x120
     // LDMFD sp!,{x4-x12,x15}             //Reload the registers from SP
     ldp         x27, x28,[sp],#16
     ldp         x25, x26,[sp],#16
