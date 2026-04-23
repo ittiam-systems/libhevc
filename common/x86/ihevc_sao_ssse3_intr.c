@@ -1222,7 +1222,7 @@ void ihevc_sao_edge_offset_class0_chroma_ssse3(UWORD8 *pu1_src,
 {
     WORD32 row, col;
     UWORD8 *pu1_src_cpy, *pu1_src_left_cpy, *pu1_src_left_str, *pu1_left_tmp;
-    UWORD8 au1_mask[MAX_CTB_SIZE], *au1_mask_cpy;
+    UWORD8 au1_mask[2 *MAX_CTB_SIZE], *au1_mask_cpy;
     UWORD8 au1_src_left_tmp[2 * (MAX_CTB_SIZE + 8)];
     UWORD8 au1_src_left_tmp1[2 * (MAX_CTB_SIZE + 8)];
     UWORD8 u1_avail0, u1_avail1;
@@ -1258,7 +1258,7 @@ void ihevc_sao_edge_offset_class0_chroma_ssse3(UWORD8 *pu1_src,
         au1_src_left_tmp[row] = pu1_src_left[row];
     }
     //setting availability mask to ff size MAX_CTB_SIZE
-    for(col = 0; col < MAX_CTB_SIZE; col += 16)
+    for(col = 0; col < 2 * MAX_CTB_SIZE; col += 16)
         _mm_storeu_si128((__m128i *)(au1_mask + col), au1_mask8x16b);
 
     edge_idx_8x16b   = _mm_loadl_epi64((__m128i *)gi1_table_edge_idx);
@@ -3250,7 +3250,7 @@ void ihevc_sao_edge_offset_class2_chroma_ssse3(UWORD8 *pu1_src,
     UWORD8 *pu1_left_tmp, *pu1_src_left_str, *pu1_src_left_str2;
     UWORD8 *pu1_firstleft;
     UWORD8 *pu1_src_cpy, *pu1_src_org;
-    UWORD8 au1_mask[MAX_CTB_SIZE], *au1_mask_cpy;
+    UWORD8 au1_mask[2 * MAX_CTB_SIZE], *au1_mask_cpy;
     UWORD8 au1_src_left_tmp[2 * (MAX_CTB_SIZE + 8)];
     UWORD8 au1_src_left_tmp1[2 * (MAX_CTB_SIZE + 8)];
     WORD32 wd_rem;
@@ -3283,7 +3283,7 @@ void ihevc_sao_edge_offset_class2_chroma_ssse3(UWORD8 *pu1_src,
         au1_src_left_tmp[row] = pu1_src_left[row];
     }
     //setting availability mask to ff size MAX_CTB_SIZE
-    for(col = 0; col < MAX_CTB_SIZE; col += 16)
+    for(col = 0; col < 2 * MAX_CTB_SIZE; col += 16)
         _mm_storeu_si128((__m128i *)(au1_mask + col), au1_mask8x16b);
     bit_depth = BIT_DEPTH_LUMA;
     pu1_src_org = pu1_src;
@@ -4858,7 +4858,7 @@ void ihevc_sao_edge_offset_class3_chroma_ssse3(UWORD8 *pu1_src,
     UWORD8 *pu1_src_top_cpy, *pu1_src_left_cpy, *pu1_src_left_cpy2;
     UWORD8 *pu1_src_cpy, *pu1_src_org;
     UWORD8 au1_src_left_tmp[2 * (MAX_CTB_SIZE + 8)];
-    UWORD8 au1_mask[MAX_CTB_SIZE], *au1_mask_cpy;
+    UWORD8 au1_mask[2 * MAX_CTB_SIZE], *au1_mask_cpy;
     WORD32 wd_rem;
     UWORD8 u1_pos_wd_0_tmp_u, u1_pos_wd_0_tmp_v, u1_pos_0_ht_tmp_u, u1_pos_0_ht_tmp_v;
     WORD32 ht_tmp;
@@ -4893,7 +4893,7 @@ void ihevc_sao_edge_offset_class3_chroma_ssse3(UWORD8 *pu1_src,
     pu1_src_top_left[0] = pu1_src_top[wd - 2];
     pu1_src_top_left[1] = pu1_src_top[wd - 1];
     //setting availability mask to ff size MAX_CTB_SIZE
-    for(col = 0; col < MAX_CTB_SIZE; col += 16)
+    for(col = 0; col < 2 * MAX_CTB_SIZE; col += 16)
         _mm_storeu_si128((__m128i *)(au1_mask + col), au1_mask8x16b);
     bit_depth = BIT_DEPTH_LUMA;
     pu1_src_org = pu1_src;
