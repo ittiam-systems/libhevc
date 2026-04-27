@@ -1180,6 +1180,23 @@ typedef struct
      */
     sei_params_t s_sei_params;
 #endif
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    /**
+     * Flag to indicate if chroma QP offset has been parsed for the current CU
+     */
+    WORD32 i4_is_cu_chroma_qp_offset_coded;
+
+    /**
+     * Parsed chroma QP offset flag for the current CU
+     */
+    WORD32 i4_cu_chroma_qp_offset_flag;
+
+    /**
+     * Parsed chroma QP offset index for the current CU
+     */
+    WORD32 i4_cu_chroma_qp_offset_idx;
+#endif
 }parse_ctxt_t;
 
 /**

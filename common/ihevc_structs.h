@@ -1440,6 +1440,16 @@ typedef struct
      *  Cr CCP alpha sign
      */
     UWORD32    b1_cr_log2_res_sign          : 1;
+
+    /**
+     * CU Chroma QP Offset flag
+     */
+    UWORD32    b1_cu_chroma_qp_offset_flag      : 1;
+
+    /**
+     * CU Chroma QP Offset index
+     */
+    UWORD32    b3_cu_chroma_qp_offset_idx       : 3;
 #endif
 
 }tu_t;

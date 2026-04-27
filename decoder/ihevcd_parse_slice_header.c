@@ -717,6 +717,14 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
             ps_slice_hdr->i1_slice_cr_qp_offset = i4_value;
 
         }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+        ps_slice_hdr->i1_cu_chroma_qp_offset_enabled_flag = 0;
+        if(ps_pps->i1_chroma_qp_offset_list_enabled_flag)
+        {
+            BITS_PARSE("cu_chroma_qp_offset_enabled_flag", value, ps_bitstrm, 1);
+            ps_slice_hdr->i1_cu_chroma_qp_offset_enabled_flag = value;
+        }
+#endif
         ps_slice_hdr->i1_deblocking_filter_override_flag = 0;
         ps_slice_hdr->i1_slice_disable_deblocking_filter_flag  = ps_pps->i1_pic_disable_deblocking_filter_flag;
         ps_slice_hdr->i1_beta_offset_div2 = ps_pps->i1_beta_offset_div2;

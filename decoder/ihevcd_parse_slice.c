@@ -126,6 +126,9 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     sps_t *ps_sps;
     pps_t *ps_pps;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    slice_header_t *ps_slice_hdr;
+#endif
     WORD32 value;
     WORD32 x1, y1;
     WORD32 max_trafo_depth;
@@ -139,6 +142,9 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
     max_trafo_depth = ps_codec->s_parse.s_cu.i4_max_trafo_depth;
     ps_sps = ps_codec->s_parse.ps_sps;
     ps_pps = ps_codec->s_parse.ps_pps;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
+#endif
     intra_split_flag = ps_codec->s_parse.s_cu.i4_intra_split_flag;
 
     {
@@ -342,6 +348,8 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
             ps_tu->b1_cb_log2_res_sign = 0;
             ps_tu->b3_cr_log2_res_scale_abs_plus1 = 0;
             ps_tu->b1_cr_log2_res_sign = 0;
+            ps_tu->b1_cu_chroma_qp_offset_flag = 0;
+            ps_tu->b3_cu_chroma_qp_offset_idx = 0;
 #endif
 
             ps_tu->b6_luma_intra_mode = intra_pred_mode;
@@ -397,6 +405,44 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                     ps_codec->s_parse.s_cu.i4_cu_qp_delta = cu_qp_delta_abs;
 
                 }
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                if(ps_slice_hdr->i1_cu_chroma_qp_offset_enabled_flag
+                    && !ps_codec->s_parse.s_cu.i4_cu_transquant_bypass)
+                {
+                    if(!ps_codec->s_parse.i4_is_cu_chroma_qp_offset_coded
+                        && cbf_chroma)
+                    {
+                        ctxt_idx = IHEVC_CAB_CHROMA_QP_OFF_FLAG;
+                        TRACE_CABAC_CTXT("cu_chroma_qp_offset_flag", ps_cabac->u4_range, ctxt_idx);
+                        value = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                        AEV_TRACE("cu_chroma_qp_offset_flag", value, ps_cabac->u4_range);
+                        ps_codec->s_parse.i4_cu_chroma_qp_offset_flag = value;
+
+                        ps_codec->s_parse.i4_cu_chroma_qp_offset_idx = 0;
+                        if(ps_codec->s_parse.i4_cu_chroma_qp_offset_flag &&
+                           ps_pps->i4_chroma_qp_offset_list_len_minus1 > 0)
+                        {
+                            ctxt_idx = IHEVC_CAB_CHROMA_QP_OFF_IDX;
+                            TRACE_CABAC_CTXT("cu_chroma_qp_offset_idx", ps_cabac->u4_range, ctxt_idx);
+                            value = ihevcd_cabac_decode_bins_tunary(ps_cabac,
+                                                                    ps_bitstrm,
+                                                                    ps_pps->i4_chroma_qp_offset_list_len_minus1,
+                                                                    ctxt_idx,
+                                                                    0,
+                                                                    0);
+                            AEV_TRACE("cu_chroma_qp_offset_idx", value, ps_cabac->u4_range);
+                            ps_codec->s_parse.i4_cu_chroma_qp_offset_idx = value;
+                        }
+
+                        ps_codec->s_parse.i4_is_cu_chroma_qp_offset_coded = 1;
+                    }
+                    ps_tu->b1_cu_chroma_qp_offset_flag =
+                            ps_codec->s_parse.i4_cu_chroma_qp_offset_flag;
+                    ps_tu->b3_cu_chroma_qp_offset_idx =
+                            ps_codec->s_parse.i4_cu_chroma_qp_offset_idx;
+                }
+#endif
 
                 if(ps_codec->s_parse.s_cu.i1_cbf_luma)
                 {
@@ -1913,6 +1959,9 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     sps_t *ps_sps;
     pps_t *ps_pps;
+    #ifdef ENABLE_MAIN_REXT_PROFILE
+    slice_header_t *ps_slice_hdr;
+    #endif
     WORD32 split_cu_flag;
     WORD32 x1, y1;
     WORD32 cu_pos_x;
@@ -1922,6 +1971,9 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
     WORD32 cb_size = 1 << log2_cb_size;
     ps_sps = ps_codec->s_parse.ps_sps;
     ps_pps = ps_codec->s_parse.ps_pps;
+    #ifdef ENABLE_MAIN_REXT_PROFILE
+    ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
+    #endif
 
     /* Compute CU position with respect to current CTB in (8x8) units */
     cu_pos_x = (x0 - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size)) >> 3;
@@ -2044,6 +2096,16 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
         ps_codec->s_parse.i4_is_cu_qp_delta_coded = 0;
         ps_codec->s_parse.i4_cu_qp_delta = 0;
     }
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    if(ps_slice_hdr->i1_cu_chroma_qp_offset_enabled_flag
+        && log2_cb_size >= (ps_sps->i1_log2_ctb_size
+                        - ps_pps->i4_diff_cu_chroma_qp_offset_depth))
+    {
+        ps_codec->s_parse.i4_is_cu_chroma_qp_offset_coded = 0;
+        ps_codec->s_parse.i4_cu_chroma_qp_offset_flag = 0;
+        ps_codec->s_parse.i4_cu_chroma_qp_offset_idx = 0;
+    }
+#endif
     if(split_cu_flag)
     {
         x1 = x0 + ((1 << log2_cb_size) >> 1);
