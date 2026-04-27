@@ -2756,11 +2756,6 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
         return IHEVCD_INVALID_PARAMETER;
     }
 
-    if(ps_pps->i1_chroma_qp_offset_list_enabled_flag)
-    {
-        // TODO: decoder does not yet supports these tool-sets
-        return IHEVCD_UNSUPPORTED_TOOL_SET;
-    }
     if(ps_pps->i1_pps_multilayer_extension_flag || ps_pps->i1_pps_3d_extension_flag
                     || ps_pps->i1_pps_scc_extension_flag)
     {

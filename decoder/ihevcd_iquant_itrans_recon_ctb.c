@@ -1210,6 +1210,12 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     i1_chroma_slice_qp_offset = ps_slice_hdr->i1_slice_cb_qp_offset;
 
                     chroma_qp_idx = ps_tu->b7_qp + i1_chroma_pic_qp_offset + i1_chroma_slice_qp_offset;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_tu->b1_cu_chroma_qp_offset_flag)
+                    {
+                        chroma_qp_idx += ps_pps->i4_cb_qp_offset_list[ps_tu->b3_cu_chroma_qp_offset_idx];
+                    }
+#endif
                     chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
                     qp_div = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
                     qp_rem = pi2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
@@ -1219,6 +1225,12 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     i1_chroma_slice_qp_offset = ps_slice_hdr->i1_slice_cr_qp_offset;
 
                     chroma_qp_idx = ps_tu->b7_qp + i1_chroma_pic_qp_offset + i1_chroma_slice_qp_offset;
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                    if(ps_tu->b1_cu_chroma_qp_offset_flag)
+                    {
+                        chroma_qp_idx += ps_pps->i4_cr_qp_offset_list[ps_tu->b3_cu_chroma_qp_offset_idx];
+                    }
+#endif
                     chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
                     qp_div_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
                     qp_rem_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
