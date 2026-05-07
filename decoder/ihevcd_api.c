@@ -1401,7 +1401,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
         pu1_buf += 4 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD8);
 
         ps_codec->as_process[i].s_sao_ctxt.pu1_tmp_buf_chroma = (UWORD8 *)pu1_buf;
-        pu1_buf += 4 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD8);
+        pu1_buf += 8 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD8);
     }
 
     /* Allocate intra pred modes buffer */
@@ -1817,6 +1817,9 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
     {
         sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
+        WORD32 chroma_pixel_strd = 2;
+        WORD32 h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+        WORD32 v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
         /* To hold SAO left buffer for luma */
         size  = sizeof(UWORD8) * (MAX(ht, wd));
@@ -1824,7 +1827,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         /* To hold SAO left buffer for chroma */
         if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
-            size += sizeof(UWORD8) * (MAX(ht, wd));
+            size += sizeof(UWORD8) * (MAX(ht, wd)) * (chroma_pixel_strd / v_samp_factor);
         }
 
         /* To hold SAO top buffer for luma */
@@ -1833,7 +1836,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         /* To hold SAO top buffer for chroma */
         if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
-            size += sizeof(UWORD8) * wd;
+            size += sizeof(UWORD8) * wd * (chroma_pixel_strd / h_samp_factor);
         }
 
         /* To hold SAO top left luma pixel value for last output ctb in a row*/
@@ -1892,7 +1895,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
                 ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_left_chroma = (UWORD8 *)pu1_buf;
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_left_chroma = (UWORD8 *)pu1_buf;
-            pu1_buf += MAX(ht, wd);
+            pu1_buf += MAX(ht, wd) * (chroma_pixel_strd / v_samp_factor);
         }
 
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
@@ -1909,7 +1912,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
                 ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_chroma = (UWORD8 *)pu1_buf;
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_chroma = (UWORD8 *)pu1_buf;
-            pu1_buf += wd;
+            pu1_buf += wd * (chroma_pixel_strd / h_samp_factor);
         }
 
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
