@@ -199,7 +199,6 @@ void ihevcd_init_function_ptr_avx2(func_selector_t *ps_func_selector);
 #endif
 
 void ihevcd_init_function_ptr_neonintr(func_selector_t *ps_func_selector);
-void ihevcd_init_function_ptr_noneon(func_selector_t *ps_func_selector);
 void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector);
 void ihevcd_init_function_ptr_av8(func_selector_t *ps_func_selector);
 

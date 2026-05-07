@@ -100,6 +100,7 @@ cc_library_static {
         "decoder/ihevcd_deblk.c",
         "decoder/ihevcd_decode.c",
         "decoder/ihevcd_fmt_conv.c",
+        "decoder/ihevcd_function_selector_generic.c",
         "decoder/ihevcd_get_mv.c",
         "decoder/ihevcd_ilf_padding.c",
         "decoder/ihevcd_inter_pred.c",
@@ -202,7 +203,6 @@ cc_library_static {
                 "common/arm64/ihevc_weighted_pred_bi_default.s",
                 "common/arm64/ihevc_weighted_pred_uni.s",
                 "decoder/arm/ihevcd_function_selector.c",
-                "decoder/arm/ihevcd_function_selector_noneon.c",
                 "decoder/arm64/ihevcd_fmt_conv_420sp_to_420p.s",
                 "decoder/arm64/ihevcd_fmt_conv_420sp_to_420sp.s",
                 "decoder/arm64/ihevcd_function_selector_av8.c",
@@ -219,7 +219,6 @@ cc_library_static {
 
             srcs: [
                 "decoder/arm/ihevcd_function_selector.c",
-                "decoder/arm/ihevcd_function_selector_noneon.c",
                 "common/arm/ihevc_deblk_chroma_horz.s",
                 "common/arm/ihevc_deblk_chroma_vert.s",
                 "common/arm/ihevc_deblk_luma_horz.s",
@@ -337,7 +336,6 @@ cc_library_static {
                 "common/x86/ihevc_weighted_pred_ssse3_intr.c",
                 "decoder/x86/ihevcd_fmt_conv_ssse3_intr.c",
                 "decoder/x86/ihevcd_function_selector.c",
-                "decoder/x86/ihevcd_function_selector_generic.c",
                 "decoder/x86/ihevcd_function_selector_sse42.c",
                 "decoder/x86/ihevcd_function_selector_ssse3.c",
                 "decoder/x86/ihevcd_it_rec_dc_sse42_intr.c",
@@ -381,7 +379,6 @@ cc_library_static {
                 "common/x86/ihevc_weighted_pred_ssse3_intr.c",
                 "decoder/x86/ihevcd_fmt_conv_ssse3_intr.c",
                 "decoder/x86/ihevcd_function_selector.c",
-                "decoder/x86/ihevcd_function_selector_generic.c",
                 "decoder/x86/ihevcd_function_selector_sse42.c",
                 "decoder/x86/ihevcd_function_selector_ssse3.c",
                 "decoder/x86/ihevcd_it_rec_dc_sse42_intr.c",
@@ -395,7 +392,6 @@ cc_library_static {
 
             srcs: [
                 "decoder/riscv64/ihevcd_function_selector.c",
-                "decoder/riscv64/ihevcd_function_selector_generic.c",
             ],
         },
     },

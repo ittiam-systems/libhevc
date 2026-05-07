@@ -40,7 +40,7 @@ const func_selector_t ref = []() {
     defined(_M_IX86)
   ihevcd_init_function_ptr_generic(&ret);
 #elif defined(__aarch64__) || defined(__arm__)
-  ihevcd_init_function_ptr_noneon(&ret);
+  ihevcd_init_function_ptr_generic(&ret);
 #endif
   return ret;
 }();
@@ -70,7 +70,7 @@ const func_selector_t test_avx2 = []() {
 const func_selector_t test_arm64 = []() {
   func_selector_t ret = {};
 #ifdef DARWIN
-  ihevcd_init_function_ptr_noneon(&ret);
+  ihevcd_init_function_ptr_generic(&ret);
 #else
   ihevcd_init_function_ptr_av8(&ret);
 #endif
@@ -80,7 +80,7 @@ const func_selector_t test_arm64 = []() {
 const func_selector_t test_arm32 = []() {
   func_selector_t ret = {};
 #ifdef DARWIN
-  ihevcd_init_function_ptr_noneon(&ret);
+  ihevcd_init_function_ptr_generic(&ret);
 #else
   ihevcd_init_function_ptr_a9q(&ret);
 #endif
