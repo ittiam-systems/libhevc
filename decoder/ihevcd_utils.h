@@ -54,4 +54,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec);
 WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
                                      WORD32 wd,
                                      WORD32 ht);
+void ihevcd_update_function_ptr(codec_t *ps_codec);
+
 #endif /* _IHEVCD_UTILS_H_ */

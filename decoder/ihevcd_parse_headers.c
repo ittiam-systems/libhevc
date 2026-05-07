@@ -72,6 +72,7 @@
 #include "ihevcd_bitstream.h"
 #include "ihevcd_parse_headers.h"
 #include "ihevcd_ref_list.h"
+#include "ihevcd_utils.h"
 
 #define COPY_DEFAULT_SCALING_LIST(pi2_scaling_mat)                                                                                      \
 {                                                                                                                                       \
@@ -1601,6 +1602,16 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             break;
     }
     ps_sps->i1_chroma_format_idc = value;
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    // TODO: re enable simd optimizations once they are updated for 422, 444 internal color formats
+    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 ||
+       ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
+        ihevcd_update_function_ptr(ps_codec);
+    }
+#endif
 
     if(CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
     {
