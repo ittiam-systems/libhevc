@@ -71,7 +71,7 @@ void ihevcd_init_function_ptr(void *pv_codec)
             break;
 #endif
         case ARCH_ARM_NONEON:
-            ihevcd_init_function_ptr_noneon(&ps_codec->s_func_selector);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             break;
         default:
         case ARCH_ARM_A5:
@@ -82,7 +82,7 @@ void ihevcd_init_function_ptr(void *pv_codec)
 #ifndef DISABLE_NEON
             ihevcd_init_function_ptr_a9q(&ps_codec->s_func_selector);
 #else
-            ihevcd_init_function_ptr_noneon(&ps_codec->s_func_selector);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
 #endif
             break;
     }
@@ -102,12 +102,12 @@ void ihevcd_init_function_ptr(void *pv_codec)
     switch(ps_codec->e_processor_arch)
     {
         case ARCH_ARM_NONEON:
-            ihevcd_init_function_ptr_noneon(&ps_codec->s_func_selector);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             break;
         case ARCH_ARMV8_GENERIC:
         default:
 #ifdef DARWIN
-            ihevcd_init_function_ptr_noneon(&ps_codec->s_func_selector);
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             break;
 #else
             ihevcd_init_function_ptr_av8(&ps_codec->s_func_selector);
