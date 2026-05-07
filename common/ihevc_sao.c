@@ -470,8 +470,8 @@ void ihevc_sao_edge_offset_class1_chroma(UWORD8 *pu1_src,
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
-    UWORD8 au1_src_top_tmp[MAX_CTB_SIZE];
-    WORD8 au1_sign_up[MAX_CTB_SIZE];
+    UWORD8 au1_src_top_tmp[2 * MAX_CTB_SIZE];
+    WORD8 au1_sign_up[2 * MAX_CTB_SIZE];
     WORD8 u1_sign_down;
     WORD32 bit_depth;
     UNUSED(pu1_src_top_right);
@@ -757,9 +757,9 @@ void ihevc_sao_edge_offset_class2_chroma(UWORD8 *pu1_src,
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
-    UWORD8 au1_src_left_tmp[2 * MAX_CTB_SIZE], au1_src_top_tmp[MAX_CTB_SIZE];
+    UWORD8 au1_src_left_tmp[2 * MAX_CTB_SIZE], au1_src_top_tmp[2 * MAX_CTB_SIZE];
     UWORD8 au1_src_top_left_tmp[2];
-    WORD8 au1_sign_up[MAX_CTB_SIZE + 2], au1_sign_up_tmp[MAX_CTB_SIZE + 2];
+    WORD8 au1_sign_up[2 * MAX_CTB_SIZE + 2], au1_sign_up_tmp[2 * MAX_CTB_SIZE + 2];
     WORD8 u1_sign_down;
     WORD8 *pu1_sign_up;
     WORD8 *pu1_sign_up_tmp;
@@ -1169,9 +1169,9 @@ void ihevc_sao_edge_offset_class3_chroma(UWORD8 *pu1_src,
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
-    UWORD8 au1_src_left_tmp[2 * MAX_CTB_SIZE], au1_src_top_tmp[MAX_CTB_SIZE];
+    UWORD8 au1_src_left_tmp[2 * MAX_CTB_SIZE], au1_src_top_tmp[2 * MAX_CTB_SIZE];
     UWORD8 au1_src_top_left_tmp[2];
-    WORD8 au1_sign_up[MAX_CTB_SIZE];
+    WORD8 au1_sign_up[2 * MAX_CTB_SIZE];
     UWORD8 *pu1_src_left_cpy;
     WORD8 u1_sign_down;
     WORD32 bit_depth;

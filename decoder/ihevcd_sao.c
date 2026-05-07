@@ -530,6 +530,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     UWORD8 *pu1_src_luma;
     UWORD8 *pu1_src_chroma;
     WORD32 src_strd;
+    WORD32 chroma_strd;
     WORD32 ctb_size;
     WORD32 log2_ctb_size;
     sps_t *ps_sps;
@@ -582,16 +583,24 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     ps_pps = ps_sao_ctxt->ps_pps;
     ps_tile = ps_sao_ctxt->ps_tile;
 
+    WORD32 is_yuv444 = ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 1 : 0;
+    WORD32 h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    WORD32 v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
+    WORD32 chroma_pixel_strd = 2;
+
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << log2_ctb_size);
     src_strd = ps_sao_ctxt->ps_codec->i4_strd;
+    chroma_strd = src_strd * chroma_pixel_strd / h_samp_factor;
     ps_slice_hdr_base = ps_sao_ctxt->ps_codec->ps_slice_hdr_base;
     ps_slice_hdr = ps_slice_hdr_base + (ps_sao_ctxt->i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
 
     pu1_slice_idx = ps_sao_ctxt->pu1_slice_idx;
     pu1_tile_idx = ps_sao_ctxt->pu1_tile_idx;
     pu1_src_luma = ps_sao_ctxt->pu1_cur_pic_luma + ((ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd) << (log2_ctb_size));
-    pu1_src_chroma = ps_sao_ctxt->pu1_cur_pic_chroma + ((ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd / 2) << (log2_ctb_size));
+    pu1_src_chroma = ps_sao_ctxt->pu1_cur_pic_chroma
+                    + ((ps_sao_ctxt->i4_ctb_x * chroma_pixel_strd / h_samp_factor
+                    + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << (log2_ctb_size));
 
     /*Stores the left value for each row ctbs- Needed for column tiles*/
     pu1_sao_src_top_left_luma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_luma_curr_ctb + ((ps_sao_ctxt->i4_ctb_y));
@@ -716,14 +725,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 sao_blk_wd += remaining_cols;
 
             pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0;
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd : 0;
+            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0;
 
             pu1_src_backup_chroma = ps_sao_ctxt->pu1_tmp_buf_chroma;
 
             loop_filter_bit_pos = (ps_sao_ctxt->i4_ctb_x << (log2_ctb_size - 3)) +
                             (ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 3)) * (loop_filter_strd << 3);
             if(ps_sao_ctxt->i4_ctb_x > 0)
-                loop_filter_bit_pos -= 2;
+                loop_filter_bit_pos -= (is_yuv444 ? 1 : 2);
 
             pu1_no_loop_filter_flag = ps_sao_ctxt->pu1_pic_no_loop_filter_flag +
                             (loop_filter_bit_pos >> 3);
@@ -744,34 +753,34 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
                         else
                         {
-                            for(row = 0; row < min_cu / 2; row++)
+                            for(row = 0; row < min_cu / v_samp_factor; row++)
                             {
-                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor; col++)
                                 {
-                                    pu1_src_backup_chroma[row * backup_strd + col] = pu1_src_tmp_chroma[row * src_strd + col];
+                                    pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) + col] = pu1_src_tmp_chroma[row * chroma_strd + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_chroma -= sao_blk_wd;
-                    pu1_src_backup_chroma -= sao_blk_wd;
+                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
+                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
                 }
 
-                pu1_src_tmp_chroma += ((src_strd / 2) << log2_min_cu);
-                pu1_src_backup_chroma += ((backup_strd / 2) << log2_min_cu);
+                pu1_src_tmp_chroma += (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
+                pu1_src_backup_chroma += (((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
             }
         }
     }
@@ -799,12 +808,12 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
 
         pu1_src_luma -= (sao_wd_luma + sao_ht_luma * src_strd);
-        pu1_src_chroma -= (sao_wd_chroma + sao_ht_chroma * src_strd);
+        pu1_src_chroma -= (sao_wd_chroma + sao_ht_chroma * chroma_strd);
         ps_sao -= (1 + ps_sps->i2_pic_wd_in_ctb);
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma;
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_chroma;
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma;
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_luma;
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - (2 * sao_ht_chroma);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma);
 
         if(ps_slice_hdr_top_left->i1_slice_sao_luma_flag)
         {
@@ -1124,13 +1133,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 for(row = 0; row < sao_ht_chroma; row++)
                 {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                 }
                 pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                 pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
 
             }
 
@@ -1149,7 +1158,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 if(chroma_yuv420sp_vu)
                 {
                     ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                src_strd,
+                                                                                chroma_strd,
                                                                                 pu1_src_left_chroma,
                                                                                 pu1_src_top_chroma,
                                                                                 pu1_sao_src_chroma_top_left_ctb,
@@ -1164,7 +1173,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 else
                 {
                     ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                src_strd,
+                                                                                chroma_strd,
                                                                                 pu1_src_left_chroma,
                                                                                 pu1_src_top_chroma,
                                                                                 pu1_sao_src_chroma_top_left_ctb,
@@ -1258,7 +1267,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                             /* Verify that the neighbor ctbs don't cross pic boundary
                              * Also, the ILF flag belonging to the higher pixel address (between neighbor and current pixels) must be assigned*/
-                            if((0 == (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_chroma))
+                            if((0 == ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor)) - sao_wd_chroma))
                             {
                                 au4_ilf_across_tile_slice_enable[4] = 0;
                                 au4_ilf_across_tile_slice_enable[6] = 0;
@@ -1267,7 +1276,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             {
                                 au4_ilf_across_tile_slice_enable[6] = (ps_slice_hdr_base + au4_idx_tl[6])->i1_slice_loop_filter_across_slices_enabled_flag;
                             }
-                            if((0 == (ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 1)) - sao_ht_chroma))
+                            if((0 == ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) - sao_ht_chroma))
                             {
                                 au4_ilf_across_tile_slice_enable[5] = 0;
                                 au4_ilf_across_tile_slice_enable[4] = 0;
@@ -1369,7 +1378,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                 }
 
-                if(0 == (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_chroma)
+                if(0 == ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor)) - sao_wd_chroma)
                 {
                     au1_avail_chroma[0] = 0;
                     au1_avail_chroma[4] = 0;
@@ -1382,7 +1391,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au1_avail_chroma[7] = 0;
                 }
 
-                if(0 == (ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 1)) - sao_ht_chroma)
+                if(0 == ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) - sao_ht_chroma)
                 {
                     au1_avail_chroma[2] = 0;
                     au1_avail_chroma[4] = 0;
@@ -1402,14 +1411,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_left_chroma[2 * sao_ht_chroma + 1];
                     if((ctb_size == 16) && (ps_sao_ctxt->i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
                     {
-                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * src_strd - 2];
-                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
+                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 1];
                     }
 
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                             src_strd,
+                                                                             chroma_strd,
                                                                              pu1_src_left_chroma,
                                                                              pu1_src_top_chroma,
                                                                              pu1_sao_src_chroma_top_left_ctb,
@@ -1424,7 +1433,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     else
                     {
                         ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                             src_strd,
+                                                                             chroma_strd,
                                                                              pu1_src_left_chroma,
                                                                              pu1_src_top_chroma,
                                                                              pu1_sao_src_chroma_top_left_ctb,
@@ -1443,17 +1452,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             for(row = 0; row < sao_ht_chroma; row++)
             {
-                pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
             }
             pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
             pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-            ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+            ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
         }
 
         pu1_src_luma += sao_wd_luma + sao_ht_luma * src_strd;
-        pu1_src_chroma += sao_wd_chroma + sao_ht_chroma * src_strd;
+        pu1_src_chroma += sao_wd_chroma + sao_ht_chroma * chroma_strd;
         ps_sao += (1 + ps_sps->i2_pic_wd_in_ctb);
     }
 
@@ -1462,7 +1471,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     if((ps_sao_ctxt->i4_ctb_y > 0))
     {
         WORD32 sao_wd_luma = ctb_size - SAO_SHIFT_CTB;
-        WORD32 sao_wd_chroma = ctb_size - 2 * SAO_SHIFT_CTB;
+        WORD32 sao_wd_chroma = ctb_size * (chroma_pixel_strd / h_samp_factor) - 2 * SAO_SHIFT_CTB;
         WORD32 sao_ht_luma = SAO_SHIFT_CTB;
         WORD32 sao_ht_chroma = SAO_SHIFT_CTB;
 
@@ -1484,19 +1493,19 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             sao_wd_luma += remaining_cols;
         }
-        remaining_cols = ps_sps->i2_pic_width_in_luma_samples - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) + sao_wd_chroma);
+        remaining_cols = ps_sps->i2_pic_width_in_luma_samples * (chroma_pixel_strd / h_samp_factor) - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) + sao_wd_chroma);
         if(remaining_cols <= 2 * SAO_SHIFT_CTB)
         {
             sao_wd_chroma += remaining_cols;
         }
 
         pu1_src_luma -= (sao_ht_luma * src_strd);
-        pu1_src_chroma -= (sao_ht_chroma * src_strd);
+        pu1_src_chroma -= (sao_ht_chroma * chroma_strd);
         ps_sao -= (ps_sps->i2_pic_wd_in_ctb);
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor);
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_chroma;
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - (2 * sao_ht_chroma);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma);
 
         if(0 != sao_wd_luma)
         {
@@ -1774,13 +1783,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     for(row = 0; row < sao_ht_chroma; row++)
                     {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                     }
                     pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                     pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
 
                 }
 
@@ -1799,7 +1808,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_chroma_top_left_ctb,
@@ -1814,7 +1823,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     else
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_chroma_top_left_ctb,
@@ -1986,14 +1995,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[6] = 0;
                     }
 
-                    if(ps_sps->i2_pic_width_in_luma_samples - (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) <= sao_wd_chroma)
+                    if(ps_sps->i2_pic_width_in_luma_samples * (chroma_pixel_strd / h_samp_factor) - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor)) <= sao_wd_chroma)
                     {
                         au1_avail_chroma[1] = 0;
                         au1_avail_chroma[5] = 0;
                         au1_avail_chroma[7] = 0;
                     }
 
-                    if(0 == (ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 1)) - sao_ht_chroma)
+                    if(0 == ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) - sao_ht_chroma)
                     {
                         au1_avail_chroma[2] = 0;
                         au1_avail_chroma[4] = 0;
@@ -2010,13 +2019,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         au1_src_top_right[0] = pu1_sao_src_top_left_chroma_top_right[0];
                         au1_src_top_right[1] = pu1_sao_src_top_left_chroma_top_right[1];
-                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * src_strd - 2];
-                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
+                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 1];
 
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_chroma_top_left_ctb,
@@ -2031,7 +2040,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_chroma_top_left_ctb,
@@ -2051,18 +2060,18 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 for(row = 0; row < sao_ht_chroma; row++)
                 {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                 }
                 pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                 pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
             }
         }
 
         pu1_src_luma += sao_ht_luma * src_strd;
-        pu1_src_chroma += sao_ht_chroma * src_strd;
+        pu1_src_chroma += sao_ht_chroma * chroma_strd;
         ps_sao += (ps_sps->i2_pic_wd_in_ctb);
     }
 
@@ -2072,7 +2081,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         WORD32 sao_wd_luma = SAO_SHIFT_CTB;
         WORD32 sao_wd_chroma = 2 * SAO_SHIFT_CTB;
         WORD32 sao_ht_luma = ctb_size - SAO_SHIFT_CTB;
-        WORD32 sao_ht_chroma = ctb_size / 2 - SAO_SHIFT_CTB;
+        WORD32 sao_ht_chroma = (ctb_size / v_samp_factor) - SAO_SHIFT_CTB;
 
         WORD32 ctbx_l_t = 0, ctbx_l_l = 0, ctbx_l_r = 0, ctbx_l_d = 0, ctbx_l = 0;
         WORD32 ctby_l_t = 0, ctby_l_l = 0, ctby_l_r = 0, ctby_l_d = 0, ctby_l = 0;
@@ -2091,7 +2100,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             sao_ht_luma += remaining_rows;
         }
-        remaining_rows = ps_sps->i2_pic_height_in_luma_samples / 2 - ((ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 1)) + sao_ht_chroma);
+        remaining_rows = ps_sps->i2_pic_height_in_luma_samples / v_samp_factor - (((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) + sao_ht_chroma);
         if(remaining_rows <= SAO_SHIFT_CTB)
         {
             sao_ht_chroma += remaining_rows;
@@ -2101,9 +2110,9 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_chroma -= sao_wd_chroma;
         ps_sao -= 1;
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma;
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_chroma;
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma;
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor);
 
 
         if(0 != sao_ht_luma)
@@ -2372,13 +2381,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 {
                     for(row = 0; row < sao_ht_chroma; row++)
                     {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                     }
                     pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                     pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
                 }
 
                 else if(1 == ps_sao->b3_cb_type_idx)
@@ -2396,7 +2405,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_top_left_chroma_curr_ctb,
@@ -2411,7 +2420,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     else
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_top_left_chroma_curr_ctb,
@@ -2572,7 +2581,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             }
                         }
                     }
-                    if(0 == (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_chroma)
+                    if(0 == ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor)) - sao_wd_chroma)
                     {
                         au1_avail_chroma[0] = 0;
                         au1_avail_chroma[4] = 0;
@@ -2593,7 +2602,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[5] = 0;
                     }
 
-                    if(ps_sps->i2_pic_height_in_luma_samples / 2 - (ps_sao_ctxt->i4_ctb_y  << (log2_ctb_size - 1)) <= sao_ht_chroma)
+                    if((ps_sps->i2_pic_height_in_luma_samples / v_samp_factor) - ((ps_sao_ctxt->i4_ctb_y  << log2_ctb_size) / v_samp_factor) <= sao_ht_chroma)
                     {
                         au1_avail_chroma[3] = 0;
                         au1_avail_chroma[6] = 0;
@@ -2609,15 +2618,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         //au1_src_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
                         if((ctb_size == 16) && (ps_sao_ctxt->i4_ctb_x != ps_sps->i2_pic_wd_in_ctb - 1))
                         {
-                            au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - src_strd];
-                            au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - src_strd + 1];
+                            au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - chroma_strd];
+                            au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - chroma_strd + 1];
                         }
 
 
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_top_left_chroma_curr_ctb,
@@ -2632,7 +2641,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_top_left_chroma_curr_ctb,
@@ -2652,13 +2661,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 for(row = 0; row < sao_ht_chroma; row++)
                 {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                 }
                 pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                 pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
             }
 
         }
@@ -2671,12 +2680,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     /* Current CTB */
     {
         WORD32 sao_wd_luma = ctb_size - SAO_SHIFT_CTB;
-        WORD32 sao_wd_chroma = ctb_size - SAO_SHIFT_CTB * 2;
+        WORD32 sao_wd_chroma = ctb_size * (chroma_pixel_strd / h_samp_factor) - SAO_SHIFT_CTB * 2;
         WORD32 sao_ht_luma = ctb_size - SAO_SHIFT_CTB;
-        WORD32 sao_ht_chroma = ctb_size / 2 - SAO_SHIFT_CTB;
+        WORD32 sao_ht_chroma = (ctb_size / v_samp_factor) - SAO_SHIFT_CTB;
         WORD32 ctbx_c_t = 0, ctbx_c_l = 0, ctbx_c_r = 0, ctbx_c_d = 0, ctbx_c = 0;
         WORD32 ctby_c_t = 0, ctby_c_l = 0, ctby_c_r = 0, ctby_c_d = 0, ctby_c = 0;
         WORD32 au4_idx_c[8], idx_c;
+        WORD32 chroma_strd = is_yuv444 ? src_strd * 2 : src_strd;
 
         WORD32 remaining_rows;
         WORD32 remaining_cols;
@@ -2686,7 +2696,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             sao_wd_luma += remaining_cols;
         }
-        remaining_cols = ps_sps->i2_pic_width_in_luma_samples - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) + sao_wd_chroma);
+        remaining_cols = ps_sps->i2_pic_width_in_luma_samples * (chroma_pixel_strd / h_samp_factor) - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) + sao_wd_chroma);
         if(remaining_cols <= 2 * SAO_SHIFT_CTB)
         {
             sao_wd_chroma += remaining_cols;
@@ -2697,16 +2707,16 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             sao_ht_luma += remaining_rows;
         }
-        remaining_rows = ps_sps->i2_pic_height_in_luma_samples / 2 - ((ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 1)) + sao_ht_chroma);
+        remaining_rows = ps_sps->i2_pic_height_in_luma_samples / v_samp_factor - (((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) + sao_ht_chroma);
         if(remaining_rows <= SAO_SHIFT_CTB)
         {
             sao_ht_chroma += remaining_rows;
         }
 
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor);
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor);
 
         if((0 != sao_wd_luma) && (0 != sao_ht_luma))
         {
@@ -3007,16 +3017,16 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 {
                     for(row = 0; row < sao_ht_chroma; row++)
                     {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                     }
                     pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                     pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                    ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
 
-                    pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma];
-                    pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma + 1];
+                    pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                    pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
                 }
 
                 else if(1 == ps_sao->b3_cb_type_idx)
@@ -3034,7 +3044,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_top_left_chroma_curr_ctb,
@@ -3049,7 +3059,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     else
                     {
                         ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    src_strd,
+                                                                                    chroma_strd,
                                                                                     pu1_src_left_chroma,
                                                                                     pu1_src_top_chroma,
                                                                                     pu1_sao_src_top_left_chroma_curr_ctb,
@@ -3249,7 +3259,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[6] = 0;
                     }
 
-                    if(ps_sps->i2_pic_width_in_luma_samples - (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) <= sao_wd_chroma)
+                    if(ps_sps->i2_pic_width_in_luma_samples * (chroma_pixel_strd / h_samp_factor) - ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor)) <= sao_wd_chroma)
                     {
                         au1_avail_chroma[1] = 0;
                         au1_avail_chroma[5] = 0;
@@ -3263,7 +3273,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[5] = 0;
                     }
 
-                    if(ps_sps->i2_pic_height_in_luma_samples / 2 - (ps_sao_ctxt->i4_ctb_y  << (log2_ctb_size - 1)) <= sao_ht_chroma)
+                    if(ps_sps->i2_pic_height_in_luma_samples / v_samp_factor - ((ps_sao_ctxt->i4_ctb_y  << log2_ctb_size) / v_samp_factor) <= sao_ht_chroma)
                     {
                         au1_avail_chroma[3] = 0;
                         au1_avail_chroma[6] = 0;
@@ -3271,16 +3281,16 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
 
                     {
-                        au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - src_strd];
-                        au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - src_strd + 1];
+                        au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - chroma_strd];
+                        au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - chroma_strd + 1];
 
-                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * src_strd - 2];
-                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
+                        au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 1];
 
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_top_left_chroma_curr_ctb,
@@ -3295,7 +3305,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 src_strd,
+                                                                                 chroma_strd,
                                                                                  pu1_src_left_chroma,
                                                                                  pu1_src_top_chroma,
                                                                                  pu1_sao_src_top_left_chroma_curr_ctb,
@@ -3310,26 +3320,26 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
 
                 }
-                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma];
-                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma + 1];
+                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
 
-                pu1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[(sao_ht_chroma)*src_strd + sao_wd_chroma - 2];
-                pu1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[(sao_ht_chroma)*src_strd + sao_wd_chroma - 1];
+                pu1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 2];
+                pu1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 1];
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
                 for(row = 0; row < sao_ht_chroma; row++)
                 {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * src_strd + (sao_wd_chroma - 1)];
+                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
+                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
                 }
                 pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
                 pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
 
-                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * src_strd], sao_wd_chroma);
+                ps_codec->s_func_selector.ihevc_memcpy_fptr(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
 
-                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma];
-                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * src_strd + sao_wd_chroma + 1];
+                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
             }
 
         }
@@ -3439,14 +3449,14 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 sao_blk_wd += remaining_cols;
 
             pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0;
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd : 0;
+            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0;
 
             pu1_src_backup_chroma = ps_sao_ctxt->pu1_tmp_buf_chroma;
 
             loop_filter_bit_pos = (ps_sao_ctxt->i4_ctb_x << (log2_ctb_size - 3)) +
                             (ps_sao_ctxt->i4_ctb_y << (log2_ctb_size - 3)) * (loop_filter_strd << 3);
             if(ps_sao_ctxt->i4_ctb_x > 0)
-                loop_filter_bit_pos -= 2;
+                loop_filter_bit_pos -= (is_yuv444 ? 1 : 2);
 
             pu1_no_loop_filter_flag = ps_sao_ctxt->pu1_pic_no_loop_filter_flag +
                             (loop_filter_bit_pos >> 3);
@@ -3466,34 +3476,34 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
                         else
                         {
-                            for(row = 0; row < min_cu / 2; row++)
+                            for(row = 0; row < min_cu / v_samp_factor; row++)
                             {
-                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor); col++)
                                 {
-                                    pu1_src_tmp_chroma[row * src_strd + col] = pu1_src_backup_chroma[row * backup_strd + col];
+                                    pu1_src_tmp_chroma[row * chroma_strd + col] = pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_chroma -= sao_blk_wd;
-                    pu1_src_backup_chroma -= sao_blk_wd;
+                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
+                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
                 }
 
-                pu1_src_tmp_chroma += ((src_strd / 2) << log2_min_cu);
-                pu1_src_backup_chroma += ((backup_strd / 2) << log2_min_cu);
+                pu1_src_tmp_chroma += (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
+                pu1_src_backup_chroma += (((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
             }
         }
     }
