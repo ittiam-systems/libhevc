@@ -42,6 +42,7 @@
 .equ    tc_offset_div2_offset,  48
 .equ    filter_p_offset,        52
 .equ    filter_q_offset,        56
+.equ    chroma_fmt,             60
 
 .text
 .align 4
@@ -82,18 +83,33 @@ ulbl1:
     add         r7,r7,pc
     ldr         r12,[sp,#filter_p_offset]
     ldr         r6,[sp,#qp_offset_v_offset]
+    ldr         r10,[sp,#chroma_fmt]
+    cmp         r10,#1
+    bgt         qp_u_min_51_vert
     bmi         l1.2944
     cmp         r3,#0x39
     ldrle       r3,[r7,r3,lsl #2]
     subgt       r3,r3,#6
+    b           qp_u_done_vert
+qp_u_min_51_vert:
+    cmp         r3,#0x33
+    movgt       r3,#0x33
+qp_u_done_vert:
 l1.2944:
     vtrn.16     d5,d16
     adds        r2,r6,r2,asr #1
     vtrn.16     d17,d4
+    cmp         r10,#1
+    bgt         qp_v_min_51_vert
     bmi         l1.2964
     cmp         r2,#0x39
     ldrle       r2,[r7,r2,lsl #2]
     subgt       r2,r2,#6
+    b           qp_v_done_vert
+qp_v_min_51_vert:
+    cmp         r2,#0x33
+    movgt       r2,#0x33
+qp_v_done_vert:
 l1.2964:
     vtrn.32     d5,d17
     add         r3,r3,r5,lsl #1

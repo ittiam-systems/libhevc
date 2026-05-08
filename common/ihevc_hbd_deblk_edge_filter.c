@@ -52,6 +52,7 @@
 #include "ihevc_deblk.h"
 #include "ihevc_deblk_tables.h"
 #include "ihevc_debug.h"
+#include "ihevc_defs.h"
 
 
 /**
@@ -601,7 +602,8 @@ void ihevc_hbd_deblk_chroma_vert(UWORD16 *pu2_src,
                                  WORD32 tc_offset_div2,
                                  WORD32 filter_flag_p,
                                  WORD32 filter_flag_q,
-                                 UWORD8 bit_depth)
+                                 UWORD8 bit_depth,
+                                 WORD8 chroma_fmt_idc)
 {
     WORD32 qp_indx_u, qp_chroma_u;
     WORD32 qp_indx_v, qp_chroma_v;
@@ -616,10 +618,19 @@ void ihevc_hbd_deblk_chroma_vert(UWORD16 *pu2_src,
     /* chroma processing is done only if BS is 2             */
     /* this function is assumed to be called only if BS is 2 */
     qp_indx_u = qp_offset_u + ((quant_param_p + quant_param_q + 1) >> 1);
-    qp_chroma_u = qp_indx_u < 0 ? qp_indx_u : (qp_indx_u > 57 ? qp_indx_u - 6 : gai4_ihevc_qp_table[qp_indx_u]);
-
     qp_indx_v = qp_offset_v + ((quant_param_p + quant_param_q + 1) >> 1);
-    qp_chroma_v = qp_indx_v < 0 ? qp_indx_v : (qp_indx_v > 57 ? qp_indx_v - 6 : gai4_ihevc_qp_table[qp_indx_v]);
+
+    /* 8.7.2.5.5 Filtering process for chroma block edges */
+    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        qp_chroma_u = MIN(qp_indx_u, 51);
+        qp_chroma_v = MIN(qp_indx_v, 51);
+    }
+    else
+    {
+        qp_chroma_u = qp_indx_u < 0 ? qp_indx_u : (qp_indx_u > 57 ? qp_indx_u - 6 : gai4_ihevc_qp_table[qp_indx_u]);
+        qp_chroma_v = qp_indx_v < 0 ? qp_indx_v : (qp_indx_v > 57 ? qp_indx_v - 6 : gai4_ihevc_qp_table[qp_indx_v]);
+    }
 
     tc_indx_u = CLIP3(qp_chroma_u + 2 + (tc_offset_div2 << 1), 0, 53);
     tc_u = gai4_ihevc_tc_table[tc_indx_u] * (1 << (bit_depth - 8));
@@ -715,7 +726,8 @@ void ihevc_deblk_422chroma_vert(UWORD8 *pu1_src,
                                 WORD32 qp_offset_v,
                                 WORD32 tc_offset_div2,
                                 WORD32 filter_flag_p,
-                                WORD32 filter_flag_q)
+                                WORD32 filter_flag_q,
+                                WORD8 chroma_fmt_idc)
 {
     WORD32 qp_indx_u, qp_chroma_u;
     WORD32 qp_indx_v, qp_chroma_v;
@@ -833,7 +845,8 @@ void ihevc_hbd_deblk_422chroma_vert(UWORD16 *pu2_src,
                                     WORD32 tc_offset_div2,
                                     WORD32 filter_flag_p,
                                     WORD32 filter_flag_q,
-                                    UWORD8 bit_depth)
+                                    UWORD8 bit_depth,
+                                    WORD8 chroma_fmt_idc)
 {
     WORD32 qp_indx_u, qp_chroma_u;
     WORD32 qp_indx_v, qp_chroma_v;
@@ -950,7 +963,8 @@ void ihevc_deblk_422chroma_horz
     WORD32 qp_offset_v,
     WORD32 tc_offset_div2,
     WORD32 filter_flag_p,
-    WORD32 filter_flag_q
+    WORD32 filter_flag_q,
+    WORD8 chroma_fmt_idc
     )
 {
     WORD32 qp_indx_u, qp_chroma_u;
@@ -1065,7 +1079,8 @@ void ihevc_hbd_deblk_chroma_horz(UWORD16 *pu2_src,
                                  WORD32 tc_offset_div2,
                                  WORD32 filter_flag_p,
                                  WORD32 filter_flag_q,
-                                 UWORD8 bit_depth)
+                                 UWORD8 bit_depth,
+                                 WORD8 chroma_fmt_idc)
 {
     WORD32 qp_indx_u, qp_chroma_u;
     WORD32 qp_indx_v, qp_chroma_v;
@@ -1081,10 +1096,19 @@ void ihevc_hbd_deblk_chroma_horz(UWORD16 *pu2_src,
     /* chroma processing is done only if BS is 2             */
     /* this function is assumed to be called only if BS is 2 */
     qp_indx_u = qp_offset_u + ((quant_param_p + quant_param_q + 1) >> 1);
-    qp_chroma_u = qp_indx_u < 0 ? qp_indx_u : (qp_indx_u > 57 ? qp_indx_u - 6 : gai4_ihevc_qp_table[qp_indx_u]);
-
     qp_indx_v = qp_offset_v + ((quant_param_p + quant_param_q + 1) >> 1);
-    qp_chroma_v = qp_indx_v < 0 ? qp_indx_v : (qp_indx_v > 57 ? qp_indx_v - 6 : gai4_ihevc_qp_table[qp_indx_v]);
+
+    /* 8.7.2.5.5 Filtering process for chroma block edges */
+    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444)
+    {
+        qp_chroma_u = MIN(qp_indx_u, 51);
+        qp_chroma_v = MIN(qp_indx_v, 51);
+    }
+    else
+    {
+        qp_chroma_u = qp_indx_u < 0 ? qp_indx_u : (qp_indx_u > 57 ? qp_indx_u - 6 : gai4_ihevc_qp_table[qp_indx_u]);
+        qp_chroma_v = qp_indx_v < 0 ? qp_indx_v : (qp_indx_v > 57 ? qp_indx_v - 6 : gai4_ihevc_qp_table[qp_indx_v]);
+    }
 
     tc_indx_u = CLIP3(qp_chroma_u + 2 + (tc_offset_div2 << 1), 0, 53);
     tc_u = gai4_ihevc_tc_table[tc_indx_u] * (1 << (bit_depth - 8));
@@ -1177,7 +1201,8 @@ void ihevc_hbd_deblk_422chroma_horz(UWORD16 *pu2_src,
                                     WORD32 tc_offset_div2,
                                     WORD32 filter_flag_p,
                                     WORD32 filter_flag_q,
-                                    UWORD8 bit_depth)
+                                    UWORD8 bit_depth,
+                                    WORD8 chroma_fmt_idc)
 {
     WORD32 qp_indx_u, qp_chroma_u;
     WORD32 qp_indx_v, qp_chroma_v;

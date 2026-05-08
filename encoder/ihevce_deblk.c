@@ -455,7 +455,8 @@ void ihevce_deblk_ctb(
                     ps_deblk->i4_cr_qp_indx_offset,
                     ps_deblk->i4_tc_offset_div2,
                     filter_p,
-                    filter_q);
+                    filter_q,
+                    ps_deblk->u1_chroma_array_type);
 
                 u4_bs = u4_bs << (1 << i4_log2_num_bits_per_bs);
                 pu1_curr_src += (ps_deblk->i4_chroma_pic_stride << 2);
@@ -627,7 +628,8 @@ void ihevce_deblk_ctb(
                             ps_deblk->i4_cr_qp_indx_offset,
                             ps_deblk->i4_tc_offset_div2,
                             1,
-                            1);
+                            1,
+                            ps_deblk->u1_chroma_array_type);
                     }
 
                     pu1_src_uv += 8;
@@ -662,7 +664,8 @@ void ihevce_deblk_ctb(
                         ps_deblk->i4_cr_qp_indx_offset,
                         ps_deblk->i4_tc_offset_div2,
                         filter_p,
-                        filter_q);
+                        filter_q,
+                        ps_deblk->u1_chroma_array_type);
 
                     pu1_src_uv += 8;
                     u4_bs = u4_bs << 4;
