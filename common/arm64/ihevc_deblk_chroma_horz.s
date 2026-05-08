@@ -42,7 +42,8 @@
 //                             WORD32 qp_offset_v,
 //                             WORD32 tc_offset_div2,
 //                             WORD32 filter_flag_p,
-//                             WORD32 filter_flag_q)
+//                             WORD32 filter_flag_q,
+//                             WORD8 chroma_fmt)
 //
 
 .include "ihevc_neon_macros.s"
@@ -62,6 +63,8 @@ ENTRY ihevc_deblk_chroma_horz_av8
     sxtw        x6,w6
     ldr         w9, [sp]
     sxtw        x9,w9
+    ldr         w11, [sp, #8]
+    sxtw        x11,w11
     push_v_regs
     stp         x19, x20,[sp,#-16]!
     mov         x10, x4
@@ -83,6 +86,8 @@ ENTRY ihevc_deblk_chroma_horz_av8
     uxtl        v2.8h, v2.8b
     adrp        x3, :got:gai4_ihevc_qp_table
     ldr         x3, [x3, #:got_lo12:gai4_ihevc_qp_table]
+    cmp         x11,#1
+    bgt         qp_u_min_51_horz
     bmi         l1.3312
     cmp         x1,#0x39
     bgt         lbl78
@@ -90,9 +95,17 @@ ENTRY ihevc_deblk_chroma_horz_av8
 lbl78:
     sub         x20,x1,#6
     csel        x1, x20, x1,gt
+    b           qp_u_done_horz
+qp_u_min_51_horz:
+    mov         x20,#0x33
+    cmp         x1,x20
+    csel        x1, x20, x1,gt
+qp_u_done_horz:
 l1.3312:
     adds        x2,x7,x2,asr #1
     uxtl        v4.8h, v4.8b
+    cmp         x11,#1
+    bgt         qp_v_min_51_horz
     bmi         l1.3332
     cmp         x2,#0x39
     bgt         lbl85
@@ -100,6 +113,12 @@ l1.3312:
 lbl85:
     sub         x20,x2,#6
     csel        x2, x20, x2,gt
+    b           qp_v_done_horz
+qp_v_min_51_horz:
+    mov         x20,#0x33
+    cmp         x2,x20
+    csel        x2, x20, x2,gt
+qp_v_done_horz:
 l1.3332:
     add         x1,x1,x4,lsl #1
     sub         v6.8h,  v0.8h ,  v2.8h

@@ -69,7 +69,8 @@ typedef void ihevc_deblk_chroma_vert_ft(
                 WORD32 qp_offset_v,
                 WORD32 tc_offset_div2,
                 WORD32 filter_flag_p,
-                WORD32 filter_flag_q);
+                WORD32 filter_flag_q,
+                WORD8 chroma_fmt_idc);
 
 typedef void ihevc_deblk_chroma_horz_ft(
                 UWORD8 *pu1_src,
@@ -80,7 +81,8 @@ typedef void ihevc_deblk_chroma_horz_ft(
                 WORD32 qp_offset_v,
                 WORD32 tc_offset_div2,
                 WORD32 filter_flag_p,
-                WORD32 filter_flag_q);
+                WORD32 filter_flag_q,
+                WORD8 chroma_fmt_idc);
 
 typedef void ihevc_hbd_deblk_luma_vert_ft(
                 UWORD16 *pu2_src,
@@ -116,7 +118,8 @@ typedef void ihevc_hbd_deblk_chroma_vert_ft(
                 WORD32 tc_offset_div2,
                 WORD32 filter_flag_p,
                 WORD32 filter_flag_q,
-                UWORD8 bit_depth);
+                UWORD8 bit_depth,
+                WORD8 chroma_fmt_idc);
 
 typedef void ihevc_hbd_deblk_chroma_horz_ft(
                 UWORD16 *pu2_src,
@@ -128,7 +131,8 @@ typedef void ihevc_hbd_deblk_chroma_horz_ft(
                 WORD32 tc_offset_div2,
                 WORD32 filter_flag_p,
                 WORD32 filter_flag_q,
-                UWORD8 bit_depth);
+                UWORD8 bit_depth,
+                WORD8 chroma_fmt_idc);
 
 ihevc_deblk_luma_vert_ft ihevc_deblk_luma_vert;
 ihevc_deblk_luma_horz_ft ihevc_deblk_luma_horz;
