@@ -33,6 +33,13 @@ protected:
     // pi2_tmp needs to be large enough to hold intermediate data of width *
     // height 16bits.
     pi2_tmp.resize(trans_size * trans_size);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+-    defined(_M_IX86)
+  if (trans_size == 32) {
+    // SSE4.2 and SSSE3.1 require 3 times trans_size * trans_size for 32x32
+    pi2_tmp.resize(3 * trans_size * trans_size);
+  }
+#endif
     pu1_pred.resize(trans_size * trans_size);
     pu1_dst_ref.resize(trans_size * trans_size);
     pu1_dst_tst.resize(trans_size * trans_size);
@@ -117,11 +124,6 @@ TEST_P(ITransReconTest, Run) {
   } else if (trans_size == 16) {
     RunTest(&func_selector_t::ihevc_itrans_recon_16x16_fptr);
   } else if (trans_size == 32) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
-    defined(_M_IX86)
-    GTEST_SKIP() << "SSE4.2 and SSSE3 are not matching C implementation for "
-                    "ihevc_itrans_recon_32x32_fptr";
-#endif
     RunTest(&func_selector_t::ihevc_itrans_recon_32x32_fptr);
   }
 }
