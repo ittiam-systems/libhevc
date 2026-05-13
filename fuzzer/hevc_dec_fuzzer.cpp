@@ -40,8 +40,6 @@ const IV_COLOR_FORMAT_T supportedColorFormats[] = {
     IV_YUV_420P,   IV_YUV_420SP_UV, IV_YUV_420SP_VU,
     IV_GRAY};
 
-const uint32_t enableYuvFormatBitFields[] = {0, 1, 2, 3};
-
 /* Decoder ignores invalid arch, i.e. for arm build, if SSSE3 is requested,
  * decoder defaults to a supported configuration. So same set of supported
  * architectures can be used in arm/arm64/x86 builds */
@@ -52,7 +50,6 @@ const IVD_ARCH_T supportedArchitectures[] = {
 const static int kMaxNumDecodeCalls = 100;
 const static int kSupportedColorFormats = NELEMENTS(supportedColorFormats);
 const static int kSupportedArchitectures = NELEMENTS(supportedArchitectures);
-const static int kEnableYuvFormatBitFields = NELEMENTS(enableYuvFormatBitFields);
 const static int kMaxCores = 4;
 void *iv_aligned_malloc(void *ctxt, WORD32 alignment, WORD32 size) {
   void *buf = NULL;
@@ -119,7 +116,7 @@ void Codec::createCodec(FuzzedDataProvider &fdp) {
   create_ip.s_ivd_create_ip_t.pf_aligned_free = iv_aligned_free;
   create_ip.s_ivd_create_ip_t.pv_mem_ctxt = NULL;
   create_ip.s_ivd_create_ip_t.u4_size = sizeof(ihevcd_cxa_create_ip_t);
-  create_ip.u4_enable_yuv_formats = fdp.PickValueInArray(enableYuvFormatBitFields);
+  create_ip.u4_enable_yuv_formats = fdp.ConsumeIntegral<uint8_t>() % 32;
   create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
 
   ret = ivd_api_function(NULL, (void *)&create_ip, (void *)&create_op);
