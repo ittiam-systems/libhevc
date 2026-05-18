@@ -115,8 +115,8 @@ void Codec::createCodec(FuzzedDataProvider &fdp) {
   create_ip.s_ivd_create_ip_t.pf_aligned_alloc = iv_aligned_malloc;
   create_ip.s_ivd_create_ip_t.pf_aligned_free = iv_aligned_free;
   create_ip.s_ivd_create_ip_t.pv_mem_ctxt = NULL;
+  create_ip.u4_enable_yuv_formats = 0b1011; // Enable 400, 420 and 444
   create_ip.s_ivd_create_ip_t.u4_size = sizeof(ihevcd_cxa_create_ip_t);
-  create_ip.u4_enable_yuv_formats = fdp.ConsumeIntegral<uint8_t>() % 32;
   create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
 
   ret = ivd_api_function(NULL, (void *)&create_ip, (void *)&create_op);
