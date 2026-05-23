@@ -676,7 +676,7 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
 {
     ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
 
-    for(WORD32 i = 0; i < ht; i++)
+    for(WORD32 i = 0; i < ht; i += 2)
     {
         for(WORD32 j = 0; j < wd; j += 2)
         {
@@ -685,7 +685,7 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
         }
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
-        pu1_uv_src += src_uv_strd;
+        pu1_uv_src += (src_uv_strd * 2);
     }
     return;
 }
