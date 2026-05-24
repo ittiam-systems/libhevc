@@ -3754,51 +3754,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     }
     else
     {
-#if FRAME_ILF_PAD
-        if(FRAME_ILF_PAD && 1 == ps_codec->i4_num_cores)
-        {
-            if(ps_slice_hdr->i4_abs_pic_order_cnt == 0)
-            {
-                DUMP_PRE_ILF(ps_codec->as_process[0].pu1_cur_pic_luma,
-                             ps_codec->as_process[0].pu1_cur_pic_chroma,
-                             ps_sps->i2_pic_width_in_luma_samples,
-                             ps_sps->i2_pic_height_in_luma_samples,
-                             ps_codec->i4_strd);
 
-                DUMP_BS(ps_codec->as_process[0].s_bs_ctxt.pu4_pic_vert_bs,
-                        ps_codec->as_process[0].s_bs_ctxt.pu4_pic_horz_bs,
-                        ps_sps->i2_pic_wd_in_ctb * (ctb_size * ctb_size / 8 / 16) * ps_sps->i2_pic_ht_in_ctb,
-                        (ps_sps->i2_pic_wd_in_ctb + 1) * (ctb_size * ctb_size / 8 / 16) * ps_sps->i2_pic_ht_in_ctb);
-
-                DUMP_QP(ps_codec->as_process[0].s_bs_ctxt.pu1_pic_qp,
-                        (ps_sps->i2_pic_height_in_luma_samples * ps_sps->i2_pic_width_in_luma_samples) / (MIN_CU_SIZE * MIN_CU_SIZE));
-
-                DUMP_QP_CONST_IN_CTB(ps_codec->as_process[0].s_bs_ctxt.pu1_pic_qp_const_in_ctb,
-                                     (ps_sps->i2_pic_height_in_luma_samples * ps_sps->i2_pic_width_in_luma_samples) / (MIN_CTB_SIZE * MIN_CTB_SIZE) / 8);
-
-                DUMP_NO_LOOP_FILTER(ps_codec->as_process[0].pu1_pic_no_loop_filter_flag,
-                                    (ps_sps->i2_pic_width_in_luma_samples / MIN_CU_SIZE) * (ps_sps->i2_pic_height_in_luma_samples / MIN_CU_SIZE) / 8);
-
-                DUMP_OFFSETS(ps_slice_hdr->i1_beta_offset_div2,
-                             ps_slice_hdr->i1_tc_offset_div2,
-                             ps_pps->i1_pic_cb_qp_offset,
-                             ps_pps->i1_pic_cr_qp_offset);
-            }
-            ps_codec->s_parse.s_deblk_ctxt.ps_pps = ps_codec->s_parse.ps_pps;
-            ps_codec->s_parse.s_deblk_ctxt.ps_sps = ps_codec->s_parse.ps_sps;
-            ps_codec->s_parse.s_deblk_ctxt.ps_codec = ps_codec;
-            ps_codec->s_parse.s_deblk_ctxt.ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
-            ps_codec->s_parse.s_deblk_ctxt.is_chroma_yuv420sp_vu = (ps_codec->e_ref_chroma_fmt == IV_YUV_420SP_VU);
-
-            ps_codec->s_parse.s_sao_ctxt.ps_pps = ps_codec->s_parse.ps_pps;
-            ps_codec->s_parse.s_sao_ctxt.ps_sps = ps_codec->s_parse.ps_sps;
-            ps_codec->s_parse.s_sao_ctxt.ps_codec = ps_codec;
-            ps_codec->s_parse.s_sao_ctxt.ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
-
-            ihevcd_ilf_pad_frame(&ps_codec->s_parse.s_deblk_ctxt, &ps_codec->s_parse.s_sao_ctxt);
-
-        }
-#endif
         ps_codec->s_parse.i4_end_of_frame = 1;
     }
     return ret;

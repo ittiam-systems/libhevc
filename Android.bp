@@ -103,7 +103,6 @@ cc_library_static {
         "decoder/ihevcd_fmt_conv.c",
         "decoder/ihevcd_function_selector_generic.c",
         "decoder/ihevcd_get_mv.c",
-        "decoder/ihevcd_ilf_padding.c",
         "decoder/ihevcd_inter_pred.c",
         "decoder/ihevcd_intra_pred_mode_prediction.c",
         "decoder/ihevcd_iquant_itrans_recon_ctb.c",

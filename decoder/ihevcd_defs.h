@@ -162,10 +162,6 @@
 /** Max QP delta context increment that can be used for CABAC context */
 #define CTXT_MAX_QP_DELTA_ABS   1
 
-/*
- * Flag whether to perform ilf at frame level or CTB level
- */
-#define FRAME_ILF_PAD 0
 
 #define MAX_NUM_CTBS_IN_FRAME (MAX_WD * MAX_HT / MIN_CTB_SIZE / MIN_CTB_SIZE)
 
@@ -177,10 +173,6 @@
  * Set this to MAX_NUM_CTBS_IN_FRAME to disabke reuse
  */
 #define RESET_TU_BUF_NCTB MAX_NUM_CTBS_IN_FRAME
-/**
- * Flag whether to shift the CTB for SAO
- */
-#define SAO_PROCESS_SHIFT_CTB 1
 
 /**
  * Minimum bistream buffer size

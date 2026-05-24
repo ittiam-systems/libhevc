@@ -1042,8 +1042,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
             ihevcd_slice_hdr_update(ps_proc);
 
 
-            if(((0 == FRAME_ILF_PAD || ps_codec->i4_num_cores != 1)) &&
-               (0 == ps_codec->i4_disable_deblk_pic))
+            if(0 == ps_codec->i4_disable_deblk_pic)
             {
                 WORD32 i4_is_last_ctb_x = 0;
                 WORD32 i4_is_last_ctb_y = 0;
@@ -1151,7 +1150,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
             ihevcd_slice_hdr_update(ps_proc);
 
 
-            if(0 == FRAME_ILF_PAD || ps_codec->i4_num_cores != 1)
+
             {
                 /* SAO is done even when it is disabled in the current slice, because
                  * it is performed on a shifted CTB and the neighbor CTBs can belong
@@ -1166,45 +1165,11 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                     ps_proc->s_sao_ctxt.i4_cur_slice_idx = ps_proc->i4_cur_slice_idx;
 
 
-#if SAO_PROCESS_SHIFT_CTB
                     ps_proc->s_sao_ctxt.i4_ctb_x = ps_proc->i4_ctb_x;
                     ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y;
                     ps_proc->s_sao_ctxt.is_chroma_yuv420sp_vu = (ps_codec->e_ref_chroma_fmt == IV_YUV_420SP_VU);
 
                     ihevcd_sao_shift_ctb(&ps_proc->s_sao_ctxt);
-#else
-                    if(ps_proc->i4_ctb_x > 1 && ps_proc->i4_ctb_y > 0)
-                    {
-                        ps_proc->s_sao_ctxt.i4_ctb_x = ps_proc->i4_ctb_x - 2;
-                        ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y - 1;
-
-                        ihevcd_sao_ctb(&ps_proc->s_sao_ctxt);
-                    }
-
-                    if(ps_sps->i2_pic_wd_in_ctb - 1 == ps_proc->i4_ctb_x && ps_proc->i4_ctb_y > 0)
-                    {
-                        ps_proc->s_sao_ctxt.i4_ctb_x = ps_proc->i4_ctb_x - 1;
-                        ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y - 1;
-
-                        ihevcd_sao_ctb(&ps_proc->s_sao_ctxt);
-
-                        ps_proc->s_sao_ctxt.i4_ctb_x = ps_proc->i4_ctb_x;
-                        ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y - 1;
-
-                        ihevcd_sao_ctb(&ps_proc->s_sao_ctxt);
-
-                        if(ps_sps->i2_pic_ht_in_ctb - 1 == ps_proc->i4_ctb_y)
-                        {
-                            WORD32 i4_ctb_x;
-                            ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y;
-                            for(i4_ctb_x = 0; i4_ctb_x < ps_sps->i2_pic_wd_in_ctb; i4_ctb_x++)
-                            {
-                                ps_proc->s_sao_ctxt.i4_ctb_x = i4_ctb_x;
-                                ihevcd_sao_ctb(&ps_proc->s_sao_ctxt);
-                            }
-                        }
-                    }
-#endif
                 }
 
 
@@ -1212,7 +1177,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                 {
                     chroma_row_strd = ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor;
 
-#if SAO_PROCESS_SHIFT_CTB
 
                     if(0 == ps_proc->i4_ctb_x)
                     {
@@ -1310,77 +1274,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             }
                         }
                     }
-#else
-                    if(ps_proc->i4_ctb_y > 1)
-                    {
-                        if(0 == ps_proc->i4_ctb_x)
-                        {
-                            WORD32 pad_ht_luma;
-                            WORD32 pad_ht_chroma;
 
-                            pad_ht_luma = ctb_size;
-                            pad_ht_chroma = ctb_size / 2;
-                            /* Pad left after 1st CTB is processed */
-                            ps_codec->s_func_selector.ihevc_pad_left_luma_fptr(ps_proc->pu1_cur_ctb_luma - 2 * ctb_size * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_luma, PAD_LEFT);
-                            if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
-                            {
-                                ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(ps_proc->pu1_cur_ctb_chroma - ctb_size * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_LEFT);
-                            }
-                        }
-                        else if((ps_sps->i2_pic_wd_in_ctb - 1) == ps_proc->i4_ctb_x)
-                        {
-                            WORD32 pad_ht_luma;
-                            WORD32 pad_ht_chroma;
-                            WORD32 cols_remaining = ps_sps->i2_pic_width_in_luma_samples - (ps_proc->i4_ctb_x << ps_sps->i1_log2_ctb_size);
-
-                            pad_ht_luma = ((ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y) ? 3 * ctb_size : ctb_size;
-                            pad_ht_chroma = ((ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y) ? 3 * ctb_size / 2 : ctb_size / 2;
-                            /* Pad right after last CTB in the current row is processed */
-                            ps_codec->s_func_selector.ihevc_pad_right_luma_fptr(ps_proc->pu1_cur_ctb_luma + cols_remaining - 2 * ctb_size * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_luma, PAD_RIGHT);
-                            if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
-                            {
-                                ps_codec->s_func_selector.ihevc_pad_right_chroma_fptr(ps_proc->pu1_cur_ctb_chroma + cols_remaining - ctb_size * ps_codec->i4_strd, ps_codec->i4_strd, pad_ht_chroma, PAD_RIGHT);
-                            }
-
-                            if((ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y)
-                            {
-                                UWORD8 *pu1_buf;
-                                WORD32 pad_ht_luma;
-                                WORD32 pad_ht_chroma;
-
-                                pad_ht_luma = 2 * ctb_size;
-                                pad_ht_chroma = ctb_size;
-
-                                ps_codec->s_func_selector.ihevc_pad_left_luma_fptr(ps_proc->pu1_cur_pic_luma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples - 2 * ctb_size),
-                                                                                   ps_codec->i4_strd, pad_ht_luma, PAD_LEFT);
-                                if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
-                                {
-                                    ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(ps_proc->pu1_cur_pic_chroma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples / 2 - ctb_size),
-                                                                                         ps_codec->i4_strd, pad_ht_chroma, PAD_LEFT);
-
-                                }
-                                /* Since SAO is shifted by 8x8, chroma padding can not be done till second row is processed */
-                                /* Hence moving top padding to to end of frame, Moving it to second row also results in problems when there is only one row */
-                                /* Pad top after padding left and right for current rows after processing 1st CTB row */
-                                ihevc_pad_top(ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP);
-                                if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
-                                {
-                                    ihevc_pad_top(ps_proc->pu1_cur_pic_chroma - PAD_LEFT, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP / 2);
-                                }
-
-                                pu1_buf = ps_proc->pu1_cur_pic_luma + ps_codec->i4_strd * ps_sps->i2_pic_height_in_luma_samples - PAD_LEFT;
-                                /* Pad top after padding left and right for current rows after processing 1st CTB row */
-                                ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
-
-                                if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
-                                {
-                                    pu1_buf = ps_proc->pu1_cur_pic_chroma + ps_codec->i4_strd * (ps_sps->i2_pic_height_in_luma_samples / 2) - PAD_LEFT;
-                                    ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd, ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT / 2);
-                                }
-                            }
-                        }
-                    }
-#endif
                 }
             }
 
