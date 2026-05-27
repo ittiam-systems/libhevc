@@ -320,6 +320,7 @@ WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples)
     WORD32 tu_data_size;
     WORD32 num_ctb;
     WORD32 num_luma_tu, num_chroma_tu, num_tu;
+    WORD32 num_chroma_sub_tu = 0;
     num_ctb = num_luma_samples / (MIN_CTB_SIZE * MIN_CTB_SIZE);
 
     num_luma_tu = num_luma_samples / (MIN_TU_SIZE * MIN_TU_SIZE);
@@ -330,7 +331,8 @@ WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples)
     }
     else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
     {
-        num_chroma_tu = num_luma_tu;
+        num_chroma_tu = num_luma_tu >> 1;
+        num_chroma_sub_tu = num_luma_tu >> 1;
     }
     else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
     {
@@ -349,16 +351,16 @@ WORD32 ihevcd_get_tu_data_size(codec_t *ps_codec, WORD32 num_luma_samples)
     tu_data_size += (num_ctb + 1) * sizeof(WORD32);
 
     /* Size for storing tu map */
-    tu_data_size += num_luma_tu * sizeof(UWORD8);
+    tu_data_size += num_tu * sizeof(UWORD8);
 
     /* Size for storing tu_t for each TU */
     tu_data_size += num_tu * sizeof(tu_t);
 
     /* Size for storing number of coded subblocks and scan_idx for each TU */
-    tu_data_size += num_tu * (sizeof(WORD8) + sizeof(WORD8));
+    tu_data_size += (num_tu + num_chroma_sub_tu) * (sizeof(WORD8) + sizeof(WORD8));
 
     /* Size for storing coeff data for each TU */
-    tu_data_size += num_tu * sizeof(tu_sblk_coeff_data_t);
+    tu_data_size += (num_tu + num_chroma_sub_tu) * sizeof(tu_sblk_coeff_data_t);
 
 
     return tu_data_size;
@@ -1142,11 +1144,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         {
             ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt << 1;
         }
-        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
-        {
-            ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt;
-        }
-        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 ||
+                ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
         {
             ctb_chroma_min_tu_cnt = ctb_luma_min_tu_cnt >> 1;
         }
