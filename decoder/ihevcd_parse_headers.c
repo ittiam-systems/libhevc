@@ -1604,15 +1604,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                     return IHEVCD_INVALID_PARAMETER;
             }
             break;
-        case CHROMA_FMT_IDC_YUV422: {
-                if (!(ps_codec->u4_enable_yuv_formats & (1 << CHROMA_FMT_IDC_YUV422))) {
-                    ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
-                    return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
-                }
-                if(profile != IHEVC_PROFILE_MAIN_REXT)
-                    return IHEVCD_INVALID_PARAMETER;
-            }
-            break;
         default: {
                 ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
                 return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
