@@ -538,21 +538,28 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
         for(col = 0; col < ctb_size / (8 * h_samp_factor); col++)
         {
+            WORD32 shift = 0;
+
+            if(is_yuv444 && 6 != log2_ctb_size)
+                shift = (col & 1) << (log2_ctb_size - 1);
 
             /* BS for the column - Last row is excluded and the top row is included*/
-            u4_bs = pu4_vert_bs[0] << 2;
+            u4_bs = (pu4_vert_bs[0] >> shift) << 2;
 
             if(ps_deblk->i4_ctb_y || i4_is_last_ctb_y)
             {
                 /* Picking the last BS of the previous CTB corresponding to the same column */
                 UWORD32 *pu4_vert_bs_top = (UWORD32 *)((UWORD8 *)pu4_vert_bs - bs_strd);
-                UWORD32 u4_top_bs = (*pu4_vert_bs_top) >> ((1 << (log2_ctb_size - 1)) - 2);
+                UWORD32 u4_top_bs = (*pu4_vert_bs_top) >> (shift + (1 << (log2_ctb_size - 1)) - 2);
                 u4_bs |= u4_top_bs & 3;
             }
 
             if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420) {
                 /* Every alternate boundary strength value is used for chroma */
                 u4_bs &= 0x22222222;
+            } else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444 || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) {
+                /* Every boundary strength value is used for chroma */
+                u4_bs &= 0xAAAAAAAA;
             }
 
             for(row = 0; row < ctb_size / (4 * v_samp_factor);)
@@ -697,8 +704,13 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         pu1_src -= 8;
         for(row = 0; row < ctb_size / (8 * v_samp_factor); row++)
         {
+            WORD32 shift = 0;
+
+            if((is_yuv444 || is_yuv422) && 6 != log2_ctb_size)
+                shift = (row & 1) << (log2_ctb_size - 1);
+
             /* BS for the row - Last column is excluded and the left column is included*/
-            u4_bs = pu4_horz_bs[0] << 2;
+            u4_bs = (pu4_horz_bs[0] >> shift) << 2;
 
             if(ps_deblk->i4_ctb_x || i4_is_last_ctb_x)
             {
@@ -706,13 +718,16 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 * UWORD32 *pu4_horz_bs_left = (UWORD32 *)((UWORD8 *)pu4_horz_bs - (ctb_size / 8) * (ctb_size / 4) / 8 * 2);
                 */
                 UWORD32 *pu4_horz_bs_left = (UWORD32 *)((UWORD8 *)pu4_horz_bs - (1 << (2 * log2_ctb_size - 7)));
-                UWORD32 u4_left_bs = (*pu4_horz_bs_left) >> ((1 << (log2_ctb_size - 1)) - 2);
+                UWORD32 u4_left_bs = (*pu4_horz_bs_left) >> (shift + (1 << (log2_ctb_size - 1)) - 2);
                 u4_bs |= u4_left_bs & 3;
             }
 
             if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420 || ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) {
                 /* Every alternate boundary strength value is used for chroma */
                 u4_bs &= 0x22222222;
+            } else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444) {
+                /* Every boundary strength value is used for chroma */
+                u4_bs &= 0xAAAAAAAA;
             }
 
             for(col = 0; col < ctb_size / (4 * h_samp_factor);)
