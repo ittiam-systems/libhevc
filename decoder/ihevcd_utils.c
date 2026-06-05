@@ -779,6 +779,7 @@ IHEVCD_ERROR_T ihevcd_check_out_buf_size(codec_t *ps_codec)
     UWORD32 au4_min_out_buf_size[IVD_VIDDEC_MAX_IO_BUFFERS];
     UWORD32 u4_min_num_out_bufs = 0, i;
     UWORD32 wd, ht;
+    UWORD32 aligned_wd, aligned_ht;
 
     if(0 == ps_codec->i4_share_disp_buf)
     {
@@ -806,39 +807,38 @@ IHEVCD_ERROR_T ihevcd_check_out_buf_size(codec_t *ps_codec)
     else if(ps_codec->e_chroma_fmt == IV_GRAY)
         u4_min_num_out_bufs = MIN_OUT_BUFS_GRAY;
 
-    WORD32 aligned_wd = ALIGN2(wd);
-    WORD32 aligned_ht = ALIGN2(ht);
+    aligned_wd = ALIGN2(wd);
+    aligned_ht = ALIGN2(ht);
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
     {
         au4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        au4_min_out_buf_size[1] = (aligned_wd >> 1) * (aligned_ht >> 1);
-        au4_min_out_buf_size[2] = (aligned_wd >> 1) * (aligned_ht >> 1);
+        au4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 2;
+        au4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 2;
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
     {
-        au4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        au4_min_out_buf_size[1] = (aligned_wd * aligned_ht);
-        au4_min_out_buf_size[2] = (aligned_wd * aligned_ht);
+        au4_min_out_buf_size[0] = (wd * ht);
+        au4_min_out_buf_size[1] = (wd * ht);
+        au4_min_out_buf_size[2] = (wd * ht);
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
     {
         au4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        au4_min_out_buf_size[1] = (aligned_wd >> 1) * (aligned_ht >> 1);
-        au4_min_out_buf_size[1] <<= 1;
+        au4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
         au4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_GRAY)
     {
-        au4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
+        au4_min_out_buf_size[0] = (wd * ht);
         au4_min_out_buf_size[1] = 0;
         au4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
     {
         au4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        au4_min_out_buf_size[1] = (aligned_wd >> 1) * aligned_ht;
-        au4_min_out_buf_size[2] = (aligned_wd >> 1) * aligned_ht;
+        au4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
+        au4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 1;
     }
 
 
