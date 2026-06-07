@@ -2156,6 +2156,17 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         if((0 >= disp_wd) || (0 >= disp_ht))
             return IHEVCD_INVALID_PARAMETER;
 
+        if(CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc)
+        {
+            if(disp_wd % 2 != 0 || disp_ht % 2 != 0)
+                return IHEVCD_INVALID_PARAMETER;
+        }
+        else if(CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
+        {
+            if(disp_wd % 2 != 0)
+                return IHEVCD_INVALID_PARAMETER;
+        }
+
         if((0 != ps_codec->u4_allocate_dynamic_done) &&
                             ((ps_codec->i4_disp_wd != disp_wd) ||
                             (ps_codec->i4_disp_ht != disp_ht)))
