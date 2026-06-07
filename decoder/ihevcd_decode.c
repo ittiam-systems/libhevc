@@ -331,24 +331,21 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         if((IV_YUV_420SP_VU == ps_codec->e_chroma_fmt)
                         || (IV_YUV_420SP_UV == ps_codec->e_chroma_fmt))
         {
-            ps_dec_op->s_disp_frm_buf.u4_u_strd =
-                            ps_dec_op->s_disp_frm_buf.u4_y_strd;
+            ps_dec_op->s_disp_frm_buf.u4_u_strd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_strd);
             ps_dec_op->s_disp_frm_buf.u4_v_strd = 0;
             ps_dec_op->s_disp_frm_buf.u4_u_wd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_wd);
             ps_dec_op->s_disp_frm_buf.u4_v_wd = 0;
-            ps_dec_op->s_disp_frm_buf.u4_u_ht = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_ht) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_ht = (ps_dec_op->s_disp_frm_buf.u4_y_ht + 1) / 2;
             ps_dec_op->s_disp_frm_buf.u4_v_ht = 0;
         }
         else if(IV_YUV_420P == ps_codec->e_chroma_fmt)
         {
-            ps_dec_op->s_disp_frm_buf.u4_u_strd =
-                            ps_dec_op->s_disp_frm_buf.u4_y_strd / 2;
-            ps_dec_op->s_disp_frm_buf.u4_v_strd =
-                            ps_dec_op->s_disp_frm_buf.u4_y_strd / 2;
-            ps_dec_op->s_disp_frm_buf.u4_u_wd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_wd) / 2;
-            ps_dec_op->s_disp_frm_buf.u4_v_wd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_wd) / 2;
-            ps_dec_op->s_disp_frm_buf.u4_u_ht = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_ht) / 2;
-            ps_dec_op->s_disp_frm_buf.u4_v_ht = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_ht) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_strd = (ps_dec_op->s_disp_frm_buf.u4_y_strd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_v_strd = (ps_dec_op->s_disp_frm_buf.u4_y_strd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_wd = (ps_dec_op->s_disp_frm_buf.u4_y_wd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_v_wd = (ps_dec_op->s_disp_frm_buf.u4_y_wd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_ht = (ps_dec_op->s_disp_frm_buf.u4_y_ht + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_v_ht = (ps_dec_op->s_disp_frm_buf.u4_y_ht + 1) / 2;
         }
         else if(IV_YUV_444P == ps_codec->e_chroma_fmt)
         {
@@ -370,14 +367,12 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         }
         else if(IV_YUV_422P == ps_codec->e_chroma_fmt)
         {
-            ps_dec_op->s_disp_frm_buf.u4_u_strd =
-                            ps_dec_op->s_disp_frm_buf.u4_y_strd / 2;
-            ps_dec_op->s_disp_frm_buf.u4_v_strd =
-                            ps_dec_op->s_disp_frm_buf.u4_y_strd / 2;
-            ps_dec_op->s_disp_frm_buf.u4_u_wd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_wd) / 2;
-            ps_dec_op->s_disp_frm_buf.u4_v_wd = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_wd) / 2;
-            ps_dec_op->s_disp_frm_buf.u4_u_ht = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_ht);
-            ps_dec_op->s_disp_frm_buf.u4_v_ht = ALIGN2(ps_dec_op->s_disp_frm_buf.u4_y_ht);
+            ps_dec_op->s_disp_frm_buf.u4_u_strd = (ps_dec_op->s_disp_frm_buf.u4_y_strd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_v_strd = (ps_dec_op->s_disp_frm_buf.u4_y_strd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_wd = (ps_dec_op->s_disp_frm_buf.u4_y_wd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_v_wd = (ps_dec_op->s_disp_frm_buf.u4_y_wd + 1) / 2;
+            ps_dec_op->s_disp_frm_buf.u4_u_ht = ps_dec_op->s_disp_frm_buf.u4_y_ht;
+            ps_dec_op->s_disp_frm_buf.u4_v_ht = ps_dec_op->s_disp_frm_buf.u4_y_ht;
         }
 
     }

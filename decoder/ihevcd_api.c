@@ -2718,7 +2718,7 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     aligned_ht = ALIGN2(ht);
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 2;
         ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 2;
     }
@@ -2731,7 +2731,7 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
         ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
@@ -2743,9 +2743,9 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
-        ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
+        ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * ht) >> 1;
     }
     ps_ctl_op->u4_pic_ht = ht;
     ps_ctl_op->u4_pic_wd = wd;
@@ -2909,7 +2909,7 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     aligned_ht = ALIGN2(ht);
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 2;
         ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 2;
     }
@@ -2922,21 +2922,21 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
         ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
         ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_GRAY)
     {
         ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
-        ps_ctl_op->u4_min_out_buf_size[1] =
-                        ps_ctl_op->u4_min_out_buf_size[2] = 0;
+        ps_ctl_op->u4_min_out_buf_size[1] = 0;
+        ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (aligned_wd * aligned_ht);
-        ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * aligned_ht) >> 1;
-        ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * aligned_ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht);
+        ps_ctl_op->u4_min_out_buf_size[1] = (aligned_wd * ht) >> 1;
+        ps_ctl_op->u4_min_out_buf_size[2] = (aligned_wd * ht) >> 1;
     }
     ps_codec->i4_num_disp_bufs = ps_ctl_op->u4_num_disp_bufs;
 
@@ -3033,12 +3033,12 @@ WORD32 ihevcd_set_params(iv_obj_t *ps_codec_obj,
     // output stride needs to be even for all formats other than 400 and 444
     if(ps_codec->e_chroma_fmt != IV_GRAY && ps_codec->e_chroma_fmt != IV_YUV_444P)
     {
-	if (strd & 1)
-	{
+        if(strd & 1)
+        {
             s_ctl_dynparams_op->u4_error_code |= (1 << IVD_UNSUPPORTEDPARAM);
             s_ctl_dynparams_op->u4_error_code |= IHEVCD_INVALID_DISP_STRD;
             ret = IV_FAIL;
-	}
+        }
     }
 
     ps_codec->i4_disp_strd = strd;
@@ -3314,18 +3314,12 @@ WORD32 ihevcd_get_frame_dimensions(iv_obj_t *ps_codec_obj,
     ps_op->u4_x_offset[0] = x_offset;
     ps_op->u4_y_offset[0] = y_offset;
 
-    ps_op->u4_disp_wd[1] = ps_op->u4_disp_wd[2] = ((ps_op->u4_disp_wd[0] + 1)
-                    >> 1);
-    ps_op->u4_disp_ht[1] = ps_op->u4_disp_ht[2] = ((ps_op->u4_disp_ht[0] + 1)
-                    >> 1);
-    ps_op->u4_buffer_wd[1] = ps_op->u4_buffer_wd[2] = (ps_op->u4_buffer_wd[0]
-                    >> 1);
-    ps_op->u4_buffer_ht[1] = ps_op->u4_buffer_ht[2] = (ps_op->u4_buffer_ht[0]
-                    >> 1);
-    ps_op->u4_x_offset[1] = ps_op->u4_x_offset[2] = (ps_op->u4_x_offset[0]
-                    >> 1);
-    ps_op->u4_y_offset[1] = ps_op->u4_y_offset[2] = (ps_op->u4_y_offset[0]
-                    >> 1);
+    ps_op->u4_disp_wd[1] = ps_op->u4_disp_wd[2] = ((ps_op->u4_disp_wd[0] + 1) >> 1);
+    ps_op->u4_disp_ht[1] = ps_op->u4_disp_ht[2] = ((ps_op->u4_disp_ht[0] + 1) >> 1);
+    ps_op->u4_buffer_wd[1] = ps_op->u4_buffer_wd[2] = ((ps_op->u4_buffer_wd[0] + 1) >> 1);
+    ps_op->u4_buffer_ht[1] = ps_op->u4_buffer_ht[2] = ((ps_op->u4_buffer_ht[0] + 1) >> 1);
+    ps_op->u4_x_offset[1] = ps_op->u4_x_offset[2] = (ps_op->u4_x_offset[0] >> 1);
+    ps_op->u4_y_offset[1] = ps_op->u4_y_offset[2] = (ps_op->u4_y_offset[0] >> 1);
 
     if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
