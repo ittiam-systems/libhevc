@@ -86,7 +86,7 @@ typedef enum
     IHEVC_CAB_SPLIT_TFM             = IHEVC_CAB_NORES_IDX               + 1,
     IHEVC_CAB_CBF_LUMA_IDX          = IHEVC_CAB_SPLIT_TFM               + 3,
     IHEVC_CAB_CBCR_IDX              = IHEVC_CAB_CBF_LUMA_IDX            + 2,
-    IHEVC_CAB_TFM_SKIP0             = IHEVC_CAB_CBCR_IDX                + 4,
+    IHEVC_CAB_TFM_SKIP0             = IHEVC_CAB_CBCR_IDX                + 5,
     IHEVC_CAB_TFM_SKIP12            = IHEVC_CAB_TFM_SKIP0               + 1,
     IHEVC_CAB_COEFFX_PREFIX         = IHEVC_CAB_TFM_SKIP12              + 1,
     IHEVC_CAB_COEFFY_PREFIX         = IHEVC_CAB_COEFFX_PREFIX           + 18,
