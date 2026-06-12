@@ -1385,10 +1385,8 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     ps_codec->pv_pic_buf_base = (UWORD8 *)pv_buf;
 
     /* TO hold scratch buffers needed for each SAO context */
-    size = 4 * MAX_CTB_SIZE * MAX_CTB_SIZE;
+    size = 4 * MAX_CTB_SIZE * MAX_CTB_SIZE + 8 * MAX_CTB_SIZE * MAX_CTB_SIZE;
 
-    /* 2 temporary buffers*/
-    size *= 2;
     size *= MAX_PROCESS_THREADS;
 
     pu1_buf = pf_aligned_alloc(pv_mem_ctxt, 128, size);
