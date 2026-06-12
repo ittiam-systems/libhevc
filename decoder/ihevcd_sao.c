@@ -829,7 +829,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             }
                             else
                             {
-                                au4_ilf_across_tile_slice_enable[6] = (ps_slice_hdr_base + au4_idx_tl[6])->i1_slice_loop_filter_across_slices_enabled_flag;
+                                au4_ilf_across_tile_slice_enable[6] = (ps_slice_hdr_base + idx_tl)->i1_slice_loop_filter_across_slices_enabled_flag;
                             }
                             if((0 == ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) / v_samp_factor) - sao_ht_chroma))
                             {
@@ -839,7 +839,16 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             else
                             {
                                 au4_ilf_across_tile_slice_enable[4] = (ps_slice_hdr_base + idx_tl)->i1_slice_loop_filter_across_slices_enabled_flag;
+                                au4_ilf_across_tile_slice_enable[5] = (ps_slice_hdr_base + idx_tl)->i1_slice_loop_filter_across_slices_enabled_flag;
+                            }
+
+                            if(au4_idx_tl[5] > idx_tl)
+                            {
                                 au4_ilf_across_tile_slice_enable[5] = (ps_slice_hdr_base + au4_idx_tl[5])->i1_slice_loop_filter_across_slices_enabled_flag;
+                            }
+                            if(au4_idx_tl[6] > idx_tl)
+                            {
+                                au4_ilf_across_tile_slice_enable[6] = (ps_slice_hdr_base + au4_idx_tl[6])->i1_slice_loop_filter_across_slices_enabled_flag;
                             }
                             au4_ilf_across_tile_slice_enable[2] = (ps_slice_hdr_base + idx_tl)->i1_slice_loop_filter_across_slices_enabled_flag;
                             au4_ilf_across_tile_slice_enable[0] = (ps_slice_hdr_base + idx_tl)->i1_slice_loop_filter_across_slices_enabled_flag;
