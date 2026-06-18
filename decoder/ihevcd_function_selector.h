@@ -151,10 +151,6 @@ typedef struct
     ihevc_chroma_recon_8x8_ft *ihevc_chroma_recon_8x8_fptr;
     ihevc_chroma_recon_16x16_ft *ihevc_chroma_recon_16x16_fptr;
     ihevc_chroma_recon_32x32_ft *ihevc_chroma_recon_32x32_fptr;
-    ihevc_memcpy_mul_8_ft *ihevc_memcpy_mul_8_fptr;
-    ihevc_memcpy_ft *ihevc_memcpy_fptr;
-    ihevc_memset_mul_8_ft *ihevc_memset_mul_8_fptr;
-    ihevc_memset_ft *ihevc_memset_fptr;
     ihevc_memset_16bit_mul_8_ft *ihevc_memset_16bit_mul_8_fptr;
     ihevc_memset_16bit_ft *ihevc_memset_16bit_fptr;
     ihevc_pad_left_luma_ft *ihevc_pad_left_luma_fptr;

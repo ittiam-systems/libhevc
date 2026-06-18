@@ -170,14 +170,14 @@ void ihevc_intra_pred_chroma_ref_substitution_a9q(UWORD8 *pu1_top_left,
         /* Top nbrs  */
         if(0 != top)
         {
-            ihevc_memcpy_mul_8_a9q(&pu1_dst[(4 * nt) + 2], pu1_top, 2 * nt);
+            memcpy(&pu1_dst[(4 * nt) + 2], pu1_top, 2 * nt);
             // U-V interleaved Top-top right samples
         }
 
         /* Top - Right nbrs  */
         if(0 != tp_right)
         {
-            ihevc_memcpy_mul_8_a9q(&pu1_dst[(4 * nt) + 2 + 2 * nt], pu1_top + 2 * nt, 2 * nt);
+            memcpy(&pu1_dst[(4 * nt) + 2 + 2 * nt], pu1_top + 2 * nt, 2 * nt);
             // U-V interleaved Top-top right samples
         }
 
@@ -456,7 +456,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             }
             else
             {
-                ihevc_memset_a9q(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
+                memset(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
             }
 
 
@@ -467,26 +467,26 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             }
             else
             {
-                ihevc_memset_a9q(&pu1_dst[two_nt - 1 - (two_nt - 1)], 0, nt);
+                memset(&pu1_dst[two_nt - 1 - (two_nt - 1)], 0, nt);
             }
 
 
             if(top)
             {
-                ihevc_memcpy_a9q(&pu1_dst[two_nt + 1], pu1_top, nt);
+                memcpy(&pu1_dst[two_nt + 1], pu1_top, nt);
             }
             else
             {
-                ihevc_memset_a9q(&pu1_dst[two_nt + 1], 0, nt);
+                memset(&pu1_dst[two_nt + 1], 0, nt);
             }
 
             if(tp_right)
             {
-                ihevc_memcpy_a9q(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
+                memcpy(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
             }
             else
             {
-                ihevc_memset_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
+                memset(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
             next = 1;
 
@@ -526,7 +526,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             /* If left is Unavailable, copy the last bottom-left value */
             if(left == 0)
             {
-                ihevc_memset_a9q(&pu1_dst[nt], pu1_dst[nt - 1], nt);
+                memset(&pu1_dst[nt], pu1_dst[nt - 1], nt);
 
             }
             /* If top-left is Unavailable, copy the last left value */
@@ -535,12 +535,12 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             /* If top is Unavailable, copy the last top-left value */
             if(top == 0)
             {
-                ihevc_memset_a9q(&pu1_dst[two_nt + 1], pu1_dst[two_nt], nt);
+                memset(&pu1_dst[two_nt + 1], pu1_dst[two_nt], nt);
             }
             /* If to right is Unavailable, copy the last top value */
             if(tp_right == 0)
             {
-                ihevc_memset_a9q(&pu1_dst[three_nt + 1], pu1_dst[three_nt], nt);
+                memset(&pu1_dst[three_nt + 1], pu1_dst[three_nt], nt);
 
             }
         }
@@ -566,7 +566,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
+                memset(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
             }
 
             /* Bottom - left availability is checked for every 8x8 TU position and set accordingly */
@@ -578,7 +578,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[nt - 8], 0, 8);
+                    memset(&pu1_dst[nt - 8], 0, 8);
                 }
 
                 if(nbr_flags & 0x4)
@@ -588,27 +588,27 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[0], 0, 8);
+                    memset(&pu1_dst[0], 0, 8);
                 }
             }
 
 
             if(nbr_flags & 0x300)
             {
-                ihevc_memcpy_mul_8_a9q(&pu1_dst[two_nt + 1], pu1_top, nt);
+                memcpy(&pu1_dst[two_nt + 1], pu1_top, nt);
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1], 0, nt);
+                memset(&pu1_dst[two_nt + 1], 0, nt);
             }
 
             if(nbr_flags & 0x3000)
             {
-                ihevc_memcpy_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
+                memcpy(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
+                memset(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
             /* compute trailing zeors based on nbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
@@ -663,7 +663,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                     {
                         /* 8 pel substitution (other than TL) */
                         pu1_ref = pu1_dst[nbr_id_from_bl - 1];
-                        ihevc_memset_mul_8_a9q(pu1_dst + nbr_id_from_bl, pu1_ref, 8);
+                        memset(pu1_dst + nbr_id_from_bl, pu1_ref, 8);
 
 
                     }
@@ -690,7 +690,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
+                memset(&pu1_dst[two_nt - 1 - (nt - 1)], 0, nt);
             }
 
             /* Bottom - left availability is checked for every 8x8 TU position and set accordingly */
@@ -702,7 +702,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[24], 0, 8);
+                    memset(&pu1_dst[24], 0, 8);
                 }
 
                 if(nbr_flags & 0x4)
@@ -712,7 +712,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[16], 0, 8);
+                    memset(&pu1_dst[16], 0, 8);
                 }
 
                 if(nbr_flags & 0x2)
@@ -722,7 +722,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[8], 0, 8);
+                    memset(&pu1_dst[8], 0, 8);
                 }
 
                 if(nbr_flags & 0x1)
@@ -732,26 +732,26 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                 }
                 else
                 {
-                    ihevc_memset_mul_8_a9q(&pu1_dst[0], 0, 8);
+                    memset(&pu1_dst[0], 0, 8);
                 }
             }
 
             if(nbr_flags & 0xF00)
             {
-                ihevc_memcpy_mul_8_a9q(&pu1_dst[two_nt + 1], pu1_top, nt);
+                memcpy(&pu1_dst[two_nt + 1], pu1_top, nt);
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1], 0, nt);
+                memset(&pu1_dst[two_nt + 1], 0, nt);
             }
 
             if(nbr_flags & 0xF000)
             {
-                ihevc_memcpy_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
+                memcpy(&pu1_dst[two_nt + 1 + nt], pu1_top + nt, nt);
             }
             else
             {
-                ihevc_memset_mul_8_a9q(&pu1_dst[two_nt + 1 + nt], 0, nt);
+                memset(&pu1_dst[two_nt + 1 + nt], 0, nt);
             }
             /* compute trailing ones based on mbr_flag for substitution process of below left see section .*/
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
@@ -801,7 +801,7 @@ void ihevc_intra_pred_luma_ref_substitution_a9q(UWORD8 *pu1_top_left,
                     {
                         /* 8 pel substitution (other than TL) */
                         pu1_ref = pu1_dst[nbr_id_from_bl - 1];
-                        ihevc_memset_mul_8_a9q(&pu1_dst[nbr_id_from_bl], pu1_ref, 8);
+                        memset(&pu1_dst[nbr_id_from_bl], pu1_ref, 8);
 
                     }
 
