@@ -300,8 +300,8 @@ void ihevcd_intra_pred_mode_prediction(codec_t *ps_codec,
 
                 intra_pred_mode = ps_cu->ai4_intra_luma_pred_mode[2 * i + j];
 
-                ps_codec->s_func_selector.ihevc_memset_fptr(pu1_luma_intra_pred_mode_left + i * block_offset_in_min_pu, intra_pred_mode, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
-                ps_codec->s_func_selector.ihevc_memset_fptr(pu1_luma_intra_pred_mode_top + j * block_offset_in_min_pu, intra_pred_mode, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
+                memset(pu1_luma_intra_pred_mode_left + i * block_offset_in_min_pu, intra_pred_mode, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
+                memset(pu1_luma_intra_pred_mode_top + j * block_offset_in_min_pu, intra_pred_mode, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
 
             }
             /* If partition is PART_NxN, then left is available for second column always */

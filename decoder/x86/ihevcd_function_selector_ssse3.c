@@ -131,10 +131,6 @@ void ihevcd_init_function_ptr_ssse3(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_chroma_recon_8x8_fptr                       =  &ihevc_chroma_recon_8x8;
     ps_func_selector->ihevc_chroma_recon_16x16_fptr                     =  &ihevc_chroma_recon_16x16;
     ps_func_selector->ihevc_chroma_recon_32x32_fptr                     =  &ihevc_chroma_recon_32x32;
-    ps_func_selector->ihevc_memcpy_mul_8_fptr                           =  &ihevc_memcpy_mul_8;
-    ps_func_selector->ihevc_memcpy_fptr                                 =  &ihevc_memcpy;
-    ps_func_selector->ihevc_memset_mul_8_fptr                           =  &ihevc_memset_mul_8;
-    ps_func_selector->ihevc_memset_fptr                                 =  &ihevc_memset;
     ps_func_selector->ihevc_memset_16bit_mul_8_fptr                     =  &ihevc_memset_16bit_mul_8;
     ps_func_selector->ihevc_memset_16bit_fptr                           =  &ihevc_memset_16bit;
     ps_func_selector->ihevc_pad_left_luma_fptr                          =  &ihevc_pad_left_luma;

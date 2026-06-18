@@ -62,6 +62,7 @@
 /* File Includes                                                             */
 /*****************************************************************************/
 
+#include <string.h>
 #include "ihevc_typedefs.h"
 #include "ihevc_macros.h"
 #include "ihevc_defs.h"
@@ -197,14 +198,14 @@ void ihevc_intra_pred_chroma_ref_substitution(UWORD8 *pu1_top_left,
         /* Top nbrs  */
         if(0 != top)
         {
-            ihevc_memcpy_mul_8(&pu1_dst[(4 * nt) + 2], pu1_top, 2 * nt);
+            memcpy(&pu1_dst[(4 * nt) + 2], pu1_top, 2 * nt);
             // U-V interleaved Top-top right samples
         }
 
         /* Top - Right nbrs  */
         if(0 != tp_right)
         {
-            ihevc_memcpy_mul_8(&pu1_dst[(4 * nt) + 2 + 2 * nt], pu1_top + 2 * nt, 2 * nt);
+            memcpy(&pu1_dst[(4 * nt) + 2 + 2 * nt], pu1_top + 2 * nt, 2 * nt);
             // U-V interleaved Top-top right samples
         }
 
