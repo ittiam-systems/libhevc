@@ -182,10 +182,6 @@ static void ihevce_init_function_ptr_generic(enc_ctxt_t *ps_enc_ctxt)
     ps_enc_ctxt->s_func_selector.ihevc_chroma_itrans_recon_8x8_fptr = &ihevc_chroma_itrans_recon_8x8;
     ps_enc_ctxt->s_func_selector.ihevc_chroma_itrans_recon_16x16_fptr = &ihevc_chroma_itrans_recon_16x16;
 
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_mul_8_fptr = &ihevc_memcpy_mul_8;
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_fptr = &ihevc_memcpy;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_mul_8_fptr = &ihevc_memset_mul_8;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_fptr = &ihevc_memset;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_mul_8_fptr = &ihevc_memset_16bit_mul_8;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_fptr = &ihevc_memset_16bit;
 
@@ -298,10 +294,6 @@ static void ihevce_init_function_ptr_av8(enc_ctxt_t *ps_enc_ctxt)
     ps_enc_ctxt->s_func_selector.ihevc_itrans_recon_16x16_fptr = &ihevc_itrans_recon_16x16_av8;
     ps_enc_ctxt->s_func_selector.ihevc_itrans_recon_32x32_fptr = &ihevc_itrans_recon_32x32;
 
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_mul_8_fptr = &ihevc_memcpy_mul_8_av8;
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_fptr = &ihevc_memcpy_av8;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_mul_8_fptr = &ihevc_memset_mul_8_av8;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_fptr = &ihevc_memset_av8;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_mul_8_fptr = &ihevc_memset_16bit_mul_8_av8;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_fptr = &ihevc_memset_16bit_av8;
 
@@ -395,10 +387,6 @@ static void ihevce_init_function_ptr_a9q(enc_ctxt_t *ps_enc_ctxt)
     ps_enc_ctxt->s_func_selector.ihevc_itrans_recon_16x16_fptr = &ihevc_itrans_recon_16x16_a9q;
     ps_enc_ctxt->s_func_selector.ihevc_itrans_recon_32x32_fptr = &ihevc_itrans_recon_32x32;
 
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_mul_8_fptr = &ihevc_memcpy_mul_8_a9q;
-    ps_enc_ctxt->s_func_selector.ihevc_memcpy_fptr = &ihevc_memcpy_a9q;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_mul_8_fptr = &ihevc_memset_mul_8_a9q;
-    ps_enc_ctxt->s_func_selector.ihevc_memset_fptr = &ihevc_memset_a9q;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_mul_8_fptr = &ihevc_memset_16bit_mul_8_a9q;
     ps_enc_ctxt->s_func_selector.ihevc_memset_16bit_fptr = &ihevc_memset_16bit_a9q;
 

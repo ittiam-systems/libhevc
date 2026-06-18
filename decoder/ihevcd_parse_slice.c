@@ -1217,8 +1217,8 @@ IHEVCD_ERROR_T ihevcd_parse_coding_unit_intra(codec_t *ps_codec,
 
         num_pred_blocks = 1; /* Because PCM part mode will be 2Nx2N */
 
-        ps_codec->s_func_selector.ihevc_memset_fptr(pu1_luma_intra_pred_mode_left, INTRA_DC, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
-        ps_codec->s_func_selector.ihevc_memset_fptr(pu1_luma_intra_pred_mode_top, INTRA_DC, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
+        memset(pu1_luma_intra_pred_mode_left, INTRA_DC, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
+        memset(pu1_luma_intra_pred_mode_top, INTRA_DC, (cb_size / num_pred_blocks) / MIN_PU_SIZE);
 
 
         /* Set no_loop_filter appropriately */
