@@ -244,8 +244,8 @@ static void ihevce_init_function_ptr_generic(enc_ctxt_t *ps_enc_ctxt)
 */
 static void ihevce_init_function_ptr_av8(enc_ctxt_t *ps_enc_ctxt)
 {
-    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_horz_fptr = &ihevc_deblk_chroma_horz_av8;
-    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_vert_fptr = &ihevc_deblk_chroma_vert_av8;
+    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_horz_fptr = &ihevc_deblk_chroma_horz;
+    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_vert_fptr = &ihevc_deblk_chroma_vert;
     ps_enc_ctxt->s_func_selector.ihevc_deblk_luma_vert_fptr = &ihevc_deblk_luma_vert_av8;
     ps_enc_ctxt->s_func_selector.ihevc_deblk_luma_horz_fptr = &ihevc_deblk_luma_horz_av8;
     ps_enc_ctxt->s_func_selector.ihevc_inter_pred_chroma_copy_fptr = &ihevc_inter_pred_chroma_copy_av8;
@@ -337,8 +337,8 @@ static void ihevce_init_function_ptr_av8(enc_ctxt_t *ps_enc_ctxt)
 */
 static void ihevce_init_function_ptr_a9q(enc_ctxt_t *ps_enc_ctxt)
 {
-    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_horz_fptr = &ihevc_deblk_chroma_horz_a9q;
-    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_vert_fptr = &ihevc_deblk_chroma_vert_a9q;
+    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_horz_fptr = &ihevc_deblk_chroma_horz;
+    ps_enc_ctxt->s_func_selector.ihevc_deblk_chroma_vert_fptr = &ihevc_deblk_chroma_vert;
     ps_enc_ctxt->s_func_selector.ihevc_deblk_luma_vert_fptr = &ihevc_deblk_luma_vert_a9q;
     ps_enc_ctxt->s_func_selector.ihevc_deblk_luma_horz_fptr = &ihevc_deblk_luma_horz_a9q;
     ps_enc_ctxt->s_func_selector.ihevc_inter_pred_chroma_copy_fptr = &ihevc_inter_pred_chroma_copy_a9q;

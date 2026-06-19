@@ -58,8 +58,8 @@
 
 void ihevcd_init_function_ptr_ssse3(func_selector_t *ps_func_selector)
 {
-    ps_func_selector->ihevc_deblk_chroma_horz_fptr                      =  &ihevc_deblk_chroma_horz_ssse3;
-    ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert_ssse3;
+    ps_func_selector->ihevc_deblk_chroma_horz_fptr                      =  &ihevc_deblk_chroma_horz;
+    ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert;
     ps_func_selector->ihevc_deblk_luma_vert_fptr                        =  &ihevc_deblk_luma_vert_ssse3;
     ps_func_selector->ihevc_deblk_luma_horz_fptr                        =  &ihevc_deblk_luma_horz_ssse3;
     ps_func_selector->ihevc_inter_pred_chroma_copy_fptr                 =  &ihevc_inter_pred_chroma_copy_ssse3;
