@@ -832,13 +832,13 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
         {
             IHEVCD_CABAC_DECODE_BYPASS_BINS(value, ps_cabac, ps_bitstrm, num_coeff);
             AEV_TRACE("sign_flags", value, ps_cabac->u4_range);
-            u4_coeff_sign_map = value << (32 - num_coeff);
+            u4_coeff_sign_map = (UWORD32)value << (32 - num_coeff);
         }
         else
         {
             IHEVCD_CABAC_DECODE_BYPASS_BINS(value, ps_cabac, ps_bitstrm, (num_coeff - 1));
             AEV_TRACE("sign_flags", value, ps_cabac->u4_range);
-            u4_coeff_sign_map = value << (32 - (num_coeff - 1));
+            u4_coeff_sign_map = (UWORD32)value << (32 - (num_coeff - 1));
         }
 
         num_sig_coeff = 0;

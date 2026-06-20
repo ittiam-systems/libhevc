@@ -403,8 +403,8 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
                 {
                     iquant_out = ps_tu_sblk_coeff_data->ai2_level[sblk_non_zero_coeff_idx++];
                 }
-                *pu4_zero_cols &= ~(0x1 << (subblk_pos_x + xs));
-                *pu4_zero_rows &= ~(0x1 << (subblk_pos_y + ys));
+                *pu4_zero_cols &= ~(0x1U << (subblk_pos_x + xs));
+                *pu4_zero_rows &= ~(0x1U << (subblk_pos_y + ys));
                 *(pi2_sblk_ptr + xs + ys * trans_size) = iquant_out;
             }
             sblk_scan_idx--;
