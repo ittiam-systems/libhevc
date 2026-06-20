@@ -1917,7 +1917,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     for(i = 0; i < ps_sps->i1_num_short_term_ref_pic_sets; i++)
     {
         ret = ihevcd_short_term_ref_pic_set(ps_bitstrm, &ps_sps->as_stref_picset[0], ps_sps->i1_num_short_term_ref_pic_sets, i, &ps_sps->as_stref_picset[i]);
-        if (ret != IHEVCD_SUCCESS)
+        if (ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
         {
             return ret;
         }
