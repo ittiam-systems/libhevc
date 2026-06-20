@@ -459,7 +459,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                                                     ps_sps->i1_num_short_term_ref_pic_sets,
                                                     ps_sps->i1_num_short_term_ref_pic_sets,
                                                     &ps_slice_hdr->s_stref_picset);
-                if (ret != IHEVCD_SUCCESS)
+                if (ret != (IHEVCD_ERROR_T)IHEVCD_SUCCESS)
                 {
                     return ret;
                 }

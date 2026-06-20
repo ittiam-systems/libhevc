@@ -3031,7 +3031,7 @@ WORD32 ihevce_rc_get_pic_quant(
 
                     /*use previous frame qp of same pic type or SCD i frame qp with offset whichever is maximum*/
                     /*For field case adding of  grater than 4 results in the qp increasing greatly when compared to previous pics/fields*/
-                    if(rc_pic_type <= FIELD_OFFSET)
+                    if((int)rc_pic_type <= (int)FIELD_OFFSET)
                         cur_hevc_qp = I_hevc_qp + rc_pic_type;
                     else
                         cur_hevc_qp = I_hevc_qp + (rc_pic_type - FIELD_OFFSET);
