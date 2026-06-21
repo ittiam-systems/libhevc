@@ -1531,7 +1531,7 @@ WORD32 ihevce_put_sei_msg(
         //return_status = IHEVCE_FAIL;
     }
 
-    ASSERT(IHEVCE_SUCCESS == return_status);
+    /* buffer overflow is a valid runtime error, so we don't assert on it */
 
     /* rbsp trailing bits */
     if((IHEVCE_SUCCESS == return_status) && (ps_bitstrm->i4_bits_left_in_cw & 0x7))
