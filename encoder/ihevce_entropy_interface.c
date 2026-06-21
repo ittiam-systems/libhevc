@@ -594,8 +594,15 @@ WORD32 ihevce_entropy_encode_frame(
             ps_curr_out->i4_bytes_generated += i4_bytes_generated;
 
             /* Re-Initialize the bitstream engine after each tile or slice */
-            ihevce_bitstrm_init(
-                ps_bitstrm, (ps_bitstrm->pu1_strm_buffer + i4_bytes_generated), out_buf_size);
+            {
+                WORD32 rem_buf_size = out_buf_size - ps_curr_out->i4_bytes_generated;
+                if(rem_buf_size < 0)
+                {
+                    rem_buf_size = 0;
+                }
+                ihevce_bitstrm_init(
+                    ps_bitstrm, (ps_bitstrm->pu1_strm_buffer + i4_bytes_generated), rem_buf_size);
+            }
         }
     }
 
