@@ -680,8 +680,8 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
     {
         for(WORD32 j = 0; j < wd; j += 2)
         {
-            pu1_u_dst[j / 2] = pu1_uv_src[j * 2];
-            pu1_v_dst[j / 2] = pu1_uv_src[j * 2 + 1];
+            pu1_u_dst[j / 2] = pu1_uv_src[j];
+            pu1_v_dst[j / 2] = pu1_uv_src[j + 1];
         }
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
