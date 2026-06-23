@@ -941,6 +941,23 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                         AEV_TRACE("coeff_abs_level_remaining", coeff_abs_level_remaining, ps_cabac->u4_range);
                         base_lvl += coeff_abs_level_remaining;
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                        if(i1_update_stats)
+                        {
+                            if(coeff_abs_level_remaining
+                                            >= (3 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
+                            {
+                                ps_cabac->ai4_rice_stat_coeff[sb_type]++;
+                            }
+                            else if((2 * coeff_abs_level_remaining
+                                            < (1 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
+                                            && ps_cabac->ai4_rice_stat_coeff[sb_type] > 0)
+                            {
+                                ps_cabac->ai4_rice_stat_coeff[sb_type]--;
+                            }
+                            i1_update_stats = 0;
+                        }
+#endif
                     }
 
                     /* update the rice param based on coeff level */
@@ -957,23 +974,6 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                             rice_param = MIN((rice_param + 1), 4);
                         }
                     }
-#ifdef ENABLE_MAIN_REXT_PROFILE
-                    if(i1_update_stats)
-                    {
-                        if(coeff_abs_level_remaining
-                                        >= (3 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
-                        {
-                            ps_cabac->ai4_rice_stat_coeff[sb_type]++;
-                        }
-                        else if((2 * coeff_abs_level_remaining
-                                        < (1 << (ps_cabac->ai4_rice_stat_coeff[sb_type] / 4)))
-                                        && ps_cabac->ai4_rice_stat_coeff[sb_type] > 0)
-                        {
-                            ps_cabac->ai4_rice_stat_coeff[sb_type]--;
-                        }
-                        i1_update_stats = 0;
-                    }
-#endif
 
                     /* Compute absolute level */
                     level = base_lvl;
