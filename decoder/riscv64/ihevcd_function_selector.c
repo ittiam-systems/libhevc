@@ -54,7 +54,9 @@
 #include "ihevc_dpb_mgr.h"
 #include "ihevc_error.h"
 
+#include "ihevcd_defs.h"
 #include "ihevcd_function_selector.h"
+#include "ihevcd_structs.h"
 
 void ihevcd_init_function_ptr(void *pv_codec)
 {
