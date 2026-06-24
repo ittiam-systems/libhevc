@@ -707,11 +707,26 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         if(ps_codec->i4_slice_error)
         {
-            slice_header_t *ps_slice_hdr_next = ps_codec->s_parse.ps_slice_hdr_base + (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
-            WORD32 next_slice_addr = ps_slice_hdr_next->i2_ctb_x +
+            /* Use masked index to support wrap-around in the 256-entry ring buffer */
+            slice_header_t *ps_slice_hdr_next = ps_codec->s_parse.ps_slice_hdr_base +
+                            ((ps_codec->s_parse.i4_cur_slice_idx + 1) & (MAX_SLICE_HDR_CNT - 1));
+            /* Ensure next slice header belongs to current picture (prevents using stale data) */
+            if(ps_slice_hdr_next->i4_abs_pic_order_cnt == ps_codec->s_parse.i4_abs_pic_order_cnt)
+            {
+                slice_header_t *ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base +
+                                (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
+                WORD32 next_slice_addr = ps_slice_hdr_next->i2_ctb_x +
                             ps_slice_hdr_next->i2_ctb_y * ps_codec->s_parse.ps_sps->i2_pic_wd_in_ctb;
-            if(ps_codec->s_parse.i4_next_ctb_indx == next_slice_addr)
-                ps_codec->i4_slice_error = 0;
+                WORD32 cur_slice_addr = ps_slice_hdr->i2_ctb_x +
+                            ps_slice_hdr->i2_ctb_y * ps_codec->s_parse.ps_sps->i2_pic_wd_in_ctb;
+                /* Ensure next slice start address is ahead of current slice (prevents matching
+                 * old slice 0 on wrap-around) */
+                if(next_slice_addr > cur_slice_addr)
+                {
+                    if(ps_codec->s_parse.i4_next_ctb_indx == next_slice_addr)
+                        ps_codec->i4_slice_error = 0;
+                }
+            }
         }
 
         if(ps_codec->pu1_bitsbuf_dynamic)
