@@ -314,7 +314,7 @@ void ihevc_weighted_pred_bi(WORD16 *pi2_src1,
         {
             i4_tmp = (pi2_src1[col] + lvl_shift1) * wgt0;
             i4_tmp += (pi2_src2[col] + lvl_shift2) * wgt1;
-            i4_tmp += (off0 + off1 + 1) << (shift - 1);
+            i4_tmp += (off0 + off1 + 1) * (1 << (shift - 1));
 
             pu1_dst[col] = CLIP_U8(i4_tmp >> shift);
         }
@@ -419,13 +419,13 @@ void ihevc_weighted_pred_chroma_bi(WORD16 *pi2_src1,
         {
             i4_tmp = (pi2_src1[col] + lvl_shift1) * wgt0_cb;
             i4_tmp += (pi2_src2[col] + lvl_shift2) * wgt1_cb;
-            i4_tmp += (off0_cb + off1_cb + 1) << (shift - 1);
+            i4_tmp += (off0_cb + off1_cb + 1) * (1 << (shift - 1));
 
             pu1_dst[col] = CLIP_U8(i4_tmp >> shift);
 
             i4_tmp = (pi2_src1[col + 1] + lvl_shift1) * wgt0_cr;
             i4_tmp += (pi2_src2[col + 1] + lvl_shift2) * wgt1_cr;
-            i4_tmp += (off0_cr + off1_cr + 1) << (shift - 1);
+            i4_tmp += (off0_cr + off1_cr + 1) * (1 << (shift - 1));
 
             pu1_dst[col + 1] = CLIP_U8(i4_tmp >> shift);
         }
