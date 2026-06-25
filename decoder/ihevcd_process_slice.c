@@ -1074,7 +1074,9 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                         for(row = 0; row < (ctb_size >> 3) + 1; row++)
                         {
                             /* Go to the corresponding byte - read 32 bits and downshift */
-                            ps_proc->s_deblk_ctxt.au2_ctb_no_loop_filter_flag[row] = (*(UWORD32 *)(ps_proc->pu1_pic_no_loop_filter_flag + (bit_pos >> 3))) >> (bit_pos & 7);
+                            UWORD32 u4_loop_filter_word;
+                            memcpy(&u4_loop_filter_word, ps_proc->pu1_pic_no_loop_filter_flag + (bit_pos >> 3), sizeof(u4_loop_filter_word));
+                            ps_proc->s_deblk_ctxt.au2_ctb_no_loop_filter_flag[row] = u4_loop_filter_word >> (bit_pos & 7);
                             bit_pos += loop_filter_strd;
                         }
                     }

@@ -217,8 +217,9 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 WORD32 tmp_wd = sao_blk_wd;
 
-                u4_no_loop_filter_flag = (*(UWORD32 *)(pu1_no_loop_filter_flag + i * loop_filter_strd)) >>
-                                (loop_filter_bit_pos & 7);
+                UWORD32 u4_loop_filter_word;
+                memcpy(&u4_loop_filter_word, pu1_no_loop_filter_flag + i * loop_filter_strd, sizeof(u4_loop_filter_word));
+                u4_no_loop_filter_flag = u4_loop_filter_word >> (loop_filter_bit_pos & 7);
                 u4_no_loop_filter_flag &= (1 << ((tmp_wd + (min_cu - 1)) >> log2_min_cu)) - 1;
 
                 if(u4_no_loop_filter_flag)
@@ -297,8 +298,9 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 WORD32 tmp_wd = sao_blk_wd;
 
-                u4_no_loop_filter_flag = (*(UWORD32 *)(pu1_no_loop_filter_flag + i * loop_filter_strd)) >>
-                                (loop_filter_bit_pos & 7);
+                UWORD32 u4_loop_filter_word;
+                memcpy(&u4_loop_filter_word, pu1_no_loop_filter_flag + i * loop_filter_strd, sizeof(u4_loop_filter_word));
+                u4_no_loop_filter_flag = u4_loop_filter_word >> (loop_filter_bit_pos & 7);
                 u4_no_loop_filter_flag &= (1 << ((tmp_wd + (min_cu - 1)) >> log2_min_cu)) - 1;
 
                 if(u4_no_loop_filter_flag)
@@ -2952,8 +2954,9 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 WORD32 tmp_wd = sao_blk_wd;
 
-                u4_no_loop_filter_flag = (*(UWORD32 *)(pu1_no_loop_filter_flag + i * loop_filter_strd)) >>
-                                (loop_filter_bit_pos & 7);
+                UWORD32 u4_loop_filter_word;
+                memcpy(&u4_loop_filter_word, pu1_no_loop_filter_flag + i * loop_filter_strd, sizeof(u4_loop_filter_word));
+                u4_no_loop_filter_flag = u4_loop_filter_word >> (loop_filter_bit_pos & 7);
                 u4_no_loop_filter_flag &= (1 << ((tmp_wd + (min_cu - 1)) >> log2_min_cu)) - 1;
 
                 if(u4_no_loop_filter_flag)
@@ -3030,8 +3033,9 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 WORD32 tmp_wd = sao_blk_wd;
 
-                u4_no_loop_filter_flag = (*(UWORD32 *)(pu1_no_loop_filter_flag + i * loop_filter_strd)) >>
-                                (loop_filter_bit_pos & 7);
+                UWORD32 u4_loop_filter_word;
+                memcpy(&u4_loop_filter_word, pu1_no_loop_filter_flag + i * loop_filter_strd, sizeof(u4_loop_filter_word));
+                u4_no_loop_filter_flag = u4_loop_filter_word >> (loop_filter_bit_pos & 7);
                 u4_no_loop_filter_flag &= (1 << ((tmp_wd + (min_cu - 1)) >> log2_min_cu)) - 1;
 
                 if(u4_no_loop_filter_flag)
