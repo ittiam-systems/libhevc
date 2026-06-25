@@ -645,13 +645,13 @@ void ihevc_hbd_deblk_chroma_vert(UWORD16 *pu2_src,
 
     for(row = 0; row < 4; row++)
     {
-        delta_u = CLIP3((((pu2_src[0] - pu2_src[-2]) << 2) +
+        delta_u = CLIP3((((pu2_src[0] - pu2_src[-2]) * 4) +
                         pu2_src[-4] - pu2_src[2] + 4) >> 3,
                         -tc_u, tc_u);
         tmp_p0_u = CLIP3(pu2_src[-2] + delta_u, 0, ((1 << bit_depth) - 1));
         tmp_q0_u = CLIP3(pu2_src[0] - delta_u, 0, ((1 << bit_depth) - 1));
 
-        delta_v = CLIP3((((pu2_src[1] - pu2_src[-1]) << 2) +
+        delta_v = CLIP3((((pu2_src[1] - pu2_src[-1]) * 4) +
                         pu2_src[-3] - pu2_src[3] + 4) >> 3,
                         -tc_v, tc_v);
         tmp_p0_v = CLIP3(pu2_src[-1] + delta_v, 0, ((1 << bit_depth) - 1));
@@ -760,14 +760,14 @@ void ihevc_deblk_422chroma_vert(UWORD8 *pu1_src,
 
     for(row = 0; row < 4; row++)
     {
-        delta_u = CLIP3((((pu1_src[0] - pu1_src[-2]) << 2) +
+        delta_u = CLIP3((((pu1_src[0] - pu1_src[-2]) * 4) +
                         pu1_src[-4] - pu1_src[2] + 4) >> 3,
                         -tc_u, tc_u);
 
         tmp_p0_u = CLIP_U8(pu1_src[-2] + delta_u);
         tmp_q0_u = CLIP_U8(pu1_src[0] - delta_u);
 
-        delta_v = CLIP3((((pu1_src[1] - pu1_src[-1]) << 2) +
+        delta_v = CLIP3((((pu1_src[1] - pu1_src[-1]) * 4) +
                         pu1_src[-3] - pu1_src[3] + 4) >> 3,
                         -tc_v, tc_v);
 
@@ -879,13 +879,13 @@ void ihevc_hbd_deblk_422chroma_vert(UWORD16 *pu2_src,
 
     for(row = 0; row < 4; row++)
     {
-        delta_u = CLIP3((((pu2_src[0] - pu2_src[-2]) << 2) +
+        delta_u = CLIP3((((pu2_src[0] - pu2_src[-2]) * 4) +
                         pu2_src[-4] - pu2_src[2] + 4) >> 3,
                         -tc_u, tc_u);
         tmp_p0_u = CLIP3(pu2_src[-2] + delta_u, 0, ((1 << bit_depth) - 1));
         tmp_q0_u = CLIP3(pu2_src[0] - delta_u, 0, ((1 << bit_depth) - 1));
 
-        delta_v = CLIP3((((pu2_src[1] - pu2_src[-1]) << 2) +
+        delta_v = CLIP3((((pu2_src[1] - pu2_src[-1]) * 4) +
                         pu2_src[-3] - pu2_src[3] + 4) >> 3,
                         -tc_v, tc_v);
         tmp_p0_v = CLIP3(pu2_src[-1] + delta_v, 0, ((1 << bit_depth) - 1));
@@ -1001,7 +1001,7 @@ void ihevc_deblk_422chroma_horz
     {
         tc = (col & 1) ? tc_v : tc_u;
         delta = CLIP3((((pu1_src[0 * src_strd] -
-                      pu1_src[-1 * src_strd]) << 2) +
+                      pu1_src[-1 * src_strd]) * 4) +
                       pu1_src[-2 * src_strd] -
                       pu1_src[1 * src_strd] + 4) >> 3,
                       -tc, tc);
@@ -1125,7 +1125,7 @@ void ihevc_hbd_deblk_chroma_horz(UWORD16 *pu2_src,
     {
         tc = (col & 1) ? tc_v : tc_u;
         delta = CLIP3((((pu2_src[0 * src_strd] -
-                      pu2_src[-1 * src_strd]) << 2) +
+                      pu2_src[-1 * src_strd]) * 4) +
                       pu2_src[-2 * src_strd] -
                       pu2_src[1 * src_strd] + 4) >> 3,
                       -tc, tc);
@@ -1238,7 +1238,7 @@ void ihevc_hbd_deblk_422chroma_horz(UWORD16 *pu2_src,
     {
         tc = (col & 1) ? tc_v : tc_u;
         delta = CLIP3((((pu2_src[0 * src_strd] -
-                      pu2_src[-1 * src_strd]) << 2) +
+                      pu2_src[-1 * src_strd]) * 4) +
                       pu2_src[-2 * src_strd] -
                       pu2_src[1 * src_strd] + 4) >> 3,
                       -tc, tc);
