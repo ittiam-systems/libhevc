@@ -1959,9 +1959,9 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
     IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     sps_t *ps_sps;
     pps_t *ps_pps;
-    #ifdef ENABLE_MAIN_REXT_PROFILE
+#ifdef ENABLE_MAIN_REXT_PROFILE
     slice_header_t *ps_slice_hdr;
-    #endif
+#endif
     WORD32 split_cu_flag;
     WORD32 x1, y1;
     WORD32 cu_pos_x;
@@ -1971,9 +1971,9 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
     WORD32 cb_size = 1 << log2_cb_size;
     ps_sps = ps_codec->s_parse.ps_sps;
     ps_pps = ps_codec->s_parse.ps_pps;
-    #ifdef ENABLE_MAIN_REXT_PROFILE
+#ifdef ENABLE_MAIN_REXT_PROFILE
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr;
-    #endif
+#endif
 
     /* Compute CU position with respect to current CTB in (8x8) units */
     cu_pos_x = (x0 - (ps_codec->s_parse.i4_ctb_x << ps_sps->i1_log2_ctb_size)) >> 3;

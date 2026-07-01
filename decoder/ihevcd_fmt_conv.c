@@ -616,8 +616,30 @@ void ihevcd_fmt_conv_444sp_to_420p(UWORD8 *pu1_y_src,
     {
         for(WORD32 j = 0; j < wd; j += 2)
         {
-            pu1_u_dst[j / 2] = pu1_uv_src[j * 2];
-            pu1_v_dst[j / 2] = pu1_uv_src[j * 2 + 1];
+            WORD32 cb_sum = pu1_uv_src[j * 2];
+            WORD32 cr_sum = pu1_uv_src[j * 2 + 1];
+            WORD32 count = 1;
+
+            if((j + 1) < wd)
+            {
+                cb_sum += pu1_uv_src[(j + 1) * 2];
+                cr_sum += pu1_uv_src[(j + 1) * 2 + 1];
+                count++;
+            }
+            if((i + 1) < ht)
+            {
+                cb_sum += pu1_uv_src[j * 2 + src_uv_strd];
+                cr_sum += pu1_uv_src[j * 2 + src_uv_strd + 1];
+                count++;
+            }
+            if((j + 1) < wd && (i + 1) < ht)
+            {
+                cb_sum += pu1_uv_src[(j + 1) * 2 + src_uv_strd];
+                cr_sum += pu1_uv_src[(j + 1) * 2 + src_uv_strd + 1];
+                count++;
+            }
+            pu1_u_dst[j / 2] = (cb_sum + (count >> 1)) / count;
+            pu1_v_dst[j / 2] = (cr_sum + (count >> 1)) / count;
         }
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
@@ -680,8 +702,19 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
     {
         for(WORD32 j = 0; j < wd; j += 2)
         {
-            pu1_u_dst[j / 2] = pu1_uv_src[j];
-            pu1_v_dst[j / 2] = pu1_uv_src[j + 1];
+            WORD32 cb_sum = pu1_uv_src[j];
+            WORD32 cr_sum = pu1_uv_src[j + 1];
+
+            if((i + 1) < ht)
+            {
+                cb_sum += pu1_uv_src[j + src_uv_strd] + 1;
+                cr_sum += pu1_uv_src[j + 1 + src_uv_strd] + 1;
+
+                cb_sum >>= 1;
+                cr_sum >>= 1;
+            }
+            pu1_u_dst[j / 2] = cb_sum;
+            pu1_v_dst[j / 2] = cr_sum;
         }
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
