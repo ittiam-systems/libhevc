@@ -226,7 +226,7 @@ void ihevcd_bits_flush_to_byte_boundary(bitstrm_t *ps_bitstrm)
 */
 void ihevcd_bits_seek(bitstrm_t *ps_bitstrm, WORD32 numbits)
 {
-    WORD32 val;
+    UWORD32 val;
     ASSERT(numbits >= -32);
     ASSERT(numbits <= 32);
     /* Check if Seeking backwards*/
