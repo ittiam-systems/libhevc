@@ -815,7 +815,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 else
                                 {
                                     au4_idx_tl[5] = pu1_slice_idx[(ctbx_tl_l + 1) + (ctby_tl_l * ps_sps->i2_pic_wd_in_ctb)];
-                                    au4_idx_tl[4] = pu1_slice_idx[(ctbx_tl_t - 1) + (ctby_tl_t * ps_sps->i2_pic_wd_in_ctb)];
+                                    if(ctbx_tl_t > 0)
+                                        au4_idx_tl[4] = pu1_slice_idx[(ctbx_tl_t - 1) + (ctby_tl_t * ps_sps->i2_pic_wd_in_ctb)];
                                 }
                                 au4_idx_tl[7] = pu1_slice_idx[(ctbx_tl_d + 1) + (ctby_tl_d * ps_sps->i2_pic_wd_in_ctb)];
                             }
