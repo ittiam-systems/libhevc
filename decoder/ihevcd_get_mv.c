@@ -222,11 +222,15 @@ WORD32 ihevcd_get_mv_ctb(mv_ctxt_t *ps_mv_ctxt,
             }
 
 
-            index_pic_map = ((ps_mv_ctxt->i4_ctb_x - 1) + (ps_mv_ctxt->i4_ctb_y - 1) * ps_sps->i2_pic_wd_in_ctb);
-            ctb_pu_idx = ps_mv_ctxt->pu4_pic_pu_idx[index_pic_map];
-            index_pic_map *= num_minpu_in_ctb;
-            index_pic_map += (num_minpu_in_ctb - 1);
-            pu4_ctb_top_left_pu_idx[0] = ctb_pu_idx + pu1_pic_pu_map[index_pic_map];
+            /* Top left ctb is a valid neighbor only when a row above exists */
+            if(ps_mv_ctxt->i4_ctb_y != 0)
+            {
+                index_pic_map = ((ps_mv_ctxt->i4_ctb_x - 1) + (ps_mv_ctxt->i4_ctb_y - 1) * ps_sps->i2_pic_wd_in_ctb);
+                ctb_pu_idx = ps_mv_ctxt->pu4_pic_pu_idx[index_pic_map];
+                index_pic_map *= num_minpu_in_ctb;
+                index_pic_map += (num_minpu_in_ctb - 1);
+                pu4_ctb_top_left_pu_idx[0] = ctb_pu_idx + ps_mv_ctxt->pu1_pic_pu_map[index_pic_map];
+            }
         }
         /*Top*/
         /* If start of tile column*/
