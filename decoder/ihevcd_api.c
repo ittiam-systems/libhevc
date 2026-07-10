@@ -1659,6 +1659,10 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     UWORD8 *pu1_buf;
     WORD32 size;
 
+    /* Free any dynamic buffers that are allocated earlier. As ps_codec is memset to zero */
+    /* at the beginning, it is safe to call this even if no memory was allocated earlier  */
+    ihevcd_free_dynamic_bufs(ps_codec);
+
     wd = ALIGN64(ps_codec->i4_wd);
     ht = ALIGN64(ps_codec->i4_ht);
 
