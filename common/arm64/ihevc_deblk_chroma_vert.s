@@ -44,7 +44,8 @@
 //                             WORD32 qp_offset_v,
 //                             WORD32 tc_offset_div2,
 //                             WORD32 filter_flag_p,
-//                             WORD32 filter_flag_q)
+//                             WORD32 filter_flag_q,
+//                             WORD8 chroma_fmt)
 
 .include "ihevc_neon_macros.s"
 .text
@@ -67,6 +68,7 @@ ENTRY ihevc_deblk_chroma_vert_av8
     mov         x12, x7
     mov         x7, x4
     ldr         w4, [sp]
+    ldrsb       x11, [sp, #8]
 
     push_v_regs
     stp         x19, x20,[sp,#-16]!
@@ -89,8 +91,9 @@ ENTRY ihevc_deblk_chroma_vert_av8
     adrp        x7, :got:gai4_ihevc_qp_table
     ldr         x7, [x7, #:got_lo12:gai4_ihevc_qp_table]
 
-
     bmi         l1.2944
+    cmp         x11,#1
+    bgt         qp_u_min_51_vert
     cmp         x3,#0x39
     bgt         lbl78
     ldr         w3, [x7,x3,lsl #2]
@@ -98,6 +101,12 @@ ENTRY ihevc_deblk_chroma_vert_av8
 lbl78:
     sub         x20,x3,#6
     csel        x3, x20, x3,gt
+    b           qp_u_done_vert
+qp_u_min_51_vert:
+    mov         x20,#0x33
+    cmp         x3,x20
+    csel        x3, x20, x3,gt
+qp_u_done_vert:
 l1.2944:
     trn1        v29.4h, v5.4h, v16.4h
     trn2        v16.4h, v5.4h, v16.4h
@@ -107,6 +116,8 @@ l1.2944:
     trn2        v4.4h, v17.4h, v4.4h
     mov         v17.d[0], v29.d[0]
     bmi         l1.2964
+    cmp         x11,#1
+    bgt         qp_v_min_51_vert
     cmp         x2,#0x39
     bgt         lbl86
     ldr         w2, [x7,x2,lsl #2]
@@ -114,6 +125,12 @@ l1.2944:
 lbl86:
     sub         x20,x2,#6
     csel        x2, x20, x2,gt
+    b           qp_v_done_vert
+qp_v_min_51_vert:
+    mov         x20,#0x33
+    cmp         x2,x20
+    csel        x2, x20, x2,gt
+qp_v_done_vert:
 l1.2964:
     trn1        v29.2s, v5.2s, v17.2s
     trn2        v17.2s, v5.2s, v17.2s
