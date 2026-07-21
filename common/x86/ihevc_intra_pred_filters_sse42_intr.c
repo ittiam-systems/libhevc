@@ -916,13 +916,12 @@ void ihevc_intra_pred_luma_horz_sse42(UWORD8 *pu1_ref,
                                       UWORD8 *pu1_dst,
                                       WORD32 dst_strd,
                                       WORD32 nt,
-                                      WORD32 mode)
+                                      WORD32 disable_boundary_filter)
 {
 
     WORD32 row;
     WORD32 two_nt;
     UNUSED(src_strd);
-    UNUSED(mode);
 
     two_nt = 2 * nt;
 
@@ -1022,32 +1021,43 @@ void ihevc_intra_pred_luma_horz_sse42(UWORD8 *pu1_ref,
 
         /* DC filtering for the first top row and first left column */
 
-        zero_8x16b = _mm_set1_epi16(0);
+        if (!disable_boundary_filter)
+        {
+            zero_8x16b = _mm_set1_epi16(0);
 
-        /*Filtering done for the 1st row */
+            /*Filtering done for the 1st row */
 
-        src_temp2 =  _mm_set1_epi16(pu1_ref[two_nt - 1]);
-        src_temp10 =  _mm_set1_epi16(pu1_ref[two_nt]);
+            src_temp2 =  _mm_set1_epi16(pu1_ref[two_nt - 1]);
+            src_temp10 =  _mm_set1_epi16(pu1_ref[two_nt]);
 
-        /*  loding 8-bit 16 pixels */
-        src_temp4 =  _mm_loadu_si128((__m128i *)(pu1_ref + two_nt + 1));
+            /*  loding 8-bit 16 pixels */
+            src_temp4 =  _mm_loadu_si128((__m128i *)(pu1_ref + two_nt + 1));
 
-        src_temp4 =  _mm_cvtepu8_epi16(src_temp4);
+            src_temp4 =  _mm_cvtepu8_epi16(src_temp4);
 
-        /*(pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt])*/
-        src_temp3 = _mm_sub_epi16(src_temp4, src_temp10);
+            /*(pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt])*/
+            src_temp3 = _mm_sub_epi16(src_temp4, src_temp10);
 
-        /* ((pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt]) >> 1)*/
-        src_temp3 = _mm_srai_epi16(src_temp3, 1);
+            /* ((pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt]) >> 1)*/
+            src_temp3 = _mm_srai_epi16(src_temp3, 1);
 
-        /* pu1_ref[two_nt - 1]+((pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt]) >> 1)*/
-        src_temp3 = _mm_add_epi16(src_temp2, src_temp3);
+            /* pu1_ref[two_nt - 1]+((pu1_ref[two_nt + 1 + col] - pu1_ref[two_nt]) >> 1)*/
+            src_temp3 = _mm_add_epi16(src_temp2, src_temp3);
+        }
 
         if(nt == 4)
         {
             int temp1, temp2, temp3;
-            src_temp3 = _mm_packus_epi16(src_temp3, zero_8x16b);
-            temp1 = _mm_cvtsi128_si32(src_temp3);
+            if (disable_boundary_filter)
+            {
+                src_temp3 = _mm_set1_epi8(pu1_ref[two_nt - 1]);
+                temp1 = _mm_cvtsi128_si32(src_temp3);
+            }
+            else
+            {
+                src_temp3 = _mm_packus_epi16(src_temp3, zero_8x16b);
+                temp1 = _mm_cvtsi128_si32(src_temp3);
+            }
 
             *(WORD32 *)(&pu1_dst[0]) = temp1;
 
@@ -1067,8 +1077,14 @@ void ihevc_intra_pred_luma_horz_sse42(UWORD8 *pu1_ref,
         }
         else if(nt == 8)
         {
-            src_temp10 = _mm_packus_epi16(src_temp3, zero_8x16b);
-
+            if (disable_boundary_filter)
+            {
+                src_temp10 = _mm_set1_epi8(pu1_ref[two_nt - 1]);
+            }
+            else
+            {
+                src_temp10 = _mm_packus_epi16(src_temp3, zero_8x16b);
+            }
 
             src_temp1 =  _mm_set1_epi8(pu1_ref[two_nt - 2]);
             src_temp2 =  _mm_set1_epi8(pu1_ref[two_nt - 3]);
@@ -1092,14 +1108,22 @@ void ihevc_intra_pred_luma_horz_sse42(UWORD8 *pu1_ref,
         }
         else if(nt == 16)
         {
-            src_temp4 =  _mm_loadu_si128((__m128i *)(pu1_ref + two_nt + 1 + 8));
-            src_temp4 =  _mm_cvtepu8_epi16(src_temp4);
+            if(disable_boundary_filter)
+            {
+                src_temp3 = _mm_set1_epi8(pu1_ref[two_nt - 1]);
+            }
+            else
+            {
+                src_temp4 =  _mm_loadu_si128((__m128i *)(pu1_ref + two_nt + 1 + 8));
+                src_temp4 =  _mm_cvtepu8_epi16(src_temp4);
 
-            src_temp10 = _mm_sub_epi16(src_temp4, src_temp10);
-            src_temp10 = _mm_srai_epi16(src_temp10, 1);
-            src_temp10 = _mm_add_epi16(src_temp2, src_temp10);
+                src_temp10 = _mm_sub_epi16(src_temp4, src_temp10);
+                src_temp10 = _mm_srai_epi16(src_temp10, 1);
+                src_temp10 = _mm_add_epi16(src_temp2, src_temp10);
 
-            src_temp3 = _mm_packus_epi16(src_temp3, src_temp10);
+                src_temp3 = _mm_packus_epi16(src_temp3, src_temp10);
+            }
+
             _mm_storeu_si128((__m128i *)(pu1_dst), src_temp3);
 
             /*pu1_dst[(row * dst_strd) + col] = pu1_ref[two_nt - 1 - row];*/
@@ -1184,7 +1208,7 @@ void ihevc_intra_pred_luma_ver_sse42(UWORD8 *pu1_ref,
                                      UWORD8 *pu1_dst,
                                      WORD32 dst_strd,
                                      WORD32 nt,
-                                     WORD32 mode)
+                                     WORD32 disable_boundary_filter)
 {
     WORD32 row;
     WORD16 s2_predpixel;
@@ -1192,7 +1216,6 @@ void ihevc_intra_pred_luma_ver_sse42(UWORD8 *pu1_ref,
     __m128i src_temp0, src_temp1, src_temp2, src_temp3, src_temp4, src_temp5, src_temp6, src_temp7;
 
     UNUSED(src_strd);
-    UNUSED(mode);
 
     if(nt == 32)
     {
@@ -1249,11 +1272,21 @@ void ihevc_intra_pred_luma_ver_sse42(UWORD8 *pu1_ref,
 
     {
         /*Filtering done for the 1st column */
-        for(row = nt - 1; row >= 0; row--)
+        if (disable_boundary_filter)
         {
-            s2_predpixel = pu1_ref[two_nt + 1]
-                            + ((pu1_ref[two_nt - 1 - row] - pu1_ref[two_nt]) >> 1);
-            pu1_dst[row * dst_strd] = CLIP_U8(s2_predpixel);
+            for(row = nt - 1; row >= 0; row--)
+            {
+                pu1_dst[row * dst_strd] = pu1_ref[two_nt + 1];
+            }
+        }
+        else
+        {
+            for(row = nt - 1; row >= 0; row--)
+            {
+                s2_predpixel = pu1_ref[two_nt + 1]
+                                + ((pu1_ref[two_nt - 1 - row] - pu1_ref[two_nt]) >> 1);
+                pu1_dst[row * dst_strd] = CLIP_U8(s2_predpixel);
+            }
         }
 
         /* Replication to next columns*/
