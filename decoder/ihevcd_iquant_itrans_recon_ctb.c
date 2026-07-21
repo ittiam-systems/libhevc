@@ -849,9 +849,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     WORD32 luma_nbr_flags_4x4[4] = { 0 };
     WORD32 chroma_nbr_flags = 0;
     WORD32 chroma_nbr_flags_subtu = 0;
-#ifdef ENABLE_MAIN_REXT_PROFILE
     WORD32 disable_boundary_filter = 0;
-#endif
+
     UWORD8 u1_luma_pred_mode_first_tu = 0;
     /* Pointers for generating 2d coeffs from coeff-map */
     UWORD8 *pu1_tu_coeff_data;
@@ -1457,13 +1456,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                         y_cb_tu.pu1_pred,
                                         y_cb_tu.pred_strd,
                                         trans_size,
-#ifdef ENABLE_MAIN_REXT_PROFILE
                                         (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26) ?
                                                         disable_boundary_filter :
                                                         u1_luma_pred_mode
-#else
-                                        u1_luma_pred_mode
-#endif
                                         );
                     }
                     else

@@ -95,6 +95,20 @@ protected:
         compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
   }
 
+  template <typename FuncPtrMember> void RunTestHorzVer(FuncPtrMember func_ptr) {
+    // Test with disable_boundary_filter = 0
+    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, 0);
+    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, 0);
+    ASSERT_NO_FATAL_FAILURE(
+        compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
+
+    // Test with disable_boundary_filter = 1
+    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, 1);
+    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, 1);
+    ASSERT_NO_FATAL_FAILURE(
+        compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
+  }
+
   int nt, mode, dst_strd_mul;
   int src_strd, dst_strd;
   std::vector<UWORD8> ref_buf;
@@ -118,9 +132,7 @@ TEST_P(LumaIntraPredTest, Run) {
   else if (mode >= 3 && mode <= 9)
     RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_3_to_9_fptr);
   else if (mode == 10) {
-    GTEST_SKIP() << "SIMD implementation is not matching C implementation for "
-                    "ihevc_intra_pred_luma_horz_fptr";
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_horz_fptr);
+    RunTestHorzVer(&ihevc_func_selector_t::ihevc_intra_pred_luma_horz_fptr);
   } else if (mode >= 11 && mode <= 17)
     RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_11_to_17_fptr);
   else if (mode == 18 || mode == 34)
@@ -128,9 +140,7 @@ TEST_P(LumaIntraPredTest, Run) {
   else if (mode >= 19 && mode <= 25)
     RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_19_to_25_fptr);
   else if (mode == 26) {
-    GTEST_SKIP() << "SIMD implementation is not matching C implementation for "
-                    "ihevc_intra_pred_luma_ver_fptr";
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_ver_fptr);
+    RunTestHorzVer(&ihevc_func_selector_t::ihevc_intra_pred_luma_ver_fptr);
   } else if (mode >= 27 && mode <= 33)
     RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_27_to_33_fptr);
   else

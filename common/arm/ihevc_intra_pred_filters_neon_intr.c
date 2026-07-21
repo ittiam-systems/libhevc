@@ -1186,13 +1186,12 @@ void ihevc_intra_pred_luma_horz_neonintr(UWORD8 *pu1_ref,
                                          UWORD8 *pu1_dst,
                                          WORD32 dst_strd,
                                          WORD32 nt,
-                                         WORD32 mode)
+                                         WORD32 disable_boundary_filter)
 {
 
     WORD32 row, col;
     WORD32 two_nt;
     UNUSED(src_strd);
-    UNUSED(mode);
 
     two_nt = 2 * nt;
 
@@ -1252,16 +1251,25 @@ void ihevc_intra_pred_luma_horz_neonintr(UWORD8 *pu1_ref,
             {
                 for(col = nt; col > 0; col -= 4)
                 {
-                    pu1_ref_val1 = vld1_lane_u32((uint32_t *)pu1_ref_4_two_nt_plus1, pu1_ref_val1, 0);
-                    sub_val = vsubl_u8(vreinterpret_u8_u32(pu1_ref_val1), dup_sub);
-                    shift_val  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
+                    pu1_ref_val2 = vld1_lane_u32((uint32_t *)pu1_ref_4_two_nt_minus_nt, pu1_ref_val2, 0);
 
-                    add_sat = vqaddq_s16(shift_val, vreinterpretq_s16_u16(dup_add));
-                    round_val = vqmovun_s16(add_sat);
+                    if (disable_boundary_filter)
+                    {
+                        round_val = vdup_lane_u8(vreinterpret_u8_u32(pu1_ref_val2), 3);
+                    }
+                    else
+                    {
+                        pu1_ref_val1 = vld1_lane_u32((uint32_t *)pu1_ref_4_two_nt_plus1, pu1_ref_val1, 0);
+                        sub_val = vsubl_u8(vreinterpret_u8_u32(pu1_ref_val1), dup_sub);
+                        shift_val  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
+
+                        add_sat = vqaddq_s16(shift_val, vreinterpretq_s16_u16(dup_add));
+                        round_val = vqmovun_s16(add_sat);
+                    }
+
                     vst1_lane_u32((uint32_t *)pu1_dst_4, vreinterpret_u32_u8(round_val), 0);
                     pu1_dst_4 += dst_strd;
 
-                    pu1_ref_val2 = vld1_lane_u32((uint32_t *)pu1_ref_4_two_nt_minus_nt, pu1_ref_val2, 0);
                     dup_val = vdup_lane_u8(vreinterpret_u8_u32(pu1_ref_val2), 2);
                     vst1_lane_u32((uint32_t *)pu1_dst_4, vreinterpret_u32_u8(dup_val), 0);
                     pu1_dst_4 += dst_strd;
@@ -1310,13 +1318,20 @@ void ihevc_intra_pred_luma_horz_neonintr(UWORD8 *pu1_ref,
 
             for(col = nt; col > 0; col -= 8)
             {
-                src_tmp = vld1_u8(pu1_ref_tmp_1);
-                pu1_ref_tmp_1 += 8;
+                if (disable_boundary_filter)
+                {
+                    round_val = vdup_n_u8(pu1_ref[two_nt - 1]);
+                }
+                else
+                {
+                    src_tmp = vld1_u8(pu1_ref_tmp_1);
+                    pu1_ref_tmp_1 += 8;
 
-                sub_res = vsubl_u8(src_tmp, dup_sub);
-                shift_res  = vshrq_n_s16(vreinterpretq_s16_u16(sub_res), 1);
-                add_res = vqaddq_s16(shift_res, vreinterpretq_s16_u16(dup_add));
-                round_val = vqmovun_s16(add_res);
+                    sub_res = vsubl_u8(src_tmp, dup_sub);
+                    shift_res  = vshrq_n_s16(vreinterpretq_s16_u16(sub_res), 1);
+                    add_res = vqaddq_s16(shift_res, vreinterpretq_s16_u16(dup_add));
+                    round_val = vqmovun_s16(add_res);
+                }
                 vst1_u8(pu1_dst_tmp_1, round_val);
                 pu1_dst_tmp_1 += 8;
             }
@@ -1418,12 +1433,11 @@ void ihevc_intra_pred_luma_ver_neonintr(UWORD8 *pu1_ref,
                                         UWORD8 *pu1_dst,
                                         WORD32 dst_strd,
                                         WORD32 nt,
-                                        WORD32 mode)
+                                        WORD32 disable_boundary_filter)
 {
     WORD32 row, col;
     WORD32 two_nt;
     UNUSED(src_strd);
-    UNUSED(mode);
 
     two_nt = 2 * nt;
 
@@ -1490,11 +1504,18 @@ void ihevc_intra_pred_luma_ver_neonintr(UWORD8 *pu1_ref,
                 for(col = nt; (col > 0) && (cond_4 == 0); col -= 4)
                 {
                     /*  unrolling s2_predpixel = pu1_ref[two_nt + 1] + ((pu1_ref[two_nt - 1 - row] - pu1_ref[two_nt]) >> 1); here*/
-                    src_val1 = vld1_lane_u32((uint32_t *)pu1_ref_val1, src_val1, 1);
-                    sub_val = vsubl_u8(vreinterpret_u8_u32(src_val1), dup_2_sub);
-                    shift_val1  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
-                    add_sat = vqaddq_s16(shift_val1, vreinterpretq_s16_u16(dup_2_add));
-                    round_val = vqmovun_s16(add_sat);
+                    if (disable_boundary_filter)
+                    {
+                        round_val = vdup_n_u8(pu1_ref[two_nt + 1]);
+                    }
+                    else
+                    {
+                        src_val1 = vld1_lane_u32((uint32_t *)pu1_ref_val1, src_val1, 1);
+                        sub_val = vsubl_u8(vreinterpret_u8_u32(src_val1), dup_2_sub);
+                        shift_val1  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
+                        add_sat = vqaddq_s16(shift_val1, vreinterpretq_s16_u16(dup_2_add));
+                        round_val = vqmovun_s16(add_sat);
+                    }
 
                     /* unrolling pu1_dst[row * dst_strd + col] = pu1_ref[two_nt + 1 + col]; here*/
                     src_val2 = vld1_lane_u32((uint32_t *)pu1_ref_val3, src_val2, 0);
@@ -1586,12 +1607,19 @@ void ihevc_intra_pred_luma_ver_neonintr(UWORD8 *pu1_ref,
             {
                 for(col = (nt - 1); (col > 0) && (cond == 0); col -= 8)
                 {
-                    pu1_src_tmp1 = vld1_u8(pu1_ref_tmp_1);
+                    if (disable_boundary_filter)
+                    {
+                        round_val = vdup_n_u8(pu1_ref[two_nt + 1]);
+                    }
+                    else
+                    {
+                        pu1_src_tmp1 = vld1_u8(pu1_ref_tmp_1);
 
-                    sub_val = vsubl_u8(pu1_src_tmp1, dup_sub);
-                    subsh_val  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
-                    addsat_val = vqaddq_s16(subsh_val, vreinterpretq_s16_u16(dup_add));
-                    round_val = vqmovun_s16(addsat_val);
+                        sub_val = vsubl_u8(pu1_src_tmp1, dup_sub);
+                        subsh_val  = vshrq_n_s16(vreinterpretq_s16_u16(sub_val), 1);
+                        addsat_val = vqaddq_s16(subsh_val, vreinterpretq_s16_u16(dup_add));
+                        round_val = vqmovun_s16(addsat_val);
+                    }
 
                     /* unrolling pu1_dst[row * dst_strd + col] = pu1_ref[two_nt + 1 + col]; here*/
 
