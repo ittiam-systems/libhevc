@@ -218,8 +218,11 @@ ihevc_pad_left_chroma_a9q:
 
     stmfd       sp!, {r4-r11, lr}           @stack stores the values of the arguments
 
-loop_start_chroma_left:
-    @ pad size is assumed to be pad_left = 80
+    cmp         r3, #160
+    beq         loop_start_chroma_left_160
+
+loop_start_chroma_left_80:
+    @ pad size is assumed to be 80
     sub         r4,r0,r3
 
     ldrh        r8,[r0]
@@ -239,10 +242,10 @@ loop_start_chroma_left:
     add         r5,r4,r1
 
     vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]                @ 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]                @128/8 = 16 bytes store
 
     add         r6,r5,r1
 
@@ -260,17 +263,87 @@ loop_start_chroma_left:
     vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
     vst1.8      {d4,d5},[r6]                @128/8 = 16 bytes store
 
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]                @128/8 = 16 bytes store
+
     subs        r2,#4
+    bne         loop_start_chroma_left_80
+
+    ldmfd       sp!,{r4-r11,pc}             @reload the registers from sp
+
+loop_start_chroma_left_160:
+    @ pad size is assumed to be 160
+    sub         r4,r0,r3
+
+    ldrh        r8,[r0]
+    add         r0,r1
+    ldrh        r9,[r0]
+    add         r0,r1
+    ldrh        r10,[r0]
+    add         r0,r1
+    ldrh        r11,[r0]
+    add         r0,r1
+
+    vdup.u16    q0,r8
+    vdup.u16    q1,r9
+    vdup.u16    q2,r10
+    vdup.u16    q3,r11
+
+    add         r5,r4,r1
+
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]                @128/8 = 16 bytes store
+
+    add         r6,r5,r1
+
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]                @128/8 = 16 bytes store
+
+    add         r7,r6,r1
+
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]                @128/8 = 16 bytes store
 
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]                @128/8 = 16 bytes store
 
-    @ total of 4rows*(16*5) = 4 * 80 = 4 * pad_left store
-
-    bne         loop_start_chroma_left
+    subs        r2,#4
+    bne         loop_start_chroma_left_160
 
     ldmfd       sp!,{r4-r11,pc}             @reload the registers from sp
 
@@ -466,8 +539,11 @@ ihevc_pad_right_chroma_a9q:
 
     stmfd       sp!, {r4-r11, lr}           @stack stores the values of the arguments
 
-loop_start_chroma_right:
-    @ pad size is assumed to be pad_left = 80
+    cmp         r3, #160
+    beq         loop_start_chroma_right_160
+
+loop_start_chroma_right_80:
+    @ pad size is assumed to be 80
     mov         r4,r0
 
     ldrh        r8,[r0, #-2]
@@ -487,10 +563,10 @@ loop_start_chroma_right:
     add         r5,r4,r1
 
     vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]!               @ 16 bytes store
-    vst1.8      {d0,d1},[r4]                @ 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]                @128/8 = 16 bytes store
 
     add         r6,r5,r1
 
@@ -508,17 +584,87 @@ loop_start_chroma_right:
     vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
     vst1.8      {d4,d5},[r6]                @128/8 = 16 bytes store
 
-    subs        r2,#4
-
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
     vst1.8      {d6,d7},[r7]                @128/8 = 16 bytes store
 
-    @ total of 4rows*(16*5) = 4 * 80 = 4 * pad_left store
+    subs        r2,#4
+    bne         loop_start_chroma_right_80
 
-    bne         loop_start_chroma_right
+    ldmfd       sp!,{r4-r11,pc}             @reload the registers from sp
+
+loop_start_chroma_right_160:
+    @ pad size is assumed to be 160
+    mov         r4,r0
+
+    ldrh        r8,[r0, #-2]
+    add         r0,r1
+    ldrh        r9,[r0, #-2]
+    add         r0,r1
+    ldrh        r10,[r0, #-2]
+    add         r0,r1
+    ldrh        r11,[r0, #-2]
+    add         r0,r1
+
+    vdup.u16    q0,r8
+    vdup.u16    q1,r9
+    vdup.u16    q2,r10
+    vdup.u16    q3,r11
+
+    add         r5,r4,r1
+
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]!               @128/8 = 16 bytes store
+    vst1.8      {d0,d1},[r4]                @128/8 = 16 bytes store
+
+    add         r6,r5,r1
+
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]!               @128/8 = 16 bytes store
+    vst1.8      {d2,d3},[r5]                @128/8 = 16 bytes store
+
+    add         r7,r6,r1
+
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]!               @128/8 = 16 bytes store
+    vst1.8      {d4,d5},[r6]                @128/8 = 16 bytes store
+
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]!               @128/8 = 16 bytes store
+    vst1.8      {d6,d7},[r7]                @128/8 = 16 bytes store
+
+    subs        r2,#4
+    bne         loop_start_chroma_right_160
 
     ldmfd       sp!,{r4-r11,pc}             @reload the registers from sp
 
