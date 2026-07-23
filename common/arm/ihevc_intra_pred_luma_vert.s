@@ -76,7 +76,7 @@
 @                               uword8* pu1_dst,
 @                               word32 dst_strd,
 @                               word32 nt,
-@                               word32 mode)
+@                               word32 disable_boundary_filter)
 @
 @**************variables vs registers*****************************************
 @r0 => *pu1_ref
@@ -89,6 +89,7 @@
 @   mode
 
 .equ    nt_offset,      104
+.equ    disable_boundry_offset, 108
 
 .text
 .align 4
@@ -105,6 +106,7 @@ ihevc_intra_pred_luma_ver_a9q:
     stmfd       sp!, {r4-r12, r14}          @stack stores the values of the arguments
     vpush       {d8 - d15}
     ldr         r4,[sp,#nt_offset]          @loads nt
+    ldr         r7,[sp,#disable_boundry_offset]
 
     lsl         r5, r4, #1                  @2nt
 
@@ -183,6 +185,8 @@ blk_16:
     ldrb        r12, [r6]                   @src[2nt+1]
 
     vld1.8      {d16,d17}, [r6]             @ld for repl to cols src[2nt+1+col(0:15)] (0 ignored for stores)
+    cmp         r7, #0
+    bne         ver_disable_16
     add         r6, r6, #0xffffffef         @subtract -9 to take it to src[2nt-1-row(15)]
 
     vdup.8      q12, r12                    @src[2nt+1]
@@ -323,6 +327,9 @@ blk_4_8:
     vld1.8      d16, [r6]                   @ld for repl to cols src[2nt+1+col(0:3 or 0:7)](0 ignored for st)
     add         r6, r6, #0xfffffff7         @subtract -9 to take it to src[2nt-1-row(15)]
 
+    cmp         r7, #0
+    bne         blk_disable_4_8
+
     vdup.8      d24, r12                    @src[2nt+1]
     vdup.16     q15, r12
 
@@ -394,6 +401,70 @@ blk_4_8:
 
     vst1.8      d11, [r2], r3
     vshr.s64    d24, d24, #8
+
+    b           end_func
+
+ver_disable_16:
+    add         r5, r2, r3                  @ r5 = Row 1 pointer
+    add         r8, r5, r3                  @ r8 = Row 2 pointer
+    add         r10, r8, r3                 @ r10 = Row 3 pointer
+    lsl         r11, r3, #2                 @ r11 = 4 * stride
+
+    vst1.8      {d16,d17}, [r2], r11
+    vst1.8      {d16,d17}, [r5], r11
+
+    vst1.8      {d16,d17}, [r8], r11
+    vst1.8      {d16,d17}, [r10], r11
+
+    vst1.8      {d16,d17}, [r2], r11
+    vst1.8      {d16,d17}, [r5], r11
+
+    vst1.8      {d16,d17}, [r8], r11
+    vst1.8      {d16,d17}, [r10], r11
+
+    vst1.8      {d16,d17}, [r2], r11
+    vst1.8      {d16,d17}, [r5], r11
+
+    vst1.8      {d16,d17}, [r8], r11
+    vst1.8      {d16,d17}, [r10], r11
+
+    vst1.8      {d16,d17}, [r2]
+    vst1.8      {d16,d17}, [r5]
+
+    vst1.8      {d16,d17}, [r8]
+    vst1.8      {d16,d17}, [r10]
+
+    b           end_func
+
+blk_disable_4_8:
+    add         r5, r2, r3                  @ r5 = Row 1
+    add         r8, r5, r3                  @ r8 = Row 2
+    add         r10, r8, r3                 @ r10 = Row 3
+    lsl         r11, r3, #2                 @ r11 = 4 * stride
+
+    cmp         r4, #4
+    beq         blk_disable_4
+
+    vst1.8      {d16}, [r2], r11
+    vst1.8      {d16}, [r5], r11
+
+    vst1.8      {d16}, [r8], r11
+    vst1.8      {d16}, [r10], r11
+
+    vst1.8      {d16}, [r2]
+    vst1.8      {d16}, [r5]
+
+    vst1.8      {d16}, [r8]
+    vst1.8      {d16}, [r10]
+
+    b           end_func
+
+blk_disable_4:
+    vst1.32     {d16[0]}, [r2]
+    vst1.32     {d16[0]}, [r5]
+
+    vst1.32     {d16[0]}, [r8]
+    vst1.32     {d16[0]}, [r10]
 
     b           end_func
 

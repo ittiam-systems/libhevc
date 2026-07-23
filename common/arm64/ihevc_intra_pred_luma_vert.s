@@ -76,7 +76,7 @@
 //                               uword8* pu1_dst,
 //                               word32 dst_strd,
 //                               word32 nt,
-//                               word32 mode)
+//                               word32 disable_boundary_filter)
 //
 //**************variables vs registers*****************************************
 //x0 => *pu1_ref
@@ -102,6 +102,7 @@ ENTRY ihevc_intra_pred_luma_ver_av8
     // stmfd sp!, {x4-x12, x14}            //stack stores the values of the arguments
 
     stp         x19, x20,[sp,#-16]!
+    mov         w19, w5
 
     lsl         x5, x4, #1                  //2nt
 
@@ -182,6 +183,10 @@ blk_16:
     sxtw        x12,w12
 
     ld1         {v16.8b, v17.8b}, [x6]      //ld for repl to cols src[2nt+1+col(0:15)] (0 ignored for stores)
+
+    cmp         w19, #0
+    bne         ver_disable_16
+
     sub         x6, x6, #17                 //subtract -9 to take it to src[2nt-1-row(15)]
 
     dup         v24.16b,w12                 //src[2nt+1]
@@ -322,6 +327,10 @@ blk_4_8:
     sxtw        x12,w12
 
     ld1         {v16.8b},[x6]               //ld for repl to cols src[2nt+1+col(0:3 or 0:7)](0 ignored for st)
+
+    cmp         w19, #0
+    bne         blk_disable_4_8
+
     sub         x6, x6, #9                  //subtract -9 to take it to src[2nt-1-row(15)]
 
     dup         v24.8b,w12                  //src[2nt+1]
@@ -417,6 +426,71 @@ blk_4:
 
     bsl         v4.8b,  v24.8b ,  v16.8b
     st1         {v4.s}[0],[x2], x3
+
+    b           end_func
+
+ver_disable_16:
+    add         x5, x2, x3                  // x5 = Row 1 pointer
+    add         x8, x5, x3                  // x8 = Row 2 pointer
+    add         x10, x8, x3                 // x10 = Row 3 pointer
+    lsl         x11, x3, #2                 // x11 = 4 * stride
+
+    st1         {v16.8b, v17.8b}, [x2], x11
+    st1         {v16.8b, v17.8b}, [x5], x11
+
+    st1         {v16.8b, v17.8b}, [x8], x11
+    st1         {v16.8b, v17.8b}, [x10], x11
+
+    st1         {v16.8b, v17.8b}, [x2], x11
+    st1         {v16.8b, v17.8b}, [x5], x11
+
+    st1         {v16.8b, v17.8b}, [x8], x11
+    st1         {v16.8b, v17.8b}, [x10], x11
+
+    st1         {v16.8b, v17.8b}, [x2], x11
+    st1         {v16.8b, v17.8b}, [x5], x11
+
+    st1         {v16.8b, v17.8b}, [x8], x11
+    st1         {v16.8b, v17.8b}, [x10], x11
+
+    st1         {v16.8b, v17.8b}, [x2]
+    st1         {v16.8b, v17.8b}, [x5]
+
+    st1         {v16.8b, v17.8b}, [x8]
+    st1         {v16.8b, v17.8b}, [x10]
+    b           end_func
+
+blk_disable_4_8:
+    add         x5, x2, x3                  // Row 1 pointer
+    add         x8, x5, x3                  // Row 2 pointer
+    add         x10, x8, x3                 // Row 3 pointer
+    lsl         x11, x3, #2                 // 4 * stride
+
+    cmp         w4, #4
+    beq         blk_disable_4
+
+blk_disable_8:
+    st1         {v16.8b}, [x2], x11
+    st1         {v16.8b}, [x5], x11
+
+    st1         {v16.8b}, [x8], x11
+    st1         {v16.8b}, [x10], x11
+
+    st1         {v16.8b}, [x2]
+    st1         {v16.8b}, [x5]
+
+    st1         {v16.8b}, [x8]
+    st1         {v16.8b}, [x10]
+
+    b           end_func
+
+blk_disable_4:
+    st1         {v16.s}[0], [x2]
+    st1         {v16.s}[0], [x5]
+
+    st1         {v16.s}[0], [x8]
+    st1         {v16.s}[0], [x10]
+    b           end_func
 
 
 end_func:
