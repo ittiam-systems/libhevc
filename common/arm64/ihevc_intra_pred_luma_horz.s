@@ -77,7 +77,7 @@
 //                                uword8 *pu1_dst,
 //                                word32 dst_strd,
 //                                word32 nt,
-//                                word32 mode)
+//                                word32 disable_boundary_filter)
 //**************variables vs registers*****************************************
 //x0 => *pu1_ref
 //x1 =>  src_strd
@@ -98,6 +98,10 @@ ENTRY ihevc_intra_pred_luma_horz_av8
     // stmfd sp!, {x4-x12, x14}                //stack stores the values of the arguments
 
     stp         x19, x20,[sp,#-16]!
+
+    sxtw        x6, w5                      // sign-extend disable_boundary_filter
+    neg         x6, x6
+    dup         v25.2d, x6
 
     //ldr          x5,[sp,#44]                        @loads mode
 
@@ -203,6 +207,7 @@ core_loop_16:
     sub         x12,x12,#17
     ld1         { v0.16b},[x12]
     dup         v26.8b, v0.b[15]
+    mov         v29.16b, v26.16b
     uxtl        v26.8h, v26.8b
 
     dup         v2.16b, v0.b[14]
@@ -217,6 +222,7 @@ core_loop_16:
     dup         v1.16b, v0.b[11]
     sqxtun      v22.8b, v22.8h
 
+    bit         v22.16b, v29.16b, v25.16b
     st1         {v22.8b},[x2],#8
 
     dup         v18.16b, v0.b[10]
@@ -231,6 +237,7 @@ core_loop_16:
     dup         v16.16b, v0.b[7]
     sqxtun      v22.8b, v22.8h
 
+    bit         v22.16b, v29.16b, v25.16b
     st1         {v22.8b},[x2],x3
     sub         x2,x2,#8
 
@@ -283,6 +290,7 @@ core_loop_8:
     sub         x12,x12,#9
     ld1         {v0.8b},[x12]
     dup         v26.8b, v0.b[7]
+    mov         v29.16b, v26.16b
     dup         v28.8b,w14
 
     dup         v3.8b, v0.b[6]
@@ -300,6 +308,7 @@ core_loop_8:
     dup         v7.8b, v0.b[2]
     sqxtun      v22.8b, v22.8h
 
+    bit         v22.16b, v29.16b, v25.16b
     st1         {v22.8b},[x2],x3
     st1         {v3.8b},[x2],x3
 
@@ -331,6 +340,7 @@ core_loop_4:
     ld1         {v0.8b},[x12]
     dup         v28.8b,w14
     dup         v26.8b, v0.b[3]
+    mov         v29.16b, v26.16b
     uxtl        v26.8h, v26.8b
 
     dup         v3.8b, v0.b[2]
@@ -344,6 +354,7 @@ core_loop_4:
 
     sqxtun      v22.8b, v22.8h
 
+    bit         v22.16b, v29.16b, v25.16b
     st1         {v22.s}[0],[x2],x3
     st1         {v3.s}[0],[x2],x3
     st1         {v4.s}[0],[x2],x3

@@ -77,7 +77,7 @@
 @                                uword8 *pu1_dst,
 @                                word32 dst_strd,
 @                                word32 nt,
-@                                word32 mode)
+@                                word32 disable_boundary_filter)
 @**************variables vs registers*****************************************
 @r0 => *pu1_ref
 @r1 =>  src_strd
@@ -85,6 +85,7 @@
 @r3 =>  dst_strd
 
 .equ    nt_offset,      104
+.equ    disable_boundry_offset, 108
 
 .text
 .align 4
@@ -101,6 +102,10 @@ ihevc_intra_pred_luma_horz_a9q:
     stmfd       sp!, {r4-r12, r14}          @stack stores the values of the arguments
     vpush       {d8 - d15}
     ldr         r4,[sp,#nt_offset]          @loads nt
+    ldr         r5,[sp,#disable_boundry_offset]
+
+    neg         r5, r5
+    vdup.32     d20, r5
 
     lsl         r6,r4,#1                    @two_nt
 
@@ -198,6 +203,7 @@ core_loop_16:
     sub         r12,r12,#17
     vld1.8      {q0},[r12]
     vdup.8      d26,d1[7]
+    vmov        d29, d26                    @ Preserve unfiltered
     vmovl.u8    q13,d26
 
     vdup.8      q1,d1[6]
@@ -212,7 +218,9 @@ core_loop_16:
     vdup.8      q4,d1[3]
     vqmovun.s16 d22,q11
 
-    vst1.8      {d22},[r2]!
+    vmov        d18, d20
+    vbsl        d18, d29, d22
+    vst1.8      {d18},[r2]!
 
     vdup.8      q5,d1[2]
     vsubl.u8    q12,d31,d28
@@ -226,7 +234,9 @@ core_loop_16:
     vdup.8      q8,d0[7]
     vqmovun.s16 d22,q11
 
-    vst1.8      {d22},[r2],r3
+    vmov        d18, d20
+    vbsl        d18, d29, d22
+    vst1.8      {d18},[r2],r3
     sub         r2,r2,#8
 
     vst1.8      {q1},[r2],r3
@@ -273,6 +283,7 @@ core_loop_8:
     sub         r12,r12,#9
     vld1.8      {d0},[r12]
     vdup.8      d26,d0[7]
+    vmov        d29, d26                    @ Preserve unfiltered
     vdup.8      d28,lr
 
     vdup.8      d3,d0[6]
@@ -290,7 +301,9 @@ core_loop_8:
     vdup.8      d7,d0[2]
     vqmovun.s16 d22,q11
 
-    vst1.8      {d22},[r2],r3
+    vmov        d18, d20
+    vbsl        d18, d29, d22
+    vst1.8      {d18},[r2],r3
     vst1.8      {d3},[r2],r3
 
     vdup.8      d8,d0[1]
@@ -317,6 +330,7 @@ core_loop_4:
     vld1.8      {d0},[r12]
     vdup.8      d28,lr
     vdup.8      d26,d0[3]
+    vmov        d29, d26                    @ Preserve unfiltered
     vmovl.u8    q13,d26
 
     vdup.8      d3,d0[2]
@@ -330,7 +344,9 @@ core_loop_4:
 
     vqmovun.s16 d22,q11
 
-    vst1.32     {d22[0]},[r2],r3
+    vmov        d18, d20
+    vbsl        d18, d29, d22
+    vst1.32     {d18[0]},[r2],r3
     vst1.32     {d3[0]},[r2],r3
     vst1.32     {d4[0]},[r2],r3
     vst1.32     {d5[0]},[r2],r3
