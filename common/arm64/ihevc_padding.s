@@ -212,9 +212,11 @@ loop_start_luma_left:
 
 ENTRY ihevc_pad_left_chroma_av8
 
+    cmp         x3, #160
+    beq         loop_start_chroma_left_160
 
-loop_start_chroma_left:
-    // pad size is assumed to be pad_left = 80
+loop_start_chroma_left_80:
+    // pad size is assumed to be 80
     sub         x4,x0,x3
 
     ldrh        w8,[x0]
@@ -255,17 +257,88 @@ loop_start_chroma_left:
     st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
     st1         {v4.16b},[x6]               //128/8 = 16 bytes store
 
-    subs        x2, x2,#4
-
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7]               //128/8 = 16 bytes store
 
-    // total of 4rows*(16*5) = 4 * 80 = 4 * pad_left store
+    subs        x2, x2,#4
+    bne         loop_start_chroma_left_80
 
-    bne         loop_start_chroma_left
+    EXIT_FUNC
+    ret
+
+loop_start_chroma_left_160:
+    // pad size is assumed to be 160
+    sub         x4,x0,x3
+
+    ldrh        w8,[x0]
+    add         x0,x0,x1
+    ldrh        w9,[x0]
+    add         x0,x0,x1
+    ldrh        w10,[x0]
+    add         x0,x0,x1
+    ldrh        w11,[x0]
+    add         x0,x0,x1
+
+    dup         v0.8h,w8
+    dup         v2.8h,w9
+    dup         v4.8h,w10
+    dup         v6.8h,w11
+
+    add         x5,x4,x1
+
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4]               //128/8 = 16 bytes store
+
+    add         x6,x5,x1
+
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5]               //128/8 = 16 bytes store
+
+    add         x7,x6,x1
+
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6]               //128/8 = 16 bytes store
+
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7]               //128/8 = 16 bytes store
+
+    subs        x2, x2,#4
+    bne         loop_start_chroma_left_160
 
     EXIT_FUNC
     ret
@@ -460,9 +533,11 @@ loop_start_luma_right:
 
 ENTRY ihevc_pad_right_chroma_av8
 
+    cmp         x3, #160
+    beq         loop_start_chroma_right_160
 
-loop_start_chroma_right:
-    // pad size is assumed to be pad_left = 80
+loop_start_chroma_right_80:
+    // pad size is assumed to be 80
     mov         x4,x0
 
     ldrh        w8,[x0, #-2]
@@ -482,10 +557,10 @@ loop_start_chroma_right:
     add         x5,x4,x1
 
     st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
-    st1         {v0.16b},[x4],#16           // 16 bytes store
-    st1         {v0.16b},[x4],#16           // 16 bytes store
-    st1         {v0.16b},[x4],#16           // 16 bytes store
-    st1         {v0.16b},[x4]               // 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4]               //128/8 = 16 bytes store
 
     add         x6,x5,x1
 
@@ -503,17 +578,88 @@ loop_start_chroma_right:
     st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
     st1         {v4.16b},[x6]               //128/8 = 16 bytes store
 
-    subs        x2, x2,#4
-
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
     st1         {v6.16b},[x7]               //128/8 = 16 bytes store
 
-    // total of 4rows*(16*5) = 4 * 80 = 4 * pad_left store
+    subs        x2, x2,#4
+    bne         loop_start_chroma_right_80
 
-    bne         loop_start_chroma_right
+    EXIT_FUNC
+    ret
+
+loop_start_chroma_right_160:
+    // pad size is assumed to be 160
+    mov         x4,x0
+
+    ldrh        w8,[x0, #-2]
+    add         x0,x0,x1
+    ldrh        w9,[x0, #-2]
+    add         x0,x0,x1
+    ldrh        w10,[x0, #-2]
+    add         x0,x0,x1
+    ldrh        w11,[x0, #-2]
+    add         x0,x0,x1
+
+    dup         v0.8h,w8
+    dup         v2.8h,w9
+    dup         v4.8h,w10
+    dup         v6.8h,w11
+
+    add         x5,x4,x1
+
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4],#16           //128/8 = 16 bytes store
+    st1         {v0.16b},[x4]               //128/8 = 16 bytes store
+
+    add         x6,x5,x1
+
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5],#16           //128/8 = 16 bytes store
+    st1         {v2.16b},[x5]               //128/8 = 16 bytes store
+
+    add         x7,x6,x1
+
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6],#16           //128/8 = 16 bytes store
+    st1         {v4.16b},[x6]               //128/8 = 16 bytes store
+
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7],#16           //128/8 = 16 bytes store
+    st1         {v6.16b},[x7]               //128/8 = 16 bytes store
+
+    subs        x2, x2,#4
+    bne         loop_start_chroma_right_160
 
     EXIT_FUNC
     ret
