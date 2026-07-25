@@ -53,8 +53,17 @@ protected:
     src_strd = wd * src_strd_mul;
     dst_strd = wd * dst_strd_mul;
 
-    dst_buf_ref.resize(dst_strd * ht);
-    dst_buf_tst.resize(dst_strd * ht);
+    // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
+    // reads/writes in SIMD implementations.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+    defined(_M_IX86)
+    int pad_dst = 16;
+#else
+    int pad_dst = 0;
+#endif
+
+    dst_buf_ref.resize(dst_strd * ht + pad_dst);
+    dst_buf_tst.resize(dst_strd * ht + pad_dst);
 
     // Set pv_src to a valid position within src_buf to allow negative indexing
     pv_src = (srcType *)g_src8_buf.data() + kTapSize / 2 * src_strd;

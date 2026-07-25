@@ -29,18 +29,29 @@ protected:
     pred_strd = trans_size;
     dst_strd = trans_size;
 
+    // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
+    // reads in SIMD implementations.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+    defined(_M_IX86)
+    int pad_pred = (trans_size == 4) ? 8 : 0;
+    int pad_tmp = (trans_size == 32) ? 8 : 0;
+#else
+    int pad_pred = 0;
+    int pad_tmp = 0;
+#endif
+
     pi2_src.resize(trans_size * trans_size);
     // pi2_tmp needs to be large enough to hold intermediate data of width *
     // height 16bits.
-    pi2_tmp.resize(trans_size * trans_size);
+    pi2_tmp.resize(trans_size * trans_size + pad_tmp);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
--    defined(_M_IX86)
+    defined(_M_IX86)
   if (trans_size == 32) {
     // SSE4.2 and SSSE3.1 require 3 times trans_size * trans_size for 32x32
-    pi2_tmp.resize(3 * trans_size * trans_size);
+    pi2_tmp.resize(3 * trans_size * trans_size + pad_tmp);
   }
 #endif
-    pu1_pred.resize(trans_size * trans_size);
+    pu1_pred.resize(trans_size * trans_size + pad_pred);
     pu1_dst_ref.resize(trans_size * trans_size);
     pu1_dst_tst.resize(trans_size * trans_size);
 
