@@ -46,8 +46,14 @@ const std::vector<std::pair<int, int>> kPUBlockSizes = {
 };
 
 const std::vector<UWORD8> g_src8_buf = []() {
-  // allocate twice to account for WORD16 as well
+  // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
+  // reads in SIMD/C implementations when stride multiplier is 2.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+    defined(_M_IX86)
+  std::vector<UWORD8> buf(kMaxSize * kMaxHeight * 4);
+#else
   std::vector<UWORD8> buf(kMaxSize * kMaxHeight * 2);
+#endif
   std::mt19937 rng(12345);
   std::uniform_int_distribution<int> dist(0, 255);
   for (auto &v : buf)

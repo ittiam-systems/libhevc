@@ -47,9 +47,20 @@ protected:
     src_strd = 1; // Intra pred reference is usually dense
     dst_strd = nt * dst_strd_mul;
 
+    // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
+    // reads/writes in SIMD implementations.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+    defined(_M_IX86)
+    int pad_ref = 16;
+    int pad_dst = 16;
+#else
+    int pad_ref = 0;
+    int pad_dst = 0;
+#endif
+
     // Reference buffer size: 4 * nt + 1
     int ref_size = 4 * nt + 1;
-    ref_buf.resize(ref_size);
+    ref_buf.resize(ref_size + pad_ref);
 
     // Initialize reference buffer with random data
     std::mt19937 rng(12345);
@@ -64,8 +75,8 @@ protected:
     // We just pass the data pointer.
     pu1_ref = ref_buf.data();
 
-    dst_buf_ref.resize(dst_strd * nt);
-    dst_buf_tst.resize(dst_strd * nt);
+    dst_buf_ref.resize(dst_strd * nt + pad_dst);
+    dst_buf_tst.resize(dst_strd * nt + pad_dst);
 
     // Initialize dst buffers with pattern to detect over/under writes
     std::fill(dst_buf_ref.begin(), dst_buf_ref.end(), 0xCD);
