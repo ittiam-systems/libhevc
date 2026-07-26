@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstring>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <random>
 #include <sstream>
 #include <string>
