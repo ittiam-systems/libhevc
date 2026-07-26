@@ -28,6 +28,9 @@ function(libhevc_add_compile_options)
     add_compile_options(-fno-omit-frame-pointer -fsanitize=${SANITIZE})
   endif()
 
+  if(ENABLE_COVERAGE)
+    add_compile_options(--coverage)
+  endif()
 endfunction()
 
 # Adds defintions for all targets
@@ -51,7 +54,11 @@ endfunction()
 
 # Adds libraries needed for executables
 function(libhevc_set_link_libraries)
-  link_libraries(Threads::Threads m)
+  if(ENABLE_COVERAGE)
+    link_libraries(Threads::Threads m --coverage)
+  else()
+    link_libraries(Threads::Threads m)
+  endif()
 endfunction()
 
 # cmake-format: off

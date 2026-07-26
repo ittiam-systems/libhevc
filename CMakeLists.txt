@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(libhevc C CXX)
 
+option(ENABLE_COVERAGE "Enable coverage" OFF)
+if(ENABLE_COVERAGE)
+  add_compile_options(-O0 -g)
+endif()
+
+
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
