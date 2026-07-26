@@ -156,4 +156,5 @@ function(libhevc_add_gtest_executable NAME)
     SOURCES ${HEVC_ROOT}/tests/common/func_selector.cc
             ${HEVC_ROOT}/tests/common/tests_common.cc ${ARG_SOURCES}
     LIBS GTest::gtest_main)
+  add_test(NAME ${NAME} COMMAND ${NAME})
 endfunction()
