@@ -34,7 +34,7 @@
 #include "iv.h"
 #include "ivd.h"
 #include "func_selector.h"
-#include "tests_common.h"
+#include "TestCommon.h"
 // clang-format on
 
 // Test parameters: block_size, mode, dst_stride_mul, arch

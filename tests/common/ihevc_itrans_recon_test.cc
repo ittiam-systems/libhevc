@@ -1,17 +1,17 @@
-#include <algorithm>
 #include <gtest/gtest.h>
+
+#include <algorithm>
 #include <random>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "TestCommon.h"
 #include "func_selector.h"
 #include "ihevc_defs.h"
-#include "ihevc_itrans_recon.h"
 #include "ihevc_macros.h"
 #include "ihevc_structs.h"
 #include "ihevc_typedefs.h"
-#include "tests_common.h"
 
 namespace {
 

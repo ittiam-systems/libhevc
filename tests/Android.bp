@@ -1,0 +1,94 @@
+/******************************************************************************
+ *
+ * Copyright (C) 2026 Ittiam Systems Pvt Ltd, Bangalore
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************************/
+
+package {
+    // Inherit applicable licenses from root
+    default_applicable_licenses: ["external_libhevc_license"],
+}
+
+// Common Test Helper Library
+cc_library_static {
+    name: "libhevc_test_common",
+    host_supported: true,
+    srcs: [
+        "common/BitsBuf.cpp",
+        "common/RawBuf.cpp",
+        "common/Md5Wrapper.cpp",
+        "common/BitsFile.cpp",
+        "common/RawFile.cpp",
+    ],
+    export_include_dirs: ["common"],
+    shared_libs: [
+        "libcrypto",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+
+// Decoder Test Helper Library
+cc_library_static {
+    name: "libhevc_dec_helper",
+    host_supported: true,
+    srcs: [
+        "decoder/DecHelper.cpp",
+    ],
+    export_include_dirs: ["decoder"],
+    static_libs: [
+        "libhevcdec",
+        "libhevc_test_common",
+        "libgtest",
+        "libgmock",
+    ],
+    header_libs: [
+        "libhevcdec_headers",
+    ],
+    shared_libs: [
+        "libcrypto",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+
+// Encoder Test Helper Library
+cc_library_static {
+    name: "libhevc_enc_helper",
+    host_supported: true,
+    srcs: [
+        "encoder/EncHelper.cpp",
+    ],
+    export_include_dirs: ["encoder"],
+    static_libs: [
+        "libhevcenc",
+        "libhevc_test_common",
+    ],
+    header_libs: [
+        "libhevcenc_headers",
+    ],
+    shared_libs: [
+        "libcrypto",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+

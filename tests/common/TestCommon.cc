@@ -16,9 +16,10 @@
  *
  ******************************************************************************/
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cstring>
-#include <gtest/gtest.h>
 #include <random>
 #include <sstream>
 #include <string>
@@ -32,7 +33,7 @@
 #include "ihevcd_function_selector.h"
 #include "iv.h"
 #include "ivd.h"
-#include "tests_common.h"
+#include "TestCommon.h"
 // clang-format on
 
 const std::vector<std::pair<int, int>> kPUBlockSizes = {
@@ -46,9 +47,9 @@ const std::vector<std::pair<int, int>> kPUBlockSizes = {
 };
 
 const std::vector<UWORD8> g_src8_buf = []() {
-  // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
-  // reads in SIMD/C implementations when stride multiplier is 2.
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+// TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
+// reads in SIMD/C implementations when stride multiplier is 2.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
   std::vector<UWORD8> buf(kMaxSize * kMaxHeight * 4);
 #else
@@ -56,47 +57,46 @@ const std::vector<UWORD8> g_src8_buf = []() {
 #endif
   std::mt19937 rng(12345);
   std::uniform_int_distribution<int> dist(0, 255);
-  for (auto &v : buf)
-    v = static_cast<UWORD8>(dist(rng));
+  for (auto& v : buf) v = static_cast<UWORD8>(dist(rng));
   return buf;
 }();
 
 std::string get_arch_str(IVD_ARCH_T arch) {
   std::string arch_str;
   switch (arch) {
-  case ARCH_X86_GENERIC:
-    arch_str = "GENERIC";
-    break;
-  case ARCH_X86_SSSE3:
-    arch_str = "SSSE3";
-    break;
-  case ARCH_X86_SSE42:
-    arch_str = "SSE42";
-    break;
-  case ARCH_X86_AVX2:
-    arch_str = "AVX2";
-    break;
-  case ARCH_ARMV8_GENERIC:
-    arch_str = "ARMV8";
-    break;
-  case ARCH_ARM_A9Q:
-    arch_str = "A9Q";
-    break;
-  default:
-    arch_str = "UNKNOWN";
-    break;
+    case ARCH_X86_GENERIC:
+      arch_str = "GENERIC";
+      break;
+    case ARCH_X86_SSSE3:
+      arch_str = "SSSE3";
+      break;
+    case ARCH_X86_SSE42:
+      arch_str = "SSE42";
+      break;
+    case ARCH_X86_AVX2:
+      arch_str = "AVX2";
+      break;
+    case ARCH_ARMV8_GENERIC:
+      arch_str = "ARMV8";
+      break;
+    case ARCH_ARM_A9Q:
+      arch_str = "A9Q";
+      break;
+    default:
+      arch_str = "UNKNOWN";
+      break;
   }
   return arch_str;
 }
 
 const std::vector<IVD_ARCH_T> ga_tst_arch = {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
     ARCH_X86_SSSE3,
     ARCH_X86_SSE42,
 #ifndef DISABLE_AVX2
     ARCH_X86_AVX2,
-#endif // DISABLE_AVX2
+#endif  // DISABLE_AVX2
 #elif defined(__aarch64__)
     ARCH_ARMV8_GENERIC,
 #elif defined(__arm__)

@@ -41,7 +41,7 @@ function(libhevc_add_definitions)
     else()
       add_definitions(-DX86 -DDARWIN -DDISABLE_AVX2 -DDEFAULT_ARCH=D_ARCH_X86_GENERIC)
     endif()
-  elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+  elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "arm64")
     add_definitions(-DARMV8 -DDEFAULT_ARCH=D_ARCH_ARMV8_GENERIC -DENABLE_NEON)
   elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     add_definitions(-DARMV7 -DDEFAULT_ARCH=D_ARCH_ARM_A9Q -DENABLE_NEON
@@ -154,7 +154,7 @@ function(libhevc_add_gtest_executable NAME)
   libhevc_add_executable(
     ${NAME} libhevcdec
     SOURCES ${HEVC_ROOT}/tests/common/func_selector.cc
-            ${HEVC_ROOT}/tests/common/tests_common.cc ${ARG_SOURCES}
+            ${HEVC_ROOT}/tests/common/TestCommon.cc ${ARG_SOURCES}
     LIBS GTest::gtest_main)
   add_test(NAME ${NAME} COMMAND ${NAME})
 endfunction()

@@ -26,7 +26,7 @@
 // clang-format off
 #include "func_selector.h"
 #include "ihevc_typedefs.h"
-#include "tests_common.h"
+#include "TestCommon.h"
 // clang-format on
 
 namespace {
