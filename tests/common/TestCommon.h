@@ -15,11 +15,13 @@
  * limitations under the License.
  *
  ******************************************************************************/
-#ifndef __TESTS_COMMON_H__
-#define __TESTS_COMMON_H__
+
+#pragma once
+
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cstring>
-#include <gtest/gtest.h>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -36,6 +38,8 @@
 #include "ivd.h"
 // clang-format on
 
+#include "TestEnums.h"
+
 static constexpr int kMaxSize = 64;
 static constexpr int kTapSize = 8;
 static constexpr int kMaxHeight = kMaxSize + kTapSize;
@@ -46,8 +50,8 @@ extern const std::vector<IVD_ARCH_T> ga_tst_arch;
 
 // Compare outputs
 template <typename T>
-static void compare_output(const std::vector<T> &ref,
-                           const std::vector<T> &test, int wd, int ht,
+static void compare_output(const std::vector<T>& ref,
+                           const std::vector<T>& test, int wd, int ht,
                            int dst_strd) {
   int size_bytes = wd * sizeof(T);
   for (int i = 0; i < ht; ++i) {
@@ -59,4 +63,3 @@ static void compare_output(const std::vector<T> &ref,
 }
 
 std::string get_arch_str(IVD_ARCH_T arch);
-#endif /* __TESTS_COMMON_H__ */

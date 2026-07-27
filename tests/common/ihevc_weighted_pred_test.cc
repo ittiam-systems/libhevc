@@ -35,7 +35,7 @@
 #include "ihevc_platform_macros.h"
 #include "ihevc_typedefs.h"
 #include "ihevcd_function_selector.h"
-#include "tests_common.h"
+#include "TestCommon.h"
 // clang-format on
 
 namespace {

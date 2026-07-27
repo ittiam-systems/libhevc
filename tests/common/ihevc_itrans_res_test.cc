@@ -33,7 +33,7 @@
 #include "iv.h"
 #include "ivd.h"
 #include "func_selector.h"
-#include "tests_common.h"
+#include "TestCommon.h"
 // clang-format on
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch
