@@ -245,12 +245,10 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
     WORD32 trans_skip;
     WORD16 iquant_out;
     WORD32 shift_iq;
-    {
-        WORD32 bit_depth;
+    WORD32 bit_depth;
 
-        bit_depth = 8 + 0;
-        shift_iq = bit_depth + log2_trans_size - 5;
-    }
+    bit_depth = 8 + 0;
+    shift_iq = bit_depth + log2_trans_size - 5;
     trans_size = (1 << log2_trans_size);
 
     /* First byte points to number of coded blocks */
@@ -289,22 +287,33 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
 
         if(!trans_quant_bypass)
         {
+            WORD32 dequant_coeff = (trans_skip && (trans_size > 4)) ? 16 : pi2_dequant_matrix[0];
             if(4 == trans_size)
             {
                 IQUANT_4x4(iquant_out,
                            ps_tu_sblk_coeff_data->ai2_level[0],
-                           pi2_dequant_matrix[0]
+                           dequant_coeff
                                            * g_ihevc_iquant_scales[qp_rem],
                            shift_iq, qp_div);
             }
             else
             {
                 IQUANT(iquant_out, ps_tu_sblk_coeff_data->ai2_level[0],
-                       pi2_dequant_matrix[0] * g_ihevc_iquant_scales[qp_rem],
+                       dequant_coeff * g_ihevc_iquant_scales[qp_rem],
                        shift_iq, qp_div);
             }
             if(trans_skip)
-                iquant_out = (iquant_out + 16) >> 5;
+            {
+                WORD32 shift_ts = MAX_TR_DYNAMIC_RANGE - bit_depth - log2_trans_size;
+                if(shift_ts > 0)
+                {
+                    iquant_out = (iquant_out + (1 << (shift_ts - 1))) >> shift_ts;
+                }
+                else if(shift_ts < 0)
+                {
+                    iquant_out = iquant_out << (-shift_ts);
+                }
+            }
         }
         else
         {
@@ -373,13 +382,12 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
 
                 if(!trans_quant_bypass)
                 {
+                    WORD32 dequant_coeff = (trans_skip && (trans_size > 4)) ? 16 : pi2_dequant_matrix[(subblk_pos_x + xs) + (subblk_pos_y + ys) * trans_size];
                     if(4 == trans_size)
                     {
                         IQUANT_4x4(iquant_out,
                                    ps_tu_sblk_coeff_data->ai2_level[sblk_non_zero_coeff_idx],
-                                   pi2_dequant_matrix[(subblk_pos_x + xs)
-                                                   + (subblk_pos_y + ys)
-                                                   * trans_size]
+                                   dequant_coeff
                                    * g_ihevc_iquant_scales[qp_rem],
                                    shift_iq, qp_div);
                         sblk_non_zero_coeff_idx++;
@@ -388,16 +396,23 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
                     {
                         IQUANT(iquant_out,
                                ps_tu_sblk_coeff_data->ai2_level[sblk_non_zero_coeff_idx],
-                               pi2_dequant_matrix[(subblk_pos_x + xs)
-                                               + (subblk_pos_y + ys)
-                                               * trans_size]
-                               * g_ihevc_iquant_scales[qp_rem],
+                               dequant_coeff * g_ihevc_iquant_scales[qp_rem],
                                shift_iq, qp_div);
                         sblk_non_zero_coeff_idx++;
                     }
 
                     if(trans_skip)
-                        iquant_out = (iquant_out + 16) >> 5;
+                    {
+                        WORD32 shift_ts = MAX_TR_DYNAMIC_RANGE - bit_depth - log2_trans_size;
+                        if(shift_ts > 0)
+                        {
+                            iquant_out = (iquant_out + (1 << (shift_ts - 1))) >> shift_ts;
+                        }
+                        else if(shift_ts < 0)
+                        {
+                            iquant_out = iquant_out << (-shift_ts);
+                        }
+                    }
                 }
                 else
                 {
@@ -955,6 +970,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     /* Applying Inverse transform on all the TU's in CTB */
     for(tu_cnt = 0; tu_cnt < ps_proc->i4_ctb_tu_cnt; tu_cnt++, ps_tu++)
     {
+        /* Reset boundary filter flag for each transform unit (TU) iteration */
+        disable_boundary_filter = 0;
         tu_plane_iq_it_recon_ctxt_t y_cb_tu = { 0 };
         tu_plane_iq_it_recon_ctxt_t cr_tu = { 0 };
         tu_plane_iq_it_recon_ctxt_t *ps_cb_tu = &y_cb_tu;
