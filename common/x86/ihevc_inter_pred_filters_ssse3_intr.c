@@ -65,7 +65,6 @@
 #include "ihevc_inter_pred.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_macros.h"
-#include "ihevc_func_selector.h"
 
 #include <immintrin.h>
 

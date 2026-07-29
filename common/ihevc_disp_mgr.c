@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include "ihevc_typedefs.h"
 #include "ihevc_macros.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_disp_mgr.h"
 
 

@@ -48,7 +48,6 @@
 #include "ihevc_typedefs.h"
 #include "ihevc_intra_pred.h"
 #include "ihevc_macros.h"
-#include "ihevc_func_selector.h"
 #include "arm_neon.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_common_tables.h"

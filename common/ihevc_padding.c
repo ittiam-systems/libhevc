@@ -45,7 +45,6 @@
 
 #include <string.h>
 #include "ihevc_typedefs.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_mem_fns.h"
 /**

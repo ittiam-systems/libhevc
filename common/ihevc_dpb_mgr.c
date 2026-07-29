@@ -47,7 +47,6 @@
 #include "ihevc_typedefs.h"
 #include "ihevc_defs.h"
 #include "ihevc_macros.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_structs.h"
 #include "ihevc_buf_mgr.h"
 #include "ihevc_dpb_mgr.h"

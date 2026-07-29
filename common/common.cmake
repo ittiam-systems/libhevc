@@ -146,7 +146,6 @@ elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     "${HEVC_ROOT}/common/arm/ihevc_deblk_chroma_vert.s"
     "${HEVC_ROOT}/common/arm/ihevc_deblk_luma_horz.s"
     "${HEVC_ROOT}/common/arm/ihevc_deblk_luma_vert.s"
-    "${HEVC_ROOT}/common/arm/ihevc_func_selector.h"
     "${HEVC_ROOT}/common/arm/ihevc_inter_pred_chroma_copy.s"
     "${HEVC_ROOT}/common/arm/ihevc_inter_pred_chroma_copy_w16out.s"
     "${HEVC_ROOT}/common/arm/ihevc_inter_pred_chroma_horz.s"

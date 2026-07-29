@@ -52,7 +52,6 @@
 #include "ihevc_debug.h"
 #include "ihevc_trans_tables.h"
 #include "ihevc_quant_iquant_ssd.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_trans_macros.h"
 #include "arm_neon.h"
 

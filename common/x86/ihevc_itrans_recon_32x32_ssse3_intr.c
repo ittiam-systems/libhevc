@@ -43,18 +43,11 @@
 #include "ihevc_defs.h"
 #include "ihevc_trans_tables.h"
 #include "ihevc_iquant_itrans_recon.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_trans_macros.h"
-
-
-
 
 #include <immintrin.h>
 #include <emmintrin.h>
-
 #include <tmmintrin.h>
-
-
 
 /**
  *******************************************************************************
