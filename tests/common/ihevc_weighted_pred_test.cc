@@ -438,20 +438,12 @@ TEST_P(WeightedPredBiDefaultChromaTest, Run) {
 // ---------------------------- Instantiation --------------------------------
 
 auto kLumaTestParams = ::testing::Combine(
-    ::testing::ValuesIn(kPUBlockSizes), ::testing::Values(1, 2),
-    ::testing::Values(1, 2), ::testing::ValuesIn(ga_tst_arch));
-
-const std::vector<std::pair<int, int>> kChromaPUBlockSizes = []() {
-  std::vector<std::pair<int, int>> ret;
-  for (const auto& size : kPUBlockSizes) {
-    ret.push_back({size.first / 2, size.second / 2});
-  }
-  return ret;
-}();
+    ::testing::ValuesIn(getLumaPUBlockSizes()), ::testing::Values(1, 2),
+    ::testing::Values(1, 2), ::testing::ValuesIn(getTstArch()));
 
 auto kChromaTestParams = ::testing::Combine(
-    ::testing::ValuesIn(kChromaPUBlockSizes), ::testing::Values(1, 2),
-    ::testing::Values(1, 2), ::testing::ValuesIn(ga_tst_arch));
+    ::testing::ValuesIn(getChromaPUBlockSizes()), ::testing::Values(1, 2),
+    ::testing::Values(1, 2), ::testing::ValuesIn(getTstArch()));
 
 INSTANTIATE_TEST_SUITE_P(WeightedPred, WeightedPredUniLumaTest, kLumaTestParams,
                          PrintWeightedPredTestParam);

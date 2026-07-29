@@ -515,7 +515,7 @@ TEST_P(SaoEdgeOffsetClass3ChromaTest, Run) {
 
 std::vector<std::pair<int, int>> GetSaoLumaBlockSizes() {
   std::vector<std::pair<int, int>> sizes;
-  for (const auto& size : kPUBlockSizes) {
+  for (const auto& size : getLumaPUBlockSizes()) {
     if (size.first >= 8 && size.first % 8 == 0 && size.second >= 4 &&
         size.second % 4 == 0) {
       sizes.push_back(size);
@@ -526,7 +526,7 @@ std::vector<std::pair<int, int>> GetSaoLumaBlockSizes() {
 
 std::vector<std::pair<int, int>> GetSaoChromaBlockSizes() {
   std::vector<std::pair<int, int>> sizes;
-  for (const auto& size : kPUBlockSizes) {
+  for (const auto& size : getLumaPUBlockSizes()) {
     int wd_comp = size.first / 2;
     int ht_comp = size.second / 2;
     if (wd_comp >= 4 && wd_comp % 4 == 0 && ht_comp >= 4 && ht_comp % 4 == 0) {
@@ -539,12 +539,12 @@ std::vector<std::pair<int, int>> GetSaoChromaBlockSizes() {
 // Luma Params: block sizes, band_pos/class, arch
 auto kSaoLumaParams = ::testing::Combine(
     ::testing::ValuesIn(GetSaoLumaBlockSizes()),
-    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(ga_tst_arch));
+    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(getTstArch()));
 
 // Chroma Params: block sizes, band_pos/class, arch
 auto kSaoChromaParams = ::testing::Combine(
     ::testing::ValuesIn(GetSaoChromaBlockSizes()),
-    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(ga_tst_arch));
+    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(getTstArch()));
 
 INSTANTIATE_TEST_SUITE_P(Sao, SaoBandOffsetLumaTest, kSaoLumaParams,
                          PrintSaoTestParam);

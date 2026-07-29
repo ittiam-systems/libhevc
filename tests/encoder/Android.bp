@@ -21,67 +21,17 @@ package {
     default_applicable_licenses: ["external_libhevc_license"],
 }
 
-// Common Test Helper Library
-cc_library_static {
-    name: "libhevc_test_common",
-    host_supported: true,
-    srcs: [
-        "common/BitsBuf.cpp",
-        "common/RawBuf.cpp",
-        "common/Md5Wrapper.cpp",
-        "common/BitsFile.cpp",
-        "common/RawFile.cpp",
-    ],
-    export_include_dirs: ["common"],
-    shared_libs: [
-        "libcrypto",
-    ],
-    cflags: [
-        "-Wall",
-        "-Werror",
-    ],
-}
-
-// Decoder Test Helper Library
-cc_library_static {
-    name: "libhevc_dec_helper",
-    host_supported: true,
-    srcs: [
-        "decoder/DecHelper.cpp",
-    ],
-    export_include_dirs: ["decoder"],
-    static_libs: [
-        "libhevcdec",
-        "libhevc_test_common",
-        "libgtest",
-        "libgmock",
-    ],
-    header_libs: [
-        "libhevcdec_headers",
-    ],
-    shared_libs: [
-        "libcrypto",
-    ],
-    cflags: [
-        "-Wall",
-        "-Werror",
-    ],
-}
-
 // Encoder Test Helper Library
 cc_library_static {
     name: "libhevc_enc_helper",
     host_supported: true,
     srcs: [
-        "encoder/EncHelper.cpp",
+        "EncHelper.cpp",
     ],
-    export_include_dirs: ["encoder"],
+    export_include_dirs: ["."],
     static_libs: [
         "libhevcenc",
-        "libhevc_test_common",
-    ],
-    header_libs: [
-        "libhevcenc_headers",
+        "libhevc_tests_common",
     ],
     shared_libs: [
         "libcrypto",
@@ -91,4 +41,3 @@ cc_library_static {
         "-Werror",
     ],
 }
-

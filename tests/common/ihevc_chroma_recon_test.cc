@@ -147,7 +147,7 @@ std::vector<ChromaReconTestParam> GenerateChromaReconTestParams() {
   const int offsets[] = {0, 1};
 
   auto add_params_for_size = [&](int size) {
-    for (auto arch : ga_tst_arch) {
+    for (auto arch : getTstArch()) {
       for (WORD32 nnzc : nz_options) {
         if (nnzc > size) continue;
         for (int offset : offsets) {

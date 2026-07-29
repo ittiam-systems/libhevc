@@ -65,7 +65,7 @@ protected:
     dst_buf_tst.resize(dst_strd * ht + pad_dst);
 
     // Set pv_src to a valid position within src_buf to allow negative indexing
-    pv_src = (srcType *)g_src8_buf.data() + kTapSize / 2 * src_strd;
+    pv_src = (srcType*)getSrc8Buf().data() + kTapSize / 2 * src_strd;
     pv_dst_ref = dst_buf_ref.data();
     pv_dst_tst = dst_buf_tst.data();
 
@@ -140,11 +140,11 @@ TEST_P(LumaInterPred_16_16_Test, LumaVertTest) {
 }
 
 auto kLumaInterPredTestParams =
-    ::testing::Combine(::testing::ValuesIn(kPUBlockSizes),
-                       ::testing::Values(1, 2),         // Src Stride Multiplier
-                       ::testing::Values(1, 2),         // Dst Stride Multiplier
-                       ::testing::Values(0, 1, 2, 3),   // Coeff index
-                       ::testing::ValuesIn(ga_tst_arch) // arch
+    ::testing::Combine(::testing::ValuesIn(getLumaPUBlockSizes()),
+                       ::testing::Values(1, 2),        // Src Stride Multiplier
+                       ::testing::Values(1, 2),        // Dst Stride Multiplier
+                       ::testing::Values(0, 1, 2, 3),  // Coeff index
+                       ::testing::ValuesIn(getTstArch())  // arch
     );
 
 std::string PrintLumaInterPredTestParam(

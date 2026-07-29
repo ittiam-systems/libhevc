@@ -44,9 +44,10 @@ static constexpr int kMaxSize = 64;
 static constexpr int kTapSize = 8;
 static constexpr int kMaxHeight = kMaxSize + kTapSize;
 
-extern const std::vector<std::pair<int, int>> kPUBlockSizes;
-extern const std::vector<UWORD8> g_src8_buf;
-extern const std::vector<IV_ARCH_T> ga_tst_arch;
+const std::vector<std::pair<int, int>>& getLumaPUBlockSizes();
+const std::vector<std::pair<int, int>>& getChromaPUBlockSizes();
+const std::vector<UWORD8>& getSrc8Buf();
+const std::vector<IV_ARCH_T>& getTstArch();
 
 // Compare outputs
 template <typename T>

@@ -151,6 +151,6 @@ std::string PrintLumaIntraPredTestParam(
 INSTANTIATE_TEST_SUITE_P(
     LumaIntraPred, LumaIntraPredTest,
     ::testing::Combine(::testing::Values(4, 8, 16, 32), ::testing::Range(0, 35),
-                       ::testing::Values(1, 2), // Dst Stride Multiplier
-                       ::testing::ValuesIn(ga_tst_arch)),
+                       ::testing::Values(1, 2),  // Dst Stride Multiplier
+                       ::testing::ValuesIn(getTstArch())),
     PrintLumaIntraPredTestParam);

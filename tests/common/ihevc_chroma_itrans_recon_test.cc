@@ -159,7 +159,7 @@ std::vector<ITransReconTestParam> GenerateChromaITransReconTestParams() {
   const int sizes[] = {4, 8, 16, 32};
 
   for (int size : sizes) {
-    for (auto arch : ga_tst_arch) {
+    for (auto arch : getTstArch()) {
       for (int nnzr : nz_options) {
         if (nnzr > size) continue;
         for (int nnzc : nz_options) {

@@ -179,7 +179,7 @@ std::vector<ReconTestParam> GenerateReconTestParams() {
   auto add_params_for_size = [&](int size, const int* ttypes, int num_ttypes) {
     for (int t = 0; t < num_ttypes; t++) {
       int ttype = ttypes[t];
-      for (auto arch : ga_tst_arch) {
+      for (auto arch : getTstArch()) {
         for (WORD32 nnzc : nz_options) {
           if (nnzc > size) continue;
           params.emplace_back(size, ttype, arch, nnzc);

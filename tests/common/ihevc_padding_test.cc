@@ -182,22 +182,25 @@ TEST_P(PaddingRightChromaTest, Run) {
 // ---------------------------- Instantiation --------------------------------
 
 auto kLumaPaddingParams = ::testing::Combine(
-    ::testing::ValuesIn(kPUBlockSizes),
-    ::testing::Values(80), ::testing::ValuesIn(ga_tst_arch));
+    ::testing::ValuesIn(getLumaPUBlockSizes()), ::testing::Values(80),
+    ::testing::ValuesIn(getTstArch()));
 
-const std::vector<std::pair<int, int>> kChromaPUBlockSizes = []() {
-  std::vector<std::pair<int, int>> ret;
-  for (const auto& size : kPUBlockSizes) {
-    if ((size.second / 2) % 4 == 0) {
-      ret.push_back({size.first / 2, size.second / 2});
+const std::vector<std::pair<int, int>>& getChromaPUBlockSizes() {
+  static const std::vector<std::pair<int, int>> kChromaPUBlockSizes = []() {
+    std::vector<std::pair<int, int>> ret;
+    for (const auto& size : getLumaPUBlockSizes()) {
+      if ((size.second / 2) % 4 == 0) {
+        ret.push_back({size.first / 2, size.second / 2});
+      }
     }
-  }
-  return ret;
-}();
+    return ret;
+  }();
+  return kChromaPUBlockSizes;
+}
 
 auto kChromaPaddingParams = ::testing::Combine(
-    ::testing::ValuesIn(kChromaPUBlockSizes),
-    ::testing::Values(80), ::testing::ValuesIn(ga_tst_arch));
+    ::testing::ValuesIn(getChromaPUBlockSizes()), ::testing::Values(80),
+    ::testing::ValuesIn(getTstArch()));
 
 INSTANTIATE_TEST_SUITE_P(Padding, PaddingLeftLumaTest, kLumaPaddingParams,
                          PrintPaddingTestParam);

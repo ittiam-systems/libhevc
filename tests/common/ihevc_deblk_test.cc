@@ -243,7 +243,7 @@ auto kDeblkLumaParams = ::testing::Combine(
     ::testing::Values(-2, 0, 2),    // tc_offset
     ::testing::Values(std::make_pair(0, 1), std::make_pair(1, 0),
                       std::make_pair(1, 1)),  // filter_p, filter_q
-    ::testing::ValuesIn(ga_tst_arch));
+    ::testing::ValuesIn(getTstArch()));
 
 auto kDeblkChromaParams = ::testing::Combine(
     ::testing::Values(12, 28, 44),  // qp_p
@@ -254,7 +254,7 @@ auto kDeblkChromaParams = ::testing::Combine(
     ::testing::Values(std::make_pair(0, 1), std::make_pair(1, 0),
                       std::make_pair(1, 1)),  // filter_p, filter_q
     ::testing::Values(1, 3),                  // chroma_fmt_idc (YUV420, YUV444)
-    ::testing::ValuesIn(ga_tst_arch));
+    ::testing::ValuesIn(getTstArch()));
 
 INSTANTIATE_TEST_SUITE_P(Deblk, DeblkLumaTest, kDeblkLumaParams,
                          PrintDeblkLumaParam);

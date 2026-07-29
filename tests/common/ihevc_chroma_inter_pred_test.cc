@@ -66,7 +66,7 @@ class ChromaInterPredTest
     dst_buf_tst.resize(dst_strd * ht + pad_dst);
 
     // Set pv_src to a valid position within src_buf to allow negative indexing
-    pv_src = (srcType*)g_src8_buf.data() + kTapSize / 2 * src_strd;
+    pv_src = (srcType*)getSrc8Buf().data() + kTapSize / 2 * src_strd;
     pv_dst_ref = dst_buf_ref.data();
     pv_dst_tst = dst_buf_tst.data();
 
@@ -148,22 +148,13 @@ TEST_P(ChromaInterPred_16_16_Test, ChromaVertTest) {
   RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_vert_w16inp_w16out_fptr);
 }
 
-// Chroma block sizes are half of luma block sizes (for 4:2:0)
-const std::vector<std::pair<int, int>> kChromaPUBlockSizes = []() {
-  std::vector<std::pair<int, int>> ret;
-  for (const auto& size : kPUBlockSizes) {
-    ret.push_back({size.first / 2, size.second / 2});
-  }
-  return ret;
-}();
-
 auto kChromaInterPredTestParams = ::testing::Combine(
-    ::testing::ValuesIn(kChromaPUBlockSizes),
+    ::testing::ValuesIn(getChromaPUBlockSizes()),
     ::testing::Values(1, 2),  // Src Stride Multiplier
     ::testing::Values(1, 2),  // Dst Stride Multiplier
     ::testing::Values(0, 1, 2, 3, 4, 5, 6,
-                      7),             // Coeff index (chroma has 8 phases)
-    ::testing::ValuesIn(ga_tst_arch)  // arch
+                      7),              // Coeff index (chroma has 8 phases)
+    ::testing::ValuesIn(getTstArch())  // arch
 );
 
 std::string PrintChromaInterPredTestParam(

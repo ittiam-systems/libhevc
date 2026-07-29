@@ -1,0 +1,193 @@
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_libhevc_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    default_applicable_licenses: ["external_libhevc_license"],
+}
+
+cc_defaults {
+    name: "libhevc_tests_defaults",
+    host_supported: true,
+    arch: {
+        x86: {
+            cflags: ["-DDISABLE_AVX2"],
+        },
+        x86_64: {
+            cflags: ["-DDISABLE_AVX2"],
+        },
+    },
+}
+
+cc_library_static {
+    name: "libhevc_tests_common",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: [
+        "TestCommon.cc",
+        "func_selector.cc",
+        "BitsBuf.cpp",
+        "RawBuf.cpp",
+        "Md5Wrapper.cpp",
+        "BitsFile.cpp",
+        "RawFile.cpp",
+    ],
+    export_include_dirs: ["."],
+    shared_libs: [
+        "libcrypto",
+    ],
+    static_libs: [
+        "libhevccommon",
+        "libgtest",
+    ],
+}
+
+cc_test {
+    name: "ihevc_luma_inter_pred_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_luma_inter_pred_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_luma_intra_pred_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_luma_intra_pred_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_itrans_res_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_itrans_res_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_itrans_recon_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_itrans_recon_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_chroma_inter_pred_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_chroma_inter_pred_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_chroma_intra_pred_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_chroma_intra_pred_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_chroma_itrans_recon_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_chroma_itrans_recon_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_chroma_recon_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_chroma_recon_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_padding_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_padding_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_weighted_pred_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_weighted_pred_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_deblk_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_deblk_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_sao_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_sao_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_itrans_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_itrans_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_mem_fns_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_mem_fns_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
+
+cc_test {
+    name: "ihevc_recon_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["ihevc_recon_test.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
+    ],
+}
