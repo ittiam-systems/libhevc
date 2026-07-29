@@ -52,7 +52,6 @@
 #include "ihevc_typedefs.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_macros.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_defs.h"
 #include "ihevc_tables_x86_intr.h"
 #include "ihevc_common_tables.h"

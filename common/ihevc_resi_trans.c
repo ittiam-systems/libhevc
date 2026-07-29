@@ -49,7 +49,6 @@
 #include "ihevc_defs.h"
 #include "ihevc_trans_tables.h"
 #include "ihevc_resi_trans.h"
-#include "ihevc_func_selector.h"
 #include "ihevc_trans_macros.h"
 
 /**
