@@ -36,6 +36,6 @@
 // clang-format on
 
 const func_selector_t *get_ref_func_ptr();
-const func_selector_t *get_tst_func_ptr(IVD_ARCH_T arch);
+const func_selector_t *get_tst_func_ptr(IV_ARCH_T arch);
 
 #endif /* __FUNC_SELECTOR_H__ */

@@ -39,7 +39,7 @@
 // Test parameters: width, height, src_stride_mul, dst_stride_mul, coeff_idx,
 // arch
 using LumaInterPredTestParam =
-    std::tuple<std::pair<int, int>, int, int, int, IVD_ARCH_T>;
+    std::tuple<std::pair<int, int>, int, int, int, IV_ARCH_T>;
 template <typename srcType, typename dstType>
 class LumaInterPredTest
     : public ::testing::TestWithParam<LumaInterPredTestParam> {
@@ -92,7 +92,7 @@ protected:
   dstType *pv_dst_ref;
   dstType *pv_dst_tst;
   WORD8 *pi1_coeffs;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t *tst;
   const func_selector_t *ref;
 };
@@ -151,7 +151,7 @@ auto kLumaInterPredTestParams =
 std::string PrintLumaInterPredTestParam(
     const testing::TestParamInfo<LumaInterPredTestParam> &info) {
   int wd, ht, src_strd_mul, dst_strd_mul, coeff_idx;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::pair<int, int> block_size;
   std::tie(block_size, src_strd_mul, dst_strd_mul, coeff_idx, arch) =
       info.param;

@@ -54,13 +54,13 @@ std::string format_int(int val) {
 
 // Param: bs, qp_p, qp_q, beta_offset, tc_offset, filter_pair(p, q), arch
 using DeblkLumaParam =
-    std::tuple<int, int, int, int, int, std::pair<int, int>, IVD_ARCH_T>;
+    std::tuple<int, int, int, int, int, std::pair<int, int>, IV_ARCH_T>;
 
 std::string PrintDeblkLumaParam(
     const testing::TestParamInfo<DeblkLumaParam>& info) {
   int bs, qp_p, qp_q, beta_offset, tc_offset;
   std::pair<int, int> filter_pair;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(bs, qp_p, qp_q, beta_offset, tc_offset, filter_pair, arch) =
       info.param;
   return "bs_" + format_int(bs) + "_qpP_" + format_int(qp_p) + "_qpQ_" +
@@ -97,7 +97,7 @@ class DeblkLumaTest : public ::testing::TestWithParam<DeblkLumaParam> {
 
   int bs, qp_p, qp_q, beta_offset, tc_offset;
   std::pair<int, int> filter_pair;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, buf_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
@@ -139,13 +139,13 @@ TEST_P(DeblkLumaTest, LumaHorz) {
 // Param: qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, filter_pair(p, q),
 // chroma_fmt_idc, arch
 using DeblkChromaParam =
-    std::tuple<int, int, int, int, int, std::pair<int, int>, int, IVD_ARCH_T>;
+    std::tuple<int, int, int, int, int, std::pair<int, int>, int, IV_ARCH_T>;
 
 std::string PrintDeblkChromaParam(
     const testing::TestParamInfo<DeblkChromaParam>& info) {
   int qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, chroma_fmt_idc;
   std::pair<int, int> filter_pair;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, filter_pair,
            chroma_fmt_idc, arch) = info.param;
   return "qpP_" + format_int(qp_p) + "_qpQ_" + format_int(qp_q) + "_qpU_" +
@@ -184,7 +184,7 @@ class DeblkChromaTest : public ::testing::TestWithParam<DeblkChromaParam> {
 
   int qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, chroma_fmt_idc;
   std::pair<int, int> filter_pair;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, buf_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;

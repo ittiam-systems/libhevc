@@ -2296,9 +2296,9 @@ struct _codec_t
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;
     /**  Processor architecture */
-    IVD_ARCH_T e_processor_arch;
+    IV_ARCH_T e_processor_arch;
     /**  Processor soc */
-    IVD_SOC_T e_processor_soc;
+    IV_SOC_T e_processor_soc;
 
     /** Display buffer array - for shared mode */
     ivd_out_bufdesc_t s_disp_buffer[IVD_VIDDEC_MAX_IO_BUFFERS];

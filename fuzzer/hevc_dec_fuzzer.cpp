@@ -43,7 +43,7 @@ const IV_COLOR_FORMAT_T supportedColorFormats[] = {
 /* Decoder ignores invalid arch, i.e. for arm build, if SSSE3 is requested,
  * decoder defaults to a supported configuration. So same set of supported
  * architectures can be used in arm/arm64/x86 builds */
-const IVD_ARCH_T supportedArchitectures[] = {
+const IV_ARCH_T supportedArchitectures[] = {
     ARCH_ARM_NONEON,  ARCH_ARM_A9Q,   ARCH_ARM_NEONINTR, ARCH_ARMV8_GENERIC,
     ARCH_X86_GENERIC, ARCH_X86_SSSE3, ARCH_X86_SSE42};
 
@@ -186,7 +186,7 @@ void Codec::setArchitecture(FuzzedDataProvider &fdp) {
   s_ctl_ip.e_cmd = IVD_CMD_VIDEO_CTL;
   s_ctl_ip.e_sub_cmd =
       (IVD_CONTROL_API_COMMAND_TYPE_T)IHEVCD_CXA_CMD_CTL_SET_PROCESSOR;
-  s_ctl_ip.u4_arch = (IVD_ARCH_T)fdp.PickValueInArray(supportedArchitectures);
+  s_ctl_ip.u4_arch = (IV_ARCH_T)fdp.PickValueInArray(supportedArchitectures);
   s_ctl_ip.u4_soc = SOC_GENERIC;
   s_ctl_ip.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_ip_t);
   s_ctl_op.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_op_t);

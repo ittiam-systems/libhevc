@@ -37,7 +37,7 @@
 // clang-format on
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch
-using ITransResTestParam = std::tuple<int, int, IVD_ARCH_T>;
+using ITransResTestParam = std::tuple<int, int, IV_ARCH_T>;
 
 class ITransResTest : public ::testing::TestWithParam<ITransResTestParam> {
 protected:
@@ -85,7 +85,7 @@ protected:
 
   int trans_size;
   int ttype;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int src_strd, dst_strd;
   std::vector<WORD16> src_buf;
   std::vector<WORD16> tmp_buf;
@@ -114,7 +114,7 @@ TEST_P(ITransResTest, Run) {
 std::string PrintITransResTestParam(
     const testing::TestParamInfo<ITransResTestParam> &info) {
   int trans_size, ttype;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, ttype, arch) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_ttype_" << ttype << "_"

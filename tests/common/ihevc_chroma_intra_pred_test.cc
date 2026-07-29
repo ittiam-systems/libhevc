@@ -38,7 +38,7 @@
 // clang-format on
 
 // Test parameters: block_size, mode, dst_stride_mul, arch
-using ChromaIntraPredTestParam = std::tuple<int, int, int, IVD_ARCH_T>;
+using ChromaIntraPredTestParam = std::tuple<int, int, int, IV_ARCH_T>;
 
 class ChromaIntraPredTest
     : public ::testing::TestWithParam<ChromaIntraPredTestParam> {
@@ -102,7 +102,7 @@ class ChromaIntraPredTest
   UWORD8* pu1_ref;
   UWORD8* pu1_dst_ref;
   UWORD8* pu1_dst_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -135,7 +135,7 @@ TEST_P(ChromaIntraPredTest, Run) {
 std::string PrintChromaIntraPredTestParam(
     const testing::TestParamInfo<ChromaIntraPredTestParam>& info) {
   int nt, mode, dst_strd_mul;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(nt, mode, dst_strd_mul, arch) = info.param;
   std::stringstream ss;
   ss << "nt_" << nt << "_mode_" << mode << "_dst_stride_"

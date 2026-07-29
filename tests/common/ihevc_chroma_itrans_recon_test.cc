@@ -38,7 +38,7 @@
 namespace {
 
 // Test parameters: trans_size, arch, non_zero_rows, non_zero_cols
-using ITransReconTestParam = std::tuple<int, IVD_ARCH_T, int, int>;
+using ITransReconTestParam = std::tuple<int, IV_ARCH_T, int, int>;
 
 class ChromaITransReconTest
     : public ::testing::TestWithParam<ITransReconTestParam> {
@@ -114,7 +114,7 @@ class ChromaITransReconTest
   }
 
   int trans_size;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* ref;
   const func_selector_t* tst;
 
@@ -145,7 +145,7 @@ TEST_P(ChromaITransReconTest, Run) {
 std::string PrintChromaITransReconTestParam(
     const testing::TestParamInfo<ITransReconTestParam>& info) {
   WORD32 trans_size, non_zero_rows, non_zero_cols;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, arch, non_zero_rows, non_zero_cols) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_nzr_" << non_zero_rows << "_nzc_"

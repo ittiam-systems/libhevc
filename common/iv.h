@@ -137,6 +137,36 @@ typedef enum {
     IV_CMD_DUMMY_ELEMENT                = 0x4,
 }IV_API_COMMAND_TYPE_T;
 
+/* IV_ARCH_T: Architecture Enumeration                               */
+typedef enum
+{
+    ARCH_NA                 =   0x7FFFFFFF,
+    ARCH_ARM_NONEON         =   0x0,
+    ARCH_ARM_A9Q,
+    ARCH_ARM_A9A,
+    ARCH_ARM_A9,
+    ARCH_ARM_A7,
+    ARCH_ARM_A5,
+    ARCH_ARM_A15,
+    ARCH_ARM_NEONINTR,
+    ARCH_ARMV8_GENERIC,
+    ARCH_X86_GENERIC        =   0x100,
+    ARCH_X86_SSSE3,
+    ARCH_X86_SSE42,
+    ARCH_X86_AVX2,
+    ARCH_MIPS_GENERIC       =   0x200,
+    ARCH_MIPS_32,
+    ARCH_RISCV64_GENERIC    =   0x400,
+}IV_ARCH_T;
+
+/* IV_SOC_T: SOC Enumeration                               */
+typedef enum
+{
+    SOC_NA                  = 0x7FFFFFFF,
+    SOC_GENERIC             = 0x0,
+    SOC_HISI_37X            = 0x100,
+}IV_SOC_T;
+
 /*****************************************************************************/
 /* Structure                                                                 */
 /*****************************************************************************/
