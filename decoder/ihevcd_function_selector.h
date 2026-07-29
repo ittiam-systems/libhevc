@@ -133,6 +133,7 @@ typedef struct
     ihevc_itrans_res_8x8_ft *ihevc_itrans_res_8x8_fptr;
     ihevc_itrans_res_16x16_ft *ihevc_itrans_res_16x16_fptr;
     ihevc_itrans_res_32x32_ft *ihevc_itrans_res_32x32_fptr;
+    ihevc_itrans_res_dc_ft *ihevc_itrans_res_dc_fptr;
     ihevc_itrans_recon_4x4_ttype1_ft *ihevc_itrans_recon_4x4_ttype1_fptr;
     ihevc_itrans_recon_4x4_ft *ihevc_itrans_recon_4x4_fptr;
     ihevc_itrans_recon_8x8_ft *ihevc_itrans_recon_8x8_fptr;
@@ -178,7 +179,6 @@ typedef struct
     ihevcd_fmt_conv_444sp_to_444p_ft *ihevcd_fmt_conv_444sp_to_444p_fptr;
     ihevcd_itrans_recon_dc_luma_ft *ihevcd_itrans_recon_dc_luma_fptr;
     ihevcd_itrans_recon_dc_chroma_ft *ihevcd_itrans_recon_dc_chroma_fptr;
-    ihevcd_itrans_res_dc_ft *ihevcd_itrans_res_dc_fptr;
 }func_selector_t;
 
 void ihevcd_init_arch(void *pv_codec);

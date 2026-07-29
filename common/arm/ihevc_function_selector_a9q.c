@@ -94,6 +94,7 @@ void ihevc_init_function_ptr_a9q(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_itrans_res_8x8_fptr                         =  &ihevc_itrans_res_8x8;
     ps_func_selector->ihevc_itrans_res_16x16_fptr                       =  &ihevc_itrans_res_16x16;
     ps_func_selector->ihevc_itrans_res_32x32_fptr                       =  &ihevc_itrans_res_32x32;
+    ps_func_selector->ihevc_itrans_res_dc_fptr                          =  &ihevc_itrans_res_dc;
     ps_func_selector->ihevc_itrans_recon_4x4_ttype1_fptr                =  &ihevc_itrans_recon_4x4_ttype1_a9q;
     ps_func_selector->ihevc_itrans_recon_4x4_fptr                       =  &ihevc_itrans_recon_4x4_a9q;
     ps_func_selector->ihevc_itrans_recon_8x8_fptr                       =  &ihevc_itrans_recon_8x8_a9q;
