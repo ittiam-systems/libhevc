@@ -102,8 +102,8 @@ class DeblkLumaTest : public ::testing::TestWithParam<DeblkLumaParam> {
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
 
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 TEST_P(DeblkLumaTest, LumaVert) {
@@ -189,8 +189,8 @@ class DeblkChromaTest : public ::testing::TestWithParam<DeblkChromaParam> {
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
 
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 TEST_P(DeblkChromaTest, ChromaVert) {

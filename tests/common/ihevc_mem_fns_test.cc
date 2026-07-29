@@ -52,14 +52,14 @@ class Memset16BitTest : public ::testing::TestWithParam<MemsetTestParam> {
   int buf_size;
   std::vector<UWORD16> dst_ref;
   std::vector<UWORD16> dst_tst;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 TEST_P(Memset16BitTest, Run) {
-  (ref->*(&func_selector_t::ihevc_memset_16bit_fptr))(dst_ref.data() + offset,
+  (ref->*(&ihevc_func_selector_t::ihevc_memset_16bit_fptr))(dst_ref.data() + offset,
                                                       value, num_words);
-  (tst->*(&func_selector_t::ihevc_memset_16bit_fptr))(dst_tst.data() + offset,
+  (tst->*(&ihevc_func_selector_t::ihevc_memset_16bit_fptr))(dst_tst.data() + offset,
                                                       value, num_words);
   ASSERT_EQ(dst_ref, dst_tst);
 }
@@ -84,14 +84,14 @@ class Memset16BitMul8Test : public ::testing::TestWithParam<MemsetTestParam> {
   int buf_size;
   std::vector<UWORD16> dst_ref;
   std::vector<UWORD16> dst_tst;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 TEST_P(Memset16BitMul8Test, Run) {
-  (ref->*(&func_selector_t::ihevc_memset_16bit_mul_8_fptr))(
+  (ref->*(&ihevc_func_selector_t::ihevc_memset_16bit_mul_8_fptr))(
       dst_ref.data() + offset, value, num_words);
-  (tst->*(&func_selector_t::ihevc_memset_16bit_mul_8_fptr))(
+  (tst->*(&ihevc_func_selector_t::ihevc_memset_16bit_mul_8_fptr))(
       dst_tst.data() + offset, value, num_words);
   ASSERT_EQ(dst_ref, dst_tst);
 }

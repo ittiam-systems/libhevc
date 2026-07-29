@@ -34,7 +34,7 @@
 #include "ihevc_macros.h"
 #include "ihevc_platform_macros.h"
 #include "ihevc_typedefs.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "TestCommon.h"
 // clang-format on
 
@@ -85,8 +85,8 @@ class WeightedPredUniLumaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredUniLumaTest, Run) {
@@ -146,8 +146,8 @@ class WeightedPredUniChromaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredUniChromaTest, Run) {
@@ -210,8 +210,8 @@ class WeightedPredBiLumaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredBiLumaTest, Run) {
@@ -277,8 +277,8 @@ class WeightedPredBiChromaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredBiChromaTest, Run) {
@@ -349,8 +349,8 @@ class WeightedPredBiDefaultLumaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredBiDefaultLumaTest, Run) {
@@ -407,8 +407,8 @@ class WeightedPredBiDefaultChromaTest
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(WeightedPredBiDefaultChromaTest, Run) {

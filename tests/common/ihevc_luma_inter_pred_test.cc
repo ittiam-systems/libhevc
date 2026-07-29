@@ -29,9 +29,8 @@
 // clang-format off
 #include "ihevc_typedefs.h"
 #include "ihevc_inter_pred.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
 #include "func_selector.h"
 #include "TestCommon.h"
 // clang-format on
@@ -93,8 +92,8 @@ protected:
   dstType *pv_dst_tst;
   WORD8 *pi1_coeffs;
   IV_ARCH_T arch;
-  const func_selector_t *tst;
-  const func_selector_t *ref;
+  const ihevc_func_selector_t *tst;
+  const ihevc_func_selector_t *ref;
 };
 
 class LumaInterPred_8_8_Test : public LumaInterPredTest<UWORD8, UWORD8> {};
@@ -103,31 +102,31 @@ class LumaInterPred_16_8_Test : public LumaInterPredTest<WORD16, UWORD8> {};
 class LumaInterPred_16_16_Test : public LumaInterPredTest<WORD16, WORD16> {};
 
 TEST_P(LumaInterPred_8_8_Test, LumaCopyTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_copy_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_copy_fptr);
 }
 
 TEST_P(LumaInterPred_8_8_Test, LumaHorzTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_horz_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_horz_fptr);
 }
 
 TEST_P(LumaInterPred_8_8_Test, LumaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_vert_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_vert_fptr);
 }
 
 TEST_P(LumaInterPred_8_16_Test, LumaCopyTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_copy_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_copy_w16out_fptr);
 }
 
 TEST_P(LumaInterPred_8_16_Test, LumaHorzTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_horz_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_horz_w16out_fptr);
 }
 
 TEST_P(LumaInterPred_8_16_Test, LumaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_vert_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_vert_w16out_fptr);
 }
 
 TEST_P(LumaInterPred_16_8_Test, LumaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_vert_w16inp_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_vert_w16inp_fptr);
 }
 
 TEST_P(LumaInterPred_16_16_Test, LumaVertTest) {
@@ -137,7 +136,7 @@ TEST_P(LumaInterPred_16_16_Test, LumaVertTest) {
   GTEST_SKIP() << "SSE4.2 and SSSE3 are not matching C implementation for "
                   "ihevc_inter_pred_luma_vert_w16inp_w16out_fptr";
 #endif
-  RunTest(&func_selector_t::ihevc_inter_pred_luma_vert_w16inp_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_luma_vert_w16inp_w16out_fptr);
 }
 
 auto kLumaInterPredTestParams =

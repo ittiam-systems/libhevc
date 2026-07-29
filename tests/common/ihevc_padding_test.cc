@@ -87,8 +87,8 @@ class PaddingLumaTest : public ::testing::TestWithParam<PaddingTestParam> {
   int stride, total_ht, buf_size, src_offset;
   std::vector<UWORD8> buf_ref;
   std::vector<UWORD8> buf_tst;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 // --------------------------- Chroma Base Class -----------------------------
@@ -131,8 +131,8 @@ class PaddingChromaTest : public ::testing::TestWithParam<PaddingTestParam> {
   int stride, total_ht, buf_size, src_offset;
   std::vector<UWORD8> buf_ref;
   std::vector<UWORD8> buf_tst;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 // ---------------------------- Test cases -----------------------------------
@@ -140,9 +140,9 @@ class PaddingChromaTest : public ::testing::TestWithParam<PaddingTestParam> {
 class PaddingLeftLumaTest : public PaddingLumaTest {};
 TEST_P(PaddingLeftLumaTest, Run) {
   InitializeBuffers();
-  (ref->*(&func_selector_t::ihevc_pad_left_luma_fptr))(
+  (ref->*(&ihevc_func_selector_t::ihevc_pad_left_luma_fptr))(
       buf_ref.data() + src_offset, stride, ht, pad_size);
-  (tst->*(&func_selector_t::ihevc_pad_left_luma_fptr))(
+  (tst->*(&ihevc_func_selector_t::ihevc_pad_left_luma_fptr))(
       buf_tst.data() + src_offset, stride, ht, pad_size);
   ASSERT_EQ(buf_ref, buf_tst);
 }
@@ -150,9 +150,9 @@ TEST_P(PaddingLeftLumaTest, Run) {
 class PaddingLeftChromaTest : public PaddingChromaTest {};
 TEST_P(PaddingLeftChromaTest, Run) {
   InitializeBuffers();
-  (ref->*(&func_selector_t::ihevc_pad_left_chroma_fptr))(
+  (ref->*(&ihevc_func_selector_t::ihevc_pad_left_chroma_fptr))(
       buf_ref.data() + src_offset, stride, ht, pad_size);
-  (tst->*(&func_selector_t::ihevc_pad_left_chroma_fptr))(
+  (tst->*(&ihevc_func_selector_t::ihevc_pad_left_chroma_fptr))(
       buf_tst.data() + src_offset, stride, ht, pad_size);
   ASSERT_EQ(buf_ref, buf_tst);
 }
@@ -161,9 +161,9 @@ class PaddingRightLumaTest : public PaddingLumaTest {};
 TEST_P(PaddingRightLumaTest, Run) {
   InitializeBuffers();
   int pad_offset = wd;
-  (ref->*(&func_selector_t::ihevc_pad_right_luma_fptr))(
+  (ref->*(&ihevc_func_selector_t::ihevc_pad_right_luma_fptr))(
       buf_ref.data() + src_offset + pad_offset, stride, ht, pad_size);
-  (tst->*(&func_selector_t::ihevc_pad_right_luma_fptr))(
+  (tst->*(&ihevc_func_selector_t::ihevc_pad_right_luma_fptr))(
       buf_tst.data() + src_offset + pad_offset, stride, ht, pad_size);
   ASSERT_EQ(buf_ref, buf_tst);
 }
@@ -172,9 +172,9 @@ class PaddingRightChromaTest : public PaddingChromaTest {};
 TEST_P(PaddingRightChromaTest, Run) {
   InitializeBuffers();
   int pad_offset = 2 * wd;
-  (ref->*(&func_selector_t::ihevc_pad_right_chroma_fptr))(
+  (ref->*(&ihevc_func_selector_t::ihevc_pad_right_chroma_fptr))(
       buf_ref.data() + src_offset + pad_offset, stride, ht, pad_size);
-  (tst->*(&func_selector_t::ihevc_pad_right_chroma_fptr))(
+  (tst->*(&ihevc_func_selector_t::ihevc_pad_right_chroma_fptr))(
       buf_tst.data() + src_offset + pad_offset, stride, ht, pad_size);
   ASSERT_EQ(buf_ref, buf_tst);
 }

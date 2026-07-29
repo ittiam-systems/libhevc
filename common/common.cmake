@@ -59,7 +59,8 @@ list(
   "${HEVC_ROOT}/common/ihevc_resi_trans.c"
   "${HEVC_ROOT}/common/ihevc_sao.c"
   "${HEVC_ROOT}/common/ihevc_trans_tables.c"
-  "${HEVC_ROOT}/common/ihevc_weighted_pred.c")
+  "${HEVC_ROOT}/common/ihevc_weighted_pred.c"
+  "${HEVC_ROOT}/common/ihevc_function_selector_generic.c")
 
 include_directories(${HEVC_ROOT}/common)
 
@@ -134,7 +135,9 @@ if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "a
     "${HEVC_ROOT}/common/arm64/ihevc_sao_edge_offset_class3.s"
     "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_bi_default.s"
     "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_bi.s"
-    "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_uni.s")
+    "${HEVC_ROOT}/common/arm64/ihevc_weighted_pred_uni.s"
+    "${HEVC_ROOT}/common/arm64/ihevc_function_selector_av8.c"
+    "${HEVC_ROOT}/common/arm/ihevc_function_selector_a9q.c")
 
   include_directories(${HEVC_ROOT}/common/arm64 ${HEVC_ROOT}/common/arm)
 elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
@@ -209,7 +212,8 @@ elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_bi_default.s"
     "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_bi.s"
     "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_neon_intr.c"
-    "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_uni.s")
+    "${HEVC_ROOT}/common/arm/ihevc_weighted_pred_uni.s"
+    "${HEVC_ROOT}/common/arm/ihevc_function_selector_a9q.c")
 
   include_directories(${HEVC_ROOT}/common/arm)
 else()
@@ -234,7 +238,9 @@ else()
     "${HEVC_ROOT}/common/x86/ihevc_itrans_recon_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_16x16_itrans_recon_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_32x32_itrans_recon_sse42_intr.c"
-    "${HEVC_ROOT}/common/x86/ihevc_tables_x86_intr.c")
+    "${HEVC_ROOT}/common/x86/ihevc_tables_x86_intr.c"
+    "${HEVC_ROOT}/common/x86/ihevc_function_selector_sse42.c"
+    "${HEVC_ROOT}/common/x86/ihevc_function_selector_ssse3.c")
 
   include_directories(${HEVC_ROOT}/common/x86)
 endif()

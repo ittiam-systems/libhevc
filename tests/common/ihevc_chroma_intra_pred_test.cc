@@ -30,9 +30,8 @@
 // clang-format off
 #include "ihevc_typedefs.h"
 #include "ihevc_chroma_intra_pred.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
 #include "func_selector.h"
 #include "TestCommon.h"
 // clang-format on
@@ -103,31 +102,31 @@ class ChromaIntraPredTest
   UWORD8* pu1_dst_ref;
   UWORD8* pu1_dst_tst;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(ChromaIntraPredTest, Run) {
   if (mode == 0)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_planar_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_planar_fptr);
   else if (mode == 1)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_dc_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_dc_fptr);
   else if (mode == 2)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode2_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode2_fptr);
   else if (mode >= 3 && mode <= 9)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode_3_to_9_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode_3_to_9_fptr);
   else if (mode == 10)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_horz_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_horz_fptr);
   else if (mode >= 11 && mode <= 17)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode_11_to_17_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode_11_to_17_fptr);
   else if (mode == 18 || mode == 34)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode_18_34_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode_18_34_fptr);
   else if (mode >= 19 && mode <= 25)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode_19_to_25_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode_19_to_25_fptr);
   else if (mode == 26)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_ver_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_ver_fptr);
   else if (mode >= 27 && mode <= 33)
-    RunTest(&func_selector_t::ihevc_intra_pred_chroma_mode_27_to_33_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_chroma_mode_27_to_33_fptr);
   else
     FAIL() << "Invalid mode: " << mode;
 }

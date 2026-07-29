@@ -30,9 +30,8 @@
 // clang-format off
 #include "ihevc_typedefs.h"
 #include "ihevc_inter_pred.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
 #include "func_selector.h"
 #include "TestCommon.h"
 // clang-format on
@@ -95,8 +94,8 @@ class ChromaInterPredTest
   dstType* pv_dst_tst;
   WORD8* pi1_coeffs;
   IV_ARCH_T arch;
-  const func_selector_t* tst;
-  const func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 class ChromaInterPred_8_8_Test : public ChromaInterPredTest<UWORD8, UWORD8> {};
@@ -106,34 +105,34 @@ class ChromaInterPred_16_16_Test : public ChromaInterPredTest<WORD16, WORD16> {
 };
 
 TEST_P(ChromaInterPred_8_8_Test, ChromaCopyTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_copy_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_copy_fptr);
 }
 
 TEST_P(ChromaInterPred_8_8_Test, ChromaHorzTest) {
 #if defined(__arm__) || defined(__aarch64__)
   GTEST_SKIP() << "Skipping ChromaHorzTest on ARM";
 #endif
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_horz_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_horz_fptr);
 }
 
 TEST_P(ChromaInterPred_8_8_Test, ChromaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_vert_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_vert_fptr);
 }
 
 TEST_P(ChromaInterPred_8_16_Test, ChromaCopyTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_copy_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_copy_w16out_fptr);
 }
 
 TEST_P(ChromaInterPred_8_16_Test, ChromaHorzTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_horz_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_horz_w16out_fptr);
 }
 
 TEST_P(ChromaInterPred_8_16_Test, ChromaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_vert_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_vert_w16out_fptr);
 }
 
 TEST_P(ChromaInterPred_16_8_Test, ChromaVertTest) {
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_vert_w16inp_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_vert_w16inp_fptr);
 }
 
 TEST_P(ChromaInterPred_16_16_Test, ChromaVertTest) {
@@ -146,7 +145,7 @@ TEST_P(ChromaInterPred_16_16_Test, ChromaVertTest) {
   GTEST_SKIP() << "SSE4.2 and SSSE3 are not matching C implementation for "
                   "ihevc_inter_pred_chroma_vert_w16inp_w16out_fptr";
 #endif
-  RunTest(&func_selector_t::ihevc_inter_pred_chroma_vert_w16inp_w16out_fptr);
+  RunTest(&ihevc_func_selector_t::ihevc_inter_pred_chroma_vert_w16inp_w16out_fptr);
 }
 
 // Chroma block sizes are half of luma block sizes (for 4:2:0)

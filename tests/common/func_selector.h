@@ -29,13 +29,11 @@
 
 // clang-format off
 #include "ihevc_typedefs.h"
-#include "ihevc_inter_pred.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
 // clang-format on
 
-const func_selector_t *get_ref_func_ptr();
-const func_selector_t *get_tst_func_ptr(IV_ARCH_T arch);
+const ihevc_func_selector_t *get_ref_func_ptr();
+const ihevc_func_selector_t *get_tst_func_ptr(IV_ARCH_T arch);
 
 #endif /* __FUNC_SELECTOR_H__ */

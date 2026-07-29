@@ -108,8 +108,8 @@ protected:
   int trans_size;
   int ttype;
   IV_ARCH_T arch;
-  const func_selector_t *ref_func_selector;
-  const func_selector_t *tst_func_selector;
+  const ihevc_func_selector_t *ref_func_selector;
+  const ihevc_func_selector_t *tst_func_selector;
 
   WORD32 src_strd;
   WORD32 pred_strd;
@@ -126,16 +126,16 @@ protected:
 TEST_P(ITransReconTest, Run) {
   if (trans_size == 4) {
     if (ttype == 1) {
-      RunTest(&func_selector_t::ihevc_itrans_recon_4x4_ttype1_fptr);
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_4x4_ttype1_fptr);
     } else {
-      RunTest(&func_selector_t::ihevc_itrans_recon_4x4_fptr);
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_4x4_fptr);
     }
   } else if (trans_size == 8) {
-    RunTest(&func_selector_t::ihevc_itrans_recon_8x8_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_8x8_fptr);
   } else if (trans_size == 16) {
-    RunTest(&func_selector_t::ihevc_itrans_recon_16x16_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_16x16_fptr);
   } else if (trans_size == 32) {
-    RunTest(&func_selector_t::ihevc_itrans_recon_32x32_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_32x32_fptr);
   }
 }
 
