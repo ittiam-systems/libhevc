@@ -37,7 +37,7 @@ namespace {
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), shift,
 // non_zero_cols, arch
-using ITransTestParam = std::tuple<int, int, int, int, IVD_ARCH_T>;
+using ITransTestParam = std::tuple<int, int, int, int, IV_ARCH_T>;
 
 class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
  protected:
@@ -136,7 +136,7 @@ class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
   int ttype;
   int shift;
   int num_non_zero_cols;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* ref;
   const func_selector_t* tst;
 
@@ -152,7 +152,7 @@ TEST_P(ITransTest, Run) { RunTest(); }
 std::string PrintITransTestParam(
     const testing::TestParamInfo<ITransTestParam>& info) {
   int trans_size, ttype, shift, non_zero_cols;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, ttype, shift, non_zero_cols, arch) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_ttype_" << ttype << "_shift_" << shift

@@ -17,7 +17,7 @@ namespace {
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch,
 // non_zero_rows, non_zero_cols (number of non-zero rows/columns)
-using ITransReconTestParam = std::tuple<int, int, IVD_ARCH_T, int, int>;
+using ITransReconTestParam = std::tuple<int, int, IV_ARCH_T, int, int>;
 
 class ITransReconTest : public ::testing::TestWithParam<ITransReconTestParam> {
 protected:
@@ -107,7 +107,7 @@ protected:
 
   int trans_size;
   int ttype;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t *ref_func_selector;
   const func_selector_t *tst_func_selector;
 
@@ -142,7 +142,7 @@ TEST_P(ITransReconTest, Run) {
 std::string PrintITransReconTestParam(
     const testing::TestParamInfo<ITransReconTestParam> &info) {
   WORD32 trans_size, ttype, non_zero_rows, non_zero_cols;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, ttype, arch, non_zero_rows, non_zero_cols) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_ttype_" << ttype << "_nzr_" << non_zero_rows

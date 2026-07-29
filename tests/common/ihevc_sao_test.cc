@@ -46,12 +46,12 @@ void compare_sao_output(const UWORD8* ref, const UWORD8* tst, int stride,
 // ---------------------------- Test Param -----------------------------------
 
 // Param: block size, sao_band_pos/edge_class (value), arch
-using SaoTestParam = std::tuple<std::pair<int, int>, int, IVD_ARCH_T>;
+using SaoTestParam = std::tuple<std::pair<int, int>, int, IV_ARCH_T>;
 
 std::string PrintSaoTestParam(
     const testing::TestParamInfo<SaoTestParam>& info) {
   int wd, ht, val;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::pair<int, int> block_size;
   std::tie(block_size, val, arch) = info.param;
   std::tie(wd, ht) = block_size;
@@ -138,7 +138,7 @@ class SaoLumaTest : public ::testing::TestWithParam<SaoTestParam> {
   }
 
   int wd, ht, offset_val;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, total_ht, src_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
@@ -241,7 +241,7 @@ class SaoChromaTest : public ::testing::TestWithParam<SaoTestParam> {
   }
 
   int wd, ht, offset_val;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, total_ht, src_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;

@@ -35,13 +35,13 @@ namespace {
 
 // ---------------------------- Test Param -----------------------------------
 
-using PaddingTestParam = std::tuple<std::pair<int, int>, int, IVD_ARCH_T>;
+using PaddingTestParam = std::tuple<std::pair<int, int>, int, IV_ARCH_T>;
 
 std::string PrintPaddingTestParam(
     const testing::TestParamInfo<PaddingTestParam>& info) {
   int wd, ht, pad_size;
   std::pair<int, int> block_size;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(block_size, pad_size, arch) = info.param;
   std::tie(wd, ht) = block_size;
   return std::to_string(wd) + "x" + std::to_string(ht) + "_pad_" +
@@ -83,7 +83,7 @@ class PaddingLumaTest : public ::testing::TestWithParam<PaddingTestParam> {
   }
 
   int wd, ht, pad_size;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, total_ht, buf_size, src_offset;
   std::vector<UWORD8> buf_ref;
   std::vector<UWORD8> buf_tst;
@@ -127,7 +127,7 @@ class PaddingChromaTest : public ::testing::TestWithParam<PaddingTestParam> {
   }
 
   int wd, ht, pad_size;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int stride, total_ht, buf_size, src_offset;
   std::vector<UWORD8> buf_ref;
   std::vector<UWORD8> buf_tst;

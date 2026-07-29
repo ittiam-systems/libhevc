@@ -69,7 +69,7 @@ static void alignedFree(void* pv_ctxt, void* pv_buf) {
 #endif
 }
 
-static IVD_ARCH_T getDefaultArch() {
+static IV_ARCH_T getDefaultArch() {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || \
     defined(_M_IX86)
   return ARCH_X86_SSE42;
@@ -83,7 +83,7 @@ static IVD_ARCH_T getDefaultArch() {
 }
 
 // Maps high-level Arch enum to stable native Ittiam API architecture values
-static IVD_ARCH_T getNativeArch(libhevc::test::Arch arch) {
+static IV_ARCH_T getNativeArch(libhevc::test::Arch arch) {
   switch (arch) {
     case libhevc::test::Arch::defaultArch:
       return getDefaultArch();

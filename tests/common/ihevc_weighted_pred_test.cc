@@ -43,12 +43,12 @@ namespace {
 // ---------------------------- Param Types ----------------------------------
 
 using WeightedPredTestParam =
-    std::tuple<std::pair<int, int>, int, int, IVD_ARCH_T>;
+    std::tuple<std::pair<int, int>, int, int, IV_ARCH_T>;
 
 std::string PrintWeightedPredTestParam(
     const testing::TestParamInfo<WeightedPredTestParam>& info) {
   int wd, ht, src_strd_mul, dst_strd_mul;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::pair<int, int> block_size;
   std::tie(block_size, src_strd_mul, dst_strd_mul, arch) = info.param;
   std::tie(wd, ht) = block_size;
@@ -84,7 +84,7 @@ class WeightedPredUniLumaTest
   std::vector<WORD16> src_buf;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -145,7 +145,7 @@ class WeightedPredUniChromaTest
   std::vector<WORD16> src_buf;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -209,7 +209,7 @@ class WeightedPredBiLumaTest
   std::vector<WORD16> src_buf2;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -276,7 +276,7 @@ class WeightedPredBiChromaTest
   std::vector<WORD16> src_buf2;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -348,7 +348,7 @@ class WeightedPredBiDefaultLumaTest
   std::vector<WORD16> src_buf2;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };
@@ -406,7 +406,7 @@ class WeightedPredBiDefaultChromaTest
   std::vector<WORD16> src_buf2;
   std::vector<UWORD8> dst_buf_ref;
   std::vector<UWORD8> dst_buf_tst;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* tst;
   const func_selector_t* ref;
 };

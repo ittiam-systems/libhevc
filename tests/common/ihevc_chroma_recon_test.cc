@@ -38,7 +38,7 @@
 namespace {
 
 // Test parameters: trans_size, arch, non_zero_cols, offset (0 for U, 1 for V)
-using ChromaReconTestParam = std::tuple<int, IVD_ARCH_T, int, int>;
+using ChromaReconTestParam = std::tuple<int, IV_ARCH_T, int, int>;
 
 class ChromaReconTest : public ::testing::TestWithParam<ChromaReconTestParam> {
  protected:
@@ -104,7 +104,7 @@ class ChromaReconTest : public ::testing::TestWithParam<ChromaReconTestParam> {
 
   int trans_size;
   int offset;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* ref;
   const func_selector_t* tst;
 
@@ -133,7 +133,7 @@ TEST_P(ChromaReconTest, Run) {
 std::string PrintChromaReconTestParam(
     const testing::TestParamInfo<ChromaReconTestParam>& info) {
   WORD32 trans_size, non_zero_cols, offset;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, arch, non_zero_cols, offset) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_nzc_" << non_zero_cols << "_component_"

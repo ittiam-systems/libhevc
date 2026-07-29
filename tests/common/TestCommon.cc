@@ -61,7 +61,7 @@ const std::vector<UWORD8> g_src8_buf = []() {
   return buf;
 }();
 
-std::string get_arch_str(IVD_ARCH_T arch) {
+std::string get_arch_str(IV_ARCH_T arch) {
   std::string arch_str;
   switch (arch) {
     case ARCH_X86_GENERIC:
@@ -89,7 +89,7 @@ std::string get_arch_str(IVD_ARCH_T arch) {
   return arch_str;
 }
 
-const std::vector<IVD_ARCH_T> ga_tst_arch = {
+const std::vector<IV_ARCH_T> ga_tst_arch = {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
     ARCH_X86_SSSE3,

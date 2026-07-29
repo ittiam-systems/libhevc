@@ -90,7 +90,7 @@ const func_selector_t test_arm32 = []() {
 
 const func_selector_t *get_ref_func_ptr() { return &ref; }
 
-const func_selector_t *get_tst_func_ptr(IVD_ARCH_T arch) {
+const func_selector_t *get_tst_func_ptr(IV_ARCH_T arch) {
   switch (arch) {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
     defined(_M_IX86)

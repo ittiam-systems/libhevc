@@ -32,7 +32,7 @@
 namespace {
 
 // Param: offset (0..7 words), num_words, value, arch
-using MemsetTestParam = std::tuple<int, int, UWORD16, IVD_ARCH_T>;
+using MemsetTestParam = std::tuple<int, int, UWORD16, IV_ARCH_T>;
 
 class Memset16BitTest : public ::testing::TestWithParam<MemsetTestParam> {
  protected:
@@ -48,7 +48,7 @@ class Memset16BitTest : public ::testing::TestWithParam<MemsetTestParam> {
   int offset;
   int num_words;
   UWORD16 value;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int buf_size;
   std::vector<UWORD16> dst_ref;
   std::vector<UWORD16> dst_tst;
@@ -80,7 +80,7 @@ class Memset16BitMul8Test : public ::testing::TestWithParam<MemsetTestParam> {
   int offset;
   int num_words;
   UWORD16 value;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   int buf_size;
   std::vector<UWORD16> dst_ref;
   std::vector<UWORD16> dst_tst;

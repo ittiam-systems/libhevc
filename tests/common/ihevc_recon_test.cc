@@ -39,7 +39,7 @@ namespace {
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch,
 // non_zero_cols
-using ReconTestParam = std::tuple<int, int, IVD_ARCH_T, int>;
+using ReconTestParam = std::tuple<int, int, IV_ARCH_T, int>;
 
 class ReconTest : public ::testing::TestWithParam<ReconTestParam> {
  protected:
@@ -131,7 +131,7 @@ class ReconTest : public ::testing::TestWithParam<ReconTestParam> {
 
   int trans_size;
   int ttype;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   const func_selector_t* ref;
   const func_selector_t* tst;
 
@@ -164,7 +164,7 @@ TEST_P(ReconTest, Run) {
 std::string PrintReconTestParam(
     const testing::TestParamInfo<ReconTestParam>& info) {
   WORD32 trans_size, ttype, non_zero_cols;
-  IVD_ARCH_T arch;
+  IV_ARCH_T arch;
   std::tie(trans_size, ttype, arch, non_zero_cols) = info.param;
   std::stringstream ss;
   ss << "size_" << trans_size << "_ttype_" << ttype << "_nzc_" << non_zero_cols

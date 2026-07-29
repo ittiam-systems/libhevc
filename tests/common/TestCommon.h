@@ -46,7 +46,7 @@ static constexpr int kMaxHeight = kMaxSize + kTapSize;
 
 extern const std::vector<std::pair<int, int>> kPUBlockSizes;
 extern const std::vector<UWORD8> g_src8_buf;
-extern const std::vector<IVD_ARCH_T> ga_tst_arch;
+extern const std::vector<IV_ARCH_T> ga_tst_arch;
 
 // Compare outputs
 template <typename T>
@@ -62,4 +62,4 @@ static void compare_output(const std::vector<T>& ref,
   }
 }
 
-std::string get_arch_str(IVD_ARCH_T arch);
+std::string get_arch_str(IV_ARCH_T arch);

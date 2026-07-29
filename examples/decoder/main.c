@@ -180,8 +180,8 @@ typedef struct
     UWORD32 u4_chksum_save_flag;
     UWORD32 u4_max_frm_ts;
     IV_COLOR_FORMAT_T e_output_chroma_format;
-    IVD_ARCH_T e_arch;
-    IVD_SOC_T e_soc;
+    IV_ARCH_T e_arch;
+    IV_SOC_T e_soc;
     UWORD32 dump_q_rd_idx;
     UWORD32 dump_q_wr_idx;
     WORD32  disp_q_wr_idx;
