@@ -29,7 +29,7 @@
  * @par List of Functions:
  *  - ihevc_itrans_res_4x4_ttype1()
  *  - ihevc_itrans_res_4x4()
- *  - ihevcd_itrans_res_dc()
+ *  - ihevc_itrans_res_dc()
  *  - ihevc_itrans_res_8x8()
  *  - ihevc_itrans_res_16x16()
  *  - ihevc_itrans_res_32x32()
@@ -237,7 +237,7 @@ void ihevc_itrans_res_4x4(WORD16 *pi2_src,
 }
 
 
-void ihevcd_itrans_res_dc(WORD16 *pi2_dst,
+void ihevc_itrans_res_dc(WORD16 *pi2_dst,
                           WORD32 dst_strd,
                           WORD32 log2_trans_size,
                           WORD16 i2_coeff_value)

@@ -1015,7 +1015,7 @@ void ihevcd_update_function_ptr(codec_t *ps_codec)
     ps_codec->apf_itrans_recon_dc[0] = (pf_itrans_recon_dc)ps_codec->s_func_selector.ihevcd_itrans_recon_dc_luma_fptr;
     ps_codec->apf_itrans_recon_dc[1] = (pf_itrans_recon_dc)ps_codec->s_func_selector.ihevcd_itrans_recon_dc_chroma_fptr;
 
-    ps_codec->apf_itrans_res_dc = (pf_itrans_res_dc)ps_codec->s_func_selector.ihevcd_itrans_res_dc_fptr;
+    ps_codec->apf_itrans_res_dc = (pf_itrans_res_dc)ps_codec->s_func_selector.ihevc_itrans_res_dc_fptr;
 
     /* Init sao function array */
     ps_codec->apf_sao_luma[0] = (pf_sao_luma)ps_codec->s_func_selector.ihevc_sao_edge_offset_class0_fptr;
