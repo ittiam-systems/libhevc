@@ -107,7 +107,7 @@ std::vector<MemsetTestParam> GenerateMemsetParams() {
   for (auto off : offsets) {
     for (auto sz : sizes) {
       for (auto val : values) {
-        for (auto arch : ga_tst_arch) {
+        for (auto arch : getTstArch()) {
           params.emplace_back(off, sz, val, arch);
         }
       }
@@ -125,7 +125,7 @@ std::vector<MemsetTestParam> GenerateMemsetMul8Params() {
   for (auto off : offsets) {
     for (auto sz : sizes) {
       for (auto val : values) {
-        for (auto arch : ga_tst_arch) {
+        for (auto arch : getTstArch()) {
           params.emplace_back(off, sz, val, arch);
         }
       }

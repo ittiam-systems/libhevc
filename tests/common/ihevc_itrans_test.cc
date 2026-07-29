@@ -172,7 +172,7 @@ std::vector<ITransTestParam> GenerateITransTestParams() {
     for (int t = 0; t < num_ttypes; t++) {
       int ttype = ttypes[t];
       for (int shift : shift_options) {
-        for (auto arch : ga_tst_arch) {
+        for (auto arch : getTstArch()) {
           for (int nzc : nz_options) {
             if (nzc > size) continue;
             params.emplace_back(size, ttype, shift, nzc, arch);

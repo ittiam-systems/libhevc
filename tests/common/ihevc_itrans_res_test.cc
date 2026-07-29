@@ -126,12 +126,12 @@ std::string PrintITransResTestParam(
 INSTANTIATE_TEST_SUITE_P(ITransRes4x4, ITransResTest,
                          ::testing::Combine(::testing::Values(4),
                                             ::testing::Values(0, 1),
-                                            ::testing::ValuesIn(ga_tst_arch)),
+                                            ::testing::ValuesIn(getTstArch())),
                          PrintITransResTestParam);
 
 // Size 8, 16, 32: ttype 0
 INSTANTIATE_TEST_SUITE_P(ITransResOther, ITransResTest,
                          ::testing::Combine(::testing::Values(8, 16, 32),
                                             ::testing::Values(0),
-                                            ::testing::ValuesIn(ga_tst_arch)),
+                                            ::testing::ValuesIn(getTstArch())),
                          PrintITransResTestParam);

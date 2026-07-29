@@ -157,7 +157,7 @@ std::vector<ITransReconTestParam> GenerateITransReconTestParams() {
   auto add_params_for_size = [&](int size, const int *ttypes, int num_ttypes) {
     for (int t = 0; t < num_ttypes; t++) {
       int ttype = ttypes[t];
-      for (auto arch : ga_tst_arch) {
+      for (auto arch : getTstArch()) {
         for (WORD32 nnzr : nz_options) {
           if (nnzr > size)
             continue;
