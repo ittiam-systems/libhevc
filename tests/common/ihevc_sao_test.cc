@@ -154,8 +154,8 @@ class SaoLumaTest : public ::testing::TestWithParam<SaoTestParam> {
   std::vector<UWORD8> src_bot_left_tst;
   std::vector<UWORD8> avail;
   std::vector<WORD8> sao_offset;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 // --------------------------- Chroma Base Class -----------------------------
@@ -258,8 +258,8 @@ class SaoChromaTest : public ::testing::TestWithParam<SaoTestParam> {
   std::vector<UWORD8> avail;
   std::vector<WORD8> sao_offset_u;
   std::vector<WORD8> sao_offset_v;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 };
 
 // ---------------------------- Test cases -----------------------------------

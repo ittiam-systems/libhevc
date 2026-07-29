@@ -29,9 +29,8 @@
 // clang-format off
 #include "ihevc_typedefs.h"
 #include "ihevc_itrans_res.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
 #include "func_selector.h"
 #include "TestCommon.h"
 // clang-format on
@@ -91,23 +90,23 @@ protected:
   std::vector<WORD16> tmp_buf;
   std::vector<WORD16> dst_buf_ref;
   std::vector<WORD16> dst_buf_tst;
-  const func_selector_t *tst;
-  const func_selector_t *ref;
+  const ihevc_func_selector_t *tst;
+  const ihevc_func_selector_t *ref;
 };
 
 TEST_P(ITransResTest, Run) {
   if (trans_size == 4) {
     if (ttype == 1) {
-      RunTest(&func_selector_t::ihevc_itrans_res_4x4_ttype1_fptr);
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_ttype1_fptr);
     } else {
-      RunTest(&func_selector_t::ihevc_itrans_res_4x4_fptr);
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_fptr);
     }
   } else if (trans_size == 8) {
-    RunTest(&func_selector_t::ihevc_itrans_res_8x8_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_8x8_fptr);
   } else if (trans_size == 16) {
-    RunTest(&func_selector_t::ihevc_itrans_res_16x16_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_16x16_fptr);
   } else if (trans_size == 32) {
-    RunTest(&func_selector_t::ihevc_itrans_res_32x32_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_32x32_fptr);
   }
 }
 

@@ -18,7 +18,7 @@
 /**
 *******************************************************************************
 * @file
-*  ihevcd_intra_ref_substitution.c
+*  ihevc_intra_ref_substitution.c
 *
 * @brief
 *  Contains ref substitution functions

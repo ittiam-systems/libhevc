@@ -81,24 +81,24 @@ class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
     // 1. Reference path from selector (generic C)
     if (trans_size == 4) {
       if (ttype == 1) {
-        (ref->*(&func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
+        (ref->*(&ihevc_func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
             pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
             zero_cols);
       } else {
-        (ref->*(&func_selector_t::ihevc_itrans_4x4_fptr))(
+        (ref->*(&ihevc_func_selector_t::ihevc_itrans_4x4_fptr))(
             pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
             zero_cols);
       }
     } else if (trans_size == 8) {
-      (ref->*(&func_selector_t::ihevc_itrans_8x8_fptr))(
+      (ref->*(&ihevc_func_selector_t::ihevc_itrans_8x8_fptr))(
           pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
           zero_cols);
     } else if (trans_size == 16) {
-      (ref->*(&func_selector_t::ihevc_itrans_16x16_fptr))(
+      (ref->*(&ihevc_func_selector_t::ihevc_itrans_16x16_fptr))(
           pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
           zero_cols);
     } else if (trans_size == 32) {
-      (ref->*(&func_selector_t::ihevc_itrans_32x32_fptr))(
+      (ref->*(&ihevc_func_selector_t::ihevc_itrans_32x32_fptr))(
           pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
           zero_cols);
     }
@@ -106,24 +106,24 @@ class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
     // 2. Test path from selector (SIMD, which might fall back to C)
     if (trans_size == 4) {
       if (ttype == 1) {
-        (tst->*(&func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
+        (tst->*(&ihevc_func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
             pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
             zero_cols);
       } else {
-        (tst->*(&func_selector_t::ihevc_itrans_4x4_fptr))(
+        (tst->*(&ihevc_func_selector_t::ihevc_itrans_4x4_fptr))(
             pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
             zero_cols);
       }
     } else if (trans_size == 8) {
-      (tst->*(&func_selector_t::ihevc_itrans_8x8_fptr))(
+      (tst->*(&ihevc_func_selector_t::ihevc_itrans_8x8_fptr))(
           pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
           zero_cols);
     } else if (trans_size == 16) {
-      (tst->*(&func_selector_t::ihevc_itrans_16x16_fptr))(
+      (tst->*(&ihevc_func_selector_t::ihevc_itrans_16x16_fptr))(
           pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
           zero_cols);
     } else if (trans_size == 32) {
-      (tst->*(&func_selector_t::ihevc_itrans_32x32_fptr))(
+      (tst->*(&ihevc_func_selector_t::ihevc_itrans_32x32_fptr))(
           pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
           zero_cols);
     }
@@ -137,8 +137,8 @@ class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
   int shift;
   int num_non_zero_cols;
   IV_ARCH_T arch;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 
   WORD32 src_strd;
   WORD32 dst_strd;

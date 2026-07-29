@@ -30,9 +30,9 @@
 // clang-format off
 #include "ihevc_typedefs.h"
 #include "ihevc_inter_pred.h"
-#include "ihevcd_function_selector.h"
+#include "ihevc_function_selector.h"
 #include "iv.h"
-#include "ivd.h"
+
 #include "TestCommon.h"
 // clang-format on
 

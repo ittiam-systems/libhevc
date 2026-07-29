@@ -115,8 +115,8 @@ class ChromaITransReconTest
 
   int trans_size;
   IV_ARCH_T arch;
-  const func_selector_t* ref;
-  const func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
+  const ihevc_func_selector_t* tst;
 
   WORD32 src_strd;
   WORD32 pred_strd;
@@ -132,13 +132,13 @@ class ChromaITransReconTest
 
 TEST_P(ChromaITransReconTest, Run) {
   if (trans_size == 4) {
-    RunTest(&func_selector_t::ihevc_chroma_itrans_recon_4x4_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_4x4_fptr);
   } else if (trans_size == 8) {
-    RunTest(&func_selector_t::ihevc_chroma_itrans_recon_8x8_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_8x8_fptr);
   } else if (trans_size == 16) {
-    RunTest(&func_selector_t::ihevc_chroma_itrans_recon_16x16_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_16x16_fptr);
   } else if (trans_size == 32) {
-    RunTest(&func_selector_t::ihevc_chroma_itrans_recon_32x32_fptr);
+    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_32x32_fptr);
   }
 }
 
