@@ -156,29 +156,30 @@ ENTRY ihevc_intra_pred_chroma_mode_11_to_17_av8
     beq         loop_copy_16
 
 loop_copy_32:
-    sub         x1, x1,#24
-    ld1         {v0.16b, v1.16b},[x1]
+    sub         x1, x1, #24
+    ld1         {v0.8b, v1.8b, v2.8b, v3.8b}, [x1]
 
-    sub         x1, x1,#24
-    ld1         {v0.16b, v1.16b},[x1],#32
+    rev64       v3.4h, v3.4h
+    rev64       v2.4h, v2.4h
+    rev64       v1.4h, v1.4h
+    rev64       v0.4h, v0.4h
 
-    rev64       v6.4h,  v6.4h
-    rev64       v5.4h,  v5.4h
-    rev64       v4.4h,  v4.4h
-    rev64       v3.4h,  v3.4h
-    rev64       v2.4h,  v2.4h
-    rev64       v1.4h,  v1.4h
-    rev64       v0.4h,  v0.4h
+    st1         {v3.8b}, [x6], #8
+    st1         {v2.8b}, [x6], #8
+    st1         {v1.8b}, [x6], #8
 
-    st1         {v6.8b},[x6],#8
-    st1         {v5.8b},[x6],#8
-    st1         {v4.8b},[x6],#8
-    st1         {v3.8b},[x6],#8
-    st1         {v2.8b},[x6],#8
-    st1         {v1.8b},[x6],#8
-    st1         {v0.8b},[x6],#8
+    sub         x1, x1, #24
+    ld1         {v4.8b, v5.8b, v6.8b}, [x1]
 
-    ld1         {v4.8b, v5.8b, v6.8b},[x1],#24
+    rev64       v6.4h, v6.4h
+    rev64       v5.4h, v5.4h
+    rev64       v4.4h, v4.4h
+
+    st1         {v0.8b}, [x6], #8
+    st1         {v6.8b}, [x6], #8
+    st1         {v5.8b}, [x6], #8
+    st1         {v4.8b}, [x6], #8
+
     b           end_loop_copy
 
 loop_copy_16:
@@ -254,7 +255,7 @@ prologue_8_16_32:
     adrp        x12, :got:idx_neg_idx_chroma_11_17 //load least idx table
     ldr         x12, [x12, #:got_lo12:idx_neg_idx_chroma_11_17]
 
-    add         x12, x12, x7, lsl #4
+    add         x12, x12, x7, lsl #5
     mov         x8, x12
 
     mov         x7, #8

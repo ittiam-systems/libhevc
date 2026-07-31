@@ -107,6 +107,9 @@ ENTRY ihevc_intra_pred_chroma_horz_av8
     cmp         x4,#8                       //if nt == 8
     beq         core_loop_8
 
+    cmp         x4, #32
+    beq         core_loop_32
+
     //cmp            x4,#16                            @if nt == 16
     //beq            core_loop_16
 
@@ -187,6 +190,125 @@ core_loop_16:
     bgt         core_loop_16
     // ldmfd sp!,{x4-x12,x15}                  //reload the registers from sp
     ldp         x19, x20,[sp],#16
+
+    EXIT_FUNC
+    ret
+    b           endloop
+
+core_loop_32:
+    sub         x12,x12,#16
+    add         x9,x2,#16
+    add         x10,x2,#32
+    add         x11,x2,#48
+    mov         x5,#32
+
+kernel_32:
+    ld1         {v0.8h},[x12]
+    sub         x12,x12,#16
+    ld1         {v5.8h},[x12]
+    sub         x12,x12,#16
+
+    dup         v1.8h, v0.h[7]
+    dup         v2.8h, v0.h[6]
+    dup         v3.8h, v0.h[5]
+
+    st1         {v1.8h},[x2],x3
+    st1         {v1.8h},[x9],x3
+    st1         {v1.8h},[x10],x3
+    st1         {v1.8h},[x11],x3
+
+    dup         v4.8h,v0.h[4]
+    st1         {v2.8h},[x2],x3
+    st1         {v2.8h},[x9],x3
+    st1         {v2.8h},[x10],x3
+    st1         {v2.8h},[x11],x3
+
+    dup         v1.8h, v0.h[3]
+    st1         {v3.8h}, [x2],x3
+    st1         {v3.8h}, [x9],x3
+    st1         {v3.8h}, [x10],x3
+    st1         {v3.8h}, [x11],x3
+
+    dup         v2.8h, v0.h[2]
+    st1         {v4.8h}, [x2],x3
+    st1         {v4.8h}, [x9],x3
+    st1         {v4.8h}, [x10],x3
+    st1         {v4.8h}, [x11],x3
+
+    dup         v3.8h, v0.h[1]
+    st1         {v1.8h}, [x2],x3
+    st1         {v1.8h}, [x9],x3
+    st1         {v1.8h}, [x10],x3
+    st1         {v1.8h}, [x11],x3
+
+    dup         v4.8h, v0.h[0]
+    st1         {v2.8h}, [x2],x3
+    st1         {v2.8h}, [x9],x3
+    st1         {v2.8h}, [x10],x3
+    st1         {v2.8h}, [x11],x3
+
+    dup         v1.8h, v5.h[7]
+    st1         {v3.8h}, [x2],x3
+    st1         {v3.8h}, [x9],x3
+    st1         {v3.8h}, [x10],x3
+    st1         {v3.8h}, [x11],x3
+
+    dup         v2.8h, v5.h[6]
+    st1         {v4.8h}, [x2],x3
+    st1         {v4.8h}, [x9],x3
+    st1         {v4.8h}, [x10],x3
+    st1         {v4.8h}, [x11],x3
+
+    dup         v3.8h, v5.h[5]
+    st1         {v1.8h}, [x2],x3
+    st1         {v1.8h}, [x9],x3
+    st1         {v1.8h}, [x10],x3
+    st1         {v1.8h}, [x11],x3
+
+    dup         v4.8h, v5.h[4]
+    st1         {v2.8h}, [x2],x3
+    st1         {v2.8h}, [x9],x3
+    st1         {v2.8h}, [x10],x3
+    st1         {v2.8h}, [x11],x3
+
+    dup         v1.8h, v5.h[3]
+    st1         {v3.8h}, [x2],x3
+    st1         {v3.8h}, [x9],x3
+    st1         {v3.8h}, [x10],x3
+    st1         {v3.8h}, [x11],x3
+
+    dup         v2.8h, v5.h[2]
+    st1         {v4.8h}, [x2],x3
+    st1         {v4.8h}, [x9],x3
+    st1         {v4.8h}, [x10],x3
+    st1         {v4.8h}, [x11],x3
+
+    dup         v3.8h, v5.h[1]
+    st1         {v1.8h}, [x2],x3
+    st1         {v1.8h}, [x9],x3
+    st1         {v1.8h}, [x10],x3
+    st1         {v1.8h}, [x11],x3
+
+    dup         v4.8h, v5.h[0]
+    st1         {v2.8h}, [x2],x3
+    st1         {v2.8h}, [x9],x3
+    st1         {v2.8h}, [x10],x3
+    st1         {v2.8h}, [x11],x3
+
+    st1         {v3.8h}, [x2],x3
+    st1         {v3.8h}, [x9],x3
+    st1         {v3.8h}, [x10],x3
+    st1         {v3.8h}, [x11],x3
+
+    st1         {v4.8h}, [x2],x3
+    st1         {v4.8h}, [x9],x3
+    st1         {v4.8h}, [x10],x3
+    st1         {v4.8h}, [x11],x3
+
+    subs        x5, x5, #16
+    bgt         kernel_32
+
+    ldp         x19, x20, [sp], #16
 
     EXIT_FUNC
     ret

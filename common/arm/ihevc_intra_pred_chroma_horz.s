@@ -112,6 +112,9 @@ ihevc_intra_pred_chroma_horz_a9q:
     cmp         r4,#8                       @if nt == 8
     beq         core_loop_8
 
+    cmp         r4,#32
+    beq         core_loop_32                @if nt==32
+
     @cmp            r4,#16                          @if nt == 16
     @beq            core_loop_16
 
@@ -190,6 +193,122 @@ core_loop_16:
     vst1.16     {q4},[r2],r3
     vst1.16     {q4},[r9],r3
     bgt         core_loop_16
+    vpop        {d8 - d15}
+    ldmfd       sp!,{r4-r12,r15}            @reload the registers from sp
+    b           endloop
+
+core_loop_32:
+    sub         r12,r12,#16
+    add         r9,r2,#16
+    add         r10,r2,#32
+    add         r11,r2,#48
+    mov         r5,#32
+
+kernel_32:
+    vld1.16     {q0},[r12]
+    sub         r12,r12,#16
+    vld1.16     {q5},[r12]
+    sub         r12,r12,#16
+
+    vdup.16     q1,d1[3]
+    vdup.16     q2,d1[2]
+    vdup.16     q3,d1[1]
+
+    vst1.16     {q1},[r2],r3
+    vst1.16     {q1},[r9],r3
+    vst1.16     {q1},[r10],r3
+    vst1.16     {q1},[r11],r3
+
+    vdup.16     q4,d1[0]
+    vst1.16     {q2},[r2],r3
+    vst1.16     {q2},[r9],r3
+    vst1.16     {q2},[r10],r3
+    vst1.16     {q2},[r11],r3
+
+    vdup.16     q1,d0[3]
+    vst1.16     {q3},[r2],r3
+    vst1.16     {q3},[r9],r3
+    vst1.16     {q3},[r10],r3
+    vst1.16     {q3},[r11],r3
+
+    vdup.16     q2,d0[2]
+    vst1.16     {q4},[r2],r3
+    vst1.16     {q4},[r9],r3
+    vst1.16     {q4},[r10],r3
+    vst1.16     {q4},[r11],r3
+
+    vdup.16     q3,d0[1]
+    vst1.16     {q1},[r2],r3
+    vst1.16     {q1},[r9],r3
+    vst1.16     {q1},[r10],r3
+    vst1.16     {q1},[r11],r3
+
+    vdup.16     q4,d0[0]
+    vst1.16     {q2},[r2],r3
+    vst1.16     {q2},[r9],r3
+    vst1.16     {q2},[r10],r3
+    vst1.16     {q2},[r11],r3
+
+    vdup.16     q1,d11[3]
+    vst1.16     {q3},[r2],r3
+    vst1.16     {q3},[r9],r3
+    vst1.16     {q3},[r10],r3
+    vst1.16     {q3},[r11],r3
+
+    vdup.16     q2,d11[2]
+    vst1.16     {q4},[r2],r3
+    vst1.16     {q4},[r9],r3
+    vst1.16     {q4},[r10],r3
+    vst1.16     {q4},[r11],r3
+
+    vdup.16     q3,d11[1]
+    vst1.16     {q1},[r2],r3
+    vst1.16     {q1},[r9],r3
+    vst1.16     {q1},[r10],r3
+    vst1.16     {q1},[r11],r3
+
+    vdup.16     q4,d11[0]
+    vst1.16     {q2},[r2],r3
+    vst1.16     {q2},[r9],r3
+    vst1.16     {q2},[r10],r3
+    vst1.16     {q2},[r11],r3
+
+    vdup.16     q1,d10[3]
+    vst1.16     {q3},[r2],r3
+    vst1.16     {q3},[r9],r3
+    vst1.16     {q3},[r10],r3
+    vst1.16     {q3},[r11],r3
+
+    vdup.16     q2,d10[2]
+    vst1.16     {q4},[r2],r3
+    vst1.16     {q4},[r9],r3
+    vst1.16     {q4},[r10],r3
+    vst1.16     {q4},[r11],r3
+
+    vdup.16     q3,d10[1]
+    vst1.16     {q1},[r2],r3
+    vst1.16     {q1},[r9],r3
+    vst1.16     {q1},[r10],r3
+    vst1.16     {q1},[r11],r3
+
+    vdup.16     q4,d10[0]
+    vst1.16     {q2},[r2],r3
+    vst1.16     {q2},[r9],r3
+    vst1.16     {q2},[r10],r3
+    vst1.16     {q2},[r11],r3
+
+    vst1.16     {q3},[r2],r3
+    vst1.16     {q3},[r9],r3
+    vst1.16     {q3},[r10],r3
+    vst1.16     {q3},[r11],r3
+
+    vst1.16     {q4},[r2],r3
+    vst1.16     {q4},[r9],r3
+    vst1.16     {q4},[r10],r3
+    vst1.16     {q4},[r11],r3
+
+    subs        r5,r5,#16
+    bgt         kernel_32
     vpop        {d8 - d15}
     ldmfd       sp!,{r4-r12,r15}            @reload the registers from sp
     b           endloop

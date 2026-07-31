@@ -134,7 +134,7 @@ prologue_8_16_32:
     adrp        x12,  :got:idx_neg_idx_chroma_3_9 //load most idx table
     ldr         x12, [x12,  #:got_lo12:idx_neg_idx_chroma_3_9]
 
-    add         x12, x12, x7, lsl #4
+    add         x12, x12, x7, lsl #5
     mov         x8, x12
 
     mov         x7, #8
@@ -450,10 +450,10 @@ lbl326:
     add         x20, x7, x2
     csel        x2, x20, x2,gt
 
-    sub         x20, x2, x4
+    sub         x20, x2, x4, lsl #1
     csel        x2, x20, x2,le
     sub         v23.8b,  v23.8b ,  v27.8b   //ref_main_idx (add row)
-    sub         x20,x2,#8
+    add         x20,x2,#8
     csel        x2, x20, x2,le
 
     subs        x10, x10, #4                //subtract 8 and go to end if 8x8

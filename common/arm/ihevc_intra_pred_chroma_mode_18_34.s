@@ -113,6 +113,9 @@ ihevc_intra_pred_chroma_mode_18_34_a9q:
     ldr         r4,[sp,#nt_offset]
     ldr         r5,[sp,#mode_offset]
 
+    cmp         r4, #32
+    beq         nt_32                       @if nt == 32
+
     cmp         r4,#4
     beq         mode2_4
 
@@ -182,6 +185,55 @@ mode2_4:
 
     vld1.8      {d0},[r0],r8
     vst1.32     {d0},[r2],r3
+
+    b           end_func
+
+nt_32:
+    add         r8, r0, r4, lsl #2
+    cmp         r5, #34
+    addeq       r8, r8, #4
+    moveq       r6, #2
+    movne       r6, #-2
+    mov         r11, #4
+    mov         r10, r2
+
+column_kernel_32:
+    mov         r0, r8
+    mov         r2, r10
+    mov         r12, #4
+
+row_kernel_32:
+    vld1.8      {d0,d1},[r0],r6
+    vld1.8      {d2,d3},[r0],r6
+    vld1.8      {d4,d5},[r0],r6
+    vst1.8      {d0,d1},[r2],r3
+
+    vld1.8      {d6,d7},[r0],r6
+    vst1.8      {d2,d3},[r2],r3
+
+    vld1.8      {d8,d9},[r0],r6
+    vst1.8      {d4,d5},[r2],r3
+
+    vld1.8      {d10,d11},[r0],r6
+    vst1.8      {d6,d7},[r2],r3
+
+    vld1.8      {d12,d13},[r0],r6
+    vst1.8      {d8,d9},[r2],r3
+    vld1.8      {d14,d15},[r0],r6
+    vst1.8      {d10,d11},[r2],r3
+
+    vst1.8      {d12,d13},[r2],r3
+    vst1.8      {d14,d15},[r2],r3
+
+    subs        r12,r12, #1
+    bne         row_kernel_32
+
+    add         r8,r8, #16
+    add         r10,r10, #16
+    subs        r11,r11, #1
+    bne         column_kernel_32
+
+    b           end_func
 
 end_func:
     vpop        {d8 - d15}

@@ -120,6 +120,9 @@ ihevc_intra_pred_chroma_mode2_a9q:
     sub         r0,r0,#0x12                 @src[1]
     add         r10,r0,#-2
 
+    cmp         r4, #32
+    beq         nt_32                   @if nt == 32
+
 prologue_cpy_32:
 
     vld2.8      {d0,d1},[r0],r8
@@ -246,6 +249,76 @@ epilogue_mode2:
     vst2.8      {d26,d27},[r7],r5
     vst2.8      {d28,d29},[r9],r5
     vst2.8      {d30,d31},[r14],r5
+
+    b           end_func
+
+nt_32:
+    lsr         r1, r4, #3
+    mul         r1, r4, r1
+    mov         r11, r4
+    mov         r12, r2
+
+kernel_32:
+    vld2.8      {d0,d1},[r0],r8
+    vld2.8      {d2,d3},[r10],r8
+    mov         r6, r2
+    add         r7, r6, r3
+
+    vrev64.8    d16,d0
+    vrev64.8    d17,d1
+    vld2.8      {d4,d5},[r0],r8
+    vld2.8      {d6,d7},[r10],r8
+    add         r9, r7, r3
+    add         r14, r9, r3
+
+    vrev64.8    d18,d2
+    vrev64.8    d19,d3
+    vld2.8      {d8,d9},[r0],r8
+    vld2.8      {d10,d11},[r10],r8
+    lsl         r5, r3, #2
+
+    vst2.8      {d16,d17},[r6],r5
+    vrev64.8    d20,d4
+    vrev64.8    d21,d5
+    vld2.8      {d12,d13},[r0],r8
+    vld2.8      {d14,d15},[r10],r8
+
+    vst2.8      {d18,d19},[r7],r5
+    vrev64.8    d22,d6
+    vrev64.8    d23,d7
+
+    vrev64.8    d24,d8
+    vrev64.8    d25,d9
+    vst2.8      {d20,d21},[r9],r5
+
+    vrev64.8    d26,d10
+    vrev64.8    d27,d11
+    vst2.8      {d22,d23},[r14],r5
+
+    vrev64.8    d28,d12
+    vrev64.8    d29,d13
+    vst2.8      {d24,d25},[r6]
+
+    vrev64.8    d30,d14
+    vrev64.8    d31,d15
+    vst2.8      {d26,d27},[r7]
+
+    vst2.8      {d28,d29},[r9]
+    vst2.8      {d30,d31},[r14]
+
+    subs        r11, r11, #8
+    addgt       r2, r2, #16
+
+    movle       r11, r4
+    addle       r12, r12, r3, lsl #3
+    movle       r2, r12
+
+    addle       r0, r0, r4, lsl #1
+    suble       r0, r0, #16
+    addle       r10, r0, #-2
+
+    subs        r1, r1, #8
+    bne         kernel_32
 
     b           end_func
 

@@ -111,6 +111,7 @@ ENTRY ihevc_intra_pred_chroma_planar_av8
     stp         d8,d14,[sp,#-16]!           // Storing d14 using { sub sp,sp,#8; str d14,[sp] } is giving bus error.
                                             // d8 is used as dummy register and stored along with d14 using stp. d8 is not used in the function.
     stp         x19, x20,[sp,#-16]!
+    mov         x19, x4                     //save original nt
 
     adrp        x11, :got:gau1_ihevc_planar_factor //loads table of coeffs
     ldr         x11, [x11, #:got_lo12:gau1_ihevc_planar_factor]
@@ -306,6 +307,33 @@ loop_sz_8_16:
 
 
 
+    cmp         w19, #32                    //check original nt
+    bne         nt16_check
+
+    subs        x4, x4, #8
+    ble         end_loop
+
+    dup         v5.8b, w8                   //row + 1
+    dup         v6.8b, w9                   //nt - 1 - row
+    mov         v7.8b, v5.8b
+
+    mov         x6, x10                     //reset src[2nt-1] pointer
+    mov         x1, #32                     //row counter for next column batch
+    sub         x2, x2, x3, lsl #5          //move dst back 32 rows
+    add         x2, x2, #16                 //advance dst by 16 bytes to next column group
+
+    ld1         {v10.8b, v11.8b}, [x14], #16  //load src[2nt+1+col]
+    ld1         {v17.8b}, [x12], #8
+    mov         v25.8b, v17.8b
+    zip1        v29.8b, v17.8b, v25.8b
+    zip2        v25.8b, v17.8b, v25.8b
+    mov         v17.d[0], v29.d[0]
+    sub         v30.8b, v2.8b, v17.8b       //[nt-1-col]
+    sub         v31.8b, v2.8b, v25.8b
+
+    b           loop_sz_8_16
+
+nt16_check:
     cmp         x4,#16
 
     bne         end_loop

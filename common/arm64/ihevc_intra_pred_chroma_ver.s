@@ -108,6 +108,75 @@ ENTRY ihevc_intra_pred_chroma_ver_av8
     beq         blk_8
     blt         blk_4
 
+    cmp         x4, #16
+    beq         copy_16
+
+copy_32:
+    add         x5,x5,#2
+    add         x6,x0,x5
+
+    add         x5,x2,x3
+    ld2         {v20.8b,v21.8b},[x6],#16
+    add         x8,x5,x3
+
+    add         x10,x8,x3
+    ld2         {v22.8b,v23.8b},[x6],#16
+
+    ld2         {v24.8b,v25.8b},[x6],#16
+    ld2         {v26.8b,v27.8b},[x6]
+
+    lsl         x11,x3,#2
+
+    sub         x11,x11,#48
+
+kernel_copy_32:
+    st2         {v20.8b,v21.8b},[x2],#16
+    st2         {v20.8b,v21.8b},[x5],#16
+    st2         {v20.8b,v21.8b},[x8],#16
+    st2         {v20.8b,v21.8b},[x10],#16
+
+    st2         {v22.8b,v23.8b},[x2],#16
+    st2         {v22.8b,v23.8b},[x5],#16
+    st2         {v22.8b,v23.8b},[x8],#16
+    st2         {v22.8b,v23.8b},[x10],#16
+
+    st2         {v24.8b,v25.8b},[x2],#16
+    st2         {v24.8b,v25.8b},[x5],#16
+    st2         {v24.8b,v25.8b},[x8],#16
+    st2         {v24.8b,v25.8b},[x10],#16
+
+    st2         {v26.8b,v27.8b},[x2],x11
+    st2         {v26.8b,v27.8b},[x5],x11
+    st2         {v26.8b,v27.8b},[x8],x11
+    st2         {v26.8b,v27.8b},[x10],x11
+
+    subs        x4,x4,#4
+
+    st2         {v20.8b,v21.8b},[x2],#16
+    st2         {v20.8b,v21.8b},[x5],#16
+    st2         {v20.8b,v21.8b},[x8],#16
+    st2         {v20.8b,v21.8b},[x10],#16
+
+    st2         {v22.8b,v23.8b},[x2],#16
+    st2         {v22.8b,v23.8b},[x5],#16
+    st2         {v22.8b,v23.8b},[x8],#16
+    st2         {v22.8b,v23.8b},[x10],#16
+
+    st2         {v24.8b,v25.8b},[x2],#16
+    st2         {v24.8b,v25.8b},[x5],#16
+    st2         {v24.8b,v25.8b},[x8],#16
+    st2         {v24.8b,v25.8b},[x10],#16
+
+    st2         {v26.8b,v27.8b},[x2],x11
+    st2         {v26.8b,v27.8b},[x5],x11
+    st2         {v26.8b,v27.8b},[x8],x11
+    st2         {v26.8b,v27.8b},[x10],x11
+
+    subs        x4,x4,#4
+    bne         kernel_copy_32
+
+    b           end_func
+
 copy_16:
     add         x5, x5, #2                  //2nt+2
     add         x6, x0, x5                  //&src[2nt+1]

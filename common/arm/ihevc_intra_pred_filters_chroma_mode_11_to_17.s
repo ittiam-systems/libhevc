@@ -179,26 +179,27 @@ loop_copy_32:
     sub         r1,#24
     vld1.8      {d0,d1,d2,d3},[r1]
 
-    sub         r1,#24
-    vld1.8      {d0,d1,d2,d3},[r1]!
-
-    vrev64.16   d6,d6
-    vrev64.16   d5,d5
-    vrev64.16   d4,d4
     vrev64.16   d3,d3
     vrev64.16   d2,d2
     vrev64.16   d1,d1
     vrev64.16   d0,d0
 
-    vst1.8      d6,[r6]!
-    vst1.8      d5,[r6]!
-    vst1.8      d4,[r6]!
     vst1.8      d3,[r6]!
     vst1.8      d2,[r6]!
     vst1.8      d1,[r6]!
-    vst1.8      d0,[r6]!
 
-    vld1.8      {d4,d5,d6},[r1]!
+    sub         r1,#24
+    vld1.8      {d4,d5,d6},[r1]
+
+    vrev64.16   d6,d6
+    vrev64.16   d5,d5
+    vrev64.16   d4,d4
+
+    vst1.8      d0,[r6]!
+    vst1.8      d6,[r6]!
+    vst1.8      d5,[r6]!
+    vst1.8      d4,[r6]!
+
     b           end_loop_copy
 
 loop_copy_16:
@@ -270,7 +271,7 @@ ulbl4:
 ulbl3:
     add         r12,r12,pc
 
-    add         r12, r12, r7, lsl #4
+    add         r12, r12, r7, lsl #5
     mov         r8, r12
 
     mov         r7, #8
