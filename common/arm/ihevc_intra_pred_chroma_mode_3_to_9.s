@@ -159,7 +159,7 @@ prologue_8_16_32:
 ulbl3:
     add         r12,r12,pc
 
-    add         r12, r12, r7, lsl #4
+    add         r12, r12, r7, lsl #5
     mov         r8, r12
 
     mov         r7, #8
@@ -460,9 +460,9 @@ ulbl6:
     vdup.8      d16, r6
     addgt       r2, r7, r2
 
-    suble       r2, r2, r4
+    suble       r2, r2, r4, lsl #1
     vsub.s8     d11, d11, d27               @ref_main_idx (add row)
-    suble       r2,r2,#8
+    addle       r2, r2, #8
 
     subs        r10, r10, #4                @subtract 8 and go to end if 8x8
 

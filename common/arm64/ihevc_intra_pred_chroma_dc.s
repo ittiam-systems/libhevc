@@ -176,6 +176,8 @@ core_loop_add:
     uadalp      v18.1d,  v3.2s
     uadalp      v17.1d,  v29.2s
 
+    subs        x10, x10, #0x10
+    bne         core_loop_add
 
 epil_add_loop:
 
@@ -190,6 +192,9 @@ epil_add_loop:
 
     dup         v17.8b,w1
     dup         v16.8b,w11
+
+    cmp         x4,#32
+    beq         copy_nt_32                  //if nt==32
 
 prologue_cpy_32:
 
@@ -248,6 +253,42 @@ epilogue_copy:
     st2         {v16.8b, v17.8b}, [x5]
     st2         {v16.8b, v17.8b}, [x8]
     st2         {v16.8b, v17.8b}, [x10]
+    b           end_func
+
+copy_nt_32:
+    add         x5,x2,x3
+    add         x8,x5,x3
+    add         x10,x8,x3
+
+    lsl         x6,x3,#2
+    sub         x6,x6,#48
+
+    mov         x9,#8
+
+kernel_nt_32:
+    st2         {v16.8b, v17.8b}, [x2], #16
+    st2         {v16.8b, v17.8b}, [x5], #16
+    st2         {v16.8b, v17.8b}, [x8], #16
+    st2         {v16.8b, v17.8b}, [x10], #16
+
+    st2         {v16.8b, v17.8b}, [x2], #16
+    st2         {v16.8b, v17.8b}, [x5], #16
+    st2         {v16.8b, v17.8b}, [x8], #16
+    st2         {v16.8b, v17.8b}, [x10], #16
+
+    st2         {v16.8b, v17.8b}, [x2], #16
+    st2         {v16.8b, v17.8b}, [x5], #16
+    st2         {v16.8b, v17.8b}, [x8], #16
+    st2         {v16.8b, v17.8b}, [x10], #16
+
+    st2         {v16.8b, v17.8b}, [x2], x6
+    st2         {v16.8b, v17.8b}, [x5], x6
+    st2         {v16.8b, v17.8b}, [x8], x6
+    st2         {v16.8b, v17.8b}, [x10], x6
+
+    subs        x9, x9, #1
+    bne         kernel_nt_32
+
     b           end_func
 
 dc_4:

@@ -175,6 +175,8 @@ core_loop_add:
     vpadal.u32  d18, d3
     vpadal.u32  d17, d29
 
+    subs        r10, #0x10
+    bne         core_loop_add
 
 epil_add_loop:
 
@@ -189,6 +191,9 @@ epil_add_loop:
 
     vdup.8      d17,r1
     vdup.8      d16,r11
+
+    cmp         r4, #32
+    beq         copy_nt_32                  @if nt==32
 
 prologue_cpy_32:
 
@@ -246,6 +251,42 @@ epilogue_copy:
     vst2.8      {d16,d17}, [r5]
     vst2.8      {d16,d17}, [r8]
     vst2.8      {d16,d17}, [r10]
+    b           end_func
+
+copy_nt_32:
+    add         r5, r2, r3
+    add         r8, r5, r3
+    add         r10, r8, r3
+
+    lsl         r6, r3, #2
+    add         r6, r6, #0xffffffd0
+
+    mov         r9, #8
+
+kernel_nt_32:
+    vst2.8      {d16,d17}, [r2]!
+    vst2.8      {d16,d17}, [r5]!
+    vst2.8      {d16,d17}, [r8]!
+    vst2.8      {d16,d17}, [r10]!
+
+    vst2.8      {d16,d17}, [r2]!
+    vst2.8      {d16,d17}, [r5]!
+    vst2.8      {d16,d17}, [r8]!
+    vst2.8      {d16,d17}, [r10]!
+
+    vst2.8      {d16,d17}, [r2]!
+    vst2.8      {d16,d17}, [r5]!
+    vst2.8      {d16,d17}, [r8]!
+    vst2.8      {d16,d17}, [r10]!
+
+    vst2.8      {d16,d17}, [r2], r6
+    vst2.8      {d16,d17}, [r5], r6
+    vst2.8      {d16,d17}, [r8], r6
+    vst2.8      {d16,d17}, [r10], r6
+
+    subs        r9, r9, #1
+    bne         kernel_nt_32
+
     b           end_func
 
 dc_4:

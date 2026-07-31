@@ -111,6 +111,9 @@ ENTRY ihevc_intra_pred_chroma_mode_18_34_av8
     cmp         x4,#4
     beq         mode2_4
 
+    cmp         x4,#32
+    beq         nt_32                       //if nt == 32
+
     mov         x12,x4
     mov         x11,x4
     add         x0,x0,x4,lsl #2
@@ -158,6 +161,56 @@ kernel:
     sub         x11, x11,#16
     mov         x12,#16
     beq         kernel
+    b           end_func
+
+nt_32:
+    add         x8, x0, x4, lsl #2
+    cmp         x5, #34
+    add         x20, x8, #4
+    csel        x8, x20, x8, eq
+    mov         x20, #2
+    csel        x6, x20, x6, eq
+    mov         x20, #-2
+    csel        x6, x20, x6, ne
+    mov         x11, #4
+    mov         x10, x2
+
+column_kernel_32:
+    mov         x0, x8
+    mov         x2, x10
+    mov         x12, #4
+
+row_kernel_32:
+    ld1         {v0.8b, v1.8b}, [x0], x6
+    ld1         {v2.8b, v3.8b}, [x0], x6
+    ld1         {v4.8b, v5.8b}, [x0], x6
+    st1         {v0.8b, v1.8b}, [x2], x3
+
+    ld1         {v6.8b, v7.8b}, [x0], x6
+    st1         {v2.8b, v3.8b}, [x2], x3
+
+    ld1         {v8.8b, v9.8b}, [x0], x6
+    st1         {v4.8b, v5.8b}, [x2], x3
+
+    ld1         {v10.8b, v11.8b}, [x0], x6
+    st1         {v6.8b, v7.8b}, [x2], x3
+
+    ld1         {v12.8b, v13.8b}, [x0], x6
+    st1         {v8.8b, v9.8b}, [x2], x3
+    ld1         {v14.8b, v15.8b}, [x0], x6
+    st1         {v10.8b, v11.8b}, [x2], x3
+
+    st1         {v12.8b, v13.8b}, [x2], x3
+    st1         {v14.8b, v15.8b}, [x2], x3
+
+    subs        x12, x12, #1
+    bne         row_kernel_32
+
+    add         x8, x8, #16
+    add         x10, x10, #16
+    subs        x11, x11, #1
+    bne         column_kernel_32
+
     b           end_func
 
 mode2_4:

@@ -111,6 +111,75 @@ ihevc_intra_pred_chroma_ver_a9q:
     beq         blk_8
     blt         blk_4
 
+    cmp         r4, #16
+    beq         copy_16
+
+copy_32:
+    add         r5, r5, #2                  @4nt+2
+    add         r6, r0, r5                  @&src[4nt+2]
+
+    add         r5, r2, r3                  @pu1_dst + dst_strd
+    vld2.8      {d20,d21}, [r6]!            @16 loads (col 0:15)
+    add         r8, r5, r3
+
+    add         r10, r8, r3
+    vld2.8      {d22,d23}, [r6]!            @16 loads (col 16:31)
+
+    vld2.8      {d24,d25}, [r6]!            @16 loads (col 32:47)
+    vld2.8      {d26,d27}, [r6]             @16 loads (col 48:63)
+
+    lsl         r11, r3, #2                 @r11 = 4*stride
+
+    sub         r11, r11, #48
+
+kernel_copy_32:
+    vst2.8      {d20,d21}, [r2]!
+    vst2.8      {d20,d21}, [r5]!
+    vst2.8      {d20,d21}, [r8]!
+    vst2.8      {d20,d21}, [r10]!
+
+    vst2.8      {d22,d23}, [r2]!
+    vst2.8      {d22,d23}, [r5]!
+    vst2.8      {d22,d23}, [r8]!
+    vst2.8      {d22,d23}, [r10]!
+
+    vst2.8      {d24,d25}, [r2]!
+    vst2.8      {d24,d25}, [r5]!
+    vst2.8      {d24,d25}, [r8]!
+    vst2.8      {d24,d25}, [r10]!
+
+    vst2.8      {d26,d27}, [r2], r11
+    vst2.8      {d26,d27}, [r5], r11
+    vst2.8      {d26,d27}, [r8], r11
+    vst2.8      {d26,d27}, [r10], r11
+
+    subs        r4, r4, #4
+
+    vst2.8      {d20,d21}, [r2]!
+    vst2.8      {d20,d21}, [r5]!
+    vst2.8      {d20,d21}, [r8]!
+    vst2.8      {d20,d21}, [r10]!
+
+    vst2.8      {d22,d23}, [r2]!
+    vst2.8      {d22,d23}, [r5]!
+    vst2.8      {d22,d23}, [r8]!
+    vst2.8      {d22,d23}, [r10]!
+
+    vst2.8      {d24,d25}, [r2]!
+    vst2.8      {d24,d25}, [r5]!
+    vst2.8      {d24,d25}, [r8]!
+    vst2.8      {d24,d25}, [r10]!
+
+    vst2.8      {d26,d27}, [r2], r11
+    vst2.8      {d26,d27}, [r5], r11
+    vst2.8      {d26,d27}, [r8], r11
+    vst2.8      {d26,d27}, [r10], r11
+
+    subs        r4, r4, #4
+    bne         kernel_copy_32
+
+    b           end_func
+
 copy_16:
     add         r5, r5, #2                  @2nt+2
     add         r6, r0, r5                  @&src[2nt+1]

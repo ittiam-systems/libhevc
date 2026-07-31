@@ -117,6 +117,9 @@ ENTRY ihevc_intra_pred_chroma_mode2_av8
     sub         x0,x0,#0x12                 //src[1]
     sub         x10,x0,#2
 
+    cmp         x4,#32
+    beq         nt_32                   //if nt == 32
+
 prologue_cpy_32:
 
     ld2         {v0.8b, v1.8b},[x0],x8
@@ -248,6 +251,81 @@ epilogue_mode2:
     st2         {v26.8b, v27.8b},[x7],x5
     st2         {v28.8b, v29.8b},[x9],x5
     st2         {v30.8b, v31.8b},[x14],x5
+
+    b           end_func
+
+nt_32:
+    lsr         x1,x4,#3
+    mul         x1,x4,x1
+    mov         x11,x4
+    mov         x12,x2
+
+kernel_32:
+    ld2         {v0.8b,  v1.8b},[x0],x8
+    ld2         {v2.8b,  v3.8b},[x10],x8
+    mov         x6, x2
+    add         x7, x6, x3
+
+    rev64       v16.8b, v0.8b
+    rev64       v17.8b, v1.8b
+    ld2         {v4.8b,  v5.8b},[x0],x8
+    ld2         {v6.8b,  v7.8b},[x10],x8
+    add         x9,  x7, x3
+    add         x14, x9, x3
+
+    rev64       v18.8b, v2.8b
+    rev64       v19.8b, v3.8b
+    ld2         {v8.8b,  v9.8b},[x0],x8
+    ld2         {v10.8b, v11.8b},[x10],x8
+    lsl         x5, x3, #2
+
+    st2         {v16.8b, v17.8b},[x6],x5
+    rev64       v20.8b, v4.8b
+    rev64       v21.8b, v5.8b
+    ld2         {v12.8b, v13.8b},[x0],x8
+    ld2         {v14.8b, v15.8b},[x10],x8
+
+    st2         {v18.8b, v19.8b},[x7],x5
+    rev64       v22.8b, v6.8b
+    rev64       v23.8b, v7.8b
+
+    rev64       v24.8b, v8.8b
+    rev64       v25.8b, v9.8b
+    st2         {v20.8b, v21.8b},[x9],x5
+
+    rev64       v26.8b, v10.8b
+    rev64       v27.8b, v11.8b
+    st2         {v22.8b, v23.8b},[x14],x5
+
+    rev64       v28.8b, v12.8b
+    rev64       v29.8b, v13.8b
+    st2         {v24.8b, v25.8b},[x6]
+
+    rev64       v30.8b, v14.8b
+    rev64       v31.8b, v15.8b
+    st2         {v26.8b, v27.8b},[x7]
+
+    st2         {v28.8b, v29.8b},[x9]
+    st2         {v30.8b, v31.8b},[x14]
+
+    subs        x11, x11, #8
+    add         x20, x2, #16
+    csel        x2,  x20, x2,  gt
+
+    csel        x11, x4,  x11, le
+    add         x20, x12, x3, lsl #3
+    csel        x12, x20, x12, le
+    csel        x2,  x12, x2,  le
+
+    add         x20, x0, x4, lsl #1
+    csel        x0,  x20, x0,  le
+    sub         x20, x0, #16
+    csel        x0,  x20, x0,  le
+    sub         x20, x0, #2
+    csel        x10, x20, x10, le
+
+    subs        x1, x1, #8
+    bne         kernel_32
 
     b           end_func
 

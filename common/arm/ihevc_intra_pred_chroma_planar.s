@@ -300,6 +300,32 @@ loop_sz_8_16:
 
 
 
+    ldr         r7, [sp, #nt_offset]
+    cmp         r7, #32
+    bne         nt16_check
+
+    subs        r4, r4, #8
+    ble         end_loop
+
+    vdup.s8     d5, r8                      @row + 1
+    vdup.s8     d6, r9                      @nt - 1 - row
+    vmov        d7, d5                      @mov #1 to d7 to used for inc for row+1 and dec for nt-1-row
+
+    mov         r6, r10                     @restore src[2nt-1] pointer for next 8 columns
+    mov         r1, #32                     @reset row counter to 32 for next column batch
+    sub         r2, r2, r3, lsl #5          @move dst back 32 rows
+    add         r2, r2, #16                 @advance dst by 16 bytes to next column group
+
+    vld1.s8     {d10,d11}, [r14]!           @load src[2nt+1+col]
+    vld1.s8     d8, [r12]!
+    vmov        d9, d8
+    vzip.8      d8, d9
+    vsub.s8     d30, d2, d8                 @[nt-1-col]
+    vsub.s8     d31, d2, d9
+
+    b           loop_sz_8_16
+
+nt16_check:
     cmp         r4,#16
 
     bne         end_loop
