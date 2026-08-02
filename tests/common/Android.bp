@@ -11,6 +11,21 @@ cc_defaults {
     name: "libhevc_tests_defaults",
     host_supported: true,
     arch: {
+        arm: {
+            cflags: [
+                "-DDISABLE_NEONINTR",
+                "-DARM",
+                "-DARMGCC",
+            ],
+        },
+        arm64: {
+            cflags: [
+                "-DARMV8",
+                "-DDISABLE_NEONINTR",
+                "-DARM",
+                "-DARMGCC",
+            ],
+        },
         x86: {
             cflags: ["-DDISABLE_AVX2"],
         },

@@ -28,7 +28,6 @@
 // clang-format off
 #include "func_selector.h"
 #include "ihevc_macros.h"
-#include "ihevc_platform_macros.h"
 #include "ihevc_typedefs.h"
 #include "TestCommon.h"
 // clang-format on
