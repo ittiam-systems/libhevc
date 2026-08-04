@@ -438,7 +438,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
     /* Set CSBF array to zero */
     {
         UWORD32 *pu4_csbf;
-        pu4_csbf = (void *)au2_csbf;
+        pu4_csbf = (UWORD32 *)au2_csbf;
         *pu4_csbf++ = 0;
         *pu4_csbf++ = 0;
         *pu4_csbf++ = 0;
@@ -752,7 +752,7 @@ WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
 
                         /* first_greater1_scan_pos is obtained using CLZ on u4_coeff_abs_level_greater1_map*/
                         /*  outside the loop instead of the following check inside the loop                */
-                        /* if( coeff_abs_level_greater1_flag && first_greater1_scan_pos == -1) */
+
                         /*    first_greater1_scan_pos = n;                                     */
 
                         if(coeff_abs_level_greater1_flag)

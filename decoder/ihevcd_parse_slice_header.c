@@ -621,7 +621,11 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
 
             if(0 == num_poc_total_curr)
                 return IHEVCD_IGNORE_SLICE;
+#ifdef HM9DOT0
+            if(ps_sps->i1_lists_modification_present_flag)
+#else
             if((ps_pps->i1_lists_modification_present_flag) && (num_poc_total_curr > 1))
+#endif
             {
                 ihevcd_ref_pic_list_modification(ps_bitstrm,
                                                  ps_slice_hdr, num_poc_total_curr);
@@ -730,8 +734,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         ps_slice_hdr->i1_beta_offset_div2 = ps_pps->i1_beta_offset_div2;
         ps_slice_hdr->i1_tc_offset_div2 = ps_pps->i1_tc_offset_div2;
 
-        disable_deblocking_filter_flag = ps_pps->i1_pic_disable_deblocking_filter_flag;
-
         if(ps_pps->i1_deblocking_filter_control_present_flag)
         {
 
@@ -745,7 +747,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
             {
                 BITS_PARSE("slice_disable_deblocking_filter_flag", value, ps_bitstrm, 1);
                 ps_slice_hdr->i1_slice_disable_deblocking_filter_flag = value;
-                disable_deblocking_filter_flag = ps_slice_hdr->i1_slice_disable_deblocking_filter_flag;
+
 
                 if(!ps_slice_hdr->i1_slice_disable_deblocking_filter_flag)
                 {
@@ -766,6 +768,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                 }
             }
         }
+        disable_deblocking_filter_flag = ps_slice_hdr->i1_slice_disable_deblocking_filter_flag ||
+                                         ps_pps->i1_pic_disable_deblocking_filter_flag;
 
         ps_slice_hdr->i1_slice_loop_filter_across_slices_enabled_flag = ps_pps->i1_loop_filter_across_slices_enabled_flag;
         if(ps_pps->i1_loop_filter_across_slices_enabled_flag  &&

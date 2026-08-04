@@ -133,5 +133,25 @@ typedef enum
      */
     IHEVCD_UNSUPPORTED_TOOL_SET,
 
+    /**
+     * Profile higher than init profile
+     */
+    IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE,
+
+    /**
+     * Unsupported profile
+     */
+    IHEVCD_GEN_PROFILE_UNSUPPORTED,
+
+    /**
+     * Invalid output chroma format
+     */
+    IHEVCD_INVALID_OUT_CHROMA_FMT,
+
+    /**
+     * Unsupported parameter while decoding
+     */
+    IHEVCD_UNSUPPORTED_PARAMETER,
+
 }IHEVCD_ERROR_T;
 #endif /* _IHEVCD_ERROR_H_ */

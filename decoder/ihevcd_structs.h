@@ -662,7 +662,7 @@ typedef struct
     /**
      * Bottom-left luma pixel - used by SAO
      */
-    UWORD8 u1_sao_src_top_left_luma_bot_left;
+    UWORD16 u2_sao_src_top_left_luma_bot_left;
     /**
      *  Pointer to array that stores bottom left luma pixel per row(interleaved) - used by SAO
      */
@@ -671,7 +671,7 @@ typedef struct
     /**
      * Bottom left chroma pixel(interleaved) - used by SAO
      */
-    UWORD8 au1_sao_src_top_left_chroma_bot_left[2];
+    UWORD16 au2_sao_src_top_left_chroma_bot_left[2];
     /**
      *  Pointer to array that stores bottom left chroma pixel per row(interleaved) - used by SAO
      */
@@ -694,6 +694,9 @@ typedef struct
 
     /* Specifies if the chroma format is yuv420sp_vu */
     WORD32 is_chroma_yuv420sp_vu;
+
+    /* Function pointer for the shifted CTB level function */
+    void                *pf_sao_shift_ctb;
 
 }sao_ctxt_t;
 
@@ -1670,6 +1673,48 @@ typedef void (*pf_itrans_res_dc)(WORD16 *pi2_dst,
                                  WORD32 log2_trans_size,
                                  WORD16 i2_coeff_value);
 
+typedef void (*pf_hbd_itrans_recon_dc)(UWORD16 *pu2_pred,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 pred_strd,
+                                       WORD32 dst_strd,
+                                       WORD32 log2_trans_size,
+                                       WORD16 i2_coeff_value,
+                                       WORD32 i4_bit_depth);
+
+typedef void (*pf_hbd_itrans_recon)(WORD16 *pi2_src,
+                                    WORD16 *pi2_tmp,
+                                    UWORD16 *pu2_pred,
+                                    UWORD16 *pu2_dst,
+                                    WORD32 i4_src_strd,
+                                    WORD32 i4_pred_strd,
+                                    WORD32 i4_dst_strd,
+                                    WORD32 i4_zero_cols,
+                                    WORD32 i4_zero_rows,
+                                    UWORD8 u1_bit_depth);
+
+typedef void (*pf_hbd_recon)(WORD16 *pi2_src,
+                             UWORD16 *pu2_pred,
+                             UWORD16 *pu2_dst,
+                             WORD32 i4_src_strd,
+                             WORD32 i4_pred_strd,
+                             WORD32 i4_dst_strd,
+                             WORD32 i4_zero_cols,
+                             UWORD8 u1_bit_depth);
+
+typedef void (*pf_hbd_intra_pred_luma)(UWORD16 *pu2_ref,
+                                       WORD32 src_strd,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 dst_strd,
+                                       WORD32 nt,
+                                       WORD32 mode,
+                                       UWORD8 bit_depth);
+
+typedef void (*pf_hbd_intra_pred_chroma)(UWORD16 *pu2_ref,
+                                         WORD32 src_strd,
+                                         UWORD16 *pu2_dst,
+                                         WORD32 dst_strd,
+                                         WORD32 nt,
+                                         WORD32 mode);
 
 typedef void (*pf_sao_luma)(UWORD8 *,
                             WORD32,
@@ -1695,6 +1740,42 @@ typedef void (*pf_sao_chroma)(UWORD8 *,
                               WORD8 *,
                               WORD32,
                               WORD32);
+
+typedef void (*pf_hbd_sao_luma)(UWORD16 *,
+        WORD32,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD8 *,
+        WORD8 *,
+        WORD32,
+        WORD32,
+        UWORD32);
+
+typedef void (*pf_hbd_sao_chroma)(UWORD16 *,
+        WORD32,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD16 *,
+        UWORD8 *,
+        WORD8 *,
+        WORD8 *,
+        WORD32,
+        WORD32,
+        UWORD32);
+
+typedef void (*pf_hbd_inter_pred)(void *,
+                                  void *,
+                                  WORD32,
+                                  WORD32,
+                                  WORD8 *,
+                                  WORD32,
+                                  WORD32,
+                                  UWORD8);
 
 /**
  * Codec context
@@ -1732,6 +1813,11 @@ struct _codec_t
      * For shared mode even display buffer will use the same stride
      */
     WORD32 i4_strd;
+
+    /**
+     * Profile specified during init
+     */
+    WORD32 i4_profile;
 
     /**
      * Number of cores to be used
@@ -1801,6 +1887,51 @@ struct _codec_t
      * In shared mode only 420SP_UV and 420SP_VU are supported
      */
     IV_COLOR_FORMAT_T e_ref_chroma_fmt;
+
+    /**
+     * ChromaArrayType
+     */
+    WORD32  i4_chroma_array_type;
+
+    /**
+     * Luma bit depth - 8 and 10 bits are supported
+     */
+    WORD32  i4_bit_depth_luma;
+
+    /**
+     * Chroma bit depth - 8 and 10 bits are supported
+     */
+    WORD32  i4_bit_depth_chroma;
+
+    /**
+     * Luma sample size in bytes - 1 for 8 bit, 2 for hbd
+     */
+    WORD32  i4_pixel_size_y;
+
+    /**
+     * Chroma sample size in bytes - 1 for 8 bit, 2 for hbd
+     */
+    WORD32  i4_pixel_size_uv;
+
+    /**
+     * SubWidthC
+     */
+    WORD32  i4_sub_width_chroma;
+
+    /**
+     * SubHeightC
+     */
+    WORD32  i4_sub_height_chroma;
+
+    /**
+     * QP bit depth Offset luma
+     */
+    WORD32  i4_qp_bd_offset_y;
+
+    /**
+     * QP bit depth Offset chroma
+     */
+    WORD32  i4_qp_bd_offset_uv;
 
     /**
      * Frame skip mode
@@ -2292,6 +2423,22 @@ struct _codec_t
 
     /**  Funtion pointers for sao_chroma leaf level functions */
     pf_sao_chroma apf_sao_chroma[4];
+
+    /* HBD function pointers */
+    pf_hbd_intra_pred_luma          *ppf_hbd_intra_pred_luma;
+    pf_hbd_intra_pred_chroma        *ppf_hbd_intra_pred_chroma;
+    pf_hbd_itrans_recon             *ppf_hbd_itrans_recon;
+    pf_hbd_itrans_recon_dc          *ppf_hbd_itrans_recon_dc;
+    pf_hbd_recon                    *ppf_hbd_recon;
+    pf_hbd_sao_luma                 *ppf_hbd_sao_luma;
+    pf_hbd_sao_chroma               *ppf_hbd_sao_chroma;
+    pf_hbd_inter_pred               *ppf_hbd_inter_pred;
+
+    /* Function pointer for parse residual coding */
+    void        *pv_parse_residual_coding;
+
+    /* Function pointer for IQ, IT, recon CTB */
+    void        *pv_iquant_itrans_recon_ctb;
 
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;

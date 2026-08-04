@@ -112,9 +112,11 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     UWORD32 *pu4_ctb_vert_bs, *pu4_ctb_horz_bs;
     WORD32 bs_strd;
     WORD32 src_strd, chroma_strd;
-    UWORD8 *pu1_qp;
+    WORD8 *pi1_qp;
     UWORD16 *pu2_ctb_no_loop_filter_flag;
     UWORD16 au2_ctb_no_loop_filter_flag[9];
+    WORD32 i4_pixel_size_y, i4_pixel_size_uv;
+    UWORD8 u1_bit_depth_luma, u1_bit_depth_chroma;
 
     WORD32 col, row;
 
@@ -130,6 +132,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     ihevc_deblk_chroma_horz_ft *pf_deblk_chroma_horz;
     ihevc_deblk_chroma_vert_ft *pf_deblk_chroma_vert;
+    WORD32  i4_sub_ht_c;
+    WORD32  i4_rt_shift_chroma;
 
     PROFILE_DISABLE_DEBLK();
 
@@ -146,6 +150,16 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << ps_sps->i1_log2_ctb_size);
+    i4_pixel_size_y     = ps_codec->i4_pixel_size_y;
+    i4_pixel_size_uv    = ps_codec->i4_pixel_size_uv;
+    u1_bit_depth_luma   = (UWORD8)ps_codec->i4_bit_depth_luma;
+    u1_bit_depth_chroma = (UWORD8)ps_codec->i4_bit_depth_chroma;
+    i4_sub_ht_c         = ps_codec->i4_sub_height_chroma;
+    if (1 == i4_sub_ht_c) {
+        i4_rt_shift_chroma = 1;
+    } else {
+        i4_rt_shift_chroma  = 0;
+    }
 
     if(is_yuv422)
     {
@@ -173,7 +187,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     pu4_ctb_horz_bs = pu4_horz_bs;
 
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pu1_qp = ps_deblk->s_bs_ctxt.pu1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = (WORD8 *)ps_deblk->s_bs_ctxt.pu1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     pu2_ctb_no_loop_filter_flag = ps_deblk->au2_ctb_no_loop_filter_flag;
 
@@ -188,7 +202,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
          * 2 is the number of bits needed for each BS value */
         memset(pu4_vert_bs, 0, 1 << (2 * log2_ctb_size - 7));
 
-        pu1_qp += (qp_strd << (log2_ctb_size - 3));
+        pi1_qp += (qp_strd << (log2_ctb_size - 3));
         pu2_ctb_no_loop_filter_flag += (ctb_size >> 3);
         ctb_indx += ps_sps->i2_pic_wd_in_ctb;
     }
@@ -199,7 +213,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         pu4_ctb_horz_bs = pu4_horz_bs;
         memset(pu4_horz_bs, 0, 1 << (2 * log2_ctb_size - 7));
 
-        pu1_qp += (ctb_size >> 3);
+        pi1_qp += (ctb_size >> 3);
 
         for(row = 0; row < (ctb_size >> 3) + 1; row++)
             au2_ctb_no_loop_filter_flag[row] = ps_deblk->au2_ctb_no_loop_filter_flag[row] >> (ctb_size >> 3);
@@ -231,7 +245,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     }
 
     src_strd = ps_codec->i4_strd;
-    chroma_strd = src_strd * chroma_pixel_strd / h_samp_factor;
+    chroma_strd = (src_strd * chroma_pixel_strd / h_samp_factor) * i4_pixel_size_uv;
 
     /* Luma Vertical Edge */
 
@@ -246,12 +260,13 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << (log2_ctb_size));
-        pu1_src += i4_is_last_ctb_y ? ps_deblk->ps_codec->i4_strd << log2_ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_luma +
+            ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_codec->i4_strd) << (log2_ctb_size)) * i4_pixel_size_y;
+        pu1_src += i4_is_last_ctb_y ? ((ps_codec->i4_strd << log2_ctb_size) * i4_pixel_size_y) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Vertical edge processing is done by shifting the CTB up by four pixels */
-        pu1_src -= 4 * src_strd;
+        pu1_src -= 4 * src_strd * i4_pixel_size_y;
 
         for(col = 0; col < ctb_size / 8; col++)
         {
@@ -287,9 +302,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 {
                     u4_bs = u4_bs >> (bs_tz << 1);
                     if((row + bs_tz) >= (ctb_size / 4))
-                        pu1_src += 4 * (ctb_size / 4 - row) * src_strd;
+                        pu1_src += 4 * (ctb_size / 4 - row) * src_strd * i4_pixel_size_y;
                     else
-                        pu1_src += 4 * bs_tz  * src_strd;
+                        pu1_src += 4 * bs_tz  * src_strd * i4_pixel_size_y;
 
                     row += bs_tz;
                     continue;
@@ -303,38 +318,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[col - 1 - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[col - 1 - qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[1] ?
-                                    pu1_qp[-ctb_size / 8 * qp_strd] :
-                                    pu1_qp[col - qp_strd];
+                                    pi1_qp[-ctb_size / 8 * qp_strd] :
+                                    pi1_qp[col - qp_strd];
                 }
                 else
                 {
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[((row - 1) >> 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[((row - 1) >> 1) * qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((row - 1) >> 1) * qp_strd + col - 1];
+                                        pi1_qp[0] :
+                                        pi1_qp[((row - 1) >> 1) * qp_strd + col - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((row - 1) >> 1) * qp_strd + col];
+                                    pi1_qp[0] :
+                                    pi1_qp[((row - 1) >> 1) * qp_strd + col];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[(row + 1) >> 1] >> col) & 1;
@@ -350,26 +365,39 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          ps_slice_hdr->i1_beta_offset_div2,
                                          ps_slice_hdr->i1_tc_offset_div2,
                                          filter_p, filter_q);
+                    if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
+                    {
                     ps_codec->s_func_selector.ihevc_deblk_luma_vert_fptr(pu1_src, src_strd,
                                                                          u4_bs & 3, qp_p, qp_q,
                                                                          i1_beta_offset_div2,
                                                                          i1_tc_offset_div2,
                                                                          filter_p, filter_q);
                 }
+                    else
+                    {
+                        ps_codec->s_func_selector.pf_hbd_deblk_luma_vert((UWORD16 *)pu1_src,
+                                                  src_strd,
+                                                  u4_bs & 3, qp_p, qp_q,
+                                                  i1_beta_offset_div2,
+                                                  i1_tc_offset_div2,
+                                                  filter_p, filter_q,
+                                                  u1_bit_depth_luma);
+                    }
+                }
 
-                pu1_src += 4 * src_strd;
+                pu1_src += 4 * src_strd * i4_pixel_size_y;
                 u4_bs = u4_bs >> 2;
                 row++;
-            }
+            } /* End of loop over rows */
 
             if((64 == ctb_size) ||
                             ((32 == ctb_size) && (col & 1)))
             {
                 pu4_vert_bs++;
             }
-            pu1_src -= (src_strd << log2_ctb_size);
-            pu1_src += 8;
-        }
+            pu1_src -= ((src_strd << log2_ctb_size) * i4_pixel_size_y);
+            pu1_src += 8 * i4_pixel_size_y;
+        } /* End of loop over columns */
         pu4_vert_bs = pu4_ctb_vert_bs;
     }
 
@@ -387,12 +415,13 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 cur_ctb_indx += 1;
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
-        pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_x ? ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_luma +
+            ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_codec->i4_strd) << log2_ctb_size) * i4_pixel_size_y;
+        pu1_src += i4_is_last_ctb_x ? (ctb_size * i4_pixel_size_y) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Horizontal edge processing is done by shifting the CTB left by four pixels */
-        pu1_src -= 4;
+        pu1_src -= 4 * i4_pixel_size_y;
         for(row = 0; row < ctb_size / 8; row++)
         {
             WORD32 shift = 0;
@@ -429,9 +458,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     u4_bs = u4_bs >> (bs_tz << 1);
 
                     if((col + bs_tz) >= (ctb_size / 4))
-                        pu1_src += 4 * (ctb_size / 4 - col);
+                        pu1_src += 4 * (ctb_size / 4 - col) * i4_pixel_size_y;
                     else
-                        pu1_src += 4 * bs_tz;
+                        pu1_src += 4 * bs_tz * i4_pixel_size_y;
 
                     col += bs_tz;
                     continue;
@@ -445,38 +474,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[(row - 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[(row - 1) * qp_strd - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[2] ?
-                                    pu1_qp[-ctb_size / 8] :
-                                    pu1_qp[row * qp_strd - 1];
+                                    pi1_qp[-ctb_size / 8] :
+                                    pi1_qp[row *qp_strd - 1];
                 }
                 else
                 {
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[((col - 1) >> 1) - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[((col - 1) >> 1) - qp_strd];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((col - 1) >> 1) + (row - 1) * qp_strd];
+                                        pi1_qp[0] :
+                                        pi1_qp[((col - 1) >> 1) + (row - 1) * qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((col - 1) >> 1) + row * qp_strd];
+                                    pi1_qp[0] :
+                                    pi1_qp[((col - 1) >> 1) + row * qp_strd];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[row] >> ((col + 1) >> 1)) & 1;
@@ -492,13 +521,26 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          ps_slice_hdr->i1_beta_offset_div2,
                                          ps_slice_hdr->i1_tc_offset_div2,
                                          filter_p, filter_q);
+                    if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
+                    {
                     ps_codec->s_func_selector.ihevc_deblk_luma_horz_fptr(pu1_src, src_strd,
                                                                          u4_bs & 3, qp_p, qp_q,
                                                                          i1_beta_offset_div2,
                                                                          i1_tc_offset_div2, filter_p, filter_q);
                 }
+                    else
+                    {
+                        ps_codec->s_func_selector.pf_hbd_deblk_luma_horz((UWORD16 *)pu1_src,
+                                                  src_strd,
+                                                  u4_bs & 3, qp_p, qp_q,
+                                                  i1_beta_offset_div2,
+                                                  i1_tc_offset_div2,
+                                                  filter_p, filter_q,
+                                                  u1_bit_depth_luma);
+                    }
+                }
 
-                pu1_src += 4;
+                pu1_src += 4 * i4_pixel_size_y;
                 u4_bs = u4_bs >> 2;
                 col++;
             }
@@ -508,8 +550,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_horz_bs++;
             }
-            pu1_src -= ctb_size;
-            pu1_src += (src_strd << 3);
+            pu1_src -= ctb_size * i4_pixel_size_y;
+            pu1_src += ((src_strd << 3) * i4_pixel_size_y);
         }
         pu4_horz_bs = pu4_ctb_horz_bs;
     }
@@ -529,8 +571,11 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_y ? ((ps_codec->i4_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_chroma +
+            (((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor +
+               ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * i4_pixel_size_uv);
+        pu1_src += i4_is_last_ctb_y ?
+            ((((ps_codec->i4_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * i4_pixel_size_uv) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Vertical edge processing is done by shifting the CTB up by four pixels */
@@ -541,8 +586,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             WORD32 shift = 0;
 
             if(is_yuv444 && 6 != log2_ctb_size)
-                shift = (col & 1) << (log2_ctb_size - 1);
 
+                shift = (col & 1) << (log2_ctb_size - 1);
             /* BS for the column - Last row is excluded and the top row is included*/
             u4_bs = (pu4_vert_bs[0] >> shift) << 2;
 
@@ -585,38 +630,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[h_samp_factor * col - 1 - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[h_samp_factor * col - 1 - qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[1] ?
-                                    pu1_qp[-ctb_size / 8 * qp_strd] :
-                                    pu1_qp[h_samp_factor * col - qp_strd];
+                                    pi1_qp[-ctb_size / 8 * qp_strd] :
+                                    pi1_qp[h_samp_factor * col - qp_strd];
                 }
                 else
                 {
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col - 1];
+                                        pi1_qp[0] :
+                                        pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col];
+                                    pi1_qp[0] :
+                                    pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[(row + (2 - v_samp_factor)) >> (2 - v_samp_factor)] >> (col << (h_samp_factor - 1))) & 1;
@@ -638,38 +683,72 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        pf_deblk_chroma_vert(pu1_src,
-                                             chroma_strd,
-                                             qp_q,
-                                             qp_p,
-                                             ps_pps->i1_pic_cr_qp_offset,
-                                             ps_pps->i1_pic_cb_qp_offset,
-                                             i1_tc_offset_div2,
-                                             filter_q,
-                                             filter_p,
-                                             ps_sps->i1_chroma_format_idc);
+                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        {
+                            pf_deblk_chroma_vert(pu1_src,
+                                                 chroma_strd,
+                                                 qp_q,
+                                                 qp_p,
+                                                 ps_pps->i1_pic_cr_qp_offset,
+                                                 ps_pps->i1_pic_cb_qp_offset,
+                                                 i1_tc_offset_div2,
+                                                 filter_q,
+                                                 filter_p,
+                                                 ps_sps->i1_chroma_format_idc);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                                                                               src_strd,
+                                                                               qp_q,
+                                                                               qp_p,
+                                                                               ps_pps->i1_pic_cr_qp_offset,
+                                                                               ps_pps->i1_pic_cb_qp_offset,
+                                                                               i1_tc_offset_div2,
+                                                                               filter_q,
+                                                                               filter_p,
+                                                                               u1_bit_depth_chroma,
+                                                                               ps_sps->i1_chroma_format_idc);
+                        }
                     }
                     else
                     {
-                        pf_deblk_chroma_vert(pu1_src,
-                                             chroma_strd,
-                                             qp_p,
-                                             qp_q,
-                                             ps_pps->i1_pic_cb_qp_offset,
-                                             ps_pps->i1_pic_cr_qp_offset,
-                                             i1_tc_offset_div2,
-                                             filter_p,
-                                             filter_q,
-                                             ps_sps->i1_chroma_format_idc);
+                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        {
+                            pf_deblk_chroma_vert(pu1_src,
+                                                 chroma_strd,
+                                                 qp_p,
+                                                 qp_q,
+                                                 ps_pps->i1_pic_cb_qp_offset,
+                                                 ps_pps->i1_pic_cr_qp_offset,
+                                                 i1_tc_offset_div2,
+                                                 filter_p,
+                                                 filter_q,
+                                                 ps_sps->i1_chroma_format_idc);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                                                                               src_strd,
+                                                                               qp_p,
+                                                                               qp_q,
+                                                                               ps_pps->i1_pic_cb_qp_offset,
+                                                                               ps_pps->i1_pic_cr_qp_offset,
+                                                                               i1_tc_offset_div2,
+                                                                               filter_p,
+                                                                               filter_q,
+                                                                               u1_bit_depth_chroma,
+                                                                               ps_sps->i1_chroma_format_idc);
+                        }
                     }
                 }
 
                 pu1_src += 4 * chroma_strd;
                 u4_bs = u4_bs >> (2 * v_samp_factor);
                 row++;
-            }
+            } /* End of loop over rows */
 
-            pu1_src -= (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size);
+            pu1_src -= ((((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * i4_pixel_size_uv);
             if(is_yuv444)
             {
                 if((64 ==ctb_size) || ((32 == ctb_size) && (col & 1))) pu4_vert_bs++;
@@ -678,12 +757,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_vert_bs += (64 == ctb_size) ? 2 : 1;
             }
-            pu1_src += 16;
+            pu1_src += 16 * i4_pixel_size_uv;
         }
     }
 
-    /* Chroma Horizontal Edge */
 
+    /* Chroma Horizontal Edge */
     if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 == i4_is_last_ctb_y)
     {
 
@@ -696,12 +775,14 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (v_samp_factor * h_samp_factor)) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_x ? ctb_size * chroma_pixel_strd / h_samp_factor : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_chroma +
+            (((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor +
+               ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (v_samp_factor * h_samp_factor)) << log2_ctb_size) * i4_pixel_size_uv);
+        pu1_src += i4_is_last_ctb_x ? (ctb_size * chroma_pixel_strd / h_samp_factor * i4_pixel_size_uv) : 0;
 
         /** Deblocking is done on a shifted CTB -
          * Vertical edge processing is done by shifting the CTB up by four pixels (8 here beacuse UV are interleaved) */
-        pu1_src -= 8;
+        pu1_src -= 8 * i4_pixel_size_uv;
         for(row = 0; row < ctb_size / (8 * v_samp_factor); row++)
         {
             WORD32 shift = 0;
@@ -740,9 +821,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     u4_bs = u4_bs >> (bs_tz << h_samp_factor);
 
                     if((col + bs_tz) >= (ctb_size / (4 * h_samp_factor)))
-                        pu1_src += 8 * (ctb_size / (4 * h_samp_factor) - col);
+                        pu1_src += 8 * (ctb_size / (4 * h_samp_factor) - col) * i4_pixel_size_uv;
                     else
-                        pu1_src += 8 * bs_tz;
+                        pu1_src += 8 * bs_tz * i4_pixel_size_uv;
 
                     col += bs_tz;
                     continue;
@@ -755,38 +836,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[(v_samp_factor * row - 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[(v_samp_factor * row - 1) * qp_strd - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[2] ?
-                                    pu1_qp[-ctb_size / 8] :
-                                    pu1_qp[(v_samp_factor * row) * qp_strd - 1];
+                                    pi1_qp[-ctb_size / 8] :
+                                    pi1_qp[(v_samp_factor * row) * qp_strd - 1];
                 }
                 else
                 {
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[((col - 1) >> (2 - h_samp_factor)) - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[((col - 1) >> (2 - h_samp_factor)) - qp_strd];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((col - 1) >> (2 - h_samp_factor)) +  (v_samp_factor * row - 1) * qp_strd];
+                                        pi1_qp[0] :
+                                        pi1_qp[((col - 1) >> (2 - h_samp_factor)) +  (v_samp_factor * row - 1) * qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((col - 1) >> (2 - h_samp_factor)) + v_samp_factor * row * qp_strd];
+                                    pi1_qp[0] :
+                                    pi1_qp[((col - 1) >> (2 - h_samp_factor)) + v_samp_factor * row * qp_strd];
                 }
                 filter_p = (pu2_ctb_no_loop_filter_flag[row * v_samp_factor] >> ((col + 2 - h_samp_factor) >> (2 - h_samp_factor))) & 1;
                 filter_q = (pu2_ctb_no_loop_filter_flag[(row * v_samp_factor) + 1] >> ((col + 2 - h_samp_factor) >> (2 - h_samp_factor))) & 1;
@@ -807,33 +888,67 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        pf_deblk_chroma_horz(pu1_src,
-                                             chroma_strd,
-                                             qp_q,
-                                             qp_p,
-                                             ps_pps->i1_pic_cr_qp_offset,
-                                             ps_pps->i1_pic_cb_qp_offset,
-                                             i1_tc_offset_div2,
-                                             filter_q,
-                                             filter_p,
-                                             ps_sps->i1_chroma_format_idc);
+                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        {
+                            pf_deblk_chroma_horz(pu1_src,
+                                                 chroma_strd,
+                                                 qp_q,
+                                                 qp_p,
+                                                 ps_pps->i1_pic_cr_qp_offset,
+                                                 ps_pps->i1_pic_cb_qp_offset,
+                                                 i1_tc_offset_div2,
+                                                 filter_q,
+                                                 filter_p,
+                                                 ps_sps->i1_chroma_format_idc);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                                                                               src_strd,
+                                                                               qp_q,
+                                                                               qp_p,
+                                                                               ps_pps->i1_pic_cr_qp_offset,
+                                                                               ps_pps->i1_pic_cb_qp_offset,
+                                                                               i1_tc_offset_div2,
+                                                                               filter_q,
+                                                                               filter_p,
+                                                                               u1_bit_depth_chroma,
+                                                                               ps_sps->i1_chroma_format_idc);
+                        }
                     }
                     else
                     {
-                        pf_deblk_chroma_horz(pu1_src,
-                                             chroma_strd,
-                                             qp_p,
-                                             qp_q,
-                                             ps_pps->i1_pic_cb_qp_offset,
-                                             ps_pps->i1_pic_cr_qp_offset,
-                                             i1_tc_offset_div2,
-                                             filter_p,
-                                             filter_q,
-                                             ps_sps->i1_chroma_format_idc);
+                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        {
+                            pf_deblk_chroma_horz(pu1_src,
+                                                 chroma_strd,
+                                                 qp_p,
+                                                 qp_q,
+                                                 ps_pps->i1_pic_cb_qp_offset,
+                                                 ps_pps->i1_pic_cr_qp_offset,
+                                                 i1_tc_offset_div2,
+                                                 filter_p,
+                                                 filter_q,
+                                                 ps_sps->i1_chroma_format_idc);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                                                                               src_strd,
+                                                                               qp_p,
+                                                                               qp_q,
+                                                                               ps_pps->i1_pic_cb_qp_offset,
+                                                                               ps_pps->i1_pic_cr_qp_offset,
+                                                                               i1_tc_offset_div2,
+                                                                               filter_p,
+                                                                               filter_q,
+                                                                               u1_bit_depth_chroma,
+                                                                               ps_sps->i1_chroma_format_idc);
+                        }
                     }
                 }
 
-                pu1_src += 8;
+                pu1_src += 8 * i4_pixel_size_uv;
                 u4_bs = u4_bs >> (2 * h_samp_factor);
                 col++;
             }
@@ -845,7 +960,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_horz_bs += (64 == ctb_size) ? 2 : 1;
             }
-            pu1_src -= ctb_size * (chroma_pixel_strd / h_samp_factor);
+            pu1_src -= ctb_size * (chroma_pixel_strd / h_samp_factor) * i4_pixel_size_uv;
             pu1_src += 8 * chroma_strd;
 
         }

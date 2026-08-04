@@ -57,14 +57,16 @@
 #include "ihevcd_defs.h"
 #include "ihevcd_function_selector.h"
 #include "ihevcd_structs.h"
+#include "ihevcd_hbd_func_tables.h"
 
 void ihevcd_init_function_ptr(void *pv_codec)
 {
     codec_t *ps_codec = (codec_t *)pv_codec;
+    func_selector_t *ps_func_sel = &ps_codec->s_func_selector;
+    ihevcd_init_function_ptr_generic(ps_func_sel);
     switch(ps_codec->e_processor_arch)
     {
         case ARCH_X86_GENERIC:
-            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             break;
         case ARCH_X86_SSSE3:
             ihevcd_init_function_ptr_ssse3(&ps_codec->s_func_selector);
@@ -88,18 +90,5 @@ void ihevcd_init_function_ptr(void *pv_codec)
 void ihevcd_init_arch(void *pv_codec)
 {
     codec_t *ps_codec = (codec_t *)pv_codec;
-
-#ifdef DEFAULT_ARCH
-#if DEFAULT_ARCH == D_ARCH_X86_GENERIC
-    ps_codec->e_processor_arch = ARCH_X86_GENERIC;
-#elif DEFAULT_ARCH == D_ARCH_X86_SSE42
-    ps_codec->e_processor_arch = ARCH_X86_SSE42;
-#elif DEFAULT_ARCH == D_ARCH_X86_AVX2
-    ps_codec->e_processor_arch = ARCH_X86_AVX2;
-#else
     ps_codec->e_processor_arch = ARCH_X86_SSSE3;
-#endif
-#else
-    ps_codec->e_processor_arch = ARCH_X86_SSSE3;
-#endif
 }

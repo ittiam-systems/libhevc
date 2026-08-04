@@ -74,6 +74,8 @@
 #include "ihevcd_trace.h"
 #include "ihevcd_process_slice.h"
 #include "ihevcd_job_queue.h"
+#include "ihevcd_sao.h"
+
 #define MAX_DPB_PIC_BUF 6
 
 /* Function declarations */
@@ -182,6 +184,9 @@ WORD32 ihevcd_get_lvl_idx(WORD32 level)
 * @param[in] vert_pad
 *  Total padding used in vertical direction
 *
+* @param[in] i4_pixel_size
+*  Size of luma and chroma pixels in bytes
+*
 * @returns  Total picture buffer size
 *
 * @remarks
@@ -194,6 +199,7 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
                                      WORD32 ht)
 {
     WORD32 size;
+    WORD32 i4_pixel_size = ps_codec->i4_pixel_size_y;
     WORD32 num_luma_samples;
     WORD32 max_dpb_size;
     WORD32 num_samples;
@@ -236,6 +242,9 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
     /* Number of bytes in reference pictures */
     size = num_samples * max_dpb_size;
 
+
+    /* Account for bit depth of pixels */
+    size *= i4_pixel_size;
 
     return size;
 }
@@ -495,6 +504,13 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
 
+    WORD32 i4_pixel_size_y;
+    WORD32 i4_pixel_size_uv;
+
+    /* Derive the pixel size for luma and chroma */
+    i4_pixel_size_y  = ps_codec->i4_pixel_size_y;
+    i4_pixel_size_uv = ps_codec->i4_pixel_size_uv;
+
 
     /* Initialize Pic buffer manager */
     ps_sps = ps_codec->s_parse.ps_sps;
@@ -529,7 +545,7 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
         WORD32 chroma_samples;
         pic_buf_size_allocated = ps_codec->i4_total_pic_buf_size;
 
-        luma_samples = (ps_codec->i4_strd) *
+        luma_samples = (ps_codec->i4_strd * i4_pixel_size_y) *
                         (ps_sps->i2_pic_height_in_luma_samples + PAD_HT);
 
         if(CHROMA_FMT_IDC_MONOCHROME == ps_sps->i1_chroma_format_idc)
@@ -555,14 +571,14 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
                 return IHEVCD_INSUFFICIENT_MEM_PICBUF;
             }
 
-            ps_pic_buf->pu1_luma = pu1_buf + ps_codec->i4_strd * PAD_TOP + PAD_LEFT;
+            ps_pic_buf->pu1_luma = pu1_buf + (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * i4_pixel_size_y;
             pu1_buf += luma_samples;
 
             if(chroma_samples)
             {
                 ps_pic_buf->pu1_chroma = pu1_buf
-                                + (ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
-                                + (PAD_LEFT * chroma_pixel_strd / h_samp_factor);
+                                + ((ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
+                                + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * i4_pixel_size_uv;
                 pu1_buf += chroma_samples;
             }
             else
@@ -642,9 +658,9 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
             {
                 break;
             }
-            ps_pic_buf->pu1_luma += ps_codec->i4_strd * PAD_TOP + PAD_LEFT;
-            ps_pic_buf->pu1_chroma += (ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
-                            + (PAD_LEFT * chroma_pixel_strd / h_samp_factor);
+            ps_pic_buf->pu1_luma += (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * i4_pixel_size_y;
+            ps_pic_buf->pu1_chroma += ((ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
+                            + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * i4_pixel_size_uv;
         }
     }
 
@@ -1017,13 +1033,29 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
     if(0 == ps_codec->u4_pic_cnt)
     {
+        if (BIT_DEPTH_LUMA == ps_codec->i4_bit_depth_luma)
+    {
         memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
+        }
+        else
+        {
+            ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_luma, (1 << (ps_codec->i4_bit_depth_luma - 1)),
+                (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
+        }
+
         if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
-            memset(ps_cur_pic->pu1_chroma,
-                   128,
-                   (((ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor))
-                                   * ps_sps->i2_pic_height_in_luma_samples / v_samp_factor));
+            WORD32 chroma_samples = (((ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor))
+                                            * ps_sps->i2_pic_height_in_luma_samples / v_samp_factor);
+            if (BIT_DEPTH_CHROMA == ps_codec->i4_bit_depth_chroma)
+            {
+                memset(ps_cur_pic->pu1_chroma, 128, chroma_samples);
+            }
+            else
+            {
+                ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_chroma, (1 << (ps_codec->i4_bit_depth_chroma - 1)),
+                    chroma_samples);
+            }
         }
     }
 
@@ -1290,6 +1322,14 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             ps_codec->as_process[i].i4_cur_mv_bank_buf_id = cur_mv_bank_buf_id;
             ps_codec->as_process[i].s_sao_ctxt.pu1_slice_idx = ps_codec->as_process[i].pu1_slice_idx;
             ps_codec->as_process[i].s_sao_ctxt.pu1_tile_idx = ps_codec->as_process[i].pu1_tile_idx;
+            if ((BIT_DEPTH == ps_codec->i4_bit_depth_chroma) && (BIT_DEPTH == ps_codec->i4_bit_depth_luma))
+            {
+                ps_codec->as_process[i].s_sao_ctxt.pf_sao_shift_ctb = (void *)&ihevcd_sao_shift_ctb;
+            }
+            else
+            {
+                ps_codec->as_process[i].s_sao_ctxt.pf_sao_shift_ctb = (void *)&ihevcd_10bd_sao_shift_ctb;
+            }
 
             /* TODO: For asynchronous api the following initializations related to picture
              * buffer should be moved to processing side

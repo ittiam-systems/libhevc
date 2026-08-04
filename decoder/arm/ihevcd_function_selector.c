@@ -67,6 +67,7 @@ void ihevcd_init_function_ptr(void *pv_codec)
     {
 #ifndef DISABLE_NEONINTR
         case ARCH_ARM_NEONINTR:
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
             ihevcd_init_function_ptr_neonintr(&ps_codec->s_func_selector);
             break;
 #endif
@@ -79,10 +80,9 @@ void ihevcd_init_function_ptr(void *pv_codec)
         case ARCH_ARM_A9:
         case ARCH_ARM_A15:
         case ARCH_ARM_A9Q:
+            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
 #ifndef DISABLE_NEON
             ihevcd_init_function_ptr_a9q(&ps_codec->s_func_selector);
-#else
-            ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
 #endif
             break;
     }
@@ -106,13 +106,11 @@ void ihevcd_init_function_ptr(void *pv_codec)
             break;
         case ARCH_ARMV8_GENERIC:
         default:
-#ifdef DARWIN
             ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
-            break;
-#else
+#ifndef DARWIN
             ihevcd_init_function_ptr_av8(&ps_codec->s_func_selector);
-            break;
 #endif
+            break;
     }
 #endif
 }

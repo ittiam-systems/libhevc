@@ -58,6 +58,8 @@
 
 void ihevcd_init_function_ptr_av8(func_selector_t *ps_func_selector)
 {
+    ihevcd_init_function_ptr_generic(ps_func_selector);
+
     ps_func_selector->ihevc_deblk_chroma_horz_fptr                      =  &ihevc_deblk_chroma_horz_av8;
     ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert_av8;
     ps_func_selector->ihevc_deblk_luma_vert_fptr                        =  &ihevc_deblk_luma_vert_av8;
