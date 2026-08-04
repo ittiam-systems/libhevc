@@ -62,6 +62,12 @@ typedef enum
     DST_4x4, DCT_4x4, DCT_8x8, DCT_16x16, DCT_32x32, SKIP_64x64
 }TRANSFORM_TYPE;
 
+/* Function pointer */
+typedef WORD32 ft_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc);
+
+/* Extern function declarations */
 WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc);
+
+WORD32 ihevcd_iquant_itrans_recon_ctb_422(process_ctxt_t *ps_proc);
 
 #endif /* _IHEVCD_IQUANT_ITRANS_RECON_CTB_H_ */

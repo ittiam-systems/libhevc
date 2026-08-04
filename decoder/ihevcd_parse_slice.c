@@ -249,7 +249,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                 }
 #endif
             }
-        }
+        } /* End of if(trafo_depth == 0 || log2_trafo_size > 2) */
         if(split_transform_flag)
         {
             WORD32 intra_pred_mode_tmp;
@@ -542,7 +542,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 2, intra_pred_mode_chroma);
                     }
 #endif
-                }
+                } /* End of if (log2_trafo_size > 2) */
                 else if(blk_idx == 3)
                 {
                     if(ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth])
@@ -744,6 +744,7 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
     tu_t *ps_tu = ps_codec->s_parse.ps_tu;
     tu_sblk_coeff_data_t *ps_tu_sblk_coeff_data;
     UWORD8 *pu1_coeff_data;
+    WORD32 i4_bit_depth;
     ps_sps = ps_codec->s_parse.ps_sps;
 
     UNUSED(value);
@@ -781,6 +782,7 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
     pu1_coeff_data = (UWORD8 *)&ps_tu_sblk_coeff_data->ai2_level[0];
 
     num_bits = ps_sps->i1_pcm_sample_bit_depth_luma;
+    i4_bit_depth = ps_codec->i4_bit_depth_luma;
 
     WORD32 luma_samples = 1 << (log2_cb_size << 1);
     for(i = 0; i < luma_samples; i++)
@@ -789,12 +791,21 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
         BITS_PARSE("pcm_sample_luma", value, ps_bitstrm, num_bits);
 
         //ps_pcmsample_t->i1_pcm_sample_luma[i] = value;
-        *pu1_coeff_data++ = value << (BIT_DEPTH_LUMA - num_bits);
+        if (i4_bit_depth > 8)
+        {
+            *(UWORD16 *)pu1_coeff_data = value << (i4_bit_depth - num_bits);
+            pu1_coeff_data += 2;
+        }
+        else
+        {
+            *pu1_coeff_data++ = value << (i4_bit_depth - num_bits);
+        }
     }
 
     if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
     {
         WORD32 chroma_samples = 0;
+        i4_bit_depth = ps_codec->i4_bit_depth_chroma;
 
         if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
             chroma_samples = luma_samples << 1;
@@ -807,9 +818,15 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
         {
             TRACE_CABAC_CTXT("pcm_sample_chroma", ps_cabac->u4_range, 0);
             BITS_PARSE("pcm_sample_chroma", value, ps_bitstrm, num_bits);
-
-            // ps_pcmsample_t->i1_pcm_sample_chroma[i] = value;
-            *pu1_coeff_data++ = value << (BIT_DEPTH_CHROMA - num_bits);
+            if (i4_bit_depth > 8)
+            {
+                *(UWORD16 *)pu1_coeff_data = value << (i4_bit_depth - num_bits);
+                pu1_coeff_data += 2;
+            }
+            else
+            {
+                *pu1_coeff_data++ = value << (i4_bit_depth - num_bits);
+            }
         }
     }
 
@@ -2169,6 +2186,7 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
             WORD32 cur_cu_offset;
             tu_t *ps_tu = ps_codec->s_parse.ps_tu;
             WORD32 cb_size = 1 << ps_codec->s_parse.s_cu.i4_log2_cb_size;
+            WORD32 i4_qp_bd_offset_y = ps_codec->i4_qp_bd_offset_y;
 
             cu_pos_x = ps_codec->s_parse.s_cu.i4_pos_x << 3;
             cu_pos_y = ps_codec->s_parse.s_cu.i4_pos_y << 3;
@@ -2192,7 +2210,8 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
             qp_pred = (qp_left + qp_top + 1) >> 1;
             /* Since qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta can be negative,
             52 is added before taking modulo 52 */
-            qp = (qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta + 52) % 52;
+            qp = ((qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta + 52 + 2 * i4_qp_bd_offset_y) % (52 + i4_qp_bd_offset_y)) -
+                        i4_qp_bd_offset_y;
 
             cur_cu_offset = (cu_pos_x >> 3) + cu_pos_y;
             for(i = 0; i < (cb_size >> 3); i++)
@@ -2484,6 +2503,239 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
 
     return ret;
 }
+
+/**
+ *******************************************************************************
+ *
+ * @brief
+ *  Parses SAO (Sample adaptive offset syntax)
+ *
+ * @par Description:
+ *  Parses SAO (Sample adaptive offset syntax) as per  Section:7.3.9.3
+ *
+ * @param[in] ps_codec
+ *  Pointer to codec context
+ *
+ * @returns  Error from IHEVCD_ERROR_T
+ *
+ * @remarks
+ *
+ *
+ *******************************************************************************
+ */
+IHEVCD_ERROR_T  ihevcd_10bd_parse_sao(codec_t *ps_codec)
+{
+    IHEVCD_ERROR_T ret = IHEVCD_SUCCESS;
+    sps_t *ps_sps;
+    sao_10bd_t *ps_sao;
+    WORD32 rx;
+    WORD32 ry;
+    WORD32 value;
+    bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
+    WORD32 sao_merge_left_flag;
+    WORD32 sao_merge_up_flag;
+    slice_header_t *ps_slice_hdr;
+    cab_ctxt_t *ps_cabac = &ps_codec->s_parse.s_cabac;
+    WORD32 ctxt_idx;
+    WORD32 i4_bit_depth;
+
+    ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base;
+    ps_slice_hdr += (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
+
+    ps_sps = (ps_codec->s_parse.ps_sps);
+    rx = ps_codec->s_parse.i4_ctb_x;
+    ry = ps_codec->s_parse.i4_ctb_y;
+
+    ps_sao = (sao_10bd_t *)ps_codec->s_parse.ps_pic_sao + rx + ry * ps_sps->i2_pic_wd_in_ctb;
+
+    i4_bit_depth = ps_codec->i4_bit_depth_luma;
+
+    /* Default values */
+    ps_sao->b3_y_type_idx = 0;
+    ps_sao->b3_cb_type_idx = 0;
+    ps_sao->b3_cr_type_idx = 0;
+
+    UNUSED(value);
+    ctxt_idx = IHEVC_CAB_SAO_MERGE;
+    sao_merge_left_flag = 0;
+    sao_merge_up_flag = 0;
+    if(rx > 0)
+    {
+        /*TODO:Implemented only for slice. condition for tile is not tested*/
+        if ( ( (0 != ps_codec->s_parse.i4_ctb_slice_x) || (0 != ps_codec->s_parse.i4_ctb_slice_y)) &&
+                (0 != ps_codec->s_parse.i4_ctb_tile_x) )
+        {
+
+            TRACE_CABAC_CTXT("sao_merge_flag", ps_cabac->u4_range, ctxt_idx);
+            sao_merge_left_flag = ihevcd_cabac_decode_bin(ps_cabac,
+                    ps_bitstrm,
+                    ctxt_idx);
+            AEV_TRACE("sao_merge_flag", sao_merge_left_flag, ps_cabac->u4_range);
+        }
+
+    }
+    if(ry > 0 && !sao_merge_left_flag)
+    {
+        if((ps_codec->s_parse.i4_ctb_slice_y > 0) && (ps_codec->s_parse.i4_ctb_tile_y > 0))
+        {
+            TRACE_CABAC_CTXT("sao_merge_flag", ps_cabac->u4_range, ctxt_idx);
+            sao_merge_up_flag = ihevcd_cabac_decode_bin(ps_cabac,
+                    ps_bitstrm,
+                    ctxt_idx);
+            AEV_TRACE("sao_merge_flag", sao_merge_up_flag, ps_cabac->u4_range);
+        }
+    }
+    ctxt_idx = IHEVC_CAB_SAO_TYPE;
+
+    if(sao_merge_left_flag)
+    {
+        *ps_sao = *(ps_sao - 1);
+    }
+    else if(sao_merge_up_flag)
+    {
+        *ps_sao = *(ps_sao - ps_sps->i2_pic_wd_in_ctb);
+    }
+    else // if(!sao_merge_up_flag && !sao_merge_left_flag)
+    {
+        pps_t   *ps_pps;
+        WORD32 c_idx;
+        WORD32 sao_type_idx = 0;
+
+        ps_pps = ps_codec->s_parse.ps_pps;
+
+        for(c_idx = 0; c_idx < 3; c_idx++)
+        {
+            if((ps_slice_hdr->i1_slice_sao_luma_flag && c_idx == 0) || (ps_slice_hdr->i1_slice_sao_chroma_flag && c_idx > 0))
+            {
+
+
+                /* sao_type_idx will be same for c_idx == 1 and c_idx == 2 - hence not initialized to zero for c_idx == 2*/
+
+                if(c_idx == 0)
+                {
+                    sao_type_idx = 0;
+                    TRACE_CABAC_CTXT("sao_type_idx", ps_cabac->u4_range, ctxt_idx);
+                    sao_type_idx = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+
+                    if(sao_type_idx)
+                    {
+                        sao_type_idx += ihevcd_cabac_decode_bypass_bin(ps_cabac, ps_bitstrm);
+                    }
+                    AEV_TRACE("sao_type_idx", sao_type_idx,  ps_cabac->u4_range);
+
+                    ps_sao->b3_y_type_idx = sao_type_idx;
+                }
+                if(c_idx == 1)
+                {
+                    sao_type_idx = 0;
+                    TRACE_CABAC_CTXT("sao_type_idx", ps_cabac->u4_range, ctxt_idx);
+                    sao_type_idx = ihevcd_cabac_decode_bin(ps_cabac, ps_bitstrm, ctxt_idx);
+                    if(sao_type_idx)
+                    {
+                        sao_type_idx += ihevcd_cabac_decode_bypass_bin(ps_cabac, ps_bitstrm);
+                    }
+
+                    AEV_TRACE("sao_type_idx", sao_type_idx,  ps_cabac->u4_range);
+
+                    ps_sao->b3_cb_type_idx = sao_type_idx;
+                    ps_sao->b3_cr_type_idx = sao_type_idx;
+                }
+
+                if(sao_type_idx != 0)
+                {
+                    WORD32 i;
+                    WORD32 sao_offset[4];
+                    WORD32 sao_band_position = 0;
+                    WORD32 c_max =  ( 1 << (MIN(i4_bit_depth, 10) - 5)) - 1;
+                    for(i = 0; i < 4; i++)
+                    {
+                        sao_offset[i] = ihevcd_cabac_decode_bypass_bins_tunary(ps_cabac, ps_bitstrm, c_max);
+                        AEV_TRACE("sao_offset_abs", sao_offset[i], ps_cabac->u4_range);
+
+                        if( (2 == sao_type_idx) && (i > 1) )
+                        {
+                            sao_offset[i] = -sao_offset[i];
+                        }
+                    }
+
+                    if(sao_type_idx == 1)
+                    {
+                        for( i = 0; i < 4; i++ )
+                        {
+                            if(sao_offset[i] != 0)
+                            {
+                                value = ihevcd_cabac_decode_bypass_bin(ps_cabac, ps_bitstrm);
+                                AEV_TRACE("sao_offset_sign", value, ps_cabac->u4_range);
+
+                                if(value)
+                                {
+                                    sao_offset[i] = -sao_offset[i];
+                                }
+                            }
+                        }
+                        value = ihevcd_cabac_decode_bypass_bins(ps_cabac, ps_bitstrm, 5);
+                        AEV_TRACE("sao_band_position", value, ps_cabac->u4_range);
+
+                        sao_band_position = value;
+                    }
+                    else
+                    {
+                        if(c_idx == 0)
+                        {
+                            value = ihevcd_cabac_decode_bypass_bins(ps_cabac, ps_bitstrm, 2);
+                            AEV_TRACE("sao_eo_class", value, ps_cabac->u4_range);
+
+                            ps_sao->b3_y_type_idx += value;
+                        }
+
+                        if(c_idx == 1)
+                        {
+                            value = ihevcd_cabac_decode_bypass_bins(ps_cabac, ps_bitstrm, 2);
+                            AEV_TRACE("sao_eo_class", value, ps_cabac->u4_range);
+
+                            ps_sao->b3_cb_type_idx += value;
+                            ps_sao->b3_cr_type_idx += value;
+                        }
+                    }
+
+                    if(0 == c_idx)
+                    {
+                        ps_sao->b8_y_offset_1 = sao_offset[0];
+                        ps_sao->b8_y_offset_2 = sao_offset[1];
+                        ps_sao->b8_y_offset_3 = sao_offset[2];
+                        ps_sao->b8_y_offset_4 = sao_offset[3];
+
+                        ps_sao->b5_y_band_pos = sao_band_position;
+                    }
+                    else if(1 == c_idx)
+                    {
+                        ps_sao->b8_cb_offset_1 = sao_offset[0];
+                        ps_sao->b8_cb_offset_2 = sao_offset[1];
+                        ps_sao->b8_cb_offset_3 = sao_offset[2];
+                        ps_sao->b8_cb_offset_4 = sao_offset[3];
+
+                        ps_sao->b5_cb_band_pos = sao_band_position;
+                    }
+                    else // 2 == c_idx
+                    {
+                        ps_sao->b8_cr_offset_1 = sao_offset[0];
+                        ps_sao->b8_cr_offset_2 = sao_offset[1];
+                        ps_sao->b8_cr_offset_3 = sao_offset[2];
+                        ps_sao->b8_cr_offset_4 = sao_offset[3];
+
+                        ps_sao->b5_cr_band_pos = sao_band_position;
+                    }
+                }
+            } /* End of if sao parameters */
+
+            /* Loop updates */
+            i4_bit_depth = ps_codec->i4_bit_depth_chroma;
+
+        } /* End of loop over c_idx */
+    }
+
+    return ret;
+}
 /**
  *******************************************************************************
  *
@@ -2621,6 +2873,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     WORD32 ctb_addr;
     WORD32 tile_idx;
     WORD32 cabac_init_idc;
+    WORD32 cabac_init_qp;
     WORD32 ctb_size;
     WORD32 num_ctb_in_row;
     WORD32 num_min4x4_in_ctb;
@@ -2780,7 +3033,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     }
 
     slice_qp = ps_slice_hdr->i1_slice_qp_delta + ps_pps->i1_pic_init_qp;
-    slice_qp = CLIP3(slice_qp, 0, 51);
+    slice_qp = CLIP3(slice_qp, -(ps_codec->i4_qp_bd_offset_y), 51);
 
     /*Update QP value for every indepndent slice or for every dependent slice that begins at the start of a new tile*/
     if((0 == ps_slice_hdr->i1_dependent_slice_flag) ||
@@ -2806,11 +3059,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 #ifdef ENABLE_MAIN_REXT_PROFILE
             WORD32 ai4_stats[4] = {0};
 #endif
+            cabac_init_qp = CLIP3(slice_qp, 0, 51);
             ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                     &ps_codec->s_parse.s_bitstrm,
-                                    slice_qp,
+                                    cabac_init_qp,
                                     cabac_init_idc,
-                                    &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                    &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                     ,
                                     ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -2855,7 +3109,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                         && (!((0 == ps_codec->s_parse.i4_ctb_slice_x) && (0 == ps_codec->s_parse.i4_ctb_slice_y))))
         {
             slice_qp = ps_slice_hdr->i1_slice_qp_delta + ps_pps->i1_pic_init_qp;
-            slice_qp = CLIP3(slice_qp, 0, 51);
+            slice_qp = CLIP3(slice_qp, -(ps_codec->i4_qp_bd_offset_y), 51);
             ps_codec->s_parse.u4_qp = slice_qp;
 
             ihevcd_get_tile_pos(ps_pps, ps_sps, ps_codec->s_parse.i4_ctb_x,
@@ -2910,11 +3164,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 #ifdef ENABLE_MAIN_REXT_PROFILE
             WORD32 ai4_stats[4] = {0};
 #endif
+                cabac_init_qp = CLIP3(slice_qp, 0, 51);
                 ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                         &ps_codec->s_parse.s_bitstrm,
-                                        slice_qp,
+                                        cabac_init_qp,
                                         cabac_init_idc,
-                                        &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                        &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                         ,
                                         ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -2994,11 +3249,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                     WORD32 ai4_stats[4] = {0};
 #endif
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0], size);
+                    cabac_init_qp = CLIP3(slice_qp, 0, 51);
                     ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                             &ps_codec->s_parse.s_bitstrm,
-                                            slice_qp,
+                                            cabac_init_qp,
                                             cabac_init_idc,
-                                            &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                            &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                             ,
                                             ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -3015,9 +3271,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 else
                 {
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &ps_codec->s_parse.s_cabac.au1_ctxt_models_sync, size);
+                    cabac_init_qp = CLIP3(slice_qp, 0, 51);
                     ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                             &ps_codec->s_parse.s_bitstrm,
-                                            slice_qp,
+                                            cabac_init_qp,
                                             cabac_init_idc,
                                             (const UWORD8 *)&ps_codec->s_parse.s_cabac.au1_ctxt_models_sync
 #ifdef ENABLE_MAIN_REXT_PROFILE
@@ -3043,7 +3300,13 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         if(0 == ps_codec->i4_slice_error)
         {
             if(ps_slice_hdr->i1_slice_sao_luma_flag || ps_slice_hdr->i1_slice_sao_chroma_flag)
+            {
+                if ((8 == ps_codec->i4_bit_depth_chroma) && (8 == ps_codec->i4_bit_depth_luma)) {
                 ihevcd_parse_sao(ps_codec);
+                } else {
+                    ihevcd_10bd_parse_sao(ps_codec);
+                }
+            }
         }
         else
         {
@@ -3758,8 +4021,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         /* If the bytes for the current slice are exhausted
          * set end_of_slice flag to 1
          * This slice will be treated as incomplete */
-        if((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
-                                        ((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
+        if((UWORD32)ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
+                        ((UWORD32)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
         {
             // end_of_slice_flag = ps_codec->i4_slice_error ? 0 : 1;
 

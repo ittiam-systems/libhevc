@@ -360,7 +360,7 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
                 ofst = ((shift * ps_wt_ofst->i2_chroma_weight_l1_cb[i]) >> ps_wt_ofst->i1_chroma_log2_weight_denom);
                 ofst = value - ofst + shift;
 
-                ps_wt_ofst->i2_chroma_offset_l1_cb[i] = CLIP_S8(ofst);;
+                 ps_wt_ofst->i2_chroma_offset_l1_cb[i] = CLIP_S8(ofst);
 
                 SEV_PARSE("delta_chroma_weight_l1[ i ][ j ]", value, ps_bitstrm);
                 if(value < -128 || value > 127)
@@ -378,7 +378,7 @@ WORD32 ihevcd_parse_pred_wt_ofst(bitstrm_t *ps_bitstrm,
                 ofst = ((shift * ps_wt_ofst->i2_chroma_weight_l1_cr[i]) >> ps_wt_ofst->i1_chroma_log2_weight_denom);
                 ofst = value - ofst + shift;
 
-                ps_wt_ofst->i2_chroma_offset_l1_cr[i] = CLIP_S8(ofst);;
+                 ps_wt_ofst->i2_chroma_offset_l1_cr[i] = CLIP_S8(ofst);
 
             }
             else
@@ -1001,7 +1001,8 @@ static WORD32 ihevcd_get_profile(profile_tier_lvl_t *ps_ptl)
 {
     WORD32 profile = IHEVC_PROFILE_UNKNOWN;
 
-    if(ps_ptl->i1_profile_idc == 1 || ps_ptl->ai1_profile_compatibility_flag[1] == 1)
+    if(ps_ptl->i1_profile_idc == 1 || ps_ptl->ai1_profile_compatibility_flag[1] == 1 ||
+       ps_ptl->i1_profile_idc == 2 || ps_ptl->ai1_profile_compatibility_flag[2] == 1)
         profile = IHEVC_PROFILE_MAIN;
     else if(ps_ptl->i1_profile_idc == 3 || ps_ptl->ai1_profile_compatibility_flag[3] == 1)
         profile = IHEVC_PROFILE_MAIN_STILL;
@@ -1519,6 +1520,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     WORD32 sps_max_sub_layers;
     WORD32 sps_id;
     WORD32 sps_temporal_id_nesting_flag;
+    WORD32 i4_profile_idc;
+    WORD32 i4_extension_present_flag;
     sps_t *ps_sps;
     profile_tier_lvl_info_t s_ptl;
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
@@ -1545,6 +1548,21 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     //profile_and_level( 1, sps_max_sub_layers_minus1 )
     ret = ihevcd_profile_tier_level(ps_bitstrm, &(s_ptl), 1,
                                     (sps_max_sub_layers - 1));
+    if (IHEVCD_SUCCESS != ret)
+    {
+        ps_codec->s_parse.i4_error_code = ret;
+        return ret;
+    }
+
+    i4_profile_idc = (WORD32)s_ptl.s_ptl_gen.i1_profile_idc;
+
+    if ( ((HEVC_MAIN == ps_codec->i4_profile) && (i4_profile_idc > 1)) ||
+         ((HEVC_MAIN_10 == ps_codec->i4_profile) && (i4_profile_idc > 2)) )
+    {
+        ps_codec->s_parse.i4_error_code = IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
+        return IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
+    }
+
 
     UEV_PARSE("seq_parameter_set_id", value, ps_bitstrm);
     sps_id = value;
@@ -1620,6 +1638,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             break;
     }
     ps_sps->i1_chroma_format_idc = value;
+    ps_codec->i4_chroma_array_type = ps_sps->i1_chroma_format_idc;
+    ps_codec->i4_sub_width_chroma  = 2;
+    ps_codec->i4_sub_height_chroma = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) ? 1 : 2;
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
     /* TODO: re enable simd optimizations once they are updated for 422, 444 internal color formats.
@@ -1704,12 +1725,22 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
 
     UEV_PARSE("bit_depth_luma_minus8", value, ps_bitstrm);
-    if(0 != value)
+    if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
+         ((4 == i4_profile_idc) && (4 < value)) )
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    ps_codec->i4_bit_depth_luma = value + 8;
+    ps_codec->i4_pixel_size_y   = 1 + (value > 0);
+    ps_codec->i4_qp_bd_offset_y = 6 * value;
+    ps_sps->i1_bit_depth_luma_minus8 = value;
 
     UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
-    if(0 != value)
+    if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
+         ((4 == i4_profile_idc) && (4 < value)) )
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    ps_codec->i4_bit_depth_chroma = value + 8;
+    ps_codec->i4_pixel_size_uv    = 1 + (value > 0);
+    ps_codec->i4_qp_bd_offset_uv  = 6 * value;
+    ps_sps->i1_bit_depth_chroma_minus8 = value;
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
     if(value > 12)
@@ -2303,6 +2334,7 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     UWORD32 value;
     WORD32 i4_value;
     WORD32 pps_id;
+    WORD32 i4_pps_ext_present_flag;
 
     pps_t *ps_pps;
     sps_t *ps_sps;

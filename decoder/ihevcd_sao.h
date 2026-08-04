@@ -34,6 +34,10 @@
 #ifndef _IHEVCD_SAO_H_
 #define _IHEVCD_SAO_H_
 
+typedef void (ftype_sao_shift_ctb)(sao_ctxt_t *);
+
 void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt);
+
+void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt);
 
 #endif /*_IHEVC_SAO_H_*/

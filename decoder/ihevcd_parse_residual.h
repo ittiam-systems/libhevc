@@ -36,10 +36,23 @@
 
 #ifndef _IHEVCD_PARSE_RESIDUAL_H_
 #define _IHEVCD_PARSE_RESIDUAL_H_
+
+typedef WORD32 ft_ihevcd_parse_residual_coding(codec_t *ps_codec,
+                                               WORD32 x0, WORD32 y0,
+                                               WORD32 log2_trafo_size,
+                                               WORD32 c_idx,
+                                               WORD32 intra_pred_mode);
+
 WORD32 ihevcd_parse_residual_coding(codec_t *ps_codec,
                                     WORD32 x0, WORD32 y0,
                                     WORD32 log2_trafo_size,
                                     WORD32 c_idx,
                                     WORD32 intra_pred_mode);
+
+WORD32 ihevcd_parse_residual_coding_align(codec_t *ps_codec,
+                                          WORD32 x0, WORD32 y0,
+                                          WORD32 log2_trafo_size,
+                                          WORD32 c_idx,
+                                          WORD32 intra_pred_mode);
 
 #endif /* _IHEVCD_PARSE_RESIDUAL_H_ */

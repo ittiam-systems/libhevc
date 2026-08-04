@@ -38,8 +38,8 @@
 
 //#define LOGO_EN
 
-#define LOGO_WD 90
-#define LOGO_HT 36
+#define LOGO_WD 164
+#define LOGO_HT  48
 
 #define LOGO_WD_Y       LOGO_WD
 #define LOGO_HT_Y       LOGO_HT
@@ -88,13 +88,14 @@ void ihevcd_insert_logo(UWORD8 *buf_y, UWORD8 *buf_u, UWORD8 *buf_v,
                         UWORD32 x_pos,
                         UWORD32 y_pos,
                         UWORD32 yuv_fmt,
+                                 WORD32 bit_depth_luma,
                         UWORD32 u4_disp_wd,
                         UWORD32 u4_disp_ht);
 
 #ifdef LOGO_EN
-#define INSERT_LOGO(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,disp_wd,disp_ht) ihevcd_insert_logo(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,disp_wd,disp_ht);
+#define INSERT_LOGO(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,bit_depth_luma,disp_wd,disp_ht) ihevcd_insert_logo(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,bit_depth_luma,disp_wd,disp_ht);
 #else
-#define INSERT_LOGO(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,disp_wd,disp_ht)
+#define INSERT_LOGO(buf_y, buf_u, buf_v, stride, x_pos, y_pos, yuv_fmt,bit_depth_luma,disp_wd,disp_ht)
 #endif
 
 #endif /* LOGO_INSERT_H */

@@ -216,7 +216,7 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
     WORD32 bs_strd;
     WORD32 vert_bs0_tmp;
     WORD32 horz_bs0_tmp;
-    UWORD8 *pu1_qp;
+    WORD8 *pi1_qp;
     WORD32 qp_strd;
     UWORD32 u4_qp_const_in_ctb;
     WORD32 ctb_indx;
@@ -253,7 +253,7 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
 
     /* ctb_size/8 elements per CTB */
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pu1_qp = ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = (WORD8 *)ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     ctb_indx = ps_bs_ctxt->i4_ctb_x + ps_sps->i2_pic_wd_in_ctb * ps_bs_ctxt->i4_ctb_y;
     u4_qp_const_in_ctb = ps_bs_ctxt->pu1_pic_qp_const_in_ctb[ctb_indx >> 3] & (1 << (ctb_indx & 7));
@@ -288,7 +288,7 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
 
     /* Populating the QP array - if const_qp_in_ctb flag is one, set only the first element */
     if(u4_qp_const_in_ctb)
-        pu1_qp[0] = ps_tu->b7_qp;
+        pi1_qp[0] = ps_tu->b7_qp;
 
     for(i = 0; i < i4_tu_cnt; i++)
     {
@@ -346,12 +346,12 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
                 {
                     for(col = start_pos_x; col < start_pos_x + tu_size; col += 2)
                     {
-                        pu1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
-                    }
+                        pi1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
                 }
             }
         }
 
+    }
     }
     {
         /*Determine if the slice is dependent, and is its left neighbor belongs to the same slice, in a different tile*/
@@ -469,7 +469,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
     WORD32 bs_strd;
     WORD32 vert_bs0_tmp;
     WORD32 horz_bs0_tmp;
-    UWORD8 *pu1_qp;
+    WORD8 *pi1_qp;
     WORD32 qp_strd;
     UWORD32 u4_qp_const_in_ctb;
     WORD32 ctb_indx;
@@ -506,7 +506,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
 
     /* ctb_size/8 elements per CTB */
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pu1_qp = ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     ctb_indx = ps_bs_ctxt->i4_ctb_x + ps_sps->i2_pic_wd_in_ctb * ps_bs_ctxt->i4_ctb_y;
     u4_qp_const_in_ctb = ps_bs_ctxt->pu1_pic_qp_const_in_ctb[ctb_indx >> 3] & (1 << (ctb_indx & 7));
@@ -553,7 +553,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
 
     ps_tu = ps_bs_ctxt->ps_tu;
     if(u4_qp_const_in_ctb)
-        pu1_qp[0] = ps_tu->b7_qp;
+        pi1_qp[0] = ps_tu->b7_qp;
 
     /* For all TUs in the CTB For left and top edges, check if there are coded coefficients on either sides of the edge */
     for(i = 0; i < i4_tu_cnt; i++)
@@ -693,7 +693,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
                 {
                     for(col = start_pos_x; col < start_pos_x + tu_size; col += 2)
                     {
-                        pu1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
+                        pi1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
                     }
                 }
             }
