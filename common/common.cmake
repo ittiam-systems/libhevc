@@ -62,6 +62,29 @@ list(
   "${HEVC_ROOT}/common/ihevc_weighted_pred.c"
   "${HEVC_ROOT}/common/ihevc_function_selector_generic.c")
 
+list(
+  APPEND
+  LIBHEVC_COMMON_SRCS
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_intra_pred_filters.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_iquant_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_itrans_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_itrans_recon_16x16.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_itrans_recon_8x8.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_chroma_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_deblk_edge_filter.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_inter_pred_filters.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_intra_pred_filters.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_iquant_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_16x16.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_32x32.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_8x8.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_padding.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_sao.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_weighted_pred.c"
+)
+
 include_directories(${HEVC_ROOT}/common)
 
 # arm/x86 sources
