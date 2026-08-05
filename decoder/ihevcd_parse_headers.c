@@ -1523,7 +1523,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     WORD32 i4_profile_idc;
     WORD32 i4_extension_present_flag;
     sps_t *ps_sps;
-    profile_tier_lvl_info_t s_ptl;
+    profile_tier_lvl_info_t s_ptl = {0};
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
     WORD32 ctb_log2_size_y = 0;
 
