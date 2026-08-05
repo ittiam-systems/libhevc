@@ -1091,7 +1091,7 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ps_codec->i4_sps_done = 0;
     ps_codec->i4_pps_done = 0;
     ps_codec->i4_init_done   = 1;
-    ps_codec->i4_profile     = HEVC_MAIN_10;
+    ps_codec->i4_profile     = HEVC_MAIN_444_10;
     ps_codec->i4_first_pic_done = 0;
     ps_codec->s_parse.i4_first_pic_init = 0;
     ps_codec->i4_error_code = 0;
@@ -2725,7 +2725,12 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     }
     else
     {
-        if ((HEVC_MAIN == ps_codec->i4_profile) || (HEVC_MAIN_422 == ps_codec->i4_profile)) {
+        if ((HEVC_MAIN == ps_codec->i4_profile) ||
+            (HEVC_MAIN_INTRA == ps_codec->i4_profile) ||
+            (HEVC_MAIN_422 == ps_codec->i4_profile) ||
+            (HEVC_MAIN_444 == ps_codec->i4_profile) ||
+            (HEVC_MAIN_444_INTRA == ps_codec->i4_profile) ||
+            ((HEVC_MAIN_444_STILL_PICTURE == ps_codec->i4_profile) && (ps_codec->i4_bit_depth_luma == 8))) {
             i4_pixel_size_y = sizeof(UWORD8);
         } else {
             i4_pixel_size_y = sizeof(UWORD16);
@@ -2929,7 +2934,12 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     }
     else
     {
-        if ((HEVC_MAIN == ps_codec->i4_profile) || (HEVC_MAIN_422 == ps_codec->i4_profile)) {
+        if ((HEVC_MAIN == ps_codec->i4_profile) ||
+            (HEVC_MAIN_INTRA == ps_codec->i4_profile) ||
+            (HEVC_MAIN_422 == ps_codec->i4_profile) ||
+            (HEVC_MAIN_444 == ps_codec->i4_profile) ||
+            (HEVC_MAIN_444_INTRA == ps_codec->i4_profile) ||
+            ((HEVC_MAIN_444_STILL_PICTURE == ps_codec->i4_profile) && (ps_codec->i4_bit_depth_luma == 8))) {
             i4_pixel_size_y = sizeof(UWORD8);
         } else {
             i4_pixel_size_y = sizeof(UWORD16);

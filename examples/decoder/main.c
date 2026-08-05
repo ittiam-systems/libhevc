@@ -1301,8 +1301,24 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_profile = HEVC_MAIN_422;
             else if ((strcmp(value, "MAIN_422_10")) == 0)
                 ps_app_ctx->e_profile = HEVC_MAIN_422_10;
-            else if ((strcmp(value, "MAIN_422_12")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_422_12;
+            else if ((strcmp(value, "MAIN_444")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_444;
+            else if ((strcmp(value, "MAIN_444_10")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_444_10;
+            else if ((strcmp(value, "MAIN_10_STILL")) == 0 || (strcmp(value, "MAIN_10_STILL_PICTURE")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_10_STILL_PICTURE;
+            else if ((strcmp(value, "MAIN_INTRA")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_INTRA;
+            else if ((strcmp(value, "MAIN_10_INTRA")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_10_INTRA;
+            else if ((strcmp(value, "MAIN_422_10_INTRA")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_422_10_INTRA;
+            else if ((strcmp(value, "MAIN_444_INTRA")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_444_INTRA;
+            else if ((strcmp(value, "MAIN_444_10_INTRA")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_444_10_INTRA;
+            else if ((strcmp(value, "MAIN_444_STILL")) == 0 || (strcmp(value, "MAIN_444_STILL_PICTURE")) == 0)
+                ps_app_ctx->e_profile = HEVC_MAIN_444_STILL_PICTURE;
             else
             {
                 printf("\nUnsupported profile, setting it to MAIN_422_12\n");

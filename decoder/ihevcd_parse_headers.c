@@ -1556,12 +1556,22 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     i4_profile_idc = (WORD32)s_ptl.s_ptl_gen.i1_profile_idc;
 
+#ifdef ENABLE_MAIN_REXT_PROFILE
+    if ( ((HEVC_MAIN == ps_codec->i4_profile) && (i4_profile_idc > 1)) ||
+         ((HEVC_MAIN_10 == ps_codec->i4_profile) && (i4_profile_idc > 2 && i4_profile_idc != 4)) ||
+         (i4_profile_idc > 4) )
+    {
+        ps_codec->s_parse.i4_error_code = IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
+        return IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
+    }
+#else
     if ( ((HEVC_MAIN == ps_codec->i4_profile) && (i4_profile_idc > 1)) ||
          ((HEVC_MAIN_10 == ps_codec->i4_profile) && (i4_profile_idc > 2)) )
     {
         ps_codec->s_parse.i4_error_code = IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
         return IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
     }
+#endif
 
 
     UEV_PARSE("seq_parameter_set_id", value, ps_bitstrm);
@@ -1741,6 +1751,103 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_codec->i4_pixel_size_uv    = 1 + (value > 0);
     ps_codec->i4_qp_bd_offset_uv  = 6 * value;
     ps_sps->i1_bit_depth_chroma_minus8 = value;
+
+    {
+        WORD8 intra_flag = s_ptl.s_ptl_gen.i1_general_intra_constraint_flag;
+        WORD8 still_flag = s_ptl.s_ptl_gen.i1_general_one_picture_only_constraint_flag;
+
+        if (1 == i4_profile_idc)
+        {
+            if (intra_flag)
+                ps_codec->i4_profile = HEVC_MAIN_INTRA;
+            else
+                ps_codec->i4_profile = HEVC_MAIN;
+        }
+        else if (2 == i4_profile_idc)
+        {
+            if (still_flag)
+                ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+            else if (intra_flag)
+                ps_codec->i4_profile = HEVC_MAIN_10_INTRA;
+            else
+                ps_codec->i4_profile = HEVC_MAIN_10;
+        }
+        else if (3 == i4_profile_idc)
+        {
+            if (ps_sps->i1_bit_depth_luma_minus8 > 0)
+                ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+            else
+                ps_codec->i4_profile = HEVC_MAIN;
+        }
+        else if (4 == i4_profile_idc)
+        {
+            if (CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
+            {
+                if (0 == ps_sps->i1_bit_depth_luma_minus8)
+                {
+                    if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_422_10_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN_422;
+                }
+                else if (ps_sps->i1_bit_depth_luma_minus8 <= 2)
+                {
+                    if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_422_10_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN_422_10;
+                }
+                else
+                {
+                    ps_codec->i4_profile = HEVC_MAIN_422_12;
+                }
+            }
+            else if (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
+            {
+                if (0 == ps_sps->i1_bit_depth_luma_minus8)
+                {
+                    if (still_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_444_STILL_PICTURE;
+                    else if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_444_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN_444;
+                }
+                else
+                {
+                    if (still_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_444_STILL_PICTURE;
+                    else if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_444_10_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN_444_10;
+                }
+            }
+            else
+            {
+                if (0 == ps_sps->i1_bit_depth_luma_minus8)
+                {
+                    if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN;
+                }
+                else if (ps_sps->i1_bit_depth_luma_minus8 <= 2)
+                {
+                    if (still_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+                    else if (intra_flag)
+                        ps_codec->i4_profile = HEVC_MAIN_10_INTRA;
+                    else
+                        ps_codec->i4_profile = HEVC_MAIN_10;
+                }
+                else
+                {
+                    ps_codec->i4_profile = HEVC_MAIN_12;
+                }
+            }
+        }
+    }
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
     if(value > 12)

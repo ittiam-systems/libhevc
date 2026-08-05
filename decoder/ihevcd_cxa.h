@@ -152,8 +152,16 @@ typedef enum
     HEVC_MAIN_12,
     HEVC_MAIN_422,
     HEVC_MAIN_422_10,
-    HEVC_MAIN_422_12
-
+    HEVC_MAIN_422_12,
+    HEVC_MAIN_444,
+    HEVC_MAIN_444_10,
+    HEVC_MAIN_10_STILL_PICTURE,
+    HEVC_MAIN_INTRA,
+    HEVC_MAIN_10_INTRA,
+    HEVC_MAIN_422_10_INTRA,
+    HEVC_MAIN_444_INTRA,
+    HEVC_MAIN_444_10_INTRA,
+    HEVC_MAIN_444_STILL_PICTURE
 }HEVC_DEC_PROFILE_T;
 
 /*****************************************************************************/
