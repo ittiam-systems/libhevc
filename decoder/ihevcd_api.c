@@ -2948,7 +2948,7 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
 
             if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
                 ps_ctl_op->u4_min_in_buf_size[i] = MAX((wd * ht * 3), MIN_BITSBUF_SIZE);
-            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                 ps_ctl_op->u4_min_in_buf_size[i] = MAX((wd * ht * 2), MIN_BITSBUF_SIZE);
             else
                 ps_ctl_op->u4_min_in_buf_size[i] = MAX((wd * ht), MIN_BITSBUF_SIZE);
