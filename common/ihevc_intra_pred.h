@@ -276,7 +276,7 @@ typedef void ihevc_hbd_intra_pred_ref_filtering_ft(UWORD16 *pu2_src,
                                                    WORD32 nt,
                                                    UWORD16 *pu2_dst,
                                                    WORD32 mode,
-                                                   WORD32 strong_intra_smoothing_enable_flag,
+                                                   WORD32 intra_smoothing_flags,
                                                    UWORD8 bit_depth);
 
 /* C function declarations */

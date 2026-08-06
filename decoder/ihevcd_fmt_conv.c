@@ -1222,6 +1222,78 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
     return;
 }
 
+void ihevcd_hbd_fmt_conv_422sp_to_422p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd,
+                                       WORD32 is_u_first,
+                                       WORD32 disable_luma_copy)
+{
+    UWORD16 *pu2_src,*pu2_dst;
+    UWORD16 *pu2_u_src,*pu2_v_src;
+    WORD32 num_rows,num_cols,src_strd,dst_strd;
+    WORD32 i, j;
+
+    if(0 == disable_luma_copy)
+    {
+        /* copy luma */
+        pu2_src = (UWORD16 *)pu2_y_src;
+        pu2_dst = (UWORD16 *)pu2_y_dst;
+
+        num_rows = ht;
+        num_cols = wd;
+
+        src_strd = src_y_strd;
+        dst_strd = dst_y_strd;
+
+        for(i = 0;i < num_rows ; i++)
+        {
+            memcpy(pu2_dst,pu2_src,num_cols*sizeof(UWORD16));
+            pu2_dst += dst_strd;
+            pu2_src += src_strd;
+        }
+    }
+    /* de-interleave U and V and copy to destination */
+    if(is_u_first)
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src;
+        pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
+    }
+    else
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src + 1;
+        pu2_v_src = (UWORD16 *)pu2_uv_src;
+    }
+
+    num_rows = ht;
+    num_cols = wd >> 1;
+
+    src_strd = src_uv_strd;
+    dst_strd = dst_uv_strd;
+
+    for(i = 0; i < num_rows ; i++)
+    {
+        for(j = 0; j < num_cols; j++)
+        {
+            pu2_u_dst[j] = pu2_u_src[j * 2];
+            pu2_v_dst[j] = pu2_v_src[j * 2];
+        }
+
+        pu2_u_dst += dst_strd;
+        pu2_v_dst += dst_strd;
+        pu2_u_src += src_strd;
+        pu2_v_src += src_strd;
+    }
+    return;
+}
+
 void ihevcd_hbd_fmt_conv_420sp_to_420p(UWORD16 *pu2_y_src,
                                        UWORD16 *pu2_uv_src,
                                        UWORD16 *pu2_y_dst,
@@ -1593,7 +1665,13 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
                 else
                 {
-                    ASSERT(0);
+                    ihevcd_hbd_fmt_conv_422sp_to_422p((UWORD16 *)pu1_y_src, (UWORD16 *)pu1_uv_src,
+                                                      (UWORD16 *)pu1_y_dst_tmp, (UWORD16 *)pu1_u_dst_tmp, (UWORD16 *)pu1_v_dst_tmp,
+                                                      ps_codec->i4_disp_wd, num_rows,
+                                                      ps_codec->i4_strd, ps_codec->i4_strd,
+                                                      ps_codec->i4_disp_strd,
+                                                      ((ps_codec->i4_disp_strd + 1) / 2),
+                                                      is_u_first, disable_luma_copy);
                 }
             }
         }

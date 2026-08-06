@@ -307,6 +307,7 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
                        dequant_coeff * g_ihevc_iquant_scales[qp_rem],
                        shift_iq, qp_div);
             }
+
             if(trans_skip)
             {
                 WORD32 shift_ts = MAX_TR_DYNAMIC_RANGE - i4_bit_depth - log2_trans_size;
@@ -1225,6 +1226,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     if(1 == y_cb_tu.cbf)
                     {
                         UWORD32 dummy_coeff_x, dummy_coeff_y;
+
                         pu1_tu_coeff_data = ihevcd_unpack_coeffs(
                                         y_cb_tu.pi2_tu_coeff, log2_y_trans_size_minus_2 + 2,
                                         pu1_tu_coeff_data, pi2_dequant_matrix,
@@ -1407,8 +1409,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                     {
                         cb_sub_tu.pi2_tu_coeff = ps_proc->pi2_invscan_out_subtu;
-                        cb_sub_tu.pu1_pred = y_cb_tu.pu1_pred + trans_size * y_cb_tu.pred_strd;
-                        cb_sub_tu.pu1_dst = y_cb_tu.pu1_dst + trans_size * y_cb_tu.dst_strd;
+                        cb_sub_tu.pu1_pred = y_cb_tu.pu1_pred + trans_size * y_cb_tu.pred_strd * i4_pixel_size_uv;
+                        cb_sub_tu.pu1_dst = y_cb_tu.pu1_dst + trans_size * y_cb_tu.dst_strd * i4_pixel_size_uv;
                         cb_sub_tu.tu_coeff_stride = trans_size;
                         cb_sub_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cb_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1451,8 +1453,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                     {
                         cr_sub_tu.pi2_tu_coeff = ps_proc->pi2_invscan_out_subtu + trans_size * trans_size;
-                        cr_sub_tu.pu1_pred = cr_tu.pu1_pred + trans_size * cr_tu.pred_strd;
-                        cr_sub_tu.pu1_dst = cr_tu.pu1_dst + trans_size * cr_tu.dst_strd;
+                        cr_sub_tu.pu1_pred = cr_tu.pu1_pred + trans_size * cr_tu.pred_strd * i4_pixel_size_uv;
+                        cr_sub_tu.pu1_dst = cr_tu.pu1_dst + trans_size * cr_tu.dst_strd * i4_pixel_size_uv;
                         cr_sub_tu.tu_coeff_stride = trans_size;
                         cr_sub_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cr_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1585,7 +1587,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                 /* call reference filtering */
                                 ps_codec->s_func_selector.ihevc_hbd_intra_pred_ref_filtering_fptr((UWORD16 *)pu1_ref_sub_out, trans_size,
                                                 (UWORD16 *)pu1_ref_sub_out, u1_luma_pred_mode,
-                                                ps_sps->i1_strong_intra_smoothing_enable_flag,
+                                                (ps_sps->i1_intra_smoothing_disabled_flag << 3
+                                                                | ps_sps->i1_strong_intra_smoothing_enable_flag),
                                                 (UWORD8)i4_bit_depth_luma);
                             }
 
