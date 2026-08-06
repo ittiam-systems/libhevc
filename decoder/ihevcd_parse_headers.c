@@ -3791,6 +3791,18 @@ WORD32 ihevcd_calc_poc(codec_t *ps_codec, nal_header_t *ps_nal, WORD8 i1_log2_ma
         }
     }
 
+    /* Ensure POC is unique in DPB */
+    {
+        dpb_mgr_t *ps_dpb_mgr = (dpb_mgr_t *)ps_codec->pv_dpb_mgr;
+        if(ps_dpb_mgr)
+        {
+            while(NULL != ihevc_dpb_mgr_get_ref_by_poc(ps_dpb_mgr, i4_abs_poc))
+            {
+                i4_abs_poc++;
+            }
+        }
+    }
+
     return i4_abs_poc;
 }
 
