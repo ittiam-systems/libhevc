@@ -101,8 +101,9 @@ void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
         for(col = 0; col < i4_wd; col++)
         {
             WORD32 band_idx;
+            WORD32 idx = pu2_src[col] >> band_shift;
 
-            band_idx = band_table[pu2_src[col] >> band_shift];
+            band_idx = (idx < NUM_BAND_TABLE) ? band_table[idx] : 0;
             pu2_src[col] = CLIP3(pu2_src[col] + pi1_sao_offset[band_idx], 0, (1 << (band_shift + 5)) - 1);
         }
         pu2_src += i4_src_strd;
@@ -159,9 +160,17 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
         {
             WORD32 band_idx;
             WORD8 *pi1_sao_offset;
+            WORD32 idx = pu2_src[col] >> band_shift;
 
             pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
-            band_idx = (0 == col % 2) ? band_table_u[pu2_src[col] >> band_shift] : band_table_v[pu2_src[col] >> band_shift];
+            if (idx < NUM_BAND_TABLE)
+            {
+                band_idx = (0 == col % 2) ? band_table_u[idx] : band_table_v[idx];
+            }
+            else
+            {
+                band_idx = 0;
+            }
             pu2_src[col] = CLIP3(pu2_src[col] + pi1_sao_offset[band_idx], 0, (1 << (band_shift + 5)) - 1);
         }
         pu2_src += i4_src_strd;
