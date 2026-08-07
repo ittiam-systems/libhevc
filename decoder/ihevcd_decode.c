@@ -254,8 +254,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         ps_dec_op->u4_frame_decoded_flag = 0;
 
     }
-    ps_dec_op->s_disp_frm_buf.u4_y_bit_depth    = i4_bit_depth_luma;
-    ps_dec_op->s_disp_frm_buf.u4_uv_bit_depth   = i4_bit_depth_chroma;
+    ps_dec_op->s_disp_frm_buf.u4_bit_depth      = i4_bit_depth_luma;
 
     /* If there is a display buffer */
     if(ps_codec->ps_disp_buf)
@@ -294,8 +293,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
             ps_dec_op->u4_output_present = 0;
         ps_dec_op->s_disp_frm_buf.u4_y_wd = ps_codec->i4_disp_wd;
         ps_dec_op->s_disp_frm_buf.u4_y_ht = ps_codec->i4_disp_ht;
-    //  ps_dec_op->s_disp_frm_buf.u4_y_bit_depth    = i4_bit_depth_luma;
-    //  ps_dec_op->s_disp_frm_buf.u4_uv_bit_depth   = i4_bit_depth_chroma;
+    //  ps_dec_op->s_disp_frm_buf.u4_bit_depth      = i4_bit_depth_luma;
 
         if(ps_codec->i4_share_disp_buf)
         {
@@ -642,18 +640,21 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         if(1 == ps_dec_op->u4_output_present)
         {
-            WORD32 ypos = ps_codec->i4_disp_ht - 64 - LOGO_HT;
+            WORD32 xpos = ps_codec->i4_disp_wd - 32 - LOGO_WD;
+            WORD32 ypos = ps_codec->i4_disp_ht - 32 - LOGO_HT;
 
             if(ypos < 0)
                 ypos = 0;
 
+            if(xpos < 0)
+                xpos = 0;
+
             INSERT_LOGO(ps_dec_ip->s_out_buffer.pu1_bufs[0],
                         ps_dec_ip->s_out_buffer.pu1_bufs[1],
                         ps_dec_ip->s_out_buffer.pu1_bufs[2], ps_codec->i4_disp_strd,
-                            32 ,
-                            ps_codec->i4_disp_ht - 32 - LOGO_HT,
+                        xpos,
+                        ypos,
                         ps_codec->e_chroma_fmt,
-                            ps_codec->i4_bit_depth_luma,
                         ps_codec->i4_disp_wd,
                         ps_codec->i4_disp_ht);
         }
@@ -1048,18 +1049,21 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
     if(1 == ps_dec_op->u4_output_present)
     {
-        WORD32 ypos = ps_codec->i4_disp_ht - 64 - LOGO_HT;
+        WORD32 xpos = ps_codec->i4_disp_wd - 32 - LOGO_WD;
+        WORD32 ypos = ps_codec->i4_disp_ht - 32 - LOGO_HT;
 
         if(ypos < 0)
             ypos = 0;
 
+        if(xpos < 0)
+            xpos = 0;
+
         INSERT_LOGO(ps_dec_ip->s_out_buffer.pu1_bufs[0],
                     ps_dec_ip->s_out_buffer.pu1_bufs[1],
                     ps_dec_ip->s_out_buffer.pu1_bufs[2], ps_codec->i4_disp_strd,
-                        32 ,
+                    xpos,
                     ypos,
                     ps_codec->e_chroma_fmt,
-                        ps_codec->i4_bit_depth_luma,
                     ps_codec->i4_disp_wd,
                     ps_codec->i4_disp_ht);
     }

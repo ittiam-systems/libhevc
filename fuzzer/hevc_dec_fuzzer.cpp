@@ -291,7 +291,7 @@ void Codec::decodeHeader(const uint8_t *data, size_t size) {
 
     mWidth = std::min(dec_op.u4_pic_wd, (UWORD32)10240);
     mHeight = std::min(dec_op.u4_pic_ht, (UWORD32)10240);
-    mBitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+    mBitDepth = dec_op.s_disp_frm_buf.u4_bit_depth;
     if (mBitDepth == 0) mBitDepth = 8;
 
     /* Break after successful header decode */
@@ -327,7 +327,7 @@ IV_API_CALL_STATUS_T Codec::decodeFrame(const uint8_t *data, size_t size,
   /* In case of change in resolution, reset codec and feed the same data again
    */
   if (IVD_RES_CHANGED == (dec_op.u4_error_code & 0xFF)) {
-    UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+    UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_bit_depth;
     if (bitDepth == 0) bitDepth = 8;
 
     if (dec_op.u4_pic_wd && dec_op.u4_pic_ht &&
@@ -347,7 +347,7 @@ IV_API_CALL_STATUS_T Codec::decodeFrame(const uint8_t *data, size_t size,
    * to feed next data */
   if (!*bytesConsumed) *bytesConsumed = 4;
 
-  UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+  UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_bit_depth;
   if (bitDepth == 0) bitDepth = 8;
 
   if (dec_op.u4_pic_wd && dec_op.u4_pic_ht &&

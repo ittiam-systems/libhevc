@@ -1751,6 +1751,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
     ps_sps->i1_bit_depth_chroma_minus8 = value;
 
+    if (ps_sps->i1_bit_depth_luma_minus8 != ps_sps->i1_bit_depth_chroma_minus8)
+        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+
     {
         WORD8 intra_flag = s_ptl.s_ptl_gen.i1_general_intra_constraint_flag;
         WORD8 still_flag = s_ptl.s_ptl_gen.i1_general_one_picture_only_constraint_flag;
