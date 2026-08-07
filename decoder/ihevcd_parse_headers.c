@@ -1648,9 +1648,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             break;
     }
     ps_sps->i1_chroma_format_idc = value;
-    ps_codec->i4_chroma_array_type = ps_sps->i1_chroma_format_idc;
-    ps_codec->i4_sub_width_chroma  = 2;
-    ps_codec->i4_sub_height_chroma = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) ? 1 : 2;
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
     /* TODO: re enable simd optimizations once they are updated for 422, 444 internal color formats.
@@ -1742,9 +1739,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
          ((4 == i4_profile_idc) && (4 < value)) )
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
-    ps_codec->i4_bit_depth_luma = value + 8;
-    ps_codec->i4_pixel_size_y   = 1 + (value > 0);
-    ps_codec->i4_qp_bd_offset_y = 6 * value;
     ps_sps->i1_bit_depth_luma_minus8 = value;
 
     UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
@@ -1755,9 +1749,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
          ((4 == i4_profile_idc) && (4 < value)) )
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
-    ps_codec->i4_bit_depth_chroma = value + 8;
-    ps_codec->i4_pixel_size_uv    = 1 + (value > 0);
-    ps_codec->i4_qp_bd_offset_uv  = 6 * value;
     ps_sps->i1_bit_depth_chroma_minus8 = value;
 
     {
@@ -2326,7 +2317,10 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
         if((0 != ps_codec->u4_allocate_dynamic_done) &&
                             ((ps_codec->i4_disp_wd != disp_wd) ||
-                            (ps_codec->i4_disp_ht != disp_ht)))
+                            (ps_codec->i4_disp_ht != disp_ht) ||
+                            (ps_codec->i4_bit_depth_luma != ps_sps->i1_bit_depth_luma_minus8 + 8) ||
+                            (ps_codec->i4_bit_depth_chroma != ps_sps->i1_bit_depth_chroma_minus8 + 8) ||
+                            (ps_codec->i4_chroma_array_type != ps_sps->i1_chroma_format_idc)))
         {
             if(0 == ps_codec->i4_first_pic_done)
             {
@@ -2338,6 +2332,18 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
         ps_codec->i4_disp_wd = disp_wd;
         ps_codec->i4_disp_ht = disp_ht;
+
+        ps_codec->i4_chroma_array_type = ps_sps->i1_chroma_format_idc;
+        ps_codec->i4_sub_width_chroma  = 2;
+        ps_codec->i4_sub_height_chroma = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) ? 1 : 2;
+
+        ps_codec->i4_bit_depth_luma = ps_sps->i1_bit_depth_luma_minus8 + 8;
+        ps_codec->i4_pixel_size_y   = 1 + (ps_sps->i1_bit_depth_luma_minus8 > 0);
+        ps_codec->i4_qp_bd_offset_y = 6 * ps_sps->i1_bit_depth_luma_minus8;
+
+        ps_codec->i4_bit_depth_chroma = ps_sps->i1_bit_depth_chroma_minus8 + 8;
+        ps_codec->i4_pixel_size_uv    = 1 + (ps_sps->i1_bit_depth_chroma_minus8 > 0);
+        ps_codec->i4_qp_bd_offset_uv  = 6 * ps_sps->i1_bit_depth_chroma_minus8;
 
 
         ps_codec->i4_wd = ps_sps->i2_pic_width_in_luma_samples;
