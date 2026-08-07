@@ -1317,17 +1317,24 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     else
                     {
                         chroma_qp_idx = CLIP3(chroma_qp_idx, (-i4_qp_bd_offset_uv), 57);
-                        if (chroma_qp_idx < 30)
+                        if(CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc)
                         {
-                            i4_qp_u = chroma_qp_idx;
-                        }
-                        else if (chroma_qp_idx > 43)
-                        {
-                            i4_qp_u = chroma_qp_idx - 6;
+                            if (chroma_qp_idx < 30)
+                            {
+                                i4_qp_u = chroma_qp_idx;
+                            }
+                            else if (chroma_qp_idx > 43)
+                            {
+                                i4_qp_u = chroma_qp_idx - 6;
+                            }
+                            else
+                            {
+                                i4_qp_u = gai2_ihevcd_chroma_qp_420[chroma_qp_idx];
+                            }
                         }
                         else
                         {
-                            i4_qp_u = gai2_ihevcd_chroma_qp_420[chroma_qp_idx];
+                            i4_qp_u = chroma_qp_idx;
                         }
                         i4_qp_u += i4_qp_bd_offset_uv;
                         qp_div = i4_qp_u / 6;
@@ -1354,17 +1361,24 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     else
                     {
                         chroma_qp_idx = CLIP3(chroma_qp_idx, (-i4_qp_bd_offset_uv), 57);
-                        if (chroma_qp_idx < 30)
+                        if(CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc)
                         {
-                            i4_qp_v = chroma_qp_idx;
-                        }
-                        else if (chroma_qp_idx > 43)
-                        {
-                            i4_qp_v = chroma_qp_idx - 6;
+                            if (chroma_qp_idx < 30)
+                            {
+                                i4_qp_v = chroma_qp_idx;
+                            }
+                            else if (chroma_qp_idx > 43)
+                            {
+                                i4_qp_v = chroma_qp_idx - 6;
+                            }
+                            else
+                            {
+                                i4_qp_v = gai2_ihevcd_chroma_qp_420[chroma_qp_idx];
+                            }
                         }
                         else
                         {
-                            i4_qp_v = gai2_ihevcd_chroma_qp_420[chroma_qp_idx];
+                            i4_qp_v = chroma_qp_idx;
                         }
                         i4_qp_v += i4_qp_bd_offset_uv;
                         qp_div_v = i4_qp_v / 6;
