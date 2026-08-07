@@ -996,7 +996,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             WORD32 i4_pixel_size;
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_y_bit_depth > 8);
+            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
             {
                 fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_wd * i4_pixel_size), ps_op_file);
@@ -1005,7 +1005,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
 
             if(ps_app_ctx->e_output_chroma_format != IV_GRAY)
             {
-                i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_uv_bit_depth > 8);
+                i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
                 buf = (UWORD8*)s_dump_disp_frm_buf.pv_u_buf;
                 for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
                 {
@@ -1026,7 +1026,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             UWORD8 au1_y_chksum[16];
             WORD32 i4_pixel_size;
 
-            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_y_bit_depth > 8);
+            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_y_buf,
                            s_dump_disp_frm_buf.u4_y_strd * i4_pixel_size,
                            s_dump_disp_frm_buf.u4_y_wd * i4_pixel_size,
@@ -1038,7 +1038,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             {
                 UWORD8 au1_u_chksum[16];
                 UWORD8 au1_v_chksum[16];
-                WORD32 i4_pixel_size_uv = 1 + (s_dump_disp_frm_buf.u4_uv_bit_depth > 8);
+                WORD32 i4_pixel_size_uv = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
                 calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_u_buf,
                                s_dump_disp_frm_buf.u4_u_strd * i4_pixel_size_uv,
                                s_dump_disp_frm_buf.u4_u_wd * i4_pixel_size_uv,
@@ -1056,9 +1056,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
 #endif
     }
     else if((ps_app_ctx->e_output_chroma_format == IV_YUV_420SP_UV)
-                    || (ps_app_ctx->e_output_chroma_format == IV_YUV_420SP_VU)
-                    || (ps_app_ctx->e_output_chroma_format == IV_YUV_422SP_UV)
-                    || (ps_app_ctx->e_output_chroma_format == IV_YUV_422SP_VU))
+                    || (ps_app_ctx->e_output_chroma_format == IV_YUV_420SP_VU))
     {
 #if DUMP_SINGLE_BUF
         {
@@ -1074,7 +1072,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             WORD32 i4_pixel_size;
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_y_bit_depth > 8);
+            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
             {
                 fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_wd * i4_pixel_size), ps_op_file);
@@ -1082,7 +1080,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             }
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_u_buf;
-            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_uv_bit_depth > 8);
+            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
             {
                 fwrite(buf, 1, (s_dump_disp_frm_buf.u4_u_wd * i4_pixel_size), ps_op_file);
@@ -1108,7 +1106,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
         WORD32 i4_pixel_size;
 
         buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_y_bit_depth > 8);
+        i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
         for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
         {
             fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_strd * 2 * i4_pixel_size), ps_op_file);
@@ -1277,10 +1275,6 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420SP_VU;
             else if((strcmp(value, "GRAY")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_GRAY;
-            else if((strcmp(value, "YUV_422SP_UV")) == 0)
-                ps_app_ctx->e_output_chroma_format = IV_YUV_422SP_UV;
-            else if((strcmp(value, "YUV_422SP_VU")) == 0)
-                ps_app_ctx->e_output_chroma_format = IV_YUV_422SP_VU;
             else if((strcmp(value, "YUV_422P")) == 0)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_422P;
             else

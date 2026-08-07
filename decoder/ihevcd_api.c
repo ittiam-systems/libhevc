@@ -2880,9 +2880,7 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_GRAY;
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
         ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422;
-    else if((ps_codec->e_chroma_fmt == IV_YUV_422SP_UV)
-                    || (ps_codec->e_chroma_fmt == IV_YUV_422SP_VU))
-        ps_ctl_op->u4_min_num_out_bufs = MIN_OUT_BUFS_422SP;
+
 
     ps_ctl_op->u4_num_disp_bufs = 1;
 

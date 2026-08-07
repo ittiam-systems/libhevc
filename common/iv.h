@@ -81,9 +81,7 @@ typedef enum {
     IV_RGB_24                               = 0xa,
     IV_YUV_420SP_UV                         = 0xb,
     IV_YUV_420SP_VU                         = 0xc,
-    IV_RGBA_8888                            = 0xd,
-    IV_YUV_422SP_UV                         = 0xe,
-    IV_YUV_422SP_VU                         = 0xf
+    IV_RGBA_8888                            = 0xd
 }IV_COLOR_FORMAT_T;
 
 /* IV_PICTURE_CODING_TYPE_T: VOP/Frame coding type Enumeration              */
@@ -262,14 +260,9 @@ typedef struct {
     UWORD32                                     u4_v_strd;
 
     /**
-     * Bit depth of the Luma (Y) Buffer
+     * Bit depth of the YUV Buffers
      */
-    UWORD32                                     u4_y_bit_depth;
-
-    /**
-     * Bit depth of the Chroma (U and V) Buffers
-     */
-    UWORD32                                     u4_uv_bit_depth;
+    UWORD32                                     u4_bit_depth;
 }iv_yuv_buf_t;
 
 
