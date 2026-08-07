@@ -88,6 +88,7 @@ class Codec {
   ivd_out_bufdesc_t mOutBufHandle;
   uint32_t mWidth;
   uint32_t mHeight;
+  uint32_t mBitDepth;
 };
 
 Codec::Codec(FuzzedDataProvider &fdp) {
@@ -96,6 +97,7 @@ Codec::Codec(FuzzedDataProvider &fdp) {
   mCodec = nullptr;
   mWidth = 0;
   mHeight = 0;
+  mBitDepth = 8;
 
   memset(&mOutBufHandle, 0, sizeof(mOutBufHandle));
 }
@@ -212,36 +214,37 @@ void Codec::allocFrame() {
 
   size_t aligned_wd = (mWidth + 1) & ~1;
   size_t aligned_ht = (mHeight + 1) & ~1;
+  size_t elementSize = (mBitDepth > 8) ? 2 : 1;
   switch (mColorFormat) {
     case IV_YUV_420SP_UV:
       [[fallthrough]];
     case IV_YUV_420SP_VU:
-      sizes[0] = mWidth * mHeight;
-      sizes[1] = (aligned_wd * aligned_ht) >> 1;
+      sizes[0] = mWidth * mHeight * elementSize;
+      sizes[1] = ((aligned_wd * aligned_ht) >> 1) * elementSize;
       num_bufs = 2;
       break;
     case IV_GRAY:
-      sizes[0] = mWidth * mHeight;
+      sizes[0] = mWidth * mHeight * elementSize;
       num_bufs = 1;
       break;
     case IV_YUV_444P:
-      sizes[0] = (mWidth * mHeight);
-      sizes[1] = (mWidth * mHeight);
-      sizes[2] = (mWidth * mHeight);
+      sizes[0] = (mWidth * mHeight) * elementSize;
+      sizes[1] = (mWidth * mHeight) * elementSize;
+      sizes[2] = (mWidth * mHeight) * elementSize;
       num_bufs = 3;
       break;
     case IV_YUV_422P:
-      sizes[0] = (mWidth * mHeight);
-      sizes[1] = (aligned_wd * mHeight) >> 1;
-      sizes[2] = (aligned_wd * mHeight) >> 1;
+      sizes[0] = (mWidth * mHeight) * elementSize;
+      sizes[1] = ((aligned_wd * mHeight) >> 1) * elementSize;
+      sizes[2] = ((aligned_wd * mHeight) >> 1) * elementSize;
       num_bufs = 3;
       break;
     case IV_YUV_420P:
       [[fallthrough]];
     default:
-      sizes[0] = mWidth * mHeight;
-      sizes[1] = (aligned_wd * aligned_ht) >> 2;
-      sizes[2] = (aligned_wd * aligned_ht) >> 2;
+      sizes[0] = mWidth * mHeight * elementSize;
+      sizes[1] = ((aligned_wd * aligned_ht) >> 2) * elementSize;
+      sizes[2] = ((aligned_wd * aligned_ht) >> 2) * elementSize;
       num_bufs = 3;
       break;
   }
@@ -288,6 +291,8 @@ void Codec::decodeHeader(const uint8_t *data, size_t size) {
 
     mWidth = std::min(dec_op.u4_pic_wd, (UWORD32)10240);
     mHeight = std::min(dec_op.u4_pic_ht, (UWORD32)10240);
+    mBitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+    if (mBitDepth == 0) mBitDepth = 8;
 
     /* Break after successful header decode */
     if (mWidth && mHeight) {
@@ -322,6 +327,17 @@ IV_API_CALL_STATUS_T Codec::decodeFrame(const uint8_t *data, size_t size,
   /* In case of change in resolution, reset codec and feed the same data again
    */
   if (IVD_RES_CHANGED == (dec_op.u4_error_code & 0xFF)) {
+    UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+    if (bitDepth == 0) bitDepth = 8;
+
+    if (dec_op.u4_pic_wd && dec_op.u4_pic_ht &&
+        (mWidth != dec_op.u4_pic_wd || mHeight != dec_op.u4_pic_ht || mBitDepth != bitDepth)) {
+      mWidth = std::min(dec_op.u4_pic_wd, (UWORD32)10240);
+      mHeight = std::min(dec_op.u4_pic_ht, (UWORD32)10240);
+      mBitDepth = bitDepth;
+      allocFrame();
+      dec_ip.s_out_buffer = mOutBufHandle;
+    }
     resetCodec();
     ret = ivd_api_function(mCodec, (void *)&dec_ip, (void *)&dec_op);
   }
@@ -331,10 +347,14 @@ IV_API_CALL_STATUS_T Codec::decodeFrame(const uint8_t *data, size_t size,
    * to feed next data */
   if (!*bytesConsumed) *bytesConsumed = 4;
 
+  UWORD32 bitDepth = dec_op.s_disp_frm_buf.u4_y_bit_depth;
+  if (bitDepth == 0) bitDepth = 8;
+
   if (dec_op.u4_pic_wd && dec_op.u4_pic_ht &&
-      (mWidth != dec_op.u4_pic_wd || mHeight != dec_op.u4_pic_ht)) {
+      (mWidth != dec_op.u4_pic_wd || mHeight != dec_op.u4_pic_ht || mBitDepth != bitDepth)) {
     mWidth = std::min(dec_op.u4_pic_wd, (UWORD32)10240);
     mHeight = std::min(dec_op.u4_pic_ht, (UWORD32)10240);
+    mBitDepth = bitDepth;
     allocFrame();
   }
 
