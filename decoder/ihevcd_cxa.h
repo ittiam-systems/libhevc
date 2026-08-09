@@ -72,8 +72,8 @@ IV_API_CALL_STATUS_T ihevcd_cxa_api_function(iv_obj_t *ps_handle,
 /* Enums                                                                     */
 /*****************************************************************************/
 
-
 /* Codec Error codes for HEVC  Decoder                                       */
+
 typedef enum {
     /**
      *  No error
@@ -143,6 +143,8 @@ typedef enum {
      * Generic failure
      */
     IHEVCD_FAIL                             = 0x7FFFFFFF
+
+
 }IHEVCD_CXA_ERROR_CODES_T;
 
 typedef enum

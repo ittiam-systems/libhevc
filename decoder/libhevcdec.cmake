@@ -46,12 +46,6 @@ if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "a
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_chroma.s"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_luma.s")
 
-  list(
-    APPEND
-    LIBHEVCDEC_SRCS
-    "${HEVC_ROOT}/decoder/ihevcd_hbd_func_tables.c"
-  )
-
   include_directories(${HEVC_ROOT}/decoder/arm64)
 elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
   list(
@@ -64,12 +58,6 @@ elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     "${HEVC_ROOT}/decoder/arm/ihevcd_itrans_recon_dc_chroma.s"
     "${HEVC_ROOT}/decoder/arm/ihevcd_itrans_recon_dc_luma.s")
 
-  list(
-    APPEND
-    LIBHEVCDEC_SRCS
-    "${HEVC_ROOT}/decoder/ihevcd_hbd_func_tables.c"
-  )
-
   include_directories(${HEVC_ROOT}/decoder/arm)
 else()
   list(
@@ -80,8 +68,7 @@ else()
     "${HEVC_ROOT}/decoder/x86/ihevcd_function_selector_sse42.c"
     "${HEVC_ROOT}/decoder/x86/ihevcd_fmt_conv_ssse3_intr.c"
     "${HEVC_ROOT}/decoder/x86/ihevcd_it_rec_dc_ssse3_intr.c"
-    "${HEVC_ROOT}/decoder/x86/ihevcd_it_rec_dc_sse42_intr.c"
-)
+    "${HEVC_ROOT}/decoder/x86/ihevcd_it_rec_dc_sse42_intr.c")
 
   include_directories(${HEVC_ROOT}/decoder/x86)
 endif()
