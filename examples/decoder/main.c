@@ -182,7 +182,6 @@ typedef struct
     IV_COLOR_FORMAT_T e_output_chroma_format;
     IV_ARCH_T e_arch;
     IV_SOC_T e_soc;
-    UWORD32 e_profile;
     UWORD32 dump_q_rd_idx;
     UWORD32 dump_q_wr_idx;
     WORD32  disp_q_wr_idx;
@@ -1283,41 +1282,6 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
                 ps_app_ctx->e_output_chroma_format = IV_YUV_420P;
             }
 
-            break;
-        case PROFILE:
-            if ((strcmp(value, "MAIN")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN;
-            else if ((strcmp(value, "MAIN_10")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_10;
-            else if ((strcmp(value, "MAIN_12")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_12;
-            else if ((strcmp(value, "MAIN_422")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_422;
-            else if ((strcmp(value, "MAIN_422_10")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_422_10;
-            else if ((strcmp(value, "MAIN_444")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_444;
-            else if ((strcmp(value, "MAIN_444_10")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_444_10;
-            else if ((strcmp(value, "MAIN_10_STILL")) == 0 || (strcmp(value, "MAIN_10_STILL_PICTURE")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_10_STILL_PICTURE;
-            else if ((strcmp(value, "MAIN_INTRA")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_INTRA;
-            else if ((strcmp(value, "MAIN_10_INTRA")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_10_INTRA;
-            else if ((strcmp(value, "MAIN_422_10_INTRA")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_422_10_INTRA;
-            else if ((strcmp(value, "MAIN_444_INTRA")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_444_INTRA;
-            else if ((strcmp(value, "MAIN_444_10_INTRA")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_444_10_INTRA;
-            else if ((strcmp(value, "MAIN_444_STILL")) == 0 || (strcmp(value, "MAIN_444_STILL_PICTURE")) == 0)
-                ps_app_ctx->e_profile = HEVC_MAIN_444_STILL_PICTURE;
-            else
-            {
-                printf("\nUnsupported profile, setting it to MAIN_422_12\n");
-                ps_app_ctx->e_profile = HEVC_MAIN_12;//HEVC_MAIN_422_12; /* Nithya: update after 422 support added */
-            }
             break;
         case NUM_FRAMES:
             sscanf(value, "%d", &ps_app_ctx->u4_max_frm_ts);

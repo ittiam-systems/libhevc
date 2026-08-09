@@ -1556,24 +1556,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
     i4_profile_idc = (WORD32)s_ptl.s_ptl_gen.i1_profile_idc;
 
-#ifdef ENABLE_MAIN_REXT_PROFILE
-    if ( ((HEVC_MAIN == ps_codec->i4_profile) && (i4_profile_idc > 1)) ||
-         ((HEVC_MAIN_10 == ps_codec->i4_profile) && (i4_profile_idc > 2 && i4_profile_idc != 4)) ||
-         (i4_profile_idc > 4) )
-    {
-        ps_codec->s_parse.i4_error_code = IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
-        return IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
-    }
-#else
-    if ( ((HEVC_MAIN == ps_codec->i4_profile) && (i4_profile_idc > 1)) ||
-         ((HEVC_MAIN_10 == ps_codec->i4_profile) && (i4_profile_idc > 2)) )
-    {
-        ps_codec->s_parse.i4_error_code = IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
-        return IHEVCD_GEN_PROFILE_HIGHER_THAN_INIT_PROFILE;
-    }
-#endif
-
-
     UEV_PARSE("seq_parameter_set_id", value, ps_bitstrm);
     sps_id = value;
     if((sps_id >= MAX_SPS_CNT) || (sps_id < 0))
@@ -1761,25 +1743,25 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         if (1 == i4_profile_idc)
         {
             if (intra_flag)
-                ps_codec->i4_profile = HEVC_MAIN_INTRA;
+                ps_codec->e_profile = HEVC_MAIN_INTRA;
             else
-                ps_codec->i4_profile = HEVC_MAIN;
+                ps_codec->e_profile = HEVC_MAIN;
         }
         else if (2 == i4_profile_idc)
         {
             if (still_flag)
-                ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+                ps_codec->e_profile = HEVC_MAIN_10_STILL_PICTURE;
             else if (intra_flag)
-                ps_codec->i4_profile = HEVC_MAIN_10_INTRA;
+                ps_codec->e_profile = HEVC_MAIN_10_INTRA;
             else
-                ps_codec->i4_profile = HEVC_MAIN_10;
+                ps_codec->e_profile = HEVC_MAIN_10;
         }
         else if (3 == i4_profile_idc)
         {
             if (ps_sps->i1_bit_depth_luma_minus8 > 0)
-                ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+                ps_codec->e_profile = HEVC_MAIN_10_STILL_PICTURE;
             else
-                ps_codec->i4_profile = HEVC_MAIN;
+                ps_codec->e_profile = HEVC_MAIN;
         }
         else if (4 == i4_profile_idc)
         {
@@ -1788,20 +1770,20 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                 if (0 == ps_sps->i1_bit_depth_luma_minus8)
                 {
                     if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_422_10_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_422_10_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN_422;
+                        ps_codec->e_profile = HEVC_MAIN_422;
                 }
                 else if (ps_sps->i1_bit_depth_luma_minus8 <= 2)
                 {
                     if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_422_10_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_422_10_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN_422_10;
+                        ps_codec->e_profile = HEVC_MAIN_422_10;
                 }
                 else
                 {
-                    ps_codec->i4_profile = HEVC_MAIN_422_12;
+                    ps_codec->e_profile = HEVC_MAIN_422_12;
                 }
             }
             else if (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
@@ -1809,20 +1791,20 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                 if (0 == ps_sps->i1_bit_depth_luma_minus8)
                 {
                     if (still_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_444_STILL_PICTURE;
+                        ps_codec->e_profile = HEVC_MAIN_444_STILL_PICTURE;
                     else if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_444_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_444_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN_444;
+                        ps_codec->e_profile = HEVC_MAIN_444;
                 }
                 else
                 {
                     if (still_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_444_STILL_PICTURE;
+                        ps_codec->e_profile = HEVC_MAIN_444_STILL_PICTURE;
                     else if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_444_10_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_444_10_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN_444_10;
+                        ps_codec->e_profile = HEVC_MAIN_444_10;
                 }
             }
             else
@@ -1830,22 +1812,22 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                 if (0 == ps_sps->i1_bit_depth_luma_minus8)
                 {
                     if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN;
+                        ps_codec->e_profile = HEVC_MAIN;
                 }
                 else if (ps_sps->i1_bit_depth_luma_minus8 <= 2)
                 {
                     if (still_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_10_STILL_PICTURE;
+                        ps_codec->e_profile = HEVC_MAIN_10_STILL_PICTURE;
                     else if (intra_flag)
-                        ps_codec->i4_profile = HEVC_MAIN_10_INTRA;
+                        ps_codec->e_profile = HEVC_MAIN_10_INTRA;
                     else
-                        ps_codec->i4_profile = HEVC_MAIN_10;
+                        ps_codec->e_profile = HEVC_MAIN_10;
                 }
                 else
                 {
-                    ps_codec->i4_profile = HEVC_MAIN_12;
+                    ps_codec->e_profile = HEVC_MAIN_12;
                 }
             }
         }
