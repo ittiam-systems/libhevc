@@ -532,7 +532,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
     UWORD8 *pu1_pu_map_cur, *pu1_pu_map_nxt;
     WORD32 num_ctb, num_ctb_tmp;
     proc_type_t proc_type;
-    ft_iquant_itrans_recon_ctb *pf_iquant_itrans_recon_ctb;
 
     WORD32 ctb_size = 1 << ps_sps->i1_log2_ctb_size;
 
@@ -546,7 +545,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
     PROFILE_DISABLE_PROCESS_CTB();
 
     ps_codec = ps_proc->ps_codec;
-    pf_iquant_itrans_recon_ctb = (ft_iquant_itrans_recon_ctb *)(ps_codec->pv_iquant_itrans_recon_ctb);
     num_minpu_in_ctb = (ctb_size / MIN_PU_SIZE) * (ctb_size / MIN_PU_SIZE);
 
     nctb = MIN(ps_codec->i4_proc_nctb, ps_proc->i4_ctb_cnt);
@@ -988,7 +986,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                     + (ps_proc->i4_ctb_y * ctb_size * ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor))) * ps_codec->i4_pixel_size_uv;
                 }
 
-                pf_iquant_itrans_recon_ctb(ps_proc);
+                ihevcd_iquant_itrans_recon_ctb(ps_proc);
             }
 
             /* Per CTB update the following */
