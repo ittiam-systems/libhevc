@@ -267,7 +267,6 @@ typedef enum
     SAVE_FRAME_INFO,
     SAVE_CHKSUM,
     CHROMA_FORMAT,
-    PROFILE,
     NUM_FRAMES,
     NUM_CORES,
 
@@ -328,9 +327,7 @@ static const argument_t argument_mapping[] =
     { "--", "--save_chksum",            SAVE_CHKSUM,
         "Save Check sum file\n" },
     { "--",  "--chroma_format",          CHROMA_FORMAT,
-        "Output Chroma format Supported values YUV_420P, YUV_422ILE, RGB_565, YUV_420SP_UV, YUV_420SP_VU, GRAY, YUV_444P\n" },
-    {"--",  "--profile",                PROFILE,
-         "Decoder profile Supported profiles MAIN, MAIN_10, MAIN_422, MAIN_422_10\n"},
+        "Output Chroma format Supported values YUV_420P, YUV_420SP_UV, YUV_420SP_VU, GRAY, YUV_444P\n" },
     { "-n", "--num_frames",             NUM_FRAMES,
         "Number of frames to be decoded\n" },
     { "--", "--num_cores",              NUM_CORES,
@@ -1004,7 +1001,6 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
 
             if(ps_app_ctx->e_output_chroma_format != IV_GRAY)
             {
-                i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
                 buf = (UWORD8*)s_dump_disp_frm_buf.pv_u_buf;
                 for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
                 {
@@ -1037,15 +1033,14 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             {
                 UWORD8 au1_u_chksum[16];
                 UWORD8 au1_v_chksum[16];
-                WORD32 i4_pixel_size_uv = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
                 calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_u_buf,
-                               s_dump_disp_frm_buf.u4_u_strd * i4_pixel_size_uv,
-                               s_dump_disp_frm_buf.u4_u_wd * i4_pixel_size_uv,
+                               s_dump_disp_frm_buf.u4_u_strd * i4_pixel_size,
+                               s_dump_disp_frm_buf.u4_u_wd * i4_pixel_size,
                                s_dump_disp_frm_buf.u4_u_ht,
                                au1_u_chksum);
                 calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_v_buf,
-                               s_dump_disp_frm_buf.u4_v_strd * i4_pixel_size_uv,
-                               s_dump_disp_frm_buf.u4_v_wd * i4_pixel_size_uv,
+                               s_dump_disp_frm_buf.u4_v_strd * i4_pixel_size,
+                               s_dump_disp_frm_buf.u4_v_wd * i4_pixel_size,
                                s_dump_disp_frm_buf.u4_v_ht,
                                au1_v_chksum);
                 fwrite(au1_u_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
@@ -1079,7 +1074,6 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
             }
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_u_buf;
-            i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
             {
                 fwrite(buf, 1, (s_dump_disp_frm_buf.u4_u_wd * i4_pixel_size), ps_op_file);
@@ -1088,30 +1082,7 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
         }
 #endif
     }
-    else if(ps_app_ctx->e_output_chroma_format == IV_RGBA_8888)
-    {
-        UWORD8 *buf;
 
-        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd * 4, ps_op_file);
-            buf += s_dump_disp_frm_buf.u4_y_strd * 4;
-        }
-    }
-    else
-    {
-        UWORD8 *buf;
-        WORD32 i4_pixel_size;
-
-        buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
-        i4_pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
-        for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
-        {
-            fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_strd * 2 * i4_pixel_size), ps_op_file);
-            buf += s_dump_disp_frm_buf.u4_y_strd * 2 * i4_pixel_size;
-        }
-    }
     fflush(ps_op_file);
     fflush(ps_op_chksum_file);
 
@@ -1679,30 +1650,6 @@ WORD32 display_thread(void *pv_ctx)
     return 0;
 }
 
-void output_write_stall(CHAR *fname, UWORD32 cur_frm_idx)
-{
-    const UWORD8 threshold = 64;
-    CHAR past_fname[1000];
-    FILE *fp_fast_file = NULL;
-
-    if (cur_frm_idx >= threshold)
-    {
-        sprintf(past_fname, fname, cur_frm_idx - threshold);
-        do
-        {
-            fp_fast_file = fopen(past_fname,"rb");
-            if (fp_fast_file != NULL)
-            {
-                fclose(fp_fast_file);
-                /* Wait until the resource is released by a third party app*/
-                ithread_msleep(5);
-            }
-            else
-                break;
-        } while(1);
-    }
-}
-
 void flush_output(iv_obj_t *codec_obj,
                   vid_dec_ctx_t *ps_app_ctx,
                   ivd_out_bufdesc_t *ps_out_buf,
@@ -2141,10 +2088,7 @@ int main(WORD32 argc, CHAR *argv[])
     /***********************************************************************/
     /*          create the file object for output file                     */
     /***********************************************************************/
-
-    /* If the filename does not contain %d, then output will be dumped to
-       a single file and it is opened here */
-    if((1 == s_app_ctx.u4_file_save_flag) && (strstr(s_app_ctx.ac_op_fname,"%d") == NULL))
+    if(1 == s_app_ctx.u4_file_save_flag)
     {
 #ifdef IOS
         snprintf(filename_with_path, sizeof(filename_with_path), "%s/%s", documentdir, s_app_ctx.ac_op_fname);
@@ -3210,7 +3154,7 @@ int main(WORD32 argc, CHAR *argv[])
     {
         fclose(ps_ip_file);
 
-        if((1 == s_app_ctx.u4_file_save_flag) && (strstr(s_app_ctx.ac_op_fname,"%d") == NULL))
+        if(1 == s_app_ctx.u4_file_save_flag)
         {
             fclose(ps_op_file);
         }
