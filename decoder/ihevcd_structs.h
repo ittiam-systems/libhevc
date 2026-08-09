@@ -2431,9 +2431,6 @@ struct _codec_t
     pf_hbd_sao_chroma               *ppf_hbd_sao_chroma;
     pf_hbd_inter_pred               *ppf_hbd_inter_pred;
 
-    /* Function pointer for parse residual coding */
-    void        *pv_parse_residual_coding;
-
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;
     /**  Processor architecture */
