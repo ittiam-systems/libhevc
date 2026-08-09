@@ -375,7 +375,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_deblk_luma_vert((UWORD16 *)pu1_src,
+                        ps_codec->s_func_selector.ihevc_hbd_deblk_luma_vert_fptr((UWORD16 *)pu1_src,
                                                   src_strd,
                                                   u4_bs & 3, qp_p, qp_q,
                                                   i1_beta_offset_div2,
@@ -530,7 +530,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_deblk_luma_horz((UWORD16 *)pu1_src,
+                        ps_codec->s_func_selector.ihevc_hbd_deblk_luma_horz_fptr((UWORD16 *)pu1_src,
                                                   src_strd,
                                                   u4_bs & 3, qp_p, qp_q,
                                                   i1_beta_offset_div2,
@@ -698,7 +698,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
                                                                                src_strd,
                                                                                qp_q,
                                                                                qp_p,
@@ -728,7 +728,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
                                                                                src_strd,
                                                                                qp_p,
                                                                                qp_q,
@@ -903,7 +903,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
                                                                                src_strd,
                                                                                qp_q,
                                                                                qp_p,
@@ -933,7 +933,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
                                                                                src_strd,
                                                                                qp_p,
                                                                                qp_q,

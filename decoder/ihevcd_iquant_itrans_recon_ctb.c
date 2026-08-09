@@ -663,7 +663,7 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
             }
             else
             {
-                    ps_codec->ppf_hbd_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
+                    ps_codec->apf_hbd_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
                                                     (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, ps_pl_tu_ctxt->tu_coeff_stride,
                                                     ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
                                                     ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
@@ -688,7 +688,7 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
                 }
                 else
                 {
-                    ps_codec->ppf_hbd_itrans_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
+                    ps_codec->apf_hbd_itrans_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
                                                            ps_proc->pi2_itrans_intrmd_buf,
                                                            (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
                                                            (UWORD16 *)ps_pl_tu_ctxt->pu1_dst,
@@ -711,7 +711,7 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
                 }
                 else
                 {
-                    ps_codec->ppf_hbd_itrans_recon_dc[is_chroma](
+                    ps_codec->apf_hbd_itrans_recon_dc[is_chroma](
                                     (UWORD16 *)ps_pl_tu_ctxt->pu1_pred, (UWORD16 *)ps_pl_tu_ctxt->pu1_dst,
                                     ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd, log2_trans_size,
                                     ps_pl_tu_ctxt->coeff_value, bit_depth);
@@ -1578,12 +1578,12 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ps_codec->s_func_selector.pf_hbd_ip_luma_ref_sub((UWORD16 *)pu1_top_left,
+                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_luma_ref_substitution_fptr((UWORD16 *)pu1_top_left,
                                     (UWORD16 *)pu1_top, (UWORD16 *)pu1_left, y_cb_tu.pred_strd, trans_size,
                                     luma_nbr_flags, (UWORD16 *)pu1_ref_sub_out, 1, i4_bit_depth_luma);
 
                                 /* call reference filtering */
-                                ps_codec->s_func_selector.pf_hbd_ip_ref_filt((UWORD16 *)pu1_ref_sub_out, trans_size,
+                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_ref_filtering_fptr((UWORD16 *)pu1_ref_sub_out, trans_size,
                                                 (UWORD16 *)pu1_ref_sub_out, u1_luma_pred_mode,
                                                 ps_sps->i1_strong_intra_smoothing_enable_flag,
                                                 (UWORD8)i4_bit_depth_luma);
@@ -1612,7 +1612,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ps_codec->ppf_hbd_intra_pred_luma[luma_pred_func_idx]((UWORD16 *)pu1_ref_sub_out, 1,
+                                ps_codec->apf_hbd_intra_pred_luma[luma_pred_func_idx]((UWORD16 *)pu1_ref_sub_out, 1,
                                     (UWORD16 *)y_cb_tu.pu1_pred, y_cb_tu.pred_strd, trans_size, u1_luma_pred_mode,
                                     (UWORD8)i4_bit_depth_luma);
                             }
@@ -1727,7 +1727,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ps_codec->s_func_selector.pf_hbd_ip_chroma_ref_sub((UWORD16 *)pu1_top_left,
+                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_chroma_ref_substitution_fptr((UWORD16 *)pu1_top_left,
                                                 (UWORD16 *)pu1_top, (UWORD16 *)pu1_left, ps_cb_tu->pred_strd, trans_size,
                                                 chroma_nbr_flags, (UWORD16 *)pu1_ref_sub_out, 1,
                                                 (UWORD8) i4_bit_depth_chroma);
@@ -1736,7 +1736,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                 chroma_pred_func_idx = g_i4_ip_funcs[u1_chroma_pred_mode];
 
                                 /* call the intra prediction function */
-                                ps_codec->ppf_hbd_intra_pred_chroma[chroma_pred_func_idx]((UWORD16 *)pu1_ref_sub_out,
+                                ps_codec->apf_hbd_intra_pred_chroma[chroma_pred_func_idx]((UWORD16 *)pu1_ref_sub_out,
                                             1, (UWORD16 *)pu1_pred_orig, ps_cb_tu->pred_strd, trans_size, u1_chroma_pred_mode);
                             }
                         }

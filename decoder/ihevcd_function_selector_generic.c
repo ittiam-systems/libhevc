@@ -55,7 +55,6 @@
 #include "ihevc_error.h"
 
 #include "ihevcd_function_selector.h"
-#include "ihevcd_hbd_func_tables.h"
 
 void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
 {
@@ -164,29 +163,92 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma;
 
     ps_func_selector->ihevcd_hbd_fmt_conv_420sp_to_420p_fptr            = &ihevcd_hbd_fmt_conv_420sp_to_420p;
-    ps_func_selector->pf_hbd_ip_luma_ref_sub                            = &ihevc_hbd_intra_pred_luma_ref_substitution;
-    ps_func_selector->pf_hbd_ip_ref_filt                                = &ihevc_hbd_intra_pred_ref_filtering;
-    ps_func_selector->pf_hbd_ip_chroma_ref_sub                          = &ihevc_hbd_intra_pred_chroma_ref_substitution;
-    ps_func_selector->ppv_ihevcd_hbd_intra_pred_luma                    = (void **)gafp_ihevcd_hbd_intra_pred_luma;
-    ps_func_selector->ppv_ihevcd_hbd_intra_pred_chroma                  = (void **)gafp_ihevcd_hbd_intra_pred_chroma;
-    ps_func_selector->ppv_ihevcd_hbd_itrans_recon                       = (void **)gafp_ihevcd_hbd_itrans_recon;
-    ps_func_selector->ppv_ihevcd_hbd_itrans_recon_dc                    = (void **)gafp_ihevcd_hbd_itrans_recon_dc;
-    ps_func_selector->ppv_ihevcd_hbd_recon                              = (void **)gafp_ihevcd_hbd_recon;
-    ps_func_selector->pf_hbd_deblk_luma_vert                            = &ihevc_hbd_deblk_luma_vert;
-    ps_func_selector->pf_hbd_deblk_luma_horz                            = &ihevc_hbd_deblk_luma_horz;
-    ps_func_selector->pf_hbd_deblk_chroma_vert                          = &ihevc_hbd_deblk_chroma_vert;
-    ps_func_selector->pf_hbd_deblk_chroma_horz                          = &ihevc_hbd_deblk_chroma_horz;
-    ps_func_selector->pf_hbd_sao_bo_luma                                = &ihevc_hbd_sao_band_offset_luma;
-    ps_func_selector->pf_hbd_sao_bo_chroma                              = &ihevc_hbd_sao_band_offset_chroma;
-    ps_func_selector->ppv_ihevcd_hbd_sao_luma                           = (void **)gapf_hbd_sao_luma;
-    ps_func_selector->ppv_ihevcd_hbd_sao_chroma                         = (void **)gapf_hbd_sao_chroma;
-    ps_func_selector->ppv_ihevcd_hbd_inter_pred                         = (void **)gapf_hbd_inter_pred;
-    ps_func_selector->pf_hbd_wt_pred_uni                                = &ihevc_hbd_weighted_pred_uni;
-    ps_func_selector->pf_hbd_wt_pred_bi                                 = &ihevc_hbd_weighted_pred_bi;
-    ps_func_selector->pf_hbd_wt_pred_bi_dflt                            = &ihevc_hbd_weighted_pred_bi_default;
-    ps_func_selector->pf_hbd_wt_pred_chrm_uni                           = &ihevc_hbd_weighted_pred_chroma_uni;
-    ps_func_selector->pf_hbd_wt_pred_chrm_bi                            = &ihevc_hbd_weighted_pred_chroma_bi;
-    ps_func_selector->pf_hbd_wt_pred_chrm_bi_dflt                       = &ihevc_hbd_weighted_pred_chroma_bi_default;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_ref_substitution_fptr  = &ihevc_hbd_intra_pred_luma_ref_substitution;
+    ps_func_selector->ihevc_hbd_intra_pred_ref_filtering_fptr          = &ihevc_hbd_intra_pred_ref_filtering;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_ref_substitution_fptr = &ihevc_hbd_intra_pred_chroma_ref_substitution;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_planar_fptr             = &ihevc_hbd_intra_pred_luma_planar;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_dc_fptr                 = &ihevc_hbd_intra_pred_luma_dc;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode2_fptr              = &ihevc_hbd_intra_pred_luma_mode2;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode_3_to_9_fptr        = &ihevc_hbd_intra_pred_luma_mode_3_to_9;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_horz_fptr               = &ihevc_hbd_intra_pred_luma_horz;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode_11_to_17_fptr      = &ihevc_hbd_intra_pred_luma_mode_11_to_17;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode_18_34_fptr         = &ihevc_hbd_intra_pred_luma_mode_18_34;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode_19_to_25_fptr      = &ihevc_hbd_intra_pred_luma_mode_19_to_25;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_ver_fptr                = &ihevc_hbd_intra_pred_luma_ver;
+    ps_func_selector->ihevc_hbd_intra_pred_luma_mode_27_to_33_fptr      = &ihevc_hbd_intra_pred_luma_mode_27_to_33;
+
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_planar_fptr           = &ihevc_hbd_intra_pred_chroma_planar;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_dc_fptr               = &ihevc_hbd_intra_pred_chroma_dc;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode2_fptr            = &ihevc_hbd_intra_pred_chroma_mode2;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode_3_to_9_fptr      = &ihevc_hbd_intra_pred_chroma_mode_3_to_9;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_horz_fptr             = &ihevc_hbd_intra_pred_chroma_horz;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode_11_to_17_fptr    = &ihevc_hbd_intra_pred_chroma_mode_11_to_17;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode_18_34_fptr       = &ihevc_hbd_intra_pred_chroma_mode_18_34;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode_19_to_25_fptr    = &ihevc_hbd_intra_pred_chroma_mode_19_to_25;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_ver_fptr              = &ihevc_hbd_intra_pred_chroma_ver;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_mode_27_to_33_fptr    = &ihevc_hbd_intra_pred_chroma_mode_27_to_33;
+
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_ttype1_fptr            = &ihevc_hbd_itrans_recon_4x4_ttype1;
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_fptr                   = &ihevc_hbd_itrans_recon_4x4;
+    ps_func_selector->ihevc_hbd_itrans_recon_8x8_fptr                   = &ihevc_hbd_itrans_recon_8x8;
+    ps_func_selector->ihevc_hbd_itrans_recon_16x16_fptr                 = &ihevc_hbd_itrans_recon_16x16;
+    ps_func_selector->ihevc_hbd_itrans_recon_32x32_fptr                 = &ihevc_hbd_itrans_recon_32x32;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_4x4_fptr            = &ihevc_hbd_chroma_itrans_recon_4x4;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_8x8_fptr            = &ihevc_hbd_chroma_itrans_recon_8x8;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_16x16_fptr          = &ihevc_hbd_chroma_itrans_recon_16x16;
+
+    ps_func_selector->ihevc_hbd_recon_4x4_ttype1_fptr                   = &ihevc_hbd_recon_4x4_ttype1;
+    ps_func_selector->ihevc_hbd_recon_4x4_fptr                          = &ihevc_hbd_recon_4x4;
+    ps_func_selector->ihevc_hbd_recon_8x8_fptr                          = &ihevc_hbd_recon_8x8;
+    ps_func_selector->ihevc_hbd_recon_16x16_fptr                        = &ihevc_hbd_recon_16x16;
+    ps_func_selector->ihevc_hbd_recon_32x32_fptr                        = &ihevc_hbd_recon_32x32;
+    ps_func_selector->ihevc_hbd_chroma_recon_4x4_fptr                   = &ihevc_hbd_chroma_recon_4x4;
+    ps_func_selector->ihevc_hbd_chroma_recon_8x8_fptr                   = &ihevc_hbd_chroma_recon_8x8;
+    ps_func_selector->ihevc_hbd_chroma_recon_16x16_fptr                 = &ihevc_hbd_chroma_recon_16x16;
+
+    ps_func_selector->ihevcd_hbd_itrans_recon_dc_luma_fptr              = &ihevcd_hbd_itrans_recon_dc_luma;
+    ps_func_selector->ihevcd_hbd_itrans_recon_dc_chroma_fptr            = &ihevcd_hbd_itrans_recon_dc_chroma;
+
+    ps_func_selector->ihevc_hbd_deblk_luma_vert_fptr                    = &ihevc_hbd_deblk_luma_vert;
+    ps_func_selector->ihevc_hbd_deblk_luma_horz_fptr                    = &ihevc_hbd_deblk_luma_horz;
+    ps_func_selector->ihevc_hbd_deblk_chroma_vert_fptr                  = &ihevc_hbd_deblk_chroma_vert;
+    ps_func_selector->ihevc_hbd_deblk_chroma_horz_fptr                  = &ihevc_hbd_deblk_chroma_horz;
+    ps_func_selector->ihevc_hbd_sao_band_offset_luma_fptr                = &ihevc_hbd_sao_band_offset_luma;
+    ps_func_selector->ihevc_hbd_sao_band_offset_chroma_fptr              = &ihevc_hbd_sao_band_offset_chroma;
+
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_fptr             = &ihevc_hbd_sao_edge_offset_class0;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_fptr             = &ihevc_hbd_sao_edge_offset_class1;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_fptr             = &ihevc_hbd_sao_edge_offset_class2;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_fptr             = &ihevc_hbd_sao_edge_offset_class3;
+
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_chroma_fptr      = &ihevc_hbd_sao_edge_offset_class0_chroma;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_chroma_fptr      = &ihevc_hbd_sao_edge_offset_class1_chroma;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_chroma_fptr      = &ihevc_hbd_sao_edge_offset_class2_chroma;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_chroma_fptr      = &ihevc_hbd_sao_edge_offset_class3_chroma;
+
+    ps_func_selector->ihevc_hbd_inter_pred_luma_copy_fptr               = &ihevc_hbd_inter_pred_luma_copy;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_vert_fptr               = &ihevc_hbd_inter_pred_luma_vert;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_horz_fptr               = &ihevc_hbd_inter_pred_luma_horz;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_horz_w16out_fptr        = &ihevc_hbd_inter_pred_luma_horz_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_copy_w16out_fptr         = &ihevc_hbd_inter_pred_luma_copy_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_vert_w16out_fptr         = &ihevc_hbd_inter_pred_luma_vert_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_vert_w16inp_fptr         = &ihevc_hbd_inter_pred_luma_vert_w16inp;
+    ps_func_selector->ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_fptr  = &ihevc_hbd_inter_pred_luma_vert_w16inp_w16out;
+
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_copy_fptr             = &ihevc_hbd_inter_pred_chroma_copy;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_vert_fptr             = &ihevc_hbd_inter_pred_chroma_vert;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_horz_fptr             = &ihevc_hbd_inter_pred_chroma_horz;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_horz_w16out_fptr      = &ihevc_hbd_inter_pred_chroma_horz_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_copy_w16out_fptr       = &ihevc_hbd_inter_pred_chroma_copy_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_vert_w16out_fptr       = &ihevc_hbd_inter_pred_chroma_vert_w16out;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_vert_w16inp_fptr       = &ihevc_hbd_inter_pred_chroma_vert_w16inp;
+    ps_func_selector->ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out_fptr = &ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out;
+    ps_func_selector->ihevc_hbd_weighted_pred_uni_fptr                  = &ihevc_hbd_weighted_pred_uni;
+    ps_func_selector->ihevc_hbd_weighted_pred_bi_fptr                   = &ihevc_hbd_weighted_pred_bi;
+    ps_func_selector->ihevc_hbd_weighted_pred_bi_default_fptr           = &ihevc_hbd_weighted_pred_bi_default;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_uni_fptr           = &ihevc_hbd_weighted_pred_chroma_uni;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_bi_fptr            = &ihevc_hbd_weighted_pred_chroma_bi;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_bi_default_fptr    = &ihevc_hbd_weighted_pred_chroma_bi_default;
     ps_func_selector->ihevc_hbd_pad_left_luma_fptr                      = &ihevc_hbd_pad_left_luma;
     ps_func_selector->ihevc_hbd_pad_right_luma_fptr                     = &ihevc_hbd_pad_right_luma;
     ps_func_selector->ihevc_hbd_pad_left_chroma_fptr                    = &ihevc_hbd_pad_left_chroma;

@@ -72,6 +72,9 @@
 #define D_ARCH_MIPS_GENERIC         15
 #define D_ARCH_MIPS_32              16
 
+#include "ihevc_typedefs.h"
+
+
 typedef struct
 {
     ihevc_deblk_chroma_horz_ft *ihevc_deblk_chroma_horz_fptr;
@@ -182,37 +185,100 @@ typedef struct
     ihevcd_hbd_fmt_conv_420sp_to_420p_ft *ihevcd_hbd_fmt_conv_420sp_to_420p_fptr;
 
     /* HBD functions for IT-recon */
-    void    **ppv_ihevcd_hbd_itrans_recon;
-    void    **ppv_ihevcd_hbd_recon;
-    void    **ppv_ihevcd_hbd_itrans_recon_dc;
+    ihevc_hbd_itrans_recon_4x4_ttype1_ft *ihevc_hbd_itrans_recon_4x4_ttype1_fptr;
+    ihevc_hbd_itrans_recon_4x4_ft *ihevc_hbd_itrans_recon_4x4_fptr;
+    ihevc_hbd_itrans_recon_8x8_ft *ihevc_hbd_itrans_recon_8x8_fptr;
+    ihevc_hbd_itrans_recon_16x16_ft *ihevc_hbd_itrans_recon_16x16_fptr;
+    ihevc_hbd_itrans_recon_32x32_ft *ihevc_hbd_itrans_recon_32x32_fptr;
+    ihevc_hbd_chroma_itrans_recon_4x4_ft *ihevc_hbd_chroma_itrans_recon_4x4_fptr;
+    ihevc_hbd_chroma_itrans_recon_8x8_ft *ihevc_hbd_chroma_itrans_recon_8x8_fptr;
+    ihevc_hbd_chroma_itrans_recon_16x16_ft *ihevc_hbd_chroma_itrans_recon_16x16_fptr;
+
+    ihevc_hbd_recon_4x4_ttype1_ft *ihevc_hbd_recon_4x4_ttype1_fptr;
+    ihevc_hbd_recon_4x4_ft *ihevc_hbd_recon_4x4_fptr;
+    ihevc_hbd_recon_8x8_ft *ihevc_hbd_recon_8x8_fptr;
+    ihevc_hbd_recon_16x16_ft *ihevc_hbd_recon_16x16_fptr;
+    ihevc_hbd_recon_32x32_ft *ihevc_hbd_recon_32x32_fptr;
+    ihevc_hbd_chroma_recon_4x4_ft *ihevc_hbd_chroma_recon_4x4_fptr;
+    ihevc_hbd_chroma_recon_8x8_ft *ihevc_hbd_chroma_recon_8x8_fptr;
+    ihevc_hbd_chroma_recon_16x16_ft *ihevc_hbd_chroma_recon_16x16_fptr;
+
+    ihevcd_hbd_itrans_recon_dc_luma_ft *ihevcd_hbd_itrans_recon_dc_luma_fptr;
+    ihevcd_hbd_itrans_recon_dc_chroma_ft *ihevcd_hbd_itrans_recon_dc_chroma_fptr;
 
     /* HBD functions for intra pred */
-    ihevc_hbd_intra_pred_luma_ref_substitution_ft   *pf_hbd_ip_luma_ref_sub;
-    ihevc_hbd_intra_pred_ref_filtering_ft           *pf_hbd_ip_ref_filt;
-    ihevc_hbd_intra_pred_chroma_ref_substitution_ft *pf_hbd_ip_chroma_ref_sub;
-    void    **ppv_ihevcd_hbd_intra_pred_luma;
-    void    **ppv_ihevcd_hbd_intra_pred_chroma;
+    ihevc_hbd_intra_pred_luma_ref_substitution_ft   *ihevc_hbd_intra_pred_luma_ref_substitution_fptr;
+    ihevc_hbd_intra_pred_ref_filtering_ft           *ihevc_hbd_intra_pred_ref_filtering_fptr;
+    ihevc_hbd_intra_pred_chroma_ref_substitution_ft *ihevc_hbd_intra_pred_chroma_ref_substitution_fptr;
+
+    ihevc_hbd_intra_pred_luma_planar_ft *ihevc_hbd_intra_pred_luma_planar_fptr;
+    ihevc_hbd_intra_pred_luma_dc_ft *ihevc_hbd_intra_pred_luma_dc_fptr;
+    ihevc_hbd_intra_pred_luma_mode2_ft *ihevc_hbd_intra_pred_luma_mode2_fptr;
+    ihevc_hbd_intra_pred_luma_mode_3_to_9_ft *ihevc_hbd_intra_pred_luma_mode_3_to_9_fptr;
+    ihevc_hbd_intra_pred_luma_horz_ft *ihevc_hbd_intra_pred_luma_horz_fptr;
+    ihevc_hbd_intra_pred_luma_mode_11_to_17_ft *ihevc_hbd_intra_pred_luma_mode_11_to_17_fptr;
+    ihevc_hbd_intra_pred_luma_mode_18_34_ft *ihevc_hbd_intra_pred_luma_mode_18_34_fptr;
+    ihevc_hbd_intra_pred_luma_mode_19_to_25_ft *ihevc_hbd_intra_pred_luma_mode_19_to_25_fptr;
+    ihevc_hbd_intra_pred_luma_ver_ft *ihevc_hbd_intra_pred_luma_ver_fptr;
+    ihevc_hbd_intra_pred_luma_mode_27_to_33_ft *ihevc_hbd_intra_pred_luma_mode_27_to_33_fptr;
+
+    ihevc_hbd_intra_pred_chroma_planar_ft *ihevc_hbd_intra_pred_chroma_planar_fptr;
+    ihevc_hbd_intra_pred_chroma_dc_ft *ihevc_hbd_intra_pred_chroma_dc_fptr;
+    ihevc_hbd_intra_pred_chroma_mode2_ft *ihevc_hbd_intra_pred_chroma_mode2_fptr;
+    ihevc_hbd_intra_pred_chroma_mode_3_to_9_ft *ihevc_hbd_intra_pred_chroma_mode_3_to_9_fptr;
+    ihevc_hbd_intra_pred_chroma_horz_ft *ihevc_hbd_intra_pred_chroma_horz_fptr;
+    ihevc_hbd_intra_pred_chroma_mode_11_to_17_ft *ihevc_hbd_intra_pred_chroma_mode_11_to_17_fptr;
+    ihevc_hbd_intra_pred_chroma_mode_18_34_ft *ihevc_hbd_intra_pred_chroma_mode_18_34_fptr;
+    ihevc_hbd_intra_pred_chroma_mode_19_to_25_ft *ihevc_hbd_intra_pred_chroma_mode_19_to_25_fptr;
+    ihevc_hbd_intra_pred_chroma_ver_ft *ihevc_hbd_intra_pred_chroma_ver_fptr;
+    ihevc_hbd_intra_pred_chroma_mode_27_to_33_ft *ihevc_hbd_intra_pred_chroma_mode_27_to_33_fptr;
 
     /* HBD functions for MC interpolation */
-    void    **ppv_ihevcd_hbd_inter_pred;
-    ihevc_hbd_weighted_pred_uni_ft                  *pf_hbd_wt_pred_uni;
-    ihevc_hbd_weighted_pred_bi_ft                   *pf_hbd_wt_pred_bi;
-    ihevc_hbd_weighted_pred_bi_default_ft           *pf_hbd_wt_pred_bi_dflt;
-    ihevc_hbd_weighted_pred_chroma_uni_ft           *pf_hbd_wt_pred_chrm_uni;
-    ihevc_hbd_weighted_pred_chroma_bi_ft            *pf_hbd_wt_pred_chrm_bi;
-    ihevc_hbd_weighted_pred_chroma_bi_default_ft    *pf_hbd_wt_pred_chrm_bi_dflt;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_copy_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_vert_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_horz_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_horz_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_copy_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_vert_w16out_fptr;
+    ihevc_hbd_inter_pred_w16inp_ft *ihevc_hbd_inter_pred_luma_vert_w16inp_fptr;
+    ihevc_hbd_inter_pred_w16inp_w16out_ft *ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_fptr;
+
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_copy_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_vert_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_horz_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_horz_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_copy_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_vert_w16out_fptr;
+    ihevc_hbd_inter_pred_w16inp_ft *ihevc_hbd_inter_pred_chroma_vert_w16inp_fptr;
+    ihevc_hbd_inter_pred_w16inp_w16out_ft *ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out_fptr;
+
+    ihevc_hbd_weighted_pred_uni_ft                  *ihevc_hbd_weighted_pred_uni_fptr;
+    ihevc_hbd_weighted_pred_bi_ft                   *ihevc_hbd_weighted_pred_bi_fptr;
+    ihevc_hbd_weighted_pred_bi_default_ft           *ihevc_hbd_weighted_pred_bi_default_fptr;
+    ihevc_hbd_weighted_pred_chroma_uni_ft           *ihevc_hbd_weighted_pred_chroma_uni_fptr;
+    ihevc_hbd_weighted_pred_chroma_bi_ft            *ihevc_hbd_weighted_pred_chroma_bi_fptr;
+    ihevc_hbd_weighted_pred_chroma_bi_default_ft    *ihevc_hbd_weighted_pred_chroma_bi_default_fptr;
 
     /* HBD functions for deblocking */
-    ihevc_hbd_deblk_luma_vert_ft            *pf_hbd_deblk_luma_vert;
-    ihevc_hbd_deblk_luma_horz_ft            *pf_hbd_deblk_luma_horz;
-    ihevc_hbd_deblk_chroma_vert_ft          *pf_hbd_deblk_chroma_vert;
-    ihevc_hbd_deblk_chroma_horz_ft          *pf_hbd_deblk_chroma_horz;
+    ihevc_hbd_deblk_luma_vert_ft            *ihevc_hbd_deblk_luma_vert_fptr;
+    ihevc_hbd_deblk_luma_horz_ft            *ihevc_hbd_deblk_luma_horz_fptr;
+    ihevc_hbd_deblk_chroma_vert_ft          *ihevc_hbd_deblk_chroma_vert_fptr;
+    ihevc_hbd_deblk_chroma_horz_ft          *ihevc_hbd_deblk_chroma_horz_fptr;
 
     /* HBD functions for SAO */
-    ihevc_hbd_sao_band_offset_luma_ft       *pf_hbd_sao_bo_luma;
-    ihevc_hbd_sao_band_offset_chroma_ft     *pf_hbd_sao_bo_chroma;
-    void    **ppv_ihevcd_hbd_sao_luma;
-    void    **ppv_ihevcd_hbd_sao_chroma;
+    ihevc_hbd_sao_band_offset_luma_ft       *ihevc_hbd_sao_band_offset_luma_fptr;
+    ihevc_hbd_sao_band_offset_chroma_ft     *ihevc_hbd_sao_band_offset_chroma_fptr;
+
+    ihevc_hbd_sao_edge_offset_class0_ft *ihevc_hbd_sao_edge_offset_class0_fptr;
+    ihevc_hbd_sao_edge_offset_class1_ft *ihevc_hbd_sao_edge_offset_class1_fptr;
+    ihevc_hbd_sao_edge_offset_class2_ft *ihevc_hbd_sao_edge_offset_class2_fptr;
+    ihevc_hbd_sao_edge_offset_class3_ft *ihevc_hbd_sao_edge_offset_class3_fptr;
+
+    ihevc_hbd_sao_edge_offset_class0_chroma_ft *ihevc_hbd_sao_edge_offset_class0_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class1_chroma_ft *ihevc_hbd_sao_edge_offset_class1_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class2_chroma_ft *ihevc_hbd_sao_edge_offset_class2_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class3_chroma_ft *ihevc_hbd_sao_edge_offset_class3_chroma_fptr;
+
     ihevc_hbd_pad_left_luma_ft *ihevc_hbd_pad_left_luma_fptr;
     ihevc_hbd_pad_right_luma_ft *ihevc_hbd_pad_right_luma_fptr;
     ihevc_hbd_pad_left_chroma_ft *ihevc_hbd_pad_left_chroma_fptr;
