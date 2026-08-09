@@ -162,7 +162,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     pu1_sao_src_top_left_chroma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_chroma_curr_ctb + (2 * (ps_sao_ctxt->i4_ctb_y));
     pu1_sao_src_luma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_luma_top_left_ctb + ((ps_sao_ctxt->i4_ctb_y));
     pu1_sao_src_chroma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_chroma_top_left_ctb + (2 * ps_sao_ctxt->i4_ctb_y);
-    //u1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->u1_sao_src_top_left_luma_bot_left;// + ((ps_sao_ctxt->i4_ctb_y));
     pu1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_luma_bot_left + ((ps_sao_ctxt->i4_ctb_y));
     au1_sao_src_top_left_chroma_bot_left = (UWORD8 *)ps_sao_ctxt->au2_sao_src_top_left_chroma_bot_left;// + (2 * ps_sao_ctxt->i4_ctb_y);
     pu1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_chroma_bot_left + (2 * ps_sao_ctxt->i4_ctb_y);
@@ -3075,7 +3074,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
 }
 
-void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
+void ihevcd_hbd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 {
     UWORD16 *pu2_src_luma;
     UWORD16 *pu2_src_chroma;
@@ -5928,16 +5927,4 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
 }
 
-void ihevcd_sao_shift_ctb_wrapper(sao_ctxt_t *ps_sao_ctxt)
-{
-    codec_t *ps_codec = ps_sao_ctxt->ps_codec;
-    if (8 == ps_codec->i4_bit_depth_luma)
-    {
-        ihevcd_sao_shift_ctb(ps_sao_ctxt);
-    }
-    else
-    {
-        ihevcd_10bd_sao_shift_ctb(ps_sao_ctxt);
-    }
-}
 
