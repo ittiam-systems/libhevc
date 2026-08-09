@@ -72,9 +72,6 @@
 #define D_ARCH_MIPS_GENERIC         15
 #define D_ARCH_MIPS_32              16
 
-void ihevcd_init_arch(void *pv_codec);
-
-void ihevcd_init_function_ptr(void *pv_codec);
 typedef struct
 {
     ihevc_deblk_chroma_horz_ft *ihevc_deblk_chroma_horz_fptr;
@@ -183,7 +180,7 @@ typedef struct
     ihevcd_itrans_recon_dc_luma_ft *ihevcd_itrans_recon_dc_luma_fptr;
     ihevcd_itrans_recon_dc_chroma_ft *ihevcd_itrans_recon_dc_chroma_fptr;
     ihevcd_hbd_fmt_conv_420sp_to_420p_ft *ihevcd_hbd_fmt_conv_420sp_to_420p_fptr;
-    /*HBD functions for fromat conversion*/
+
     /* HBD functions for IT-recon */
     void    **ppv_ihevcd_hbd_itrans_recon;
     void    **ppv_ihevcd_hbd_recon;

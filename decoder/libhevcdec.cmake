@@ -4,7 +4,6 @@ list(
   LIBHEVCDEC_SRCS
   "${HEVC_ROOT}/decoder/ihevcd_version.c"
   "${HEVC_ROOT}/decoder/ihevcd_api.c"
-  "${HEVC_ROOT}/decoder/ihevcd_common_tables.c"
   "${HEVC_ROOT}/decoder/ihevcd_decode.c"
   "${HEVC_ROOT}/decoder/ihevcd_nal.c"
   "${HEVC_ROOT}/decoder/ihevcd_bitstream.c"

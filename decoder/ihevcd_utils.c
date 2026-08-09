@@ -1034,8 +1034,8 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
     if(0 == ps_codec->u4_pic_cnt)
     {
         if (BIT_DEPTH_LUMA == ps_codec->i4_bit_depth_luma)
-    {
-        memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
+        {
+            memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
         }
         else
         {
