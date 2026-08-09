@@ -38,6 +38,8 @@
 #ifndef _IHEVCD_STRUCTS_H_
 #define _IHEVCD_STRUCTS_H_
 
+#include "ihevcd_function_selector.h"
+
 typedef enum
 {
     HEVC_MAIN,
@@ -61,6 +63,8 @@ typedef enum
 {
     INIT_DONE, HEADER_DONE, FIRST_FRAME_DONE,
 }CODEC_STATE_T;
+
+
 
 typedef struct _codec_t codec_t;
 
@@ -1688,6 +1692,32 @@ typedef void (*pf_itrans_res_dc)(WORD16 *pi2_dst,
                                  WORD32 log2_trans_size,
                                  WORD16 i2_coeff_value);
 
+
+typedef void (*pf_sao_luma)(UWORD8 *,
+                            WORD32,
+                            UWORD8 *,
+                            UWORD8 *,
+                            UWORD8 *,
+                            UWORD8 *,
+                            UWORD8 *,
+                            UWORD8 *,
+                            WORD8 *,
+                            WORD32,
+                            WORD32);
+
+typedef void (*pf_sao_chroma)(UWORD8 *,
+                              WORD32,
+                              UWORD8 *,
+                              UWORD8 *,
+                              UWORD8 *,
+                              UWORD8 *,
+                              UWORD8 *,
+                              UWORD8 *,
+                              WORD8 *,
+                              WORD8 *,
+                              WORD32,
+                              WORD32);
+
 typedef void (*pf_hbd_itrans_recon_dc)(UWORD16 *pu2_pred,
                                        UWORD16 *pu2_dst,
                                        WORD32 pred_strd,
@@ -1731,66 +1761,41 @@ typedef void (*pf_hbd_intra_pred_chroma)(UWORD16 *pu2_ref,
                                          WORD32 nt,
                                          WORD32 mode);
 
-typedef void (*pf_sao_luma)(UWORD8 *,
-                            WORD32,
-                            UWORD8 *,
-                            UWORD8 *,
-                            UWORD8 *,
-                            UWORD8 *,
-                            UWORD8 *,
-                            UWORD8 *,
-                            WORD8 *,
-                            WORD32,
-                            WORD32);
+typedef void (*pf_hbd_sao_luma)(UWORD16 *pu2_src,
+                                WORD32 src_strd,
+                                UWORD16 *pu2_src_left,
+                                UWORD16 *pu2_src_top,
+                                UWORD16 *pu2_src_top_left,
+                                UWORD16 *pu2_src_top_left_left,
+                                UWORD16 *pu2_src_top_left_top,
+                                UWORD8 *pu1_avail,
+                                WORD8 *pi1_offset,
+                                WORD32 luma_wd,
+                                WORD32 luma_ht,
+                                UWORD32 edge_idx);
 
-typedef void (*pf_sao_chroma)(UWORD8 *,
-                              WORD32,
-                              UWORD8 *,
-                              UWORD8 *,
-                              UWORD8 *,
-                              UWORD8 *,
-                              UWORD8 *,
-                              UWORD8 *,
-                              WORD8 *,
-                              WORD8 *,
-                              WORD32,
-                              WORD32);
+typedef void (*pf_hbd_sao_chroma)(UWORD16 *pu2_src,
+                                  WORD32 src_strd,
+                                  UWORD16 *pu2_src_left,
+                                  UWORD16 *pu2_src_top,
+                                  UWORD16 *pu2_src_top_left,
+                                  UWORD16 *pu2_src_top_left_left,
+                                  UWORD16 *pu2_src_top_left_top,
+                                  UWORD8 *pu1_avail,
+                                  WORD8 *pi1_offset_u,
+                                  WORD8 *pi1_offset_v,
+                                  WORD32 chroma_wd,
+                                  WORD32 chroma_ht,
+                                  UWORD32 edge_idx);
 
-typedef void (*pf_hbd_sao_luma)(UWORD16 *,
-                                WORD32,
-                                UWORD16 *,
-                                UWORD16 *,
-                                UWORD16 *,
-                                UWORD16 *,
-                                UWORD16 *,
-                                UWORD8 *,
-                                WORD8 *,
-                                WORD32,
-                                WORD32,
-                                UWORD32);
-
-typedef void (*pf_hbd_sao_chroma)(UWORD16 *,
-                                  WORD32,
-                                  UWORD16 *,
-                                  UWORD16 *,
-                                  UWORD16 *,
-                                  UWORD16 *,
-                                  UWORD16 *,
-                                  UWORD8 *,
-                                  WORD8 *,
-                                  WORD8 *,
-                                  WORD32,
-                                  WORD32,
-                                  UWORD32);
-
-typedef void (*pf_hbd_inter_pred)(void *,
-                                  void *,
-                                  WORD32,
-                                  WORD32,
-                                  WORD8 *,
-                                  WORD32,
-                                  WORD32,
-                                  UWORD8);
+typedef void (*pf_hbd_inter_pred)(void *pv_src,
+                                  void *pv_dst,
+                                  WORD32 src_strd,
+                                  WORD32 dst_strd,
+                                  WORD8 *pi1_coeff,
+                                  WORD32 ht,
+                                  WORD32 wd,
+                                  UWORD8 u1_bit_depth);
 
 /**
  * Codec context
@@ -2440,14 +2445,14 @@ struct _codec_t
     pf_sao_chroma apf_sao_chroma[4];
 
     /* HBD function pointers */
-    pf_hbd_intra_pred_luma          *ppf_hbd_intra_pred_luma;
-    pf_hbd_intra_pred_chroma        *ppf_hbd_intra_pred_chroma;
-    pf_hbd_itrans_recon             *ppf_hbd_itrans_recon;
-    pf_hbd_itrans_recon_dc          *ppf_hbd_itrans_recon_dc;
-    pf_hbd_recon                    *ppf_hbd_recon;
-    pf_hbd_sao_luma                 *ppf_hbd_sao_luma;
-    pf_hbd_sao_chroma               *ppf_hbd_sao_chroma;
-    pf_hbd_inter_pred               *ppf_hbd_inter_pred;
+    pf_hbd_intra_pred_luma          apf_hbd_intra_pred_luma[11];
+    pf_hbd_intra_pred_chroma        apf_hbd_intra_pred_chroma[11];
+    pf_hbd_itrans_recon             apf_hbd_itrans_recon[8];
+    pf_hbd_itrans_recon_dc          apf_hbd_itrans_recon_dc[2];
+    pf_hbd_recon                    apf_hbd_recon[8];
+    pf_hbd_sao_luma                 apf_hbd_sao_luma[4];
+    pf_hbd_sao_chroma               apf_hbd_sao_chroma[4];
+    pf_hbd_inter_pred               apf_hbd_inter_pred[22];
 
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;

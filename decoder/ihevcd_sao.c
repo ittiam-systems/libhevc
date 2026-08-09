@@ -3387,7 +3387,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                 ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                ps_codec->s_func_selector.pf_hbd_sao_bo_luma(pu2_src_luma,
+                ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(pu2_src_luma,
                         src_strd,
                         pu2_src_left_luma,
                         pu2_src_top_luma,
@@ -3644,7 +3644,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 {
                     au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
                     u2_sao_src_top_left_luma_bot_left = pu2_src_left_luma[sao_ht_luma];
-                    ps_codec->ppf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
+                    ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
                             src_strd,
                             pu2_src_left_luma,
                             pu2_src_top_luma,
@@ -3692,7 +3692,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 if(chroma_yuv420sp_vu)
                 {
-                    ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                             src_strd,
                             pu2_src_left_chroma,
                             pu2_src_top_chroma,
@@ -3707,7 +3707,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 }
                 else
                 {
-                    ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                             src_strd,
                             pu2_src_left_chroma,
                             pu2_src_top_chroma,
@@ -3952,7 +3952,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -3968,7 +3968,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -4050,7 +4050,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.pf_hbd_sao_bo_luma(pu2_src_luma,
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(pu2_src_luma,
                             src_strd,
                             pu2_src_left_luma,
                             pu2_src_top_luma,
@@ -4260,7 +4260,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         au2_src_top_right[0] = pu2_sao_src_top_left_luma_top_right[0];
                         u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
-                        ps_codec->ppf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
                                 src_strd,
                                 pu2_src_left_luma,
                                 pu2_src_top_luma,
@@ -4311,7 +4311,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -4326,7 +4326,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -4522,7 +4522,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,
@@ -4538,7 +4538,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,
@@ -4623,7 +4623,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.pf_hbd_sao_bo_luma(pu2_src_luma,
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(pu2_src_luma,
                             src_strd,
                             pu2_src_left_luma,
                             pu2_src_top_luma,
@@ -4821,7 +4821,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
                         u2_sao_src_top_left_luma_bot_left = pu2_sao_src_top_left_luma_bot_left[0];
-                        ps_codec->ppf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
                                 src_strd,
                                 pu2_src_left_luma,
                                 pu2_src_top_luma,
@@ -4871,7 +4871,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -4886,7 +4886,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -5086,7 +5086,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,
@@ -5102,7 +5102,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,
@@ -5196,7 +5196,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.pf_hbd_sao_bo_luma(pu2_src_luma,
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(pu2_src_luma,
                             src_strd,
                             pu2_src_left_luma,
                             pu2_src_top_luma,
@@ -5425,7 +5425,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au2_src_top_right[0] = pu2_src_luma[sao_wd_luma - src_strd];
                         u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
 
-                        ps_codec->ppf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2](pu2_src_luma,
                                 src_strd,
                                 pu2_src_left_luma,
                                 pu2_src_top_luma,
@@ -5479,7 +5479,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -5494,7 +5494,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_sao_bo_chroma(pu2_src_chroma,
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(pu2_src_chroma,
                                 src_strd,
                                 pu2_src_left_chroma,
                                 pu2_src_top_chroma,
@@ -5720,7 +5720,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,
@@ -5736,7 +5736,7 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->ppf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu2_src_chroma,
                                     src_strd,
                                     pu2_src_left_chroma,
                                     pu2_src_top_chroma,

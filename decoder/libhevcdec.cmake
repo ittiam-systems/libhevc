@@ -26,7 +26,6 @@ list(
   "${HEVC_ROOT}/decoder/ihevcd_boundary_strength.c"
   "${HEVC_ROOT}/decoder/ihevcd_deblk.c"
   "${HEVC_ROOT}/decoder/ihevcd_inter_pred.c"
-  "${HEVC_ROOT}/decoder/ihevcd_hbd_func_tables.c"
   "${HEVC_ROOT}/decoder/ihevcd_sao.c"
   "${HEVC_ROOT}/decoder/ihevcd_fmt_conv.c"
   "${HEVC_ROOT}/decoder/ihevcd_function_selector_generic.c")

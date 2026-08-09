@@ -393,8 +393,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
 
                 func_ptr1 = ps_codec->apf_inter_pred[func_indx1];
                 func_ptr2 = ps_codec->apf_inter_pred[func_indx2];
-                hbd_func_ptr1 = ps_codec->ppf_hbd_inter_pred[func_indx1];
-                hbd_func_ptr2 = ps_codec->ppf_hbd_inter_pred[func_indx2];
+                hbd_func_ptr1 = ps_codec->apf_hbd_inter_pred[func_indx1];
+                hbd_func_ptr2 = ps_codec->apf_hbd_inter_pred[func_indx2];
             }
             else
             {
@@ -414,8 +414,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                                 * (9 + (weighted_pred || bi_pred)) + 11 * clr_indx;
                 func_ptr3 = ps_codec->apf_inter_pred[func_indx3];
                 func_ptr4 = ps_codec->apf_inter_pred[func_indx4];
-                hbd_func_ptr3 = ps_codec->ppf_hbd_inter_pred[func_indx3];
-                hbd_func_ptr4 = ps_codec->ppf_hbd_inter_pred[func_indx4];
+                hbd_func_ptr3 = ps_codec->apf_hbd_inter_pred[func_indx3];
+                hbd_func_ptr4 = ps_codec->apf_hbd_inter_pred[func_indx4];
             }
             else
             {
@@ -621,7 +621,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_wt_pred_bi(pi2_tmp1,pi2_tmp2,(UWORD16 *)pu1_dst,
+                        ps_codec->s_func_selector.ihevc_hbd_weighted_pred_bi_fptr(pi2_tmp1,pi2_tmp2,(UWORD16 *)pu1_dst,
                                                     pu_wd,pu_wd,ref_strd,
                                                     luma_weight_l0,luma_offset_l0,
                                                     luma_weight_l1,luma_offset_l1,
@@ -662,7 +662,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_wt_pred_chrm_bi(pi2_tmp1,
+                            ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_bi_fptr(pi2_tmp1,
                                                                              pi2_tmp2,
                                                                              (UWORD16 *)pu1_dst,
                                                                              func_src_strd,
@@ -710,7 +710,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_wt_pred_chrm_bi(pi2_tmp1,
+                            ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_bi_fptr(pi2_tmp1,
                                                                              pi2_tmp2,
                                                                              (UWORD16 *)pu1_dst,
                                                                              func_src_strd,
@@ -770,7 +770,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.pf_hbd_wt_pred_uni(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
+                        ps_codec->s_func_selector.ihevc_hbd_weighted_pred_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
                                                                       (UWORD16 *)pu1_dst,pu_wd,ref_strd,
                                                                       ps_pu->b2_pred_mode == PRED_L0 ? luma_weight_l0 : luma_weight_l1,
                                                                       ps_pu->b2_pred_mode == PRED_L0 ? luma_offset_l0 : luma_offset_l1,
@@ -802,7 +802,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_wt_pred_chrm_uni(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
+                            ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
                                                                               (UWORD16 *)pu1_dst,
                                                                               func_src_strd,
                                                                               func_dst_strd,
@@ -836,7 +836,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            ps_codec->s_func_selector.pf_hbd_wt_pred_chrm_uni(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
+                            ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
                                                                               (UWORD16 *)pu1_dst,
                                                                               func_src_strd,
                                                                               func_dst_strd,
@@ -891,7 +891,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 }
                 else
                 {
-                    ps_codec->s_func_selector.pf_hbd_wt_pred_bi_dflt(pi2_tmp1,
+                    ps_codec->s_func_selector.ihevc_hbd_weighted_pred_bi_default_fptr(pi2_tmp1,
                                                                      pi2_tmp2,
                                                                      (UWORD16 *)pu1_dst,
                                                                      func_src_strd,
