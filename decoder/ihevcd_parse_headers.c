@@ -1548,7 +1548,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     //profile_and_level( 1, sps_max_sub_layers_minus1 )
     ret = ihevcd_profile_tier_level(ps_bitstrm, &(s_ptl), 1,
                                     (sps_max_sub_layers - 1));
-    if (IHEVCD_SUCCESS != ret)
+    if ((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
     {
         ps_codec->s_parse.i4_error_code = ret;
         return ret;
