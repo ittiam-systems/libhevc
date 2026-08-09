@@ -1167,7 +1167,14 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                     ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y;
                     ps_proc->s_sao_ctxt.is_chroma_yuv420sp_vu = (ps_codec->e_ref_chroma_fmt == IV_YUV_420SP_VU);
 
-                    ihevcd_sao_shift_ctb_wrapper(&ps_proc->s_sao_ctxt);
+                    if (8 == ps_codec->i4_bit_depth_luma)
+                    {
+                        ihevcd_sao_shift_ctb(&ps_proc->s_sao_ctxt);
+                    }
+                    else
+                    {
+                        ihevcd_hbd_sao_shift_ctb(&ps_proc->s_sao_ctxt);
+                    }
                 }
 
 

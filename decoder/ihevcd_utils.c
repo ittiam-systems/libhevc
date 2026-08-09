@@ -74,8 +74,6 @@
 #include "ihevcd_trace.h"
 #include "ihevcd_process_slice.h"
 #include "ihevcd_job_queue.h"
-#include "ihevcd_sao.h"
-
 #define MAX_DPB_PIC_BUF 6
 
 /* Function declarations */
@@ -183,9 +181,6 @@ WORD32 ihevcd_get_lvl_idx(WORD32 level)
 *
 * @param[in] vert_pad
 *  Total padding used in vertical direction
-*
-* @param[in] i4_pixel_size
-*  Size of luma and chroma pixels in bytes
 *
 * @returns  Total picture buffer size
 *
