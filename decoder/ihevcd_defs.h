@@ -447,7 +447,6 @@ enum
 #define MIN_OUT_BUFS_420SP      2
 #define MIN_OUT_BUFS_GRAY       1
 
-
 /**
  ****************************************************************************
  * Definitions related to MV pred mv merge
