@@ -1177,9 +1177,6 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     /* Initialize the function pointer for parse residual coding */
     ps_codec->pv_parse_residual_coding = (void *)&ihevcd_parse_residual_coding;
 
-    /* Initialize the function pointer for IQ, IT, recon CTB */
-    ps_codec->pv_iquant_itrans_recon_ctb = (void *)&ihevcd_iquant_itrans_recon_ctb;
-
     return status;
 }
 

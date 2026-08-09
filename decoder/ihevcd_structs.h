@@ -2434,9 +2434,6 @@ struct _codec_t
     /* Function pointer for parse residual coding */
     void        *pv_parse_residual_coding;
 
-    /* Function pointer for IQ, IT, recon CTB */
-    void        *pv_iquant_itrans_recon_ctb;
-
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;
     /**  Processor architecture */
