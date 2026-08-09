@@ -1322,14 +1322,6 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             ps_codec->as_process[i].i4_cur_mv_bank_buf_id = cur_mv_bank_buf_id;
             ps_codec->as_process[i].s_sao_ctxt.pu1_slice_idx = ps_codec->as_process[i].pu1_slice_idx;
             ps_codec->as_process[i].s_sao_ctxt.pu1_tile_idx = ps_codec->as_process[i].pu1_tile_idx;
-            if ((BIT_DEPTH == ps_codec->i4_bit_depth_chroma) && (BIT_DEPTH == ps_codec->i4_bit_depth_luma))
-            {
-                ps_codec->as_process[i].s_sao_ctxt.pf_sao_shift_ctb = (void *)&ihevcd_sao_shift_ctb;
-            }
-            else
-            {
-                ps_codec->as_process[i].s_sao_ctxt.pf_sao_shift_ctb = (void *)&ihevcd_10bd_sao_shift_ctb;
-            }
 
             /* TODO: For asynchronous api the following initializations related to picture
              * buffer should be moved to processing side

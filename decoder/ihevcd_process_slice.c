@@ -1158,8 +1158,6 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                  * to different slices with SAO enabled */
                 if(0 == ps_codec->i4_disable_sao_pic)
                 {
-                    ftype_sao_shift_ctb *pf_sao_shift_ctb;
-
                     ps_proc->s_sao_ctxt.ps_pps = ps_proc->ps_pps;
                     ps_proc->s_sao_ctxt.ps_sps = ps_proc->ps_sps;
                     ps_proc->s_sao_ctxt.ps_tile = ps_proc->ps_tile;
@@ -1167,14 +1165,11 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                     ps_proc->s_sao_ctxt.ps_slice_hdr = ps_proc->ps_slice_hdr;
                     ps_proc->s_sao_ctxt.i4_cur_slice_idx = ps_proc->i4_cur_slice_idx;
 
-                    pf_sao_shift_ctb = (ftype_sao_shift_ctb *)(ps_proc->s_sao_ctxt.pf_sao_shift_ctb);
-
-
                     ps_proc->s_sao_ctxt.i4_ctb_x = ps_proc->i4_ctb_x;
                     ps_proc->s_sao_ctxt.i4_ctb_y = ps_proc->i4_ctb_y;
                     ps_proc->s_sao_ctxt.is_chroma_yuv420sp_vu = (ps_codec->e_ref_chroma_fmt == IV_YUV_420SP_VU);
 
-                    pf_sao_shift_ctb(&ps_proc->s_sao_ctxt);
+                    ihevcd_sao_shift_ctb_wrapper(&ps_proc->s_sao_ctxt);
                 }
 
 

@@ -695,9 +695,6 @@ typedef struct
     /* Specifies if the chroma format is yuv420sp_vu */
     WORD32 is_chroma_yuv420sp_vu;
 
-    /* Function pointer for the shifted CTB level function */
-    void                *pf_sao_shift_ctb;
-
 }sao_ctxt_t;
 
 typedef struct

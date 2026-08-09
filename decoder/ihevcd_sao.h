@@ -38,4 +38,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt);
 
 void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt);
 
+void ihevcd_sao_shift_ctb_wrapper(sao_ctxt_t *ps_sao_ctxt);
+
 #endif /*_IHEVC_SAO_H_*/
