@@ -5928,3 +5928,16 @@ void ihevcd_10bd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
 }
 
+void ihevcd_sao_shift_ctb_wrapper(sao_ctxt_t *ps_sao_ctxt)
+{
+    codec_t *ps_codec = ps_sao_ctxt->ps_codec;
+    if (8 == ps_codec->i4_bit_depth_luma)
+    {
+        ihevcd_sao_shift_ctb(ps_sao_ctxt);
+    }
+    else
+    {
+        ihevcd_10bd_sao_shift_ctb(ps_sao_ctxt);
+    }
+}
+
