@@ -974,7 +974,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au1_src_top_right[1] = pu1_src_top_chroma[sao_wd_chroma + 1];
                     au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_left_chroma[2 * sao_ht_chroma];
                     au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_left_chroma[2 * sao_ht_chroma + 1];
-                    if((ctb_size == 16) && (ps_sao_ctxt->i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
+                    if((ctb_size == (8 * v_samp_factor)) && (ps_sao_ctxt->i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
                     {
                         au1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 2];
                         au1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[sao_ht_chroma * chroma_strd - 1];
@@ -2181,7 +2181,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_src_bot_left[1] = pu1_sao_src_top_left_chroma_bot_left[1];
                         //au1_src_bot_left[0] = pu1_src_chroma[sao_ht_chroma * src_strd - 2];
                         //au1_src_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
-                        if((ctb_size == 16) && (ps_sao_ctxt->i4_ctb_x != ps_sps->i2_pic_wd_in_ctb - 1))
+                        if((ctb_size == (8 * h_samp_factor)) && (ps_sao_ctxt->i4_ctb_x != ps_sps->i2_pic_wd_in_ctb - 1))
                         {
                             au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - chroma_strd];
                             au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - chroma_strd + 1];
