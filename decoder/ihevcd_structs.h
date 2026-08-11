@@ -2421,9 +2421,9 @@ struct _codec_t
     /* HBD function pointers */
     pf_hbd_intra_pred_luma          apf_hbd_intra_pred_luma[11];
     pf_hbd_intra_pred_chroma        apf_hbd_intra_pred_chroma[11];
-    pf_hbd_itrans_recon             apf_hbd_itrans_recon[8];
+    pf_hbd_itrans_recon             apf_hbd_itrans_recon[9];
     pf_hbd_itrans_recon_dc          apf_hbd_itrans_recon_dc[2];
-    pf_hbd_recon                    apf_hbd_recon[8];
+    pf_hbd_recon                    apf_hbd_recon[9];
     pf_hbd_sao_luma                 apf_hbd_sao_luma[4];
     pf_hbd_sao_chroma               apf_hbd_sao_chroma[4];
     pf_hbd_inter_pred               apf_hbd_inter_pred[22];
