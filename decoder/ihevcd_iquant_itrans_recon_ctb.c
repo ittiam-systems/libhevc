@@ -1746,7 +1746,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             {
                                 ps_codec->s_func_selector.ihevc_hbd_intra_pred_chroma_ref_substitution_fptr((UWORD16 *)pu1_top_left,
                                                 (UWORD16 *)pu1_top, (UWORD16 *)pu1_left, ps_cb_tu->pred_strd, trans_size,
-                                                chroma_nbr_flags, (UWORD16 *)pu1_ref_sub_out, 1,
+                                                chroma_nbr_flags, (UWORD16 *)pu1_ref_sub_out, 1, ps_sps->i1_chroma_format_idc,
                                                 (UWORD8) i4_bit_depth_chroma);
 
                                 /* use the look up to get the function idx */
