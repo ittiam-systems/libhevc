@@ -306,3 +306,87 @@ void ihevc_hbd_chroma_recon_16x16(WORD16 *pi2_src,
         i4_zero_cols = i4_zero_cols >> 1;
     }
 }
+
+/**
+ *******************************************************************************
+ *
+ * @brief
+ *  This function performs reconstruction for 32x32 chroma block
+ *
+ * @par Description:
+ *  Performs reconstruction of 32x32 input block by adding adding prediction
+ * data to input and clipping it to bit_depth
+ *
+ * @param[in] pi2_src
+ *  Input 32x32 coefficients
+ *
+ * @param[in] pu2_pred
+ *  Prediction 32x32 block
+ *
+ * @param[out] pu2_dst
+ *  Output 32x32 block
+ *
+ * @param[in] i4_src_strd
+ *  Input stride
+ *
+ * @param[in] i4_pred_strd
+ *  Prediction stride
+ *
+ * @param[in] i4_dst_strd
+ *  Output Stride
+ *
+ * @param[in] shift
+ *  Output shift
+ *
+ * @param[in] i4_zero_cols
+ *  Zero columns in pi2_tmp
+ *
+ * @returns  Void
+ *
+ * @remarks
+ *  None
+ *
+ *******************************************************************************
+ */
+
+void ihevc_hbd_chroma_recon_32x32(WORD16* pi2_src,
+    UWORD16* pu2_pred,
+    UWORD16* pu2_dst,
+    WORD32 i4_src_strd,
+    WORD32 i4_pred_strd,
+    WORD32 i4_dst_strd,
+    WORD32 i4_zero_cols,
+    UWORD8 u1_bit_depth)
+{
+    WORD32 i, j;
+    WORD32 trans_size;
+    WORD16 clip_limit;
+
+    trans_size = TRANS_SIZE_32;
+    clip_limit = (1 << u1_bit_depth) - 1;
+    /* Reconstruction */
+
+    for (i = 0; i < trans_size; i++)
+    {
+        /* Checking for Zero Cols */
+        if ((i4_zero_cols & 1) == 1)
+        {
+            for (j = 0; j < trans_size; j++)
+            {
+                pu2_dst[j * i4_dst_strd] = pu2_pred[j * i4_pred_strd];
+            }
+        }
+        else
+        {
+            for (j = 0; j < trans_size; j++)
+            {
+                pu2_dst[j * i4_dst_strd] =
+                    CLIP3((pi2_src[j * i4_src_strd] + pu2_pred[j * i4_pred_strd]), 0, clip_limit);
+            }
+        }
+        pi2_src++;
+        pu2_dst += 2;
+        pu2_pred += 2;
+        i4_zero_cols = i4_zero_cols >> 1;
+    }
+}

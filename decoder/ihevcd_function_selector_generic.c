@@ -196,6 +196,7 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_chroma_itrans_recon_4x4_fptr            = &ihevc_hbd_chroma_itrans_recon_4x4;
     ps_func_selector->ihevc_hbd_chroma_itrans_recon_8x8_fptr            = &ihevc_hbd_chroma_itrans_recon_8x8;
     ps_func_selector->ihevc_hbd_chroma_itrans_recon_16x16_fptr          = &ihevc_hbd_chroma_itrans_recon_16x16;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_32x32_fptr          = &ihevc_hbd_chroma_itrans_recon_32x32;
 
     ps_func_selector->ihevc_hbd_recon_4x4_ttype1_fptr                   = &ihevc_hbd_recon_4x4_ttype1;
     ps_func_selector->ihevc_hbd_recon_4x4_fptr                          = &ihevc_hbd_recon_4x4;
@@ -205,6 +206,7 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_chroma_recon_4x4_fptr                   = &ihevc_hbd_chroma_recon_4x4;
     ps_func_selector->ihevc_hbd_chroma_recon_8x8_fptr                   = &ihevc_hbd_chroma_recon_8x8;
     ps_func_selector->ihevc_hbd_chroma_recon_16x16_fptr                 = &ihevc_hbd_chroma_recon_16x16;
+    ps_func_selector->ihevc_hbd_chroma_recon_32x32_fptr                 = &ihevc_hbd_chroma_recon_32x32;
 
     ps_func_selector->ihevcd_hbd_itrans_recon_dc_luma_fptr              = &ihevcd_hbd_itrans_recon_dc_luma;
     ps_func_selector->ihevcd_hbd_itrans_recon_dc_chroma_fptr            = &ihevcd_hbd_itrans_recon_dc_chroma;

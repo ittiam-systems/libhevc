@@ -103,6 +103,16 @@ typedef void ihevc_chroma_itrans_recon_32x32_ft(WORD16 *pi2_src,
                                                 WORD32 dst_strd,
                                                 WORD32 zero_cols,
                                                 WORD32 zero_rows);
+typedef void ihevc_hbd_chroma_itrans_recon_32x32_ft(WORD16* pi2_src,
+                                                    WORD16* pi2_tmp,
+                                                    UWORD16* pu2_pred,
+                                                    UWORD16* pu2_dst,
+                                                    WORD32 src_strd,
+                                                    WORD32 pred_strd,
+                                                    WORD32 dst_strd,
+                                                    WORD32 zero_cols,
+                                                    WORD32 zero_rows,
+                                                    UWORD8 bit_depth);
 
 ihevc_chroma_itrans_recon_4x4_ft ihevc_chroma_itrans_recon_4x4;
 ihevc_hbd_chroma_itrans_recon_4x4_ft ihevc_hbd_chroma_itrans_recon_4x4;
@@ -111,6 +121,7 @@ ihevc_hbd_chroma_itrans_recon_8x8_ft ihevc_hbd_chroma_itrans_recon_8x8;
 ihevc_chroma_itrans_recon_16x16_ft ihevc_chroma_itrans_recon_16x16;
 ihevc_hbd_chroma_itrans_recon_16x16_ft ihevc_hbd_chroma_itrans_recon_16x16;
 ihevc_chroma_itrans_recon_32x32_ft ihevc_chroma_itrans_recon_32x32;
+ihevc_hbd_chroma_itrans_recon_32x32_ft ihevc_hbd_chroma_itrans_recon_32x32;
 
 /* A9 Q Function Declarations */
 ihevc_chroma_itrans_recon_4x4_ft ihevc_chroma_itrans_recon_4x4_a9q;
