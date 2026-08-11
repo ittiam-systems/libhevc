@@ -1160,7 +1160,6 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ps_codec->i4_sps_done = 0;
     ps_codec->i4_pps_done = 0;
     ps_codec->i4_init_done   = 1;
-    ps_codec->e_profile     = HEVC_MAIN;
     ps_codec->i4_first_pic_done = 0;
     ps_codec->s_parse.i4_first_pic_init = 0;
     ps_codec->i4_error_code = 0;
