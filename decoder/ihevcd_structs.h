@@ -42,25 +42,6 @@
 
 typedef enum
 {
-    HEVC_MAIN,
-    HEVC_MAIN_10,
-    HEVC_MAIN_12,
-    HEVC_MAIN_422,
-    HEVC_MAIN_422_10,
-    HEVC_MAIN_422_12,
-    HEVC_MAIN_444,
-    HEVC_MAIN_444_10,
-    HEVC_MAIN_10_STILL_PICTURE,
-    HEVC_MAIN_INTRA,
-    HEVC_MAIN_10_INTRA,
-    HEVC_MAIN_422_10_INTRA,
-    HEVC_MAIN_444_INTRA,
-    HEVC_MAIN_444_10_INTRA,
-    HEVC_MAIN_444_STILL_PICTURE
-} HEVC_DEC_PROFILE_T;
-
-typedef enum
-{
     INIT_DONE, HEADER_DONE, FIRST_FRAME_DONE,
 }CODEC_STATE_T;
 
@@ -1833,11 +1814,6 @@ struct _codec_t
      * For shared mode even display buffer will use the same stride
      */
     WORD32 i4_strd;
-
-    /**
-     * Profile specified during init
-     */
-    HEVC_DEC_PROFILE_T e_profile;
 
     /**
      * Number of cores to be used
