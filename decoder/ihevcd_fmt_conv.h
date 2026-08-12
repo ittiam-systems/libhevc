@@ -96,6 +96,7 @@ typedef void ihevcd_hbd_fmt_conv_420sp_to_420p_ft(UWORD16 *pu1_y_src,
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p;
 ihevcd_fmt_conv_444sp_to_444p_ft ihevcd_fmt_conv_444sp_to_444p;
+ihevcd_hbd_fmt_conv_420sp_to_420p_ft ihevcd_hbd_fmt_conv_420sp_to_420p;
 
 /* A9Q function declarations */
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_a9q;
@@ -114,8 +115,5 @@ ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_sse42;
 /* armv8 function declarations */
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_av8;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p_av8;
-
-/* HBD functions */
-ihevcd_hbd_fmt_conv_420sp_to_420p_ft ihevcd_hbd_fmt_conv_420sp_to_420p;
 
 #endif /* _IHEVCD_FMT_CONV_H_ */
