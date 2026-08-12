@@ -68,9 +68,7 @@ typedef void ihevcd_hbd_itrans_recon_dc_chroma_ft(UWORD16 *pu2_pred,
 /* C function declarations */
 ihevcd_itrans_recon_dc_luma_ft ihevcd_itrans_recon_dc_luma;
 ihevcd_itrans_recon_dc_chroma_ft ihevcd_itrans_recon_dc_chroma;
-
 ihevcd_hbd_itrans_recon_dc_luma_ft ihevcd_hbd_itrans_recon_dc_luma;
-
 ihevcd_hbd_itrans_recon_dc_chroma_ft ihevcd_hbd_itrans_recon_dc_chroma;
 
 /* A9Q function declarations */

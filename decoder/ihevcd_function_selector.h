@@ -72,9 +72,6 @@
 #define D_ARCH_MIPS_GENERIC         15
 #define D_ARCH_MIPS_32              16
 
-#include "ihevc_typedefs.h"
-
-
 typedef struct
 {
     ihevc_deblk_chroma_horz_ft *ihevc_deblk_chroma_horz_fptr;
@@ -180,9 +177,11 @@ typedef struct
     ihevcd_fmt_conv_420sp_to_420sp_ft *ihevcd_fmt_conv_420sp_to_420sp_fptr;
     ihevcd_fmt_conv_420sp_to_420p_ft *ihevcd_fmt_conv_420sp_to_420p_fptr;
     ihevcd_fmt_conv_444sp_to_444p_ft *ihevcd_fmt_conv_444sp_to_444p_fptr;
+    ihevcd_hbd_fmt_conv_420sp_to_420p_ft *ihevcd_hbd_fmt_conv_420sp_to_420p_fptr;
     ihevcd_itrans_recon_dc_luma_ft *ihevcd_itrans_recon_dc_luma_fptr;
     ihevcd_itrans_recon_dc_chroma_ft *ihevcd_itrans_recon_dc_chroma_fptr;
-    ihevcd_hbd_fmt_conv_420sp_to_420p_ft *ihevcd_hbd_fmt_conv_420sp_to_420p_fptr;
+    ihevcd_hbd_itrans_recon_dc_luma_ft *ihevcd_hbd_itrans_recon_dc_luma_fptr;
+    ihevcd_hbd_itrans_recon_dc_chroma_ft *ihevcd_hbd_itrans_recon_dc_chroma_fptr;
 
     /* HBD functions for IT-recon */
     ihevc_hbd_itrans_recon_4x4_ttype1_ft *ihevc_hbd_itrans_recon_4x4_ttype1_fptr;
@@ -202,9 +201,6 @@ typedef struct
     ihevc_hbd_chroma_recon_4x4_ft *ihevc_hbd_chroma_recon_4x4_fptr;
     ihevc_hbd_chroma_recon_8x8_ft *ihevc_hbd_chroma_recon_8x8_fptr;
     ihevc_hbd_chroma_recon_16x16_ft *ihevc_hbd_chroma_recon_16x16_fptr;
-
-    ihevcd_hbd_itrans_recon_dc_luma_ft *ihevcd_hbd_itrans_recon_dc_luma_fptr;
-    ihevcd_hbd_itrans_recon_dc_chroma_ft *ihevcd_hbd_itrans_recon_dc_chroma_fptr;
 
     /* HBD functions for intra pred */
     ihevc_hbd_intra_pred_luma_ref_substitution_ft   *ihevc_hbd_intra_pred_luma_ref_substitution_fptr;
@@ -282,6 +278,7 @@ typedef struct
     ihevc_hbd_pad_left_luma_ft *ihevc_hbd_pad_left_luma_fptr;
     ihevc_hbd_pad_right_luma_ft *ihevc_hbd_pad_right_luma_fptr;
     ihevc_hbd_pad_left_chroma_ft *ihevc_hbd_pad_left_chroma_fptr;
+
 }func_selector_t;
 
 void ihevcd_init_arch(void *pv_codec);

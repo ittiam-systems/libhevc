@@ -38,8 +38,6 @@
 #ifndef _IHEVCD_STRUCTS_H_
 #define _IHEVCD_STRUCTS_H_
 
-#include "ihevcd_function_selector.h"
-
 typedef enum
 {
     INIT_DONE, HEADER_DONE, FIRST_FRAME_DONE,
