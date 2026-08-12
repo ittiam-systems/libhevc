@@ -266,22 +266,6 @@ void ihevcd_init_function_ptr_rext_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_deblk_422chroma_horz_fptr                   =  &ihevc_deblk_422chroma_horz;
     ps_func_selector->ihevc_deblk_422chroma_vert_fptr                   =  &ihevc_deblk_422chroma_vert;
 
-    ps_func_selector->ihevc_intra_pred_chroma_ref_substitution_fptr     =  &ihevc_intra_pred_chroma_ref_substitution;
-    ps_func_selector->ihevc_intra_pred_luma_ref_substitution_fptr       =  &ihevc_intra_pred_luma_ref_substitution;
-    ps_func_selector->ihevc_intra_pred_luma_ref_subst_all_avlble_fptr   =  &ihevc_intra_pred_luma_ref_subst_all_avlble;
-    ps_func_selector->ihevc_intra_pred_ref_filtering_fptr               =  &ihevc_intra_pred_ref_filtering;
-    ps_func_selector->ihevc_intra_pred_chroma_ref_filtering_fptr        =  &ihevc_intra_pred_chroma_ref_filtering;
-    ps_func_selector->ihevc_intra_pred_chroma_dc_fptr                   =  &ihevc_intra_pred_chroma_dc;
-    ps_func_selector->ihevc_intra_pred_chroma_horz_fptr                 =  &ihevc_intra_pred_chroma_horz;
-    ps_func_selector->ihevc_intra_pred_chroma_mode2_fptr                =  &ihevc_intra_pred_chroma_mode2;
-    ps_func_selector->ihevc_intra_pred_chroma_mode_18_34_fptr           =  &ihevc_intra_pred_chroma_mode_18_34;
-    ps_func_selector->ihevc_intra_pred_chroma_mode_27_to_33_fptr        =  &ihevc_intra_pred_chroma_mode_27_to_33;
-    ps_func_selector->ihevc_intra_pred_chroma_mode_3_to_9_fptr          =  &ihevc_intra_pred_chroma_mode_3_to_9;
-    ps_func_selector->ihevc_intra_pred_chroma_planar_fptr               =  &ihevc_intra_pred_chroma_planar;
-    ps_func_selector->ihevc_intra_pred_chroma_ver_fptr                  =  &ihevc_intra_pred_chroma_ver;
-    ps_func_selector->ihevc_intra_pred_chroma_mode_11_to_17_fptr        =  &ihevc_intra_pred_chroma_mode_11_to_17;
-    ps_func_selector->ihevc_intra_pred_chroma_mode_19_to_25_fptr        =  &ihevc_intra_pred_chroma_mode_19_to_25;
-
     ps_func_selector->ihevc_pad_left_chroma_fptr                        =  &ihevc_pad_left_chroma;
     ps_func_selector->ihevc_pad_right_chroma_fptr                       =  &ihevc_pad_right_chroma;
 
