@@ -1334,7 +1334,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            i4_qp_u = chroma_qp_idx;
+                            i4_qp_u = MIN(chroma_qp_idx, 51);
                         }
                         i4_qp_u += i4_qp_bd_offset_uv;
                         qp_div = i4_qp_u / 6;
@@ -1378,7 +1378,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
                         else
                         {
-                            i4_qp_v = chroma_qp_idx;
+                            i4_qp_v = MIN(chroma_qp_idx, 51);
                         }
                         i4_qp_v += i4_qp_bd_offset_uv;
                         qp_div_v = i4_qp_v / 6;
