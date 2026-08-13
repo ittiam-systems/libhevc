@@ -166,6 +166,7 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_intra_pred_luma_ref_substitution_fptr  = &ihevc_hbd_intra_pred_luma_ref_substitution;
     ps_func_selector->ihevc_hbd_intra_pred_ref_filtering_fptr          = &ihevc_hbd_intra_pred_ref_filtering;
     ps_func_selector->ihevc_hbd_intra_pred_chroma_ref_substitution_fptr = &ihevc_hbd_intra_pred_chroma_ref_substitution;
+    ps_func_selector->ihevc_hbd_intra_pred_chroma_ref_filtering_fptr    = &ihevc_hbd_intra_pred_chroma_ref_filtering;
     ps_func_selector->ihevc_hbd_intra_pred_luma_planar_fptr             = &ihevc_hbd_intra_pred_luma_planar;
     ps_func_selector->ihevc_hbd_intra_pred_luma_dc_fptr                 = &ihevc_hbd_intra_pred_luma_dc;
     ps_func_selector->ihevc_hbd_intra_pred_luma_mode2_fptr              = &ihevc_hbd_intra_pred_luma_mode2;

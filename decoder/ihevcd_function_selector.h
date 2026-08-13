@@ -208,6 +208,7 @@ typedef struct
     ihevc_hbd_intra_pred_luma_ref_substitution_ft   *ihevc_hbd_intra_pred_luma_ref_substitution_fptr;
     ihevc_hbd_intra_pred_ref_filtering_ft           *ihevc_hbd_intra_pred_ref_filtering_fptr;
     ihevc_hbd_intra_pred_chroma_ref_substitution_ft *ihevc_hbd_intra_pred_chroma_ref_substitution_fptr;
+    ihevc_hbd_intra_pred_chroma_ref_filtering_ft    *ihevc_hbd_intra_pred_chroma_ref_filtering_fptr;
 
     ihevc_hbd_intra_pred_luma_planar_ft *ihevc_hbd_intra_pred_luma_planar_fptr;
     ihevc_hbd_intra_pred_luma_dc_ft *ihevc_hbd_intra_pred_luma_dc_fptr;
