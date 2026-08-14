@@ -506,7 +506,7 @@ WORD32 ihevcd_ctb_boundary_strength_pbslice(bs_ctxt_t *ps_bs_ctxt)
 
     /* ctb_size/8 elements per CTB */
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pi1_qp = ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = (WORD8 *)ps_bs_ctxt->pu1_pic_qp + ((ps_bs_ctxt->i4_ctb_x + ps_bs_ctxt->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     ctb_indx = ps_bs_ctxt->i4_ctb_x + ps_sps->i2_pic_wd_in_ctb * ps_bs_ctxt->i4_ctb_y;
     u4_qp_const_in_ctb = ps_bs_ctxt->pu1_pic_qp_const_in_ctb[ctb_indx >> 3] & (1 << (ctb_indx & 7));
