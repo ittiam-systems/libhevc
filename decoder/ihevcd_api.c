@@ -2349,6 +2349,29 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     return IV_SUCCESS;
 }
 
+WORD32 ihevcd_reallocate_dynamic_bitstream_buf(codec_t *ps_codec, UWORD32 u4_size)
+{
+    void *pv_new_buf = ps_codec->pf_aligned_alloc(ps_codec->pv_mem_ctxt, 128, u4_size);
+    if(pv_new_buf != NULL)
+    {
+        memset(pv_new_buf, 0, u4_size);
+        if(ps_codec->pu1_bitsbuf_dynamic != NULL)
+        {
+            if(ps_codec->pf_aligned_free)
+            {
+                ps_codec->pf_aligned_free(ps_codec->pv_mem_ctxt, ps_codec->pu1_bitsbuf_dynamic);
+            }
+        }
+        ps_codec->pu1_bitsbuf_dynamic = (UWORD8*)pv_new_buf;
+        ps_codec->u4_bitsbuf_size_dynamic = u4_size;
+
+        ps_codec->pu1_bitsbuf = ps_codec->pu1_bitsbuf_dynamic;
+        ps_codec->u4_bitsbuf_size = ps_codec->u4_bitsbuf_size_dynamic;
+        return IV_SUCCESS;
+    }
+    return IV_FAIL;
+}
+
 /**
 *******************************************************************************
 *
