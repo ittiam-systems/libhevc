@@ -1631,18 +1631,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     }
     ps_sps->i1_chroma_format_idc = value;
 
-#ifdef ENABLE_MAIN_REXT_PROFILE
-    /* TODO: re enable simd optimizations once they are updated for 422, 444 internal color formats.
-     * Currently, we initialize all pointers as per arch, but override intra pred, SAO, deblocking
-     * and chroma padding to their generic C implementations. */
-    if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422 ||
-       ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
-    {
-        ihevcd_init_function_ptr_rext_generic(&ps_codec->s_func_selector);
-        ihevcd_update_function_ptr(ps_codec);
-    }
-#endif
-
     if(CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc)
     {
         BITS_PARSE("separate_colour_plane_flag", value, ps_bitstrm, 1);
