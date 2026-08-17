@@ -93,6 +93,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
 WORD32 ihevcd_init(codec_t *ps_codec);
 
 WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec);
+WORD32 ihevcd_reallocate_dynamic_bitstream_buf(codec_t *ps_codec, UWORD32 u4_size);
 WORD32 ihevcd_free_dynamic_bufs(codec_t *ps_codec);
 /*****************************************************************************/
 /* Function Prototypes                                                       */
@@ -738,6 +739,12 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         ps_codec->i4_nal_ofst = nal_ofst;
         {
             WORD32 bytes_remaining = ps_codec->i4_bytes_remaining - nal_ofst;
+
+			/* If the required buffer exceeds the current bitstream buffer, reallocate the dynamic bitstream buffer */
+			if((UWORD32)bytes_remaining > ps_codec->u4_bitsbuf_size)
+			{
+				ihevcd_reallocate_dynamic_bitstream_buf(ps_codec, bytes_remaining + 16);
+			}
 
             bytes_remaining = MIN((UWORD32)bytes_remaining, ps_codec->u4_bitsbuf_size);
             ihevcd_nal_remv_emuln_bytes(ps_codec->pu1_inp_bitsbuf + nal_ofst,
