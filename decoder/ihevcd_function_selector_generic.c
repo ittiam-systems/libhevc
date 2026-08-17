@@ -163,26 +163,3 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma;
 }
 
-void ihevcd_init_function_ptr_rext_generic(func_selector_t *ps_func_selector)
-{
-    ps_func_selector->ihevc_deblk_chroma_horz_fptr                      =  &ihevc_deblk_chroma_horz;
-    ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert;
-    ps_func_selector->ihevc_deblk_luma_vert_fptr                        =  &ihevc_deblk_luma_vert;
-    ps_func_selector->ihevc_deblk_luma_horz_fptr                        =  &ihevc_deblk_luma_horz;
-    ps_func_selector->ihevc_deblk_422chroma_horz_fptr                   =  &ihevc_deblk_422chroma_horz;
-    ps_func_selector->ihevc_deblk_422chroma_vert_fptr                   =  &ihevc_deblk_422chroma_vert;
-
-    ps_func_selector->ihevc_pad_left_chroma_fptr                        =  &ihevc_pad_left_chroma;
-    ps_func_selector->ihevc_pad_right_chroma_fptr                       =  &ihevc_pad_right_chroma;
-
-    ps_func_selector->ihevc_sao_band_offset_luma_fptr                   =  &ihevc_sao_band_offset_luma;
-    ps_func_selector->ihevc_sao_band_offset_chroma_fptr                 =  &ihevc_sao_band_offset_chroma;
-    ps_func_selector->ihevc_sao_edge_offset_class0_fptr                 =  &ihevc_sao_edge_offset_class0;
-    ps_func_selector->ihevc_sao_edge_offset_class0_chroma_fptr          =  &ihevc_sao_edge_offset_class0_chroma;
-    ps_func_selector->ihevc_sao_edge_offset_class1_fptr                 =  &ihevc_sao_edge_offset_class1;
-    ps_func_selector->ihevc_sao_edge_offset_class1_chroma_fptr          =  &ihevc_sao_edge_offset_class1_chroma;
-    ps_func_selector->ihevc_sao_edge_offset_class2_fptr                 =  &ihevc_sao_edge_offset_class2;
-    ps_func_selector->ihevc_sao_edge_offset_class2_chroma_fptr          =  &ihevc_sao_edge_offset_class2_chroma;
-    ps_func_selector->ihevc_sao_edge_offset_class3_fptr                 =  &ihevc_sao_edge_offset_class3;
-    ps_func_selector->ihevc_sao_edge_offset_class3_chroma_fptr          =  &ihevc_sao_edge_offset_class3_chroma;
-}
