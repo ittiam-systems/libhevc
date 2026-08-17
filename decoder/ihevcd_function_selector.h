@@ -288,8 +288,6 @@ void ihevcd_init_arch(void *pv_codec);
 
 void ihevcd_init_function_ptr(void *pv_codec);
 
-void ihevcd_init_function_ptr_rext_generic(func_selector_t *ps_func_selector);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
