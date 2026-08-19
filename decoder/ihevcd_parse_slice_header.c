@@ -693,7 +693,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
 
         }
         SEV_PARSE("slice_qp_delta", i4_value, ps_bitstrm);
-        if((i4_value < (MIN_HEVC_QP - ps_pps->i1_pic_init_qp)) ||
+        if((i4_value < (MIN_HEVC_QP - ps_pps->i1_pic_init_qp - (6 * ps_sps->i1_bit_depth_luma_minus8))) ||
            (i4_value > (MAX_HEVC_QP - ps_pps->i1_pic_init_qp)))
         {
             return IHEVCD_INVALID_PARAMETER;
