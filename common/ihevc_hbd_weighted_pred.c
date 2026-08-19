@@ -101,15 +101,16 @@
 */
 
 void ihevc_hbd_weighted_pred_uni(WORD16 *pi2_src,
-                                UWORD16 *pu2_dst,
-                                WORD32 src_strd,
-                                WORD32 dst_strd,
-                                WORD32 wgt0,
-                                WORD32 off0,
-                                WORD32 shift,
-                                WORD32 lvl_shift,
-                                WORD32 ht,
-                                WORD32 wd,UWORD8 bit_depth)
+                                 UWORD16 *pu2_dst,
+                                 WORD32 src_strd,
+                                 WORD32 dst_strd,
+                                 WORD32 wgt0,
+                                 WORD32 off0,
+                                 WORD32 shift,
+                                 WORD32 lvl_shift,
+                                 WORD32 ht,
+                                 WORD32 wd,
+                                 UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;
@@ -184,17 +185,18 @@ void ihevc_hbd_weighted_pred_uni(WORD16 *pi2_src,
 */
 
 void ihevc_hbd_weighted_pred_chroma_uni(WORD16 *pi2_src,
-                                    UWORD16 *pu2_dst,
-                                    WORD32 src_strd,
-                                    WORD32 dst_strd,
-                                    WORD32 wgt0_cb,
-                                    WORD32 wgt0_cr,
-                                    WORD32 off0_cb,
-                                    WORD32 off0_cr,
-                                    WORD32 shift,
-                                    WORD32 lvl_shift,
-                                    WORD32 ht,
-                                    WORD32 wd,UWORD8 bit_depth)
+                                        UWORD16 *pu2_dst,
+                                        WORD32 src_strd,
+                                        WORD32 dst_strd,
+                                        WORD32 wgt0_cb,
+                                        WORD32 wgt0_cr,
+                                        WORD32 off0_cb,
+                                        WORD32 off0_cr,
+                                        WORD32 shift,
+                                        WORD32 lvl_shift,
+                                        WORD32 ht,
+                                        WORD32 wd,
+                                        UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;
@@ -300,7 +302,8 @@ void ihevc_hbd_weighted_pred_bi(WORD16 *pi2_src1,
                                 WORD32 lvl_shift1,
                                 WORD32 lvl_shift2,
                                 WORD32 ht,
-                                WORD32 wd,UWORD8 bit_depth)
+                                WORD32 wd,
+                                UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;
@@ -388,24 +391,25 @@ void ihevc_hbd_weighted_pred_bi(WORD16 *pi2_src1,
 */
 
 void ihevc_hbd_weighted_pred_chroma_bi(WORD16 *pi2_src1,
-                                    WORD16 *pi2_src2,
-                                    UWORD16 *pu2_dst,
-                                    WORD32 src_strd1,
-                                    WORD32 src_strd2,
-                                    WORD32 dst_strd,
-                                    WORD32 wgt0_cb,
-                                    WORD32 wgt0_cr,
-                                    WORD32 off0_cb,
-                                    WORD32 off0_cr,
-                                    WORD32 wgt1_cb,
-                                    WORD32 wgt1_cr,
-                                    WORD32 off1_cb,
-                                    WORD32 off1_cr,
-                                    WORD32 shift,
-                                    WORD32 lvl_shift1,
-                                    WORD32 lvl_shift2,
-                                    WORD32 ht,
-                                    WORD32 wd,UWORD8 bit_depth)
+                                       WORD16 *pi2_src2,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 src_strd1,
+                                       WORD32 src_strd2,
+                                       WORD32 dst_strd,
+                                       WORD32 wgt0_cb,
+                                       WORD32 wgt0_cr,
+                                       WORD32 off0_cb,
+                                       WORD32 off0_cr,
+                                       WORD32 wgt1_cb,
+                                       WORD32 wgt1_cr,
+                                       WORD32 off1_cb,
+                                       WORD32 off1_cr,
+                                       WORD32 shift,
+                                       WORD32 lvl_shift1,
+                                       WORD32 lvl_shift2,
+                                       WORD32 ht,
+                                       WORD32 wd,
+                                       UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;
@@ -492,7 +496,8 @@ void ihevc_hbd_weighted_pred_bi_default(WORD16 *pi2_src1,
                                         WORD32 lvl_shift1,
                                         WORD32 lvl_shift2,
                                         WORD32 ht,
-                                        WORD32 wd,UWORD8 bit_depth)
+                                        WORD32 wd,
+                                        UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;
@@ -567,15 +572,16 @@ void ihevc_hbd_weighted_pred_bi_default(WORD16 *pi2_src1,
 */
 
 void ihevc_hbd_weighted_pred_chroma_bi_default(WORD16 *pi2_src1,
-                                            WORD16 *pi2_src2,
-                                            UWORD16 *pu2_dst,
-                                            WORD32 src_strd1,
-                                            WORD32 src_strd2,
-                                            WORD32 dst_strd,
-                                            WORD32 lvl_shift1,
-                                            WORD32 lvl_shift2,
-                                            WORD32 ht,
-                                            WORD32 wd,UWORD8 bit_depth)
+                                               WORD16 *pi2_src2,
+                                               UWORD16 *pu2_dst,
+                                               WORD32 src_strd1,
+                                               WORD32 src_strd2,
+                                               WORD32 dst_strd,
+                                               WORD32 lvl_shift1,
+                                               WORD32 lvl_shift2,
+                                               WORD32 ht,
+                                               WORD32 wd,
+                                               UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 i4_tmp;

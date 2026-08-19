@@ -49,7 +49,8 @@
 
 
 /**
- * au4_avail is an array of flags - one for each neighboring block specifying if the block is available
+ * au4_avail is an array of flags - one for each neighboring block specifying
+ * if the block is available
  * au4_avail[0] - left
  * au4_avail[1] - right
  * au4_avail[2] - top
@@ -60,15 +61,15 @@
  * au4_avail[7] - bottom-right
  */
 void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
-                           WORD32 i4_src_strd,
-                           UWORD16 *pu2_src_left,
-                           UWORD16 *pu2_src_top,
-                           UWORD16 *pu2_src_top_left,
-                           WORD32 i4_sao_band_pos,
-                           WORD8 *pi1_sao_offset,
-                           WORD32 i4_wd,
-                           WORD32 i4_ht,
-                           UWORD32 u4_bit_depth)
+                                    WORD32 i4_src_strd,
+                                    UWORD16 *pu2_src_left,
+                                    UWORD16 *pu2_src_top,
+                                    UWORD16 *pu2_src_top_left,
+                                    WORD32 i4_sao_band_pos,
+                                    WORD8 *pi1_sao_offset,
+                                    WORD32 i4_wd,
+                                    WORD32 i4_ht,
+                                    UWORD32 u4_bit_depth)
 {
     WORD32 band_shift;
     WORD32 band_table[NUM_BAND_TABLE];
@@ -111,17 +112,17 @@ void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
-                           WORD32 i4_src_strd,
-                           UWORD16 *pu2_src_left,
-                           UWORD16 *pu2_src_top,
-                           UWORD16 *pu2_src_top_left,
-                           WORD32 i4_sao_band_pos_u,
-                           WORD32 i4_sao_band_pos_v,
-                           WORD8 *pi1_sao_offset_u,
-                           WORD8 *pi1_sao_offset_v,
-                           WORD32 i4_wd,
-                           WORD32 i4_ht,
-                           UWORD32 u4_bit_depth)
+                                      WORD32 i4_src_strd,
+                                      UWORD16 *pu2_src_left,
+                                      UWORD16 *pu2_src_top,
+                                      UWORD16 *pu2_src_top_left,
+                                      WORD32 i4_sao_band_pos_u,
+                                      WORD32 i4_sao_band_pos_v,
+                                      WORD8 *pi1_sao_offset_u,
+                                      WORD8 *pi1_sao_offset_v,
+                                      WORD32 i4_wd,
+                                      WORD32 i4_ht,
+                                      UWORD32 u4_bit_depth)
 {
     WORD32 band_shift;
     WORD32 band_table_u[NUM_BAND_TABLE];
@@ -178,17 +179,17 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                      WORD32 i4_src_strd,
+                                      UWORD16 *pu2_src_left,
+                                      UWORD16 *pu2_src_top,
+                                      UWORD16 *pu2_src_top_left,
+                                      UWORD16 *pu2_src_top_right,
+                                      UWORD16 *pu2_src_bot_left,
+                                      UWORD8 *pu1_avail,
+                                      WORD8 *pi1_sao_offset,
+                                      WORD32 i4_wd,
+                                      WORD32 i4_ht,
+                                      UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -252,18 +253,18 @@ void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset_u,
-                              WORD8 *pi1_sao_offset_v,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                             WORD32 i4_src_strd,
+                                             UWORD16 *pu2_src_left,
+                                             UWORD16 *pu2_src_top,
+                                             UWORD16 *pu2_src_top_left,
+                                             UWORD16 *pu2_src_top_right,
+                                             UWORD16 *pu2_src_bot_left,
+                                             UWORD8 *pu1_avail,
+                                             WORD8 *pi1_sao_offset_u,
+                                             WORD8 *pi1_sao_offset_v,
+                                             WORD32 i4_wd,
+                                             WORD32 i4_ht,
+                                             UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -342,17 +343,17 @@ void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                      WORD32 i4_src_strd,
+                                      UWORD16 *pu2_src_left,
+                                      UWORD16 *pu2_src_top,
+                                      UWORD16 *pu2_src_top_left,
+                                      UWORD16 *pu2_src_top_right,
+                                      UWORD16 *pu2_src_bot_left,
+                                      UWORD8 *pu1_avail,
+                                      WORD8 *pi1_sao_offset,
+                                      WORD32 i4_wd,
+                                      WORD32 i4_ht,
+                                      UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -427,18 +428,18 @@ void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset_u,
-                              WORD8 *pi1_sao_offset_v,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                             WORD32 i4_src_strd,
+                                             UWORD16 *pu2_src_left,
+                                             UWORD16 *pu2_src_top,
+                                             UWORD16 *pu2_src_top_left,
+                                             UWORD16 *pu2_src_top_right,
+                                             UWORD16 *pu2_src_bot_left,
+                                             UWORD8 *pu1_avail,
+                                             WORD8 *pi1_sao_offset_u,
+                                             WORD8 *pi1_sao_offset_v,
+                                             WORD32 i4_wd,
+                                             WORD32 i4_ht,
+                                             UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -518,17 +519,17 @@ void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                      WORD32 i4_src_strd,
+                                      UWORD16 *pu2_src_left,
+                                      UWORD16 *pu2_src_top,
+                                      UWORD16 *pu2_src_top_left,
+                                      UWORD16 *pu2_src_top_right,
+                                      UWORD16 *pu2_src_bot_left,
+                                      UWORD8 *pu1_avail,
+                                      WORD8 *pi1_sao_offset,
+                                      WORD32 i4_wd,
+                                      WORD32 i4_ht,
+                                      UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -697,18 +698,18 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset_u,
-                              WORD8 *pi1_sao_offset_v,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                             WORD32 i4_src_strd,
+                                             UWORD16 *pu2_src_left,
+                                             UWORD16 *pu2_src_top,
+                                             UWORD16 *pu2_src_top_left,
+                                             UWORD16 *pu2_src_top_right,
+                                             UWORD16 *pu2_src_bot_left,
+                                             UWORD8 *pu1_avail,
+                                             WORD8 *pi1_sao_offset_u,
+                                             WORD8 *pi1_sao_offset_v,
+                                             WORD32 i4_wd,
+                                             WORD32 i4_ht,
+                                             UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -873,7 +874,7 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
             for(col = 0; col < i4_wd; col++)
             {
                 WORD32 edge_idx;
-                WORD8 * pi1_sao_offset;
+                WORD8 *pi1_sao_offset;
 
                 pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
 
@@ -922,17 +923,17 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
 }
 
 void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                      WORD32 i4_src_strd,
+                                      UWORD16 *pu2_src_left,
+                                      UWORD16 *pu2_src_top,
+                                      UWORD16 *pu2_src_top_left,
+                                      UWORD16 *pu2_src_top_right,
+                                      UWORD16 *pu2_src_bot_left,
+                                      UWORD8 *pu1_avail,
+                                      WORD8 *pi1_sao_offset,
+                                      WORD32 i4_wd,
+                                      WORD32 i4_ht,
+                                      UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -1094,18 +1095,18 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
-                              UWORD16 *pu2_src_left,
-                              UWORD16 *pu2_src_top,
-                              UWORD16 *pu2_src_top_left,
-                              UWORD16 *pu2_src_top_right,
-                              UWORD16 *pu2_src_bot_left,
-                              UWORD8 *pu1_avail,
-                              WORD8 *pi1_sao_offset_u,
-                              WORD8 *pi1_sao_offset_v,
-                              WORD32 i4_wd,
-                              WORD32 i4_ht,
-                              UWORD32 u4_bit_depth)
+                                             WORD32 i4_src_strd,
+                                             UWORD16 *pu2_src_left,
+                                             UWORD16 *pu2_src_top,
+                                             UWORD16 *pu2_src_top_left,
+                                             UWORD16 *pu2_src_top_right,
+                                             UWORD16 *pu2_src_bot_left,
+                                             UWORD8 *pu1_avail,
+                                             WORD8 *pi1_sao_offset_u,
+                                             WORD8 *pi1_sao_offset_v,
+                                             WORD32 i4_wd,
+                                             WORD32 i4_ht,
+                                             UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
     UWORD8 au1_mask[MAX_CTB_SIZE];
@@ -1266,7 +1267,7 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
             for(col = 0; col < i4_wd; col++)
             {
                 WORD32 edge_idx;
-                WORD8 * pi1_sao_offset;
+                WORD8 *pi1_sao_offset;
 
                 pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
 

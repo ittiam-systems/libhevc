@@ -106,12 +106,13 @@
 */
 
 void ihevc_hbd_inter_pred_luma_copy(UWORD16 *pu2_src,
-                                UWORD16 *pu2_dst,
-                                WORD32 src_strd,
-                                WORD32 dst_strd,
-                                WORD8 *pi1_coeff,
-                                WORD32 ht,
-                                WORD32 wd,UWORD8 bit_depth)
+                                    UWORD16 *pu2_dst,
+                                    WORD32 src_strd,
+                                    WORD32 dst_strd,
+                                    WORD8 *pi1_coeff,
+                                    WORD32 ht,
+                                    WORD32 wd,
+                                    UWORD8 bit_depth)
 {
     WORD32 row, col;
 
@@ -168,12 +169,13 @@ void ihevc_hbd_inter_pred_luma_copy(UWORD16 *pu2_src,
 */
 
 void ihevc_hbd_inter_pred_luma_horz(UWORD16 *pu2_src,
-                                UWORD16 *pu2_dst,
-                                WORD32 src_strd,
-                                WORD32 dst_strd,
-                                WORD8 *pi1_coeff,
-                                WORD32 ht,
-                                WORD32 wd,UWORD8 bit_depth)
+                                    UWORD16 *pu2_dst,
+                                    WORD32 src_strd,
+                                    WORD32 dst_strd,
+                                    WORD8 *pi1_coeff,
+                                    WORD32 ht,
+                                    WORD32 wd,
+                                    UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -239,12 +241,13 @@ void ihevc_hbd_inter_pred_luma_horz(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_luma_vert(UWORD16 *pu2_src,
-                                UWORD16 *pu2_dst,
-                                WORD32 src_strd,
-                                WORD32 dst_strd,
-                                WORD8 *pi1_coeff,
-                                WORD32 ht,
-                                WORD32 wd,UWORD8 bit_depth)
+                                    UWORD16 *pu2_dst,
+                                    WORD32 src_strd,
+                                    WORD32 dst_strd,
+                                    WORD8 *pi1_coeff,
+                                    WORD32 ht,
+                                    WORD32 wd,
+                                    UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -310,12 +313,13 @@ void ihevc_hbd_inter_pred_luma_vert(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_luma_copy_w16out(UWORD16 *pu2_src,
-                                       WORD16 *pi2_dst,
-                                       WORD32 src_strd,
-                                       WORD32 dst_strd,
-                                       WORD8 *pi1_coeff,
-                                       WORD32 ht,
-                                       WORD32 wd,UWORD8 bit_depth)
+                                           WORD16 *pi2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD8 *pi1_coeff,
+                                           WORD32 ht,
+                                           WORD32 wd,
+                                           UWORD8 bit_depth)
 {
     WORD32 row, col;
 
@@ -375,12 +379,13 @@ void ihevc_hbd_inter_pred_luma_copy_w16out(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_luma_horz_w16out(UWORD16 *pu2_src,
-                                       WORD16 *pi2_dst,
-                                       WORD32 src_strd,
-                                       WORD32 dst_strd,
-                                       WORD8 *pi1_coeff,
-                                       WORD32 ht,
-                                       WORD32 wd,UWORD8 bit_depth)
+                                           WORD16 *pi2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD8 *pi1_coeff,
+                                           WORD32 ht,
+                                           WORD32 wd,
+                                           UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -444,12 +449,13 @@ void ihevc_hbd_inter_pred_luma_horz_w16out(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_luma_vert_w16out(UWORD16 *pu2_src,
-                                       WORD16 *pi2_dst,
-                                       WORD32 src_strd,
-                                       WORD32 dst_strd,
-                                       WORD8 *pi1_coeff,
-                                       WORD32 ht,
-                                       WORD32 wd,UWORD8 bit_depth)
+                                           WORD16 *pi2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD8 *pi1_coeff,
+                                           WORD32 ht,
+                                           WORD32 wd,
+                                           UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -513,12 +519,13 @@ void ihevc_hbd_inter_pred_luma_vert_w16out(UWORD16 *pu2_src,
 */
 
 void ihevc_hbd_inter_pred_luma_vert_w16inp(WORD16 *pi2_src,
-                                       UWORD16 *pu2_dst,
-                                       WORD32 src_strd,
-                                       WORD32 dst_strd,
-                                       WORD8 *pi1_coeff,
-                                       WORD32 ht,
-                                       WORD32 wd,UWORD8 bit_depth)
+                                           UWORD16 *pu2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD8 *pi1_coeff,
+                                           WORD32 ht,
+                                           WORD32 wd,
+                                           UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -586,12 +593,13 @@ void ihevc_hbd_inter_pred_luma_vert_w16inp(WORD16 *pi2_src,
 
 
 void ihevc_hbd_inter_pred_luma_vert_w16inp_w16out(WORD16 *pi2_src,
-                                              WORD16 *pi2_dst,
-                                              WORD32 src_strd,
-                                              WORD32 dst_strd,
-                                              WORD8 *pi1_coeff,
-                                              WORD32 ht,
-                                              WORD32 wd,UWORD8 bit_depth)
+                                                  WORD16 *pi2_dst,
+                                                  WORD32 src_strd,
+                                                  WORD32 dst_strd,
+                                                  WORD8 *pi1_coeff,
+                                                  WORD32 ht,
+                                                  WORD32 wd,
+                                                  UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -656,12 +664,13 @@ void ihevc_hbd_inter_pred_luma_vert_w16inp_w16out(WORD16 *pi2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_copy(UWORD16 *pu2_src,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 src_strd,
-                                   WORD32 dst_strd,
-                                   WORD8 *pi1_coeff,
-                                   WORD32 ht,
-                                   WORD32 wd,UWORD8 bit_depth)
+                                      UWORD16 *pu2_dst,
+                                      WORD32 src_strd,
+                                      WORD32 dst_strd,
+                                      WORD8 *pi1_coeff,
+                                      WORD32 ht,
+                                      WORD32 wd,
+                                      UWORD8 bit_depth)
 {
     WORD32 row, col;
 
@@ -721,12 +730,13 @@ void ihevc_hbd_inter_pred_chroma_copy(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_horz(UWORD16 *pu2_src,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 src_strd,
-                                   WORD32 dst_strd,
-                                   WORD8 *pi1_coeff,
-                                   WORD32 ht,
-                                   WORD32 wd,UWORD8 bit_depth)
+                                      UWORD16 *pu2_dst,
+                                      WORD32 src_strd,
+                                      WORD32 dst_strd,
+                                      WORD8 *pi1_coeff,
+                                      WORD32 ht,
+                                      WORD32 wd,
+                                      UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp_u, i4_tmp_v;
@@ -803,12 +813,13 @@ void ihevc_hbd_inter_pred_chroma_horz(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_vert(UWORD16 *pu2_src,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 src_strd,
-                                   WORD32 dst_strd,
-                                   WORD8 *pi1_coeff,
-                                   WORD32 ht,
-                                   WORD32 wd,UWORD8 bit_depth)
+                                      UWORD16 *pu2_dst,
+                                      WORD32 src_strd,
+                                      WORD32 dst_strd,
+                                      WORD8 *pi1_coeff,
+                                      WORD32 ht,
+                                      WORD32 wd,
+                                      UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -878,12 +889,13 @@ void ihevc_hbd_inter_pred_chroma_vert(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_copy_w16out(UWORD16 *pu2_src,
-                                          WORD16 *pi2_dst,
-                                          WORD32 src_strd,
-                                          WORD32 dst_strd,
-                                          WORD8 *pi1_coeff,
-                                          WORD32 ht,
-                                          WORD32 wd,UWORD8 bit_depth)
+                                             WORD16 *pi2_dst,
+                                             WORD32 src_strd,
+                                             WORD32 dst_strd,
+                                             WORD8 *pi1_coeff,
+                                             WORD32 ht,
+                                             WORD32 wd,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col;
 
@@ -944,12 +956,13 @@ void ihevc_hbd_inter_pred_chroma_copy_w16out(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_horz_w16out(UWORD16 *pu2_src,
-                                          WORD16 *pi2_dst,
-                                          WORD32 src_strd,
-                                          WORD32 dst_strd,
-                                          WORD8 *pi1_coeff,
-                                          WORD32 ht,
-                                          WORD32 wd,UWORD8 bit_depth)
+                                             WORD16 *pi2_dst,
+                                             WORD32 src_strd,
+                                             WORD32 dst_strd,
+                                             WORD8 *pi1_coeff,
+                                             WORD32 ht,
+                                             WORD32 wd,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp_u, i4_tmp_v;
@@ -1020,12 +1033,13 @@ void ihevc_hbd_inter_pred_chroma_horz_w16out(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_inter_pred_chroma_vert_w16out(UWORD16 *pu2_src,
-                                          WORD16 *pi2_dst,
-                                          WORD32 src_strd,
-                                          WORD32 dst_strd,
-                                          WORD8 *pi1_coeff,
-                                          WORD32 ht,
-                                          WORD32 wd,UWORD8 bit_depth)
+                                             WORD16 *pi2_dst,
+                                             WORD32 src_strd,
+                                             WORD32 dst_strd,
+                                             WORD8 *pi1_coeff,
+                                             WORD32 ht,
+                                             WORD32 wd,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -1091,12 +1105,13 @@ void ihevc_hbd_inter_pred_chroma_vert_w16out(UWORD16 *pu2_src,
 */
 
 void ihevc_hbd_inter_pred_chroma_vert_w16inp(WORD16 *pi2_src,
-                                          UWORD16 *pu2_dst,
-                                          WORD32 src_strd,
-                                          WORD32 dst_strd,
-                                          WORD8 *pi1_coeff,
-                                          WORD32 ht,
-                                          WORD32 wd,UWORD8 bit_depth)
+                                             UWORD16 *pu2_dst,
+                                             WORD32 src_strd,
+                                             WORD32 dst_strd,
+                                             WORD8 *pi1_coeff,
+                                             WORD32 ht,
+                                             WORD32 wd,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
@@ -1167,12 +1182,13 @@ void ihevc_hbd_inter_pred_chroma_vert_w16inp(WORD16 *pi2_src,
 */
 
 void ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out(WORD16 *pi2_src,
-                                                 WORD16 *pi2_dst,
-                                                 WORD32 src_strd,
-                                                 WORD32 dst_strd,
-                                                 WORD8 *pi1_coeff,
-                                                 WORD32 ht,
-                                                 WORD32 wd,UWORD8 bit_depth)
+                                                    WORD16 *pi2_dst,
+                                                    WORD32 src_strd,
+                                                    WORD32 dst_strd,
+                                                    WORD8 *pi1_coeff,
+                                                    WORD32 ht,
+                                                    WORD32 wd,
+                                                    UWORD8 bit_depth)
 {
     WORD32 row, col, i;
     WORD32 i4_tmp;
