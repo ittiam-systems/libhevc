@@ -59,7 +59,6 @@
 #include "ihevc_common_tables.h"
 #include "ihevc_defs.h"
 #include "ihevc_intra_pred.h"
-#include "stdio.h"
 /****************************************************************************/
 /* Constant Macros                                                          */
 /****************************************************************************/
@@ -541,7 +540,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
                                     WORD32 nt,
                                     UWORD16 * pu2_dst,
                                     WORD32 mode,
-                                    WORD32 strong_intra_smoothing_enable_flag,
+                                    WORD32 intra_smoothing_flags,
                                     UWORD8 bit_depth)
 {
     WORD32 filter_flag;
@@ -552,8 +551,11 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
     WORD32 abs_cond_left_flag = 0;
     WORD32 abs_cond_top_flag = 0;
     WORD32 dc_val = 1 << (bit_depth - 5);
+    WORD32 intra_smoothing_disabled = (intra_smoothing_flags >> 3);
+    WORD32 strong_intra_smoothing_enable_flag = intra_smoothing_flags & 1;
 
-    filter_flag = gau1_intra_pred_ref_filter[mode] & (1 << (CTZ(nt) - 2));
+    filter_flag = intra_smoothing_disabled ?
+                    0 : (gau1_intra_pred_ref_filter[mode] & (1 << (CTZ(nt) - 2)));
     if(0 == filter_flag)
     {
         if(pu2_src == pu2_dst)

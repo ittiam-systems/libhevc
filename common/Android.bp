@@ -10,7 +10,7 @@ cc_library_static {
         "-D_LIB",
         "-fPIC",
         "-DANDROID",
-        // common/x86/ihevc_sao_ssse3_intr.c: implicit conversion from
+        // x86/ihevc_sao_ssse3_intr.c: implicit conversion from
         // 'int' to 'char' changes value from 128 to -128
         "-Wno-error=constant-conversion",
     ],
@@ -54,6 +54,24 @@ cc_library_static {
         "ihevc_sao.c",
         "ihevc_trans_tables.c",
         "ihevc_weighted_pred.c",
+        "ihevc_hbd_chroma_intra_pred_filters.c",
+        "ihevc_hbd_chroma_iquant_recon.c",
+        "ihevc_hbd_chroma_itrans_recon.c",
+        "ihevc_hbd_chroma_itrans_recon_16x16.c",
+        "ihevc_hbd_chroma_itrans_recon_32x32.c",
+        "ihevc_hbd_chroma_itrans_recon_8x8.c",
+        "ihevc_hbd_chroma_recon.c",
+        "ihevc_hbd_inter_pred_filters.c",
+        "ihevc_hbd_intra_pred_filters.c",
+        "ihevc_hbd_iquant_recon.c",
+        "ihevc_hbd_itrans_recon.c",
+        "ihevc_hbd_itrans_recon_16x16.c",
+        "ihevc_hbd_itrans_recon_32x32.c",
+        "ihevc_hbd_itrans_recon_8x8.c",
+        "ihevc_hbd_padding.c",
+        "ihevc_hbd_recon.c",
+        "ihevc_hbd_sao.c",
+        "ihevc_hbd_weighted_pred.c",
         "ithread.c",
     ],
 
