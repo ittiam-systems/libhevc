@@ -100,22 +100,22 @@
  */
 
 void ihevc_hbd_chroma_recon_4x4(WORD16 *pi2_src,
-                            UWORD16 *pu2_pred,
-                            UWORD16 *pu2_dst,
-                            WORD32 i4_src_strd,
-                            WORD32 i4_pred_strd,
-                            WORD32 i4_dst_strd,
-                            WORD32 i4_zero_cols,
-                            UWORD8 u1_bit_depth)
+                                UWORD16 *pu2_pred,
+                                UWORD16 *pu2_dst,
+                                WORD32 i4_src_strd,
+                                WORD32 i4_pred_strd,
+                                WORD32 i4_dst_strd,
+                                WORD32 i4_zero_cols,
+                                UWORD8 u1_bit_depth)
 {
     WORD32 i, j;
     WORD32 trans_size;
     WORD16 clip_limit;
 
     trans_size = TRANS_SIZE_4;
-
+    clip_limit = (1 << u1_bit_depth) - 1;
     /* Reconstruction */
-    clip_limit = (1 << u1_bit_depth) -1;
+
     for(i = 0; i < trans_size; i++)
     {
         /* Checking for Zero Cols */
@@ -131,7 +131,7 @@ void ihevc_hbd_chroma_recon_4x4(WORD16 *pi2_src,
             for(j = 0; j < trans_size; j++)
             {
                 pu2_dst[j * i4_dst_strd] =
-                                CLIP3((pi2_src[j*i4_src_strd] + pu2_pred[j*i4_pred_strd]), 0, clip_limit);
+                    CLIP3((pi2_src[j * i4_src_strd] + pu2_pred[j * i4_pred_strd]), 0, clip_limit);
             }
         }
         pi2_src++;
@@ -144,7 +144,7 @@ void ihevc_hbd_chroma_recon_4x4(WORD16 *pi2_src,
  *******************************************************************************
  *
  * @brief
- *  This function performs reconstruction for 8x8 input block
+ *  This function performs reconstruction for  8x8 input block
  *
  * @par Description:
  *  Performs reconstruction of 8x8 input block by adding  adding prediction
@@ -183,20 +183,20 @@ void ihevc_hbd_chroma_recon_4x4(WORD16 *pi2_src,
  */
 
 void ihevc_hbd_chroma_recon_8x8(WORD16 *pi2_src,
-                            UWORD16 *pu2_pred,
-                            UWORD16 *pu2_dst,
-                            WORD32 i4_src_strd,
-                            WORD32 i4_pred_strd,
-                            WORD32 i4_dst_strd,
-                            WORD32 i4_zero_cols,
-                            UWORD8 u1_bit_depth)
+                                UWORD16 *pu2_pred,
+                                UWORD16 *pu2_dst,
+                                WORD32 i4_src_strd,
+                                WORD32 i4_pred_strd,
+                                WORD32 i4_dst_strd,
+                                WORD32 i4_zero_cols,
+                                UWORD8 u1_bit_depth)
 {
     WORD32 i, j;
     WORD32 trans_size;
     WORD16 clip_limit;
 
     trans_size = TRANS_SIZE_8;
-    clip_limit = (1 << u1_bit_depth) -1;
+    clip_limit = (1 << u1_bit_depth) - 1;
     /* Reconstruction */
 
     for(i = 0; i < trans_size; i++)
@@ -214,7 +214,7 @@ void ihevc_hbd_chroma_recon_8x8(WORD16 *pi2_src,
             for(j = 0; j < trans_size; j++)
             {
                 pu2_dst[j * i4_dst_strd] =
-                                CLIP3((pi2_src[j*i4_src_strd] + pu2_pred[j*i4_pred_strd]), 0, clip_limit);
+                    CLIP3((pi2_src[j * i4_src_strd] + pu2_pred[j * i4_pred_strd]), 0, clip_limit);
             }
         }
         pi2_src++;
@@ -266,20 +266,20 @@ void ihevc_hbd_chroma_recon_8x8(WORD16 *pi2_src,
  */
 
 void ihevc_hbd_chroma_recon_16x16(WORD16 *pi2_src,
-                              UWORD16 *pu2_pred,
-                              UWORD16 *pu2_dst,
-                              WORD32 i4_src_strd,
-                              WORD32 i4_pred_strd,
-                              WORD32 i4_dst_strd,
-                              WORD32 i4_zero_cols,
-                              UWORD8 u1_bit_depth)
+                                  UWORD16 *pu2_pred,
+                                  UWORD16 *pu2_dst,
+                                  WORD32 i4_src_strd,
+                                  WORD32 i4_pred_strd,
+                                  WORD32 i4_dst_strd,
+                                  WORD32 i4_zero_cols,
+                                  UWORD8 u1_bit_depth)
 {
     WORD32 i, j;
     WORD32 trans_size;
     WORD16 clip_limit;
 
     trans_size = TRANS_SIZE_16;
-    clip_limit = (1 << u1_bit_depth) -1;
+    clip_limit = (1 << u1_bit_depth) - 1;
     /* Reconstruction */
 
     for(i = 0; i < trans_size; i++)
@@ -297,7 +297,7 @@ void ihevc_hbd_chroma_recon_16x16(WORD16 *pi2_src,
             for(j = 0; j < trans_size; j++)
             {
                 pu2_dst[j * i4_dst_strd] =
-                                CLIP3((pi2_src[j*i4_src_strd] + pu2_pred[j*i4_pred_strd]), 0, clip_limit);
+                    CLIP3((pi2_src[j * i4_src_strd] + pu2_pred[j * i4_pred_strd]), 0, clip_limit);
             }
         }
         pi2_src++;
