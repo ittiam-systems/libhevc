@@ -620,7 +620,7 @@ void ihevc_hbd_deblk_chroma_vert(UWORD16 *pu2_src,
     qp_indx_v = qp_offset_v + ((quant_param_p + quant_param_q + 1) >> 1);
 
     /* 8.7.2.5.5 Filtering process for chroma block edges */
-    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444)
+    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444 || chroma_fmt_idc == CHROMA_FMT_IDC_YUV422)
     {
         qp_chroma_u = MIN(qp_indx_u, 51);
         qp_chroma_v = MIN(qp_indx_v, 51);
@@ -1098,7 +1098,7 @@ void ihevc_hbd_deblk_chroma_horz(UWORD16 *pu2_src,
     qp_indx_v = qp_offset_v + ((quant_param_p + quant_param_q + 1) >> 1);
 
     /* 8.7.2.5.5 Filtering process for chroma block edges */
-    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444)
+    if(chroma_fmt_idc == CHROMA_FMT_IDC_YUV444 || chroma_fmt_idc == CHROMA_FMT_IDC_YUV422)
     {
         qp_chroma_u = MIN(qp_indx_u, 51);
         qp_chroma_v = MIN(qp_indx_v, 51);

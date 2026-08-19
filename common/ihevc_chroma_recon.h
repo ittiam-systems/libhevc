@@ -95,6 +95,14 @@ typedef void ihevc_chroma_recon_32x32_ft(WORD16 *pi2_src,
                                          WORD32 pred_strd,
                                          WORD32 dst_strd,
                                          WORD32 zero_cols);
+typedef void ihevc_hbd_chroma_recon_32x32_ft(WORD16 *pi2_src,
+                                             UWORD16 *pu2_pred,
+                                             UWORD16 *pu2_dst,
+                                             WORD32 src_strd,
+                                             WORD32 pred_strd,
+                                             WORD32 dst_strd,
+                                             WORD32 zero_cols,
+                                             UWORD8 bit_depth);
 
 ihevc_chroma_recon_4x4_ft ihevc_chroma_recon_4x4;
 ihevc_hbd_chroma_recon_4x4_ft ihevc_hbd_chroma_recon_4x4;
@@ -103,6 +111,7 @@ ihevc_hbd_chroma_recon_8x8_ft ihevc_hbd_chroma_recon_8x8;
 ihevc_chroma_recon_16x16_ft ihevc_chroma_recon_16x16;
 ihevc_hbd_chroma_recon_16x16_ft ihevc_hbd_chroma_recon_16x16;
 ihevc_chroma_recon_32x32_ft ihevc_chroma_recon_32x32;
+ihevc_hbd_chroma_recon_32x32_ft ihevc_hbd_chroma_recon_32x32;
 
 void ihevc_chroma_recon_nxn_ccp(WORD16 *pi2_luma_res,
                                 WORD16 *pi2_chroma_res,
