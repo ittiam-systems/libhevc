@@ -642,11 +642,11 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
 
 
 void ihevc_hbd_intra_pred_chroma_planar(UWORD16 *pu2_ref,
-                                  WORD32 src_strd,
-                                  UWORD16 *pu2_dst,
-                                  WORD32 dst_strd,
-                                  WORD32 nt,
-                                  WORD32 mode)
+                                        WORD32 src_strd,
+                                        UWORD16 *pu2_dst,
+                                        WORD32 dst_strd,
+                                        WORD32 nt,
+                                        WORD32 mode)
 {
     WORD32 row, col;
     WORD32 log2nt = 5;
@@ -674,13 +674,13 @@ void ihevc_hbd_intra_pred_chroma_planar(UWORD16 *pu2_ref,
         for(col = 0; col < (2 * nt); col+=2)
         {
             pu2_dst[row * dst_strd + col] = ((nt - 1 - col / 2)
-                            * pu2_ref[2*(two_nt - 1 - row)]
+                            * pu2_ref[2 * (two_nt - 1 - row)]
                             + (col / 2 + 1) * pu2_ref[2 * (three_nt + 1)]
                             + (nt - 1 - row) * pu2_ref[2 * (two_nt + 1) + col]
                             + (row + 1) * pu2_ref[2 * (nt - 1)] + nt) >> (log2nt + 1);
 
             pu2_dst[row * dst_strd + col + 1] = ((nt - 1 - col / 2)
-                            * pu2_ref[2*(two_nt - 1 - row) + 1]
+                            * pu2_ref[2 * (two_nt - 1 - row) + 1]
                             + (col / 2 + 1) * pu2_ref[2 * (three_nt + 1) + 1]
                             + (nt - 1 - row) * pu2_ref[2 * (two_nt + 1) + col + 1]
                             + (row + 1) * pu2_ref[2 * (nt - 1) + 1] + nt) >> (log2nt + 1);
@@ -728,11 +728,11 @@ void ihevc_hbd_intra_pred_chroma_planar(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_dc(UWORD16 *pu2_ref,
-                                WORD32 src_strd,
-                                UWORD16 *pu2_dst,
-                                WORD32 dst_strd,
-                                WORD32 nt,
-                                WORD32 mode)
+                                    WORD32 src_strd,
+                                    UWORD16 *pu2_dst,
+                                    WORD32 dst_strd,
+                                    WORD32 nt,
+                                    WORD32 mode)
 {
     WORD32 acc_dc_u, acc_dc_v;
     WORD32 dc_val_u , dc_val_v;
@@ -826,11 +826,11 @@ void ihevc_hbd_intra_pred_chroma_dc(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_horz(UWORD16 *pu2_ref,
-                                  WORD32 src_strd,
-                                  UWORD16 *pu2_dst,
-                                  WORD32 dst_strd,
-                                  WORD32 nt,
-                                  WORD32 mode)
+                                      WORD32 src_strd,
+                                      UWORD16 *pu2_dst,
+                                      WORD32 dst_strd,
+                                      WORD32 nt,
+                                      WORD32 mode)
 {
     WORD32 row, col;
 
@@ -886,11 +886,11 @@ void ihevc_hbd_intra_pred_chroma_horz(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_ver(UWORD16 *pu2_ref,
-                                 WORD32 src_strd,
-                                 UWORD16 *pu2_dst,
-                                 WORD32 dst_strd,
-                                 WORD32 nt,
-                                 WORD32 mode)
+                                     WORD32 src_strd,
+                                     UWORD16 *pu2_dst,
+                                     WORD32 dst_strd,
+                                     WORD32 nt,
+                                     WORD32 mode)
 {
     WORD32 row, col;
 
@@ -945,11 +945,11 @@ void ihevc_hbd_intra_pred_chroma_ver(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_mode2(UWORD16 *pu2_ref,
-                                 WORD32 src_strd,
-                                 UWORD16 *pu2_dst,
-                                 WORD32 dst_strd,
-                                 WORD32 nt,
-                                 WORD32 mode)
+                                       WORD32 src_strd,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 dst_strd,
+                                       WORD32 nt,
+                                       WORD32 mode)
 {
     WORD32 row, col;
 
@@ -1010,11 +1010,11 @@ void ihevc_hbd_intra_pred_chroma_mode2(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_mode_18_34(UWORD16 *pu2_ref,
-                                      WORD32 src_strd,
-                                      UWORD16 *pu2_dst,
-                                      WORD32 dst_strd,
-                                      WORD32 nt,
-                                      WORD32 mode)
+                                            WORD32 src_strd,
+                                            UWORD16 *pu2_dst,
+                                            WORD32 dst_strd,
+                                            WORD32 nt,
+                                            WORD32 mode)
 {
     WORD32 row, col;
     WORD32 intra_pred_ang;
@@ -1085,11 +1085,11 @@ void ihevc_hbd_intra_pred_chroma_mode_18_34(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_mode_3_to_9(UWORD16 *pu2_ref,
-                                       WORD32 src_strd,
-                                       UWORD16 *pu2_dst,
-                                       WORD32 dst_strd,
-                                       WORD32 nt,
-                                       WORD32 mode)
+                                             WORD32 src_strd,
+                                             UWORD16 *pu2_dst,
+                                             WORD32 dst_strd,
+                                             WORD32 nt,
+                                             WORD32 mode)
 {
     WORD32 row, col;
     WORD32 intra_pred_ang;
@@ -1171,11 +1171,11 @@ void ihevc_hbd_intra_pred_chroma_mode_3_to_9(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_mode_11_to_17(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode)
+                                               WORD32 src_strd,
+                                               UWORD16 *pu2_dst,
+                                               WORD32 dst_strd,
+                                               WORD32 nt,
+                                               WORD32 mode)
 {
     /* This function and ihevc_intra_pred_CHROMA_mode_19_to_25 are same except*/
     /* for ref main & side samples assignment,can be combined for */
@@ -1187,7 +1187,7 @@ void ihevc_hbd_intra_pred_chroma_mode_11_to_17(UWORD16 *pu2_ref,
     WORD32 pos_u, pos_v, fract_u, fract_v;
 
     UWORD16 ref_temp[2 * MAX_CU_SIZE + 2];
-    UWORD16 * ref_main;
+    UWORD16 *ref_main;
     inv_ang_sum = 128;
 
     intra_pred_ang = gai4_ihevc_ang_table[mode];
@@ -1286,11 +1286,11 @@ void ihevc_hbd_intra_pred_chroma_mode_11_to_17(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_chroma_mode_19_to_25(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode)
+                                               WORD32 src_strd,
+                                               UWORD16 *pu2_dst,
+                                               WORD32 dst_strd,
+                                               WORD32 nt,
+                                               WORD32 mode)
 {
     WORD32 row, col, k;
     WORD32 intra_pred_ang, idx;
@@ -1384,11 +1384,11 @@ void ihevc_hbd_intra_pred_chroma_mode_19_to_25(UWORD16 *pu2_ref,
 */
 
 void ihevc_hbd_intra_pred_chroma_mode_27_to_33(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode)
+                                               WORD32 src_strd,
+                                               UWORD16 *pu2_dst,
+                                               WORD32 dst_strd,
+                                               WORD32 nt,
+                                               WORD32 mode)
 {
     WORD32 row, col ;
     WORD32 pos, fract;

@@ -103,15 +103,15 @@
  *******************************************************************************
  */
 void ihevc_hbd_chroma_itrans_recon_8x8(WORD16 *pi2_src,
-                                   WORD16 *pi2_tmp,
-                                   UWORD16 *pu2_pred,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 i4_src_strd,
-                                   WORD32 i4_pred_strd,
-                                   WORD32 i4_dst_strd,
-                                   WORD32 i4_zero_cols,
-                                   WORD32 i4_zero_rows,
-                                   UWORD8 u1_bit_depth)
+                                       WORD16 *pi2_tmp,
+                                       UWORD16 *pu2_pred,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 i4_src_strd,
+                                       WORD32 i4_pred_strd,
+                                       WORD32 i4_dst_strd,
+                                       WORD32 i4_zero_cols,
+                                       WORD32 i4_zero_rows,
+                                       UWORD8 u1_bit_depth)
 {
     WORD32 j, k;
     WORD32 e[4], o[4];
