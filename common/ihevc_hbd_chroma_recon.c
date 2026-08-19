@@ -349,14 +349,14 @@ void ihevc_hbd_chroma_recon_16x16(WORD16 *pi2_src,
  *******************************************************************************
  */
 
-void ihevc_hbd_chroma_recon_32x32(WORD16* pi2_src,
-    UWORD16* pu2_pred,
-    UWORD16* pu2_dst,
-    WORD32 i4_src_strd,
-    WORD32 i4_pred_strd,
-    WORD32 i4_dst_strd,
-    WORD32 i4_zero_cols,
-    UWORD8 u1_bit_depth)
+void ihevc_hbd_chroma_recon_32x32(WORD16 *pi2_src,
+                              UWORD16 *pu2_pred,
+                              UWORD16 *pu2_dst,
+                              WORD32 i4_src_strd,
+                              WORD32 i4_pred_strd,
+                              WORD32 i4_dst_strd,
+                              WORD32 i4_zero_cols,
+                              UWORD8 u1_bit_depth)
 {
     WORD32 i, j;
     WORD32 trans_size;
@@ -366,19 +366,19 @@ void ihevc_hbd_chroma_recon_32x32(WORD16* pi2_src,
     clip_limit = (1 << u1_bit_depth) - 1;
     /* Reconstruction */
 
-    for (i = 0; i < trans_size; i++)
+    for(i = 0; i < trans_size; i++)
     {
         /* Checking for Zero Cols */
-        if ((i4_zero_cols & 1) == 1)
+        if((i4_zero_cols & 1) == 1)
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 pu2_dst[j * i4_dst_strd] = pu2_pred[j * i4_pred_strd];
             }
         }
         else
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 pu2_dst[j * i4_dst_strd] =
                     CLIP3((pi2_src[j * i4_src_strd] + pu2_pred[j * i4_pred_strd]), 0, clip_limit);
