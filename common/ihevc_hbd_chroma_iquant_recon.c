@@ -108,16 +108,16 @@
  */
 
 void ihevc_hbd_chroma_iquant_recon_4x4(WORD16 *pi2_src,
-                                   UWORD16 *pu2_pred,
-                                   WORD16 *pi2_dequant_coeff,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 i4_qp_div,/* qpscaled / 6 */
-                                   WORD32 i4_qp_rem,/* qpscaled % 6 */
-                                   WORD32 i4_src_strd,
-                                   WORD32 i4_pred_strd,
-                                   WORD32 i4_dst_strd,
-                                   WORD32 i4_zero_cols,
-                                   UWORD8 u1_bit_depth)
+                                       UWORD16 *pu2_pred,
+                                       WORD16 *pi2_dequant_coeff,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 i4_qp_div,/* qpscaled / 6 */
+                                       WORD32 i4_qp_rem,/* qpscaled % 6 */
+                                       WORD32 i4_src_strd,
+                                       WORD32 i4_pred_strd,
+                                       WORD32 i4_dst_strd,
+                                       WORD32 i4_zero_cols,
+                                       UWORD8 u1_bit_depth)
 {
     WORD16 clip_limit;
     /* Inverse Quant and recon */
@@ -219,16 +219,16 @@ void ihevc_hbd_chroma_iquant_recon_4x4(WORD16 *pi2_src,
  */
 
 void ihevc_hbd_chroma_iquant_recon_8x8(WORD16 *pi2_src,
-                                   UWORD16 *pu2_pred,
-                                   WORD16 *pi2_dequant_coeff,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 i4_qp_div,/* qpscaled / 6 */
-                                   WORD32 i4_qp_rem,/* qpscaled % 6 */
-                                   WORD32 i4_src_strd,
-                                   WORD32 i4_pred_strd,
-                                   WORD32 i4_dst_strd,
-                                   WORD32 i4_zero_cols,
-                                   UWORD8 u1_bit_depth)
+                                       UWORD16 *pu2_pred,
+                                       WORD16 *pi2_dequant_coeff,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 i4_qp_div,/* qpscaled / 6 */
+                                       WORD32 i4_qp_rem,/* qpscaled % 6 */
+                                       WORD32 i4_src_strd,
+                                       WORD32 i4_pred_strd,
+                                       WORD32 i4_dst_strd,
+                                       WORD32 i4_zero_cols,
+                                       UWORD8 u1_bit_depth)
 {
 
     WORD16 clip_limit;
@@ -330,16 +330,16 @@ void ihevc_hbd_chroma_iquant_recon_8x8(WORD16 *pi2_src,
  */
 
 void ihevc_hbd_chroma_iquant_recon_16x16(WORD16 *pi2_src,
-                                     UWORD16 *pu2_pred,
-                                     WORD16 *pi2_dequant_coeff,
-                                     UWORD16 *pu2_dst,
-                                     WORD32 i4_qp_div,/* qpscaled / 6 */
-                                     WORD32 i4_qp_rem,/* qpscaled % 6 */
-                                     WORD32 i4_src_strd,
-                                     WORD32 i4_pred_strd,
-                                     WORD32 i4_dst_strd,
-                                     WORD32 i4_zero_cols,
-                                     UWORD8 u1_bit_depth)
+                                         UWORD16 *pu2_pred,
+                                         WORD16 *pi2_dequant_coeff,
+                                         UWORD16 *pu2_dst,
+                                         WORD32 i4_qp_div,/* qpscaled / 6 */
+                                         WORD32 i4_qp_rem,/* qpscaled % 6 */
+                                         WORD32 i4_src_strd,
+                                         WORD32 i4_pred_strd,
+                                         WORD32 i4_dst_strd,
+                                         WORD32 i4_zero_cols,
+                                         UWORD8 u1_bit_depth)
 {
     WORD16 clip_limit;
     /* Inverse Quant and recon */

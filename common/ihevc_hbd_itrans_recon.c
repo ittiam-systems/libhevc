@@ -99,15 +99,15 @@
  *******************************************************************************
  */
 void ihevc_hbd_itrans_recon_4x4_ttype1(WORD16 *pi2_src,
-                                   WORD16 *pi2_tmp,
-                                   UWORD16 *pu2_pred,
-                                   UWORD16 *pu2_dst,
-                                   WORD32 i4_src_strd,
-                                   WORD32 i4_pred_strd,
-                                   WORD32 i4_dst_strd,
-                                   WORD32 i4_zero_cols,
-                                   WORD32 i4_zero_rows,
-                                   UWORD8 u1_bit_depth)
+                                       WORD16 *pi2_tmp,
+                                       UWORD16 *pu2_pred,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 i4_src_strd,
+                                       WORD32 i4_pred_strd,
+                                       WORD32 i4_dst_strd,
+                                       WORD32 i4_zero_cols,
+                                       WORD32 i4_zero_rows,
+                                       UWORD8 u1_bit_depth)
 {
     WORD32 i, c[4];
     WORD32 add;
@@ -235,15 +235,15 @@ void ihevc_hbd_itrans_recon_4x4_ttype1(WORD16 *pi2_src,
  *******************************************************************************
  */
 void ihevc_hbd_itrans_recon_4x4(WORD16 *pi2_src,
-                            WORD16 *pi2_tmp,
-                            UWORD16 *pu2_pred,
-                            UWORD16 *pu2_dst,
-                            WORD32 i4_src_strd,
-                            WORD32 i4_pred_strd,
-                            WORD32 i4_dst_strd,
-                            WORD32 i4_zero_cols,
-                            WORD32 i4_zero_rows,
-                            UWORD8 u1_bit_depth)
+                                WORD16 *pi2_tmp,
+                                UWORD16 *pu2_pred,
+                                UWORD16 *pu2_dst,
+                                WORD32 i4_src_strd,
+                                WORD32 i4_pred_strd,
+                                WORD32 i4_dst_strd,
+                                WORD32 i4_zero_cols,
+                                WORD32 i4_zero_rows,
+                                UWORD8 u1_bit_depth)
 
 {
     WORD32 j;

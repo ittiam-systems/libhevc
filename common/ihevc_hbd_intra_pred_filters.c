@@ -84,13 +84,14 @@
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for pu1_ref substitution for higher bit depth
+*  Intra prediction interpolation filter for pu1_ref substitution for higher bit depth
 *
 *
 * @par Description:
-*    Reference substitution process for samples unavailable  for prediction
-*    Refer to section 8.4.4.2.2
+*  Reference substitution process for samples unavailable  for prediction
+*  Refer to section 8.4.4.2.2
 *
 * @param[in] pu2_top_left
 *  UWORD16 pointer to the top-left
@@ -118,6 +119,7 @@
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -125,15 +127,15 @@
 */
 
 
-void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 * pu2_top_left,
-                                           UWORD16 * pu2_top,
-                                           UWORD16 * pu2_left,
-                                           WORD32 src_strd,
-                                           WORD32 nt,
-                                           WORD32 nbr_flags,
-                                           UWORD16 * pu2_dst,
-                                           WORD32 dst_strd,
-                                           UWORD8 bit_depth)
+void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
+                                                UWORD16 *pu2_top,
+                                                UWORD16 *pu2_left,
+                                                WORD32 src_strd,
+                                                WORD32 nt,
+                                                WORD32 nbr_flags,
+                                                UWORD16 *pu2_dst,
+                                                WORD32 dst_strd,
+                                                UWORD8 bit_depth)
 {
     UWORD16 pu2_ref;
     WORD32 dc_val, i;
@@ -508,13 +510,14 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 * pu2_top_left,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for ref_filtering
+*  Intra prediction interpolation filter for ref_filtering
 *
 *
 * @par Description:
-*    Reference DC filtering for neighboring samples dependent  on TU size and
-*    mode  Refer to section 8.4.4.2.3 in the standard
+*  Reference DC filtering for neighboring samples dependent  on TU size and
+*  mode  Refer to section 8.4.4.2.3 in the standard
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -530,6 +533,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 * pu2_top_left,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -537,12 +541,12 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 * pu2_top_left,
 */
 
 
-void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
-                                    WORD32 nt,
-                                    UWORD16 * pu2_dst,
-                                    WORD32 mode,
-                                    WORD32 intra_smoothing_flags,
-                                    UWORD8 bit_depth)
+void ihevc_hbd_intra_pred_ref_filtering(UWORD16 *pu2_src,
+                                        WORD32 nt,
+                                        UWORD16 *pu2_dst,
+                                        WORD32 mode,
+                                        WORD32 intra_smoothing_flags,
+                                        UWORD8 bit_depth)
 {
     WORD32 filter_flag;
     WORD32 i; /* Generic indexing variable */
@@ -572,7 +576,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
     else
     {
         /* If strong intra smoothin is enabled and transform size is 32 */
-        if ((1 == strong_intra_smoothing_enable_flag) && (32 == nt))
+        if((1 == strong_intra_smoothing_enable_flag) && (32 == nt))
         {
             /* Strong Intra Filtering */
             abs_cond_top_flag = (ABS(pu2_src[2 * nt] + pu2_src[4 * nt]
@@ -588,7 +592,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
         au2_flt[4 * nt] = pu2_src[4 * nt];
 
         /* Strong filtering of reference samples */
-        if (1 == bi_linear_int_flag)
+        if(1 == bi_linear_int_flag)
         {
             au2_flt[2 * nt] = pu2_src[2 * nt];
 
@@ -596,7 +600,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
                 au2_flt[i] = (((2 * nt) - i) * pu2_src[0] + i * pu2_src[2 * nt] + 32) >> 6;
 
             for(i = 1; i < (2 * nt) ; i++ )
-                au2_flt[i + (2 * nt)] = (((2 * nt)-i)*pu2_src[2 * nt] + i * pu2_src[4 * nt] + 32) >> 6;
+                au2_flt[i + (2 * nt)] = (((2 * nt) - i) * pu2_src[2 * nt] + i * pu2_src[4 * nt] + 32) >> 6;
         }
         else
         {
@@ -617,13 +621,14 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for luma planar
+*  Intra prediction interpolation filter for luma planar
 *
 * @par Description:
-*    Planar Intraprediction with reference neighboring samples location
-*    pointed by 'pu2_ref' to the TU block location  pointed by 'pu2_dst'  Refer
-*    to section 8.4.4.2.4 in the standard
+*  Planar Intraprediction with reference neighboring samples location
+*  pointed by 'pu2_ref' to the TU block location  pointed by 'pu2_dst'  Refer
+*  to section 8.4.4.2.4 in the standard
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -645,6 +650,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -653,12 +659,12 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 * pu2_src,
 
 
 void ihevc_hbd_intra_pred_luma_planar(UWORD16 *pu2_ref,
-                                  WORD32 src_strd,
-                                  UWORD16 *pu2_dst,
-                                  WORD32 dst_strd,
-                                  WORD32 nt,
-                                  WORD32 mode,
-                                  UWORD8 bit_depth)
+                                      WORD32 src_strd,
+                                      UWORD16 *pu2_dst,
+                                      WORD32 dst_strd,
+                                      WORD32 nt,
+                                      WORD32 mode,
+                                      UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 log2nt = 5;
@@ -702,13 +708,14 @@ void ihevc_hbd_intra_pred_luma_planar(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for luma dc
+*  Intra prediction interpolation filter for luma dc
 *
 * @par Description:
-*   Intraprediction for DC mode with reference neighboring  samples location
-*   pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
-*   to section 8.4.4.2.5 in the standard
+*  Intraprediction for DC mode with reference neighboring  samples location
+*  pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
+*  to section 8.4.4.2.5 in the standard
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -730,6 +737,7 @@ void ihevc_hbd_intra_pred_luma_planar(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -738,12 +746,12 @@ void ihevc_hbd_intra_pred_luma_planar(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_luma_dc(UWORD16 *pu2_ref,
-                              WORD32 src_strd,
-                              UWORD16 *pu2_dst,
-                              WORD32 dst_strd,
-                              WORD32 nt,
-                              WORD32 mode,
-                              UWORD8 bit_depth)
+                                  WORD32 src_strd,
+                                  UWORD16 *pu2_dst,
+                                  WORD32 dst_strd,
+                                  WORD32 nt,
+                                  WORD32 mode,
+                                  UWORD8 bit_depth)
 {
     WORD32 acc_dc;
     WORD32 dc_val, two_dc_val, three_dc_val;
@@ -817,13 +825,14 @@ void ihevc_hbd_intra_pred_luma_dc(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*     Intra prediction interpolation filter for horizontal luma variable.
+*  Intra prediction interpolation filter for horizontal luma variable.
 *
 * @par Description:
-*      Horizontal intraprediction(mode 10) with reference  samples location
-*      pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
-*      to section 8.4.4.2.6 in the standard (Special case)
+*  Horizontal intraprediction(mode 10) with reference  samples location
+*  pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
+*  to section 8.4.4.2.6 in the standard (Special case)
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -845,6 +854,7 @@ void ihevc_hbd_intra_pred_luma_dc(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -853,12 +863,12 @@ void ihevc_hbd_intra_pred_luma_dc(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
-                                WORD32 src_strd,
-                                UWORD16 *pu2_dst,
-                                WORD32 dst_strd,
-                                WORD32 nt,
-                                WORD32 mode,
-                                UWORD8 bit_depth)
+                                    WORD32 src_strd,
+                                    UWORD16 *pu2_dst,
+                                    WORD32 dst_strd,
+                                    WORD32 nt,
+                                    WORD32 mode,
+                                    UWORD8 bit_depth)
 {
 
     WORD32 row, col;
@@ -867,7 +877,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 
     two_nt = 2 * nt;
 
-    if (nt == 32)
+    if(nt == 32)
     {
         for(row = 0; row < nt; row++)
             for(col = 0; col < nt; col++)
@@ -895,13 +905,14 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*     Intra prediction interpolation filter for vertical luma variable.
+*  Intra prediction interpolation filter for vertical luma variable.
 *
 * @par Description:
-*    Horizontal intraprediction with reference neighboring  samples location
-*    pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
-*    to section 8.4.4.2.6 in the standard (Special case)
+*  Horizontal intraprediction with reference neighboring  samples location
+*  pointed by 'pu2_ref' to the TU block  location pointed by 'pu2_dst'  Refer
+*  to section 8.4.4.2.6 in the standard (Special case)
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -923,6 +934,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -930,12 +942,12 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 */
 
 void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
-                               WORD32 src_strd,
-                               UWORD16 *pu2_dst,
-                               WORD32 dst_strd,
-                               WORD32 nt,
-                               WORD32 mode,
-                               UWORD8 bit_depth)
+                                   WORD32 src_strd,
+                                   UWORD16 *pu2_dst,
+                                   WORD32 dst_strd,
+                                   WORD32 nt,
+                                   WORD32 mode,
+                                   UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD16 s2_predpixel;
@@ -969,12 +981,13 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*     Intra prediction interpolation filter for luma mode2.
+*  Intra prediction interpolation filter for luma mode2.
 *
 * @par Description:
-*    Intraprediction for mode 2 (sw angle) with reference  neighboring samples
-*    location pointed by 'pu2_ref' to the  TU block location pointed by
+*  Intraprediction for mode 2 (sw angle) with reference  neighboring samples
+*  location pointed by 'pu2_ref' to the  TU block location pointed by
 *    'pu2_dst'  Refer to section 8.4.4.2.6 in the standard
 *
 * @param[in] pu2_src
@@ -997,6 +1010,7 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1004,15 +1018,15 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
 */
 
 void ihevc_hbd_intra_pred_luma_mode2(UWORD16 *pu2_ref,
-                                 WORD32 src_strd,
-                                 UWORD16 *pu2_dst,
-                                 WORD32 dst_strd,
-                                 WORD32 nt,
-                                 WORD32 mode,
-                               UWORD8 bit_depth)
+                                     WORD32 src_strd,
+                                     UWORD16 *pu2_dst,
+                                     WORD32 dst_strd,
+                                     WORD32 nt,
+                                     WORD32 mode,
+                                     UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 two_nt= 2 * nt;
+    WORD32 two_nt = 2 * nt;
     WORD32 intra_pred_ang = 32;
     WORD32 idx =0 ;
 
@@ -1030,13 +1044,14 @@ void ihevc_hbd_intra_pred_luma_mode2(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for luma mode 18 & mode 34.
+*  Intra prediction interpolation filter for luma mode 18 & mode 34.
 *
 * @par Description:
-*    Intraprediction for mode 34 (ne angle) and  mode 18 (nw angle) with
-*    reference  neighboring samples location pointed by 'pu2_ref' to the  TU
-*    block location pointed by 'pu2_dst'
+*  Intraprediction for mode 34 (ne angle) and  mode 18 (nw angle) with
+*  reference  neighboring samples location pointed by 'pu2_ref' to the  TU
+*  block location pointed by 'pu2_dst'
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -1058,6 +1073,7 @@ void ihevc_hbd_intra_pred_luma_mode2(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1065,12 +1081,12 @@ void ihevc_hbd_intra_pred_luma_mode2(UWORD16 *pu2_ref,
 */
 
 void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
-                                      WORD32 src_strd,
-                                      UWORD16 *pu2_dst,
-                                      WORD32 dst_strd,
-                                      WORD32 nt,
-                                      WORD32 mode,
-                                      UWORD8 bit_depth)
+                                          WORD32 src_strd,
+                                          UWORD16 *pu2_dst,
+                                          WORD32 dst_strd,
+                                          WORD32 nt,
+                                          WORD32 mode,
+                                          UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 intra_pred_ang;
@@ -1105,13 +1121,14 @@ void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for luma mode 3 to mode 9
+*  Intra prediction interpolation filter for luma mode 3 to mode 9
 *
 * @par Description:
-*    Intraprediction for mode 3 to 9  (positive angle, horizontal mode ) with
-*    reference  neighboring samples location pointed by 'pu2_ref' to the  TU
-*    block location pointed by 'pu2_dst'
+*  Intraprediction for mode 3 to 9  (positive angle, horizontal mode ) with
+*  reference  neighboring samples location pointed by 'pu2_ref' to the  TU
+*  block location pointed by 'pu2_dst'
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -1133,6 +1150,7 @@ void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1141,12 +1159,12 @@ void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_luma_mode_3_to_9(UWORD16 *pu2_ref,
-                                       WORD32 src_strd,
-                                       UWORD16 *pu2_dst,
-                                       WORD32 dst_strd,
-                                       WORD32 nt,
-                                       WORD32 mode,
-                                       UWORD8 bit_depth)
+                                           WORD32 src_strd,
+                                           UWORD16 *pu2_dst,
+                                           WORD32 dst_strd,
+                                           WORD32 nt,
+                                           WORD32 mode,
+                                           UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 two_nt = 2 * nt;
@@ -1181,13 +1199,14 @@ void ihevc_hbd_intra_pred_luma_mode_3_to_9(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*   Intra prediction interpolation filter for luma mode 11 to mode 17
+*  Intra prediction interpolation filter for luma mode 11 to mode 17
 *
 * @par Description:
 *    Intraprediction for mode 11 to 17  (negative angle, horizontal mode )
-*    with reference  neighboring samples location pointed by 'pu1_ref' to the
-*    TU block location pointed by 'pu1_dst'
+*  with reference  neighboring samples location pointed by 'pu1_ref' to the
+*  TU block location pointed by 'pu1_dst'
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -1209,6 +1228,7 @@ void ihevc_hbd_intra_pred_luma_mode_3_to_9(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1216,12 +1236,12 @@ void ihevc_hbd_intra_pred_luma_mode_3_to_9(UWORD16 *pu2_ref,
 */
 
 void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode,
-                                         UWORD8 bit_depth)
+                                             WORD32 src_strd,
+                                             UWORD16 *pu2_dst,
+                                             WORD32 dst_strd,
+                                             WORD32 nt,
+                                             WORD32 mode,
+                                             UWORD8 bit_depth)
 {
     /* This function and ihevc_intra_pred_luma_mode_19_to_25 are same except*/
     /* for ref main & side samples assignment,can be combined for */
@@ -1286,13 +1306,14 @@ void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*   Intra prediction interpolation filter for luma mode 19 to mode 25
+*  Intra prediction interpolation filter for luma mode 19 to mode 25
 *
 * @par Description:
-*    Intraprediction for mode 19 to 25  (negative angle, vertical mode ) with
-*    reference  neighboring samples location pointed by 'pu2_ref' to the  TU
-*    block location pointed by 'pu2_dst'
+*  Intraprediction for mode 19 to 25  (negative angle, vertical mode ) with
+*  reference  neighboring samples location pointed by 'pu2_ref' to the  TU
+*  block location pointed by 'pu2_dst'
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -1314,6 +1335,7 @@ void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1322,12 +1344,12 @@ void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_luma_mode_19_to_25(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode,
-                                         UWORD8 bit_depth)
+                                             WORD32 src_strd,
+                                             UWORD16 *pu2_dst,
+                                             WORD32 dst_strd,
+                                             WORD32 nt,
+                                             WORD32 mode,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col, k;
     WORD32 two_nt, intra_pred_ang, idx;
@@ -1379,13 +1401,14 @@ void ihevc_hbd_intra_pred_luma_mode_19_to_25(UWORD16 *pu2_ref,
 /**
 *******************************************************************************
 *
+*
 * @brief
-*    Intra prediction interpolation filter for luma mode 27 to mode 33
+*  Intra prediction interpolation filter for luma mode 27 to mode 33
 *
 * @par Description:
-*    Intraprediction for mode 27 to 33  (positive angle, vertical mode ) with
-*    reference  neighboring samples location pointed by 'pu2_ref' to the  TU
-*    block location pointed by 'pu2_dst'
+*  Intraprediction for mode 27 to 33  (positive angle, vertical mode ) with
+*  reference  neighboring samples location pointed by 'pu2_ref' to the  TU
+*  block location pointed by 'pu2_dst'
 *
 * @param[in] pu2_src
 *  UWORD16 pointer to the source
@@ -1407,6 +1430,7 @@ void ihevc_hbd_intra_pred_luma_mode_19_to_25(UWORD16 *pu2_ref,
 *
 * @returns
 *
+*
 * @remarks
 *  None
 *
@@ -1415,12 +1439,12 @@ void ihevc_hbd_intra_pred_luma_mode_19_to_25(UWORD16 *pu2_ref,
 
 
 void ihevc_hbd_intra_pred_luma_mode_27_to_33(UWORD16 *pu2_ref,
-                                         WORD32 src_strd,
-                                         UWORD16 *pu2_dst,
-                                         WORD32 dst_strd,
-                                         WORD32 nt,
-                                         WORD32 mode,
-                                         UWORD8 bit_depth)
+                                             WORD32 src_strd,
+                                             UWORD16 *pu2_dst,
+                                             WORD32 dst_strd,
+                                             WORD32 nt,
+                                             WORD32 mode,
+                                             UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 two_nt, pos, fract;
