@@ -745,12 +745,7 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
     // two transforms
     WORD16 *residue_out_intrmdt = residue_out_base + (TRANS_SIZE_4 * TRANS_SIZE_4);
 
-    if (ps_codec->i4_pixel_size_y > 1)
-    {
-        ASSERT(0);
-        return;
-    }
-
+    WORD32 bit_depth = chroma_plane == NULL_PLANE ? ps_codec->i4_bit_depth_luma : ps_codec->i4_bit_depth_chroma;
     if(chroma_plane == U_PLANE && ps_tu->b3_cb_log2_res_scale_abs_plus1 != 0)
     {
         alpha = (1 << (ps_tu->b3_cb_log2_res_scale_abs_plus1 - 1))
@@ -829,10 +824,20 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
         }
         if(!alpha)
         {
-            ps_codec->apf_recon[func_idx](residue_out, ps_pl_tu_ctxt->pu1_pred,
-                                          ps_pl_tu_ctxt->pu1_dst, trans_size,
-                                          ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
-                                          ps_pl_tu_ctxt->zero_cols);
+            if(ps_codec->i4_pixel_size_y > 1)
+            {
+                ps_codec->apf_hbd_recon[func_idx](residue_out, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
+                                                  (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, trans_size,
+                                                  ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                                  ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
+            }
+            else
+            {
+                ps_codec->apf_recon[func_idx](residue_out, ps_pl_tu_ctxt->pu1_pred,
+                                              ps_pl_tu_ctxt->pu1_dst, trans_size,
+                                              ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                              ps_pl_tu_ctxt->zero_cols);
+            }
         }
     }
     if(alpha)
