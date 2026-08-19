@@ -42,13 +42,13 @@
 #include "ihevc_platform_macros.h"
 #include "ihevc_defs.h"
 #include "ihevc_trans_tables.h"
-#include "ihevc_itrans_recon.h"
+#include "ihevc_chroma_itrans_recon.h"
 #include "ihevc_function_selector.h"
 #include "ihevc_trans_macros.h"
 
 
- /**
-  *******************************************************************************
+/**
+ *******************************************************************************
   *
   * @brief
   *  This function performs Inverse transform  and reconstruction for 32x32
@@ -95,16 +95,16 @@
   *
   *******************************************************************************
   */
-void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
-    WORD16* pi2_tmp,
-    UWORD16* pu2_pred,
-    UWORD16* pu2_dst,
-    WORD32 i4_src_strd,
-    WORD32 i4_pred_strd,
-    WORD32 i4_dst_strd,
-    WORD32 i4_zero_cols,
-    WORD32 i4_zero_rows,
-    UWORD8 u1_bit_depth)
+void ihevc_hbd_chroma_itrans_recon_32x32(WORD16 *pi2_src,
+                                         WORD16 *pi2_tmp,
+                                         UWORD16 *pu2_pred,
+                                         UWORD16 *pu2_dst,
+                                         WORD32 i4_src_strd,
+                                         WORD32 i4_pred_strd,
+                                         WORD32 i4_dst_strd,
+                                         WORD32 i4_zero_cols,
+                                         WORD32 i4_zero_rows,
+                                         UWORD8 u1_bit_depth)
 {
     WORD32 j, k;
     WORD32 e[16], o[16];
@@ -113,7 +113,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
     WORD32 eeee[2], eeeo[2];
     WORD32 add;
     WORD32 shift;
-    WORD16* pi2_tmp_orig;
+    WORD16 *pi2_tmp_orig;
     WORD32 trans_size;
     WORD32 zero_rows_2nd_stage = i4_zero_cols;
     WORD32 row_limit_2nd_stage;
@@ -123,14 +123,14 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
     pi2_tmp_orig = pi2_tmp;
     clip_limit = (1 << u1_bit_depth) - 1;
 
-    if ((i4_zero_cols & 0xFFFFFFF0) == 0xFFFFFFF0)
+    if((i4_zero_cols & 0xFFFFFFF0) == 0xFFFFFFF0)
         row_limit_2nd_stage = 4;
-    else if ((i4_zero_cols & 0xFFFFFF00) == 0xFFFFFF00)
+    else if((i4_zero_cols & 0xFFFFFF00) == 0xFFFFFF00)
         row_limit_2nd_stage = 8;
     else
         row_limit_2nd_stage = TRANS_SIZE_32;
 
-    if ((i4_zero_rows & 0xFFFFFFF0) == 0xFFFFFFF0)  /* First 4 rows of input are non-zero */
+    if((i4_zero_rows & 0xFFFFFFF0) == 0xFFFFFFF0)  /* First 4 rows of input are non-zero */
     {
         /************************************************************************************************/
         /**********************************START - IT_RECON_32x32****************************************/
@@ -139,23 +139,23 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         shift = IT_SHIFT_STAGE_1;
         add = 1 << (shift - 1);
 
-        for (j = 0; j < row_limit_2nd_stage; j++)
+        for(j = 0; j < row_limit_2nd_stage; j++)
         {
             /* Checking for Zero Cols */
-            if ((i4_zero_cols & 1) == 1)
+            if((i4_zero_cols & 1) == 1)
             {
                 memset(pi2_tmp, 0, trans_size * sizeof(WORD16));
             }
             else
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_src[i4_src_strd]
                         + g_ai2_ihevc_trans_32[3][k]
                         * pi2_src[3 * i4_src_strd];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_src[2 * i4_src_strd];
                 }
@@ -175,17 +175,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     pi2_tmp[k] =
                         CLIP_S16(((e[k] + o[k] + add) >> shift));
@@ -203,18 +203,18 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         /* Inverse Transform 2nd stage */
         shift = 20 - u1_bit_depth;
         add = 1 << (shift - 1);
-        if ((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
+        if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
                         * pi2_tmp[3 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size];
                 }
@@ -234,17 +234,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -259,12 +259,12 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 pu2_dst += i4_dst_strd;
             }
         }
-        else if ((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
+        else if((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -274,13 +274,13 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[7][k]
                         * pi2_tmp[7 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
                         * pi2_tmp[6 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size];
                 }
@@ -294,17 +294,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -321,10 +321,10 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         }
         else /* All rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -358,7 +358,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[31][k]
                         * pi2_tmp[31 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
@@ -376,7 +376,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[30][k]
                         * pi2_tmp[30 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size]
                         + g_ai2_ihevc_trans_32[12][k]
@@ -412,17 +412,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -441,7 +441,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         /************************************END - IT_RECON_32x32****************************************/
         /************************************************************************************************/
     }
-    else if ((i4_zero_rows & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of input are non-zero */
+    else if((i4_zero_rows & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of input are non-zero */
     {
         /************************************************************************************************/
         /**********************************START - IT_RECON_32x32****************************************/
@@ -450,17 +450,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         shift = IT_SHIFT_STAGE_1;
         add = 1 << (shift - 1);
 
-        for (j = 0; j < row_limit_2nd_stage; j++)
+        for(j = 0; j < row_limit_2nd_stage; j++)
         {
             /* Checking for Zero Cols */
-            if ((i4_zero_cols & 1) == 1)
+            if((i4_zero_cols & 1) == 1)
             {
                 memset(pi2_tmp, 0, trans_size * sizeof(WORD16));
             }
             else
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_src[i4_src_strd]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -470,13 +470,13 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[7][k]
                         * pi2_src[7 * i4_src_strd];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_src[2 * i4_src_strd]
                         + g_ai2_ihevc_trans_32[6][k]
                         * pi2_src[6 * i4_src_strd];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_src[4 * i4_src_strd];
                 }
@@ -490,17 +490,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     pi2_tmp[k] =
                         CLIP_S16(((e[k] + o[k] + add) >> shift));
@@ -518,18 +518,18 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         /* Inverse Transform 2nd stage */
         shift = 20 - u1_bit_depth;
         add = 1 << (shift - 1);
-        if ((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
+        if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
                         * pi2_tmp[3 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size];
                 }
@@ -549,17 +549,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -574,12 +574,12 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 pu2_dst += i4_dst_strd;
             }
         }
-        else if ((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
+        else if((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -589,13 +589,13 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[7][k]
                         * pi2_tmp[7 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
                         * pi2_tmp[6 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size];
                 }
@@ -609,17 +609,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -636,10 +636,10 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         }
         else /* All rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -673,7 +673,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[31][k]
                         * pi2_tmp[31 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
@@ -691,7 +691,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[30][k]
                         * pi2_tmp[30 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size]
                         + g_ai2_ihevc_trans_32[12][k]
@@ -727,17 +727,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -765,17 +765,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         shift = IT_SHIFT_STAGE_1;
         add = 1 << (shift - 1);
 
-        for (j = 0; j < row_limit_2nd_stage; j++)
+        for(j = 0; j < row_limit_2nd_stage; j++)
         {
             /* Checking for Zero Cols */
-            if ((i4_zero_cols & 1) == 1)
+            if((i4_zero_cols & 1) == 1)
             {
                 memset(pi2_tmp, 0, trans_size * sizeof(WORD16));
             }
             else
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_src[i4_src_strd]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -809,7 +809,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[31][k]
                         * pi2_src[31 * i4_src_strd];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_src[2 * i4_src_strd]
                         + g_ai2_ihevc_trans_32[6][k]
@@ -827,7 +827,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[30][k]
                         * pi2_src[30 * i4_src_strd];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_src[4 * i4_src_strd]
                         + g_ai2_ihevc_trans_32[12][k]
@@ -855,17 +855,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     pi2_tmp[k] =
                         CLIP_S16(((e[k] + o[k] + add) >> shift));
@@ -883,18 +883,18 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         /* Inverse Transform 2nd stage */
         shift = 20 - u1_bit_depth;
         add = 1 << (shift - 1);
-        if ((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
+        if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
                         * pi2_tmp[3 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size];
                 }
@@ -914,17 +914,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -939,12 +939,12 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 pu2_dst += i4_dst_strd;
             }
         }
-        else if ((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
+        else if((zero_rows_2nd_stage & 0xFFFFFF00) == 0xFFFFFF00) /* First 8 rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -954,13 +954,13 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[7][k]
                         * pi2_tmp[7 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
                         * pi2_tmp[6 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size];
                 }
@@ -974,17 +974,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =
@@ -1001,10 +1001,10 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
         }
         else /* All rows of output of 1st stage are non-zero */
         {
-            for (j = 0; j < trans_size; j++)
+            for(j = 0; j < trans_size; j++)
             {
                 /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     o[k] = g_ai2_ihevc_trans_32[1][k] * pi2_tmp[trans_size]
                         + g_ai2_ihevc_trans_32[3][k]
@@ -1038,7 +1038,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[31][k]
                         * pi2_tmp[31 * trans_size];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     eo[k] = g_ai2_ihevc_trans_32[2][k] * pi2_tmp[2 * trans_size]
                         + g_ai2_ihevc_trans_32[6][k]
@@ -1056,7 +1056,7 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                         + g_ai2_ihevc_trans_32[30][k]
                         * pi2_tmp[30 * trans_size];
                 }
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     eeo[k] = g_ai2_ihevc_trans_32[4][k] * pi2_tmp[4 * trans_size]
                         + g_ai2_ihevc_trans_32[12][k]
@@ -1092,17 +1092,17 @@ void ihevc_hbd_chroma_itrans_recon_32x32(WORD16* pi2_src,
                 eee[3] = eeee[0] - eeeo[0];
                 eee[1] = eeee[1] + eeeo[1];
                 eee[2] = eeee[1] - eeeo[1];
-                for (k = 0; k < 4; k++)
+                for(k = 0; k < 4; k++)
                 {
                     ee[k] = eee[k] + eeo[k];
                     ee[k + 4] = eee[3 - k] - eeo[3 - k];
                 }
-                for (k = 0; k < 8; k++)
+                for(k = 0; k < 8; k++)
                 {
                     e[k] = ee[k] + eo[k];
                     e[k + 8] = ee[7 - k] - eo[7 - k];
                 }
-                for (k = 0; k < 16; k++)
+                for(k = 0; k < 16; k++)
                 {
                     WORD32 itrans_out;
                     itrans_out =

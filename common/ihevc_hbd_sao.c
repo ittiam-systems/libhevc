@@ -163,7 +163,7 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
             WORD32 idx = pu2_src[col] >> band_shift;
 
             pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
-            if (idx < NUM_BAND_TABLE)
+            if(idx < NUM_BAND_TABLE)
             {
                 band_idx = (0 == col % 2) ? band_table_u[idx] : band_table_v[idx];
             }
