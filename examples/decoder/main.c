@@ -2406,40 +2406,41 @@ int main(WORD32 argc, CHAR *argv[])
             }
 
 #ifdef ADAPTIVE_TEST
+            WORD32 i4_pixel_size = 1 + (ps_video_decode_op->s_disp_frm_buf.u4_bit_depth > 8 );
             switch(s_app_ctx.e_output_chroma_format)
             {
                 case IV_YUV_420P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2) * i4_pixel_size;
                     break;
                 }
                 case IV_YUV_420SP_UV:
                 case IV_YUV_420SP_VU:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * i4_pixel_size;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;
                 }
                 case IV_YUV_422P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * i4_pixel_size;
                     break;
                 }
                 case IV_YUV_444P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
                     break;
                 }
                 case IV_GRAY:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * i4_pixel_size;
                     s_ctl_op.u4_min_out_buf_size[1] = 0;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;
