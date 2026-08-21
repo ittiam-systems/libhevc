@@ -245,7 +245,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     }
 
     src_strd = ps_codec->i4_strd;
-    chroma_strd = (src_strd * chroma_pixel_strd / h_samp_factor) * i4_pixel_size_uv;
+    chroma_strd = (src_strd * chroma_pixel_strd / h_samp_factor);
 
     /* Luma Vertical Edge */
 
@@ -579,7 +579,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
         /** Deblocking is done on a shifted CTB -
          *  Vertical edge processing is done by shifting the CTB up by four pixels */
-        pu1_src -= 4 * chroma_strd;
+        pu1_src -= 4 * chroma_strd * i4_pixel_size_uv;
 
         for(col = 0; col < ctb_size / (8 * h_samp_factor); col++)
         {
@@ -615,9 +615,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 if(0 != bs_tz)
                 {
                     if((row + bs_tz) >= (ctb_size / (4 * v_samp_factor)))
-                        pu1_src += 4 * (ctb_size / (4 * v_samp_factor) - row) * chroma_strd;
+                        pu1_src += 4 * (ctb_size / (4 * v_samp_factor) - row) * chroma_strd * i4_pixel_size_uv;
                     else
-                        pu1_src += 4 * bs_tz  * chroma_strd;
+                        pu1_src += 4 * bs_tz  * chroma_strd * i4_pixel_size_uv;
                     row += bs_tz;
                     u4_bs = u4_bs >> (bs_tz << v_samp_factor);
                     continue;
@@ -699,7 +699,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
-                                                                               src_strd,
+                                                                               chroma_strd,
                                                                                qp_q,
                                                                                qp_p,
                                                                                ps_pps->i1_pic_cr_qp_offset,
@@ -729,7 +729,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
-                                                                               src_strd,
+                                                                               chroma_strd,
                                                                                qp_p,
                                                                                qp_q,
                                                                                ps_pps->i1_pic_cb_qp_offset,
@@ -743,7 +743,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     }
                 }
 
-                pu1_src += 4 * chroma_strd;
+                pu1_src += 4 * chroma_strd * i4_pixel_size_uv;
                 u4_bs = u4_bs >> (2 * v_samp_factor);
                 row++;
             } /* End of loop over rows */
@@ -904,7 +904,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
-                                                                               src_strd,
+                                                                               chroma_strd,
                                                                                qp_q,
                                                                                qp_p,
                                                                                ps_pps->i1_pic_cr_qp_offset,
@@ -934,7 +934,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
-                                                                               src_strd,
+                                                                               chroma_strd,
                                                                                qp_p,
                                                                                qp_q,
                                                                                ps_pps->i1_pic_cb_qp_offset,
@@ -961,7 +961,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 pu4_horz_bs += (64 == ctb_size) ? 2 : 1;
             }
             pu1_src -= ctb_size * (chroma_pixel_strd / h_samp_factor) * i4_pixel_size_uv;
-            pu1_src += 8 * chroma_strd;
+            pu1_src += 8 * chroma_strd * i4_pixel_size_uv;
 
         }
     }
