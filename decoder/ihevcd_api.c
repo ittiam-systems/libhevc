@@ -2229,15 +2229,15 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
         if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
         {
-            size = wd * ht * 3;
+            size = wd * ht * 3 * i4_pixel_size;
         }
         else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
         {
-            size = wd * ht * 2;
+            size = wd * ht * 2 * i4_pixel_size;
         }
         else
         {
-            size = wd * ht;
+            size = wd * ht * i4_pixel_size;
         }
 
         if(size > MIN_BITSBUF_SIZE)
