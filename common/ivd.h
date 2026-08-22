@@ -466,6 +466,11 @@ typedef struct {
      */
     WORD32                                  i4_display_index;
 
+    /**
+     * bit depth
+     */
+    UWORD32                                 u4_bit_depth;
+
 }ivd_video_decode_op_t;
 
 
