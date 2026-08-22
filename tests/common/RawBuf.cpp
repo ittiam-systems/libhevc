@@ -78,10 +78,11 @@ size_t RawBuf::planeHeight(size_t planeIdx) const {
   return 0;
 }
 
-bool RawBuf::allocBuffer(size_t width, size_t height,
+bool RawBuf::allocBuffer(size_t width, size_t height, size_t bitDepth,
                          libhevc::test::Format format, size_t alignment) {
   mWidth = width;
   mHeight = height;
+  mBitDepth = bitDepth ? bitDepth : 8;
   mFormat = format;
 
   size_t planesCount = numPlanes();
@@ -92,6 +93,7 @@ bool RawBuf::allocBuffer(size_t width, size_t height,
     mOffsets[i] = 0;
   }
 
+  size_t elementSize = (mBitDepth + 7) / 8;
   for (size_t i = 0; i < planesCount; ++i) {
     size_t w = planeWidth(i);
     size_t h = planeHeight(i);
@@ -100,7 +102,7 @@ bool RawBuf::allocBuffer(size_t width, size_t height,
     size_t alignedStride = (w + alignment - 1) & ~(alignment - 1);
     mStrides[i] = alignedStride;
     mOffsets[i] = totalSize;
-    totalSize += alignedStride * h;
+    totalSize += alignedStride * h * elementSize;
   }
 
   mStorage.resize(totalSize);

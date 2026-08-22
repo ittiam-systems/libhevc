@@ -321,10 +321,11 @@ bool DecHelper::decodeHeader(size_t& bytesConsumed) {
   if (ret == IV_SUCCESS) {
     mWidth = decodeOp.s_ivd_video_decode_op_t.u4_pic_wd;
     mHeight = decodeOp.s_ivd_video_decode_op_t.u4_pic_ht;
+    mBitDepth = decodeOp.s_ivd_video_decode_op_t.u4_bit_depth;
     mHeaderDecoded = true;
 
     // Allocate the output reconstructed YUV frame buffer
-    if (!mOutputBuf.allocBuffer(mWidth, mHeight, mFormat)) {
+    if (!mOutputBuf.allocBuffer(mWidth, mHeight, mBitDepth, mFormat)) {
       return false;
     }
 
@@ -435,12 +436,13 @@ std::string DecHelper::computeFrameMd5(const RawBuf& buf) {
   size_t planesCount = buf.numPlanes();
   for (size_t p = 0; p < planesCount; ++p) {
     const uint8_t* planePtr = buf.planeData(p);
+    size_t pixelSize = (buf.bitDepth() + 7) / 8;
     size_t planeW = buf.planeWidth(p);
     size_t planeH = buf.planeHeight(p);
     size_t planeStride = buf.stride(p);
 
     for (size_t r = 0; r < planeH; ++r) {
-      md5.update(planePtr + (r * planeStride), planeW);
+      md5.update(planePtr + (r * planeStride * pixelSize), planeW * pixelSize);
     }
   }
 
