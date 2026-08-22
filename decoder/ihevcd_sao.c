@@ -3139,6 +3139,9 @@ void ihevcd_hbd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     ps_tile = ps_sao_ctxt->ps_tile;
     ps_codec = ps_sao_ctxt->ps_codec;
 
+    WORD32 h_samp_factor = (CHROMA_FMT_IDC_YUV444 == ps_sps->i1_chroma_format_idc) ? 1 : 2;
+    WORD32 v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
+
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << log2_ctb_size);
     src_strd = ps_sao_ctxt->ps_codec->i4_strd;
@@ -3943,7 +3946,7 @@ void ihevcd_hbd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au2_src_top_right[1] = pu2_src_top_chroma[sao_wd_chroma + 1];
                     au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_left_chroma[2 * sao_ht_chroma];
                     au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_left_chroma[2 * sao_ht_chroma + 1];
-                    if((ctb_size == 16) && (i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
+                    if((ctb_size == (8 * v_samp_factor)) && (i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
                     {
                         au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_chroma[sao_ht_chroma * src_strd - 2];
                         au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_chroma[sao_ht_chroma * src_strd - 1];
@@ -5076,7 +5079,7 @@ void ihevcd_hbd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au2_src_bot_left[1] = pu2_sao_src_top_left_chroma_bot_left[1];
                         //au1_src_bot_left[0] = pu1_src_chroma[sao_ht_chroma * src_strd - 2];
                         //au1_src_bot_left[1] = pu1_src_chroma[sao_ht_chroma * src_strd - 1];
-                        if((ctb_size == 16) && (i4_ctb_x != ps_sps->i2_pic_wd_in_ctb - 1))
+                        if((ctb_size == (8 * h_samp_factor)) && (i4_ctb_x != ps_sps->i2_pic_wd_in_ctb - 1))
                         {
                             au2_src_top_right[0] = pu2_src_chroma[sao_wd_chroma - src_strd];
                             au2_src_top_right[1] = pu2_src_chroma[sao_wd_chroma - src_strd + 1];
