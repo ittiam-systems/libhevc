@@ -2525,7 +2525,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
  */
 IHEVCD_ERROR_T  ihevcd_10bd_parse_sao(codec_t *ps_codec)
 {
-    IHEVCD_ERROR_T ret = IHEVCD_SUCCESS;
+    IHEVCD_ERROR_T ret = (IHEVCD_ERROR_T)IHEVCD_SUCCESS;
     sps_t *ps_sps;
     sao_10bd_t *ps_sao;
     WORD32 rx;
@@ -4021,8 +4021,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         /* If the bytes for the current slice are exhausted
          * set end_of_slice flag to 1
          * This slice will be treated as incomplete */
-        if((UWORD32)ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
-                        ((UWORD32)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
+        if(ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
+                        ((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
         {
             // end_of_slice_flag = ps_codec->i4_slice_error ? 0 : 1;
 
