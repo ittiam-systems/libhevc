@@ -102,6 +102,7 @@ cc_library_static {
         "common/ihevc_hbd_inter_pred_filters.c",
         "common/ihevc_hbd_intra_pred_filters.c",
         "common/ihevc_hbd_iquant_recon.c",
+        "common/ihevc_hbd_itrans_res.c",
         "common/ihevc_hbd_itrans_recon.c",
         "common/ihevc_hbd_itrans_recon_16x16.c",
         "common/ihevc_hbd_itrans_recon_32x32.c",

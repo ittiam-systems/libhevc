@@ -1060,6 +1060,14 @@ void ihevcd_update_function_ptr(codec_t *ps_codec)
     ps_codec->apf_hbd_intra_pred_chroma[9] = (pf_hbd_intra_pred_chroma)ps_codec->s_func_selector.ihevc_hbd_intra_pred_chroma_ver_fptr;
     ps_codec->apf_hbd_intra_pred_chroma[10] = (pf_hbd_intra_pred_chroma)ps_codec->s_func_selector.ihevc_hbd_intra_pred_chroma_mode_27_to_33_fptr;
 
+    ps_codec->apf_hbd_itrans_res[0] = (pf_hbd_itrans_res)ps_codec->s_func_selector.ihevc_hbd_itrans_res_4x4_ttype1_fptr;
+    ps_codec->apf_hbd_itrans_res[1] = (pf_hbd_itrans_res)ps_codec->s_func_selector.ihevc_hbd_itrans_res_4x4_fptr;
+    ps_codec->apf_hbd_itrans_res[2] = (pf_hbd_itrans_res)ps_codec->s_func_selector.ihevc_hbd_itrans_res_8x8_fptr;
+    ps_codec->apf_hbd_itrans_res[3] = (pf_hbd_itrans_res)ps_codec->s_func_selector.ihevc_hbd_itrans_res_16x16_fptr;
+    ps_codec->apf_hbd_itrans_res[4] = (pf_hbd_itrans_res)ps_codec->s_func_selector.ihevc_hbd_itrans_res_32x32_fptr;
+
+    ps_codec->apf_hbd_itrans_res_dc = (pf_hbd_itrans_res_dc)ps_codec->s_func_selector.ihevc_hbd_itrans_res_dc_fptr;
+
     ps_codec->apf_hbd_itrans_recon[0] = (pf_hbd_itrans_recon)ps_codec->s_func_selector.ihevc_hbd_itrans_recon_4x4_ttype1_fptr;
     ps_codec->apf_hbd_itrans_recon[1] = (pf_hbd_itrans_recon)ps_codec->s_func_selector.ihevc_hbd_itrans_recon_4x4_fptr;
     ps_codec->apf_hbd_itrans_recon[2] = (pf_hbd_itrans_recon)ps_codec->s_func_selector.ihevc_hbd_itrans_recon_8x8_fptr;

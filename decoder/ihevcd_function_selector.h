@@ -194,6 +194,13 @@ typedef struct
     ihevc_hbd_chroma_itrans_recon_16x16_ft *ihevc_hbd_chroma_itrans_recon_16x16_fptr;
     ihevc_hbd_chroma_itrans_recon_32x32_ft *ihevc_hbd_chroma_itrans_recon_32x32_fptr;
 
+    ihevc_hbd_itrans_res_4x4_ttype1_ft *ihevc_hbd_itrans_res_4x4_ttype1_fptr;
+    ihevc_hbd_itrans_res_4x4_ft *ihevc_hbd_itrans_res_4x4_fptr;
+    ihevc_hbd_itrans_res_8x8_ft *ihevc_hbd_itrans_res_8x8_fptr;
+    ihevc_hbd_itrans_res_16x16_ft *ihevc_hbd_itrans_res_16x16_fptr;
+    ihevc_hbd_itrans_res_32x32_ft *ihevc_hbd_itrans_res_32x32_fptr;
+    ihevc_hbd_itrans_res_dc_ft *ihevc_hbd_itrans_res_dc_fptr;
+
     ihevc_hbd_recon_4x4_ttype1_ft *ihevc_hbd_recon_4x4_ttype1_fptr;
     ihevc_hbd_recon_4x4_ft *ihevc_hbd_recon_4x4_fptr;
     ihevc_hbd_recon_8x8_ft *ihevc_hbd_recon_8x8_fptr;
