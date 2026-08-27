@@ -1721,8 +1721,11 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
     ps_sps->i1_bit_depth_chroma_minus8 = value;
 
-    if (ps_sps->i1_bit_depth_luma_minus8 != ps_sps->i1_bit_depth_chroma_minus8)
-        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+    {
+        if (ps_sps->i1_bit_depth_luma_minus8 != ps_sps->i1_bit_depth_chroma_minus8)
+            return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
     if(value > 12)
