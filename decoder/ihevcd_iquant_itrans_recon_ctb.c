@@ -1151,7 +1151,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
             {
                 for(i = 0; i < cb_size; i++)
                 {
-                    memcpy(&pu1_y_dst[i * pic_strd], pu1_buf, (cb_size * i4_pixel_size_y));
+                    memcpy(&pu1_y_dst[i * pic_strd * i4_pixel_size_y], pu1_buf, (cb_size * i4_pixel_size_y));
                     pu1_buf += cb_size * i4_pixel_size_y;
                 }
 
