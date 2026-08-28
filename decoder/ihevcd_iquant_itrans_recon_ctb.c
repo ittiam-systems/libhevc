@@ -1572,15 +1572,76 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                             {
-                                WORD32 bot_left, left, top, tp_right, tp_left;
-                                tp_left = (luma_nbr_flags & 0x10000);
-                                tp_right = (luma_nbr_flags & 0x0f000);
-                                top = (luma_nbr_flags & 0x00f00);
-                                left = (luma_nbr_flags & 0x000f0);
-                                bot_left = (luma_nbr_flags & 0x0000f);
-                                chroma_nbr_flags = tp_left | tp_right | top | left | (left >> 4);
-                                chroma_nbr_flags_subtu = ((left != 0 ? 1 : 0) << 16) | (0xf << 8)
-                                                | left | bot_left;
+                                /*
+                                * Neighbor Bitfield Layout in libhevc (17 bits):
+                                *   Bit 16: Top-Left (TL)
+                                *   Bits 15..12: Top-Right (TR) - 4 chunks of 8px (Bits 12, 13, 14, 15)
+                                *   Bits 11..8:  Top (T)       - 4 chunks of 8px (Bits 8, 9, 10, 11)
+                                *   Bits 7..4:   Left (L)      - 4 chunks of 8px (Bits 7, 6, 5, 4)
+                                *   Bits 3..0:   Bottom-Left (BL) - 4 chunks of 8px (Bits 3, 2, 1, 0)
+                                *
+                                * Mapping Rules for 4:2:2:
+                                * 1. Sub-TU 0 (Upper (trans_size/2) x (trans_size/2)):
+                                *    - Left: Upper half of parent Luma Left boundary.
+                                *    - Bottom-Left: Lower half of parent Luma Left boundary.
+                                * 2. Sub-TU 1 (Lower (trans_size/2) x (trans_size/2)):
+                                *    - Top-Left: Bottom pixel of Sub-TU 0 Left boundary.
+                                *    - Top: Always available from reconstructed bottom row of Sub-TU 0.
+                                *    - Top-Right: 0 (not yet decoded in Z-scan order; padded by substitution).
+                                *    - Left: Lower half of parent Luma Left boundary.
+                                *    - Bottom-Left: Parent Luma Bottom-Left boundary.
+                                */
+                                WORD32 tp_left = (luma_nbr_flags & 0x10000);
+
+                                switch (trans_size)
+                                {
+                                case 8:
+                                    {
+                                        /* Luma 8x8 -> Two 4x4 Chroma Sub-TUs (1 chunk of 4/8px per edge) */
+                                        WORD32 chroma_Left = (luma_nbr_flags & 0x80);
+                                        WORD32 chroma_BL = (luma_nbr_flags & 0x80) ? 0x8 : 0;
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x1000) | (luma_nbr_flags & 0x100) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x80);
+                                        WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8);
+                                        /* Top of Sub-TU 1 is 1 chunk (Bit 8 = 0x100) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0x100 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                case 16:
+                                    {
+                                        /* Luma 16x16 -> Two 8x8 Chroma Sub-TUs (1 chunk of 8px per edge) */
+                                        WORD32 chroma_Left = (luma_nbr_flags & 0x80) ? 0xC0 : 0;
+                                        WORD32 chroma_BL = (luma_nbr_flags & 0x40) ? 0xC : 0;
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x3000) | (luma_nbr_flags & 0x300) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x40) ? 0xC0 : 0;
+                                        WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8) ? 0xC : 0;
+                                        /* Top of Sub-TU 1 is 2 chunks (Bits 8,9 = 0x300) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0x300 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                case 32:
+                                    {
+                                        /* Luma 32x32 -> Two 16x16 Chroma Sub-TUs (2 chunks of 8px per edge) */
+                                        WORD32 chroma_Left = ((luma_nbr_flags & 0x80) ? 0xC0 : 0) | ((luma_nbr_flags & 0x40) ? 0x30 : 0);
+                                        WORD32 chroma_BL = ((luma_nbr_flags & 0x20) ? 0xC : 0) | ((luma_nbr_flags & 0x10) ? 0x3 : 0);
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0xF000) | (luma_nbr_flags & 0xF00) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x40) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = ((luma_nbr_flags & 0x20) ? 0xC0 : 0) | ((luma_nbr_flags & 0x10) ? 0x30 : 0);
+                                        WORD32 chroma_BL_subtu = ((luma_nbr_flags & 0x8) ? 0xC : 0) | ((luma_nbr_flags & 0x4) ? 0x3 : 0);
+                                        /* Top of Sub-TU 1 is 4 chunks (Bits 8..11 = 0xF00) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0xF00 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                default:
+                                    chroma_nbr_flags = (luma_nbr_flags & 0x1ff00) | (luma_nbr_flags & 0xf0) | ((luma_nbr_flags & 0xf0) >> 4);
+                                    chroma_nbr_flags_subtu = (((luma_nbr_flags & 0xf0) != 0 ? 1 : 0) << 16) | (0xf << 8) | (luma_nbr_flags & 0xff);
+                                    break;
+                                }
                             }
                             else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
                             {
