@@ -79,6 +79,57 @@ typedef void ihevc_itrans_res_32x32_ft(WORD16 *pi2_src,
                                        WORD32 zero_cols,
                                        WORD32 zero_rows);
 
+typedef void ihevc_hbd_itrans_res_4x4_ttype1_ft(WORD16 *pi2_src,
+                                                WORD16 *pi2_tmp,
+                                                WORD16 *pi2_dst,
+                                                WORD32 src_strd,
+                                                WORD32 dst_strd,
+                                                WORD32 zero_cols,
+                                                WORD32 zero_rows,
+                                                UWORD8 bit_depth);
+
+typedef void ihevc_hbd_itrans_res_4x4_ft(WORD16 *pi2_src,
+                                         WORD16 *pi2_tmp,
+                                         WORD16 *pi2_dst,
+                                         WORD32 src_strd,
+                                         WORD32 dst_strd,
+                                         WORD32 zero_cols,
+                                         WORD32 zero_rows,
+                                         UWORD8 bit_depth);
+
+typedef void ihevc_hbd_itrans_res_dc_ft(WORD16 *pi2_dst,
+                                        WORD32 dst_strd,
+                                        WORD32 log2_trans_size,
+                                        WORD16 i2_coeff_value,
+                                        UWORD8 bit_depth);
+
+typedef void ihevc_hbd_itrans_res_8x8_ft(WORD16 *pi2_src,
+                                         WORD16 *pi2_tmp,
+                                         WORD16 *pi2_dst,
+                                         WORD32 src_strd,
+                                         WORD32 dst_strd,
+                                         WORD32 zero_cols,
+                                         WORD32 zero_rows,
+                                         UWORD8 bit_depth);
+
+typedef void ihevc_hbd_itrans_res_16x16_ft(WORD16 *pi2_src,
+                                           WORD16 *pi2_tmp,
+                                           WORD16 *pi2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD32 zero_cols,
+                                           WORD32 zero_rows,
+                                           UWORD8 bit_depth);
+
+typedef void ihevc_hbd_itrans_res_32x32_ft(WORD16 *pi2_src,
+                                           WORD16 *pi2_tmp,
+                                           WORD16 *pi2_dst,
+                                           WORD32 src_strd,
+                                           WORD32 dst_strd,
+                                           WORD32 zero_cols,
+                                           WORD32 zero_rows,
+                                           UWORD8 bit_depth);
+
 typedef void ihevc_res_4x4_transform(WORD16 *pi2_src,
                                      WORD16 *pi2_dst,
                                      WORD32 src_strd,
@@ -99,6 +150,13 @@ ihevc_itrans_res_dc_ft ihevc_itrans_res_dc;
 ihevc_itrans_res_8x8_ft ihevc_itrans_res_8x8;
 ihevc_itrans_res_16x16_ft ihevc_itrans_res_16x16;
 ihevc_itrans_res_32x32_ft ihevc_itrans_res_32x32;
+
+ihevc_hbd_itrans_res_4x4_ttype1_ft ihevc_hbd_itrans_res_4x4_ttype1;
+ihevc_hbd_itrans_res_4x4_ft ihevc_hbd_itrans_res_4x4;
+ihevc_hbd_itrans_res_dc_ft ihevc_hbd_itrans_res_dc;
+ihevc_hbd_itrans_res_8x8_ft ihevc_hbd_itrans_res_8x8;
+ihevc_hbd_itrans_res_16x16_ft ihevc_hbd_itrans_res_16x16;
+ihevc_hbd_itrans_res_32x32_ft ihevc_hbd_itrans_res_32x32;
 
 ihevc_res_4x4_transform ihevc_res_4x4_rotate;
 ihevc_res_nxn_transform ihevc_res_nxn_copy;
