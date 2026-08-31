@@ -77,6 +77,7 @@ list(
   "${HEVC_ROOT}/common/ihevc_hbd_intra_pred_filters.c"
   "${HEVC_ROOT}/common/ihevc_hbd_iquant_recon.c"
   "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon.c"
+  "${HEVC_ROOT}/common/ihevc_hbd_itrans_res.c"
   "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_16x16.c"
   "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_32x32.c"
   "${HEVC_ROOT}/common/ihevc_hbd_itrans_recon_8x8.c"

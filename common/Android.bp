@@ -64,6 +64,7 @@ cc_library_static {
         "ihevc_hbd_inter_pred_filters.c",
         "ihevc_hbd_intra_pred_filters.c",
         "ihevc_hbd_iquant_recon.c",
+        "ihevc_hbd_itrans_res.c",
         "ihevc_hbd_itrans_recon.c",
         "ihevc_hbd_itrans_recon_16x16.c",
         "ihevc_hbd_itrans_recon_32x32.c",
