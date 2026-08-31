@@ -85,10 +85,8 @@ static const std::vector<DecodeStreamConfig> kDecodeStreams = {
      "bbb_10b_176x144_yuv420_md5.txt"},
     {"bbb_10b_176x144_yuv422.hevc", Format::yuv422p,
       "bbb_10b_176x144_yuv422_md5.txt"},
-    /* TODO() - enable when 10 bit format is supported
-        {"bbb_10b_176x144_yuv444.hevc", Format::yuv444p,
-         "bbb_10b_176x144_yuv444_md5.txt"},
-    */
+    {"bbb_10b_176x144_yuv444.hevc", Format::yuv444p,
+      "bbb_10b_176x144_yuv444_md5.txt"},
 };
 
 INSTANTIATE_TEST_SUITE_P(DecoderRegression, DecTestFixture,
