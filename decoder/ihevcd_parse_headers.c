@@ -3317,19 +3317,19 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
     parse_ctxt_t *ps_parse = &ps_codec->s_parse;
     bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
     WORD32 payload_bits_remaining = 0;
-    sps_t *ps_sps;
+    sps_t *ps_sps = NULL;
 
     UWORD32 i;
 
     for(i = 0; i < MAX_SPS_CNT; i++)
     {
-        ps_sps = ps_codec->ps_sps_base + i;
-        if(ps_sps->i1_sps_valid)
+        if(ps_codec->ps_sps_base[i].i1_sps_valid)
         {
+            ps_sps = ps_codec->ps_sps_base + i;
             break;
         }
     }
-    if(!ps_sps->i1_sps_valid)
+    if(!ps_sps)
     {
         return;
     }
