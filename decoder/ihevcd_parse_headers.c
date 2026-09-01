@@ -1909,7 +1909,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i1_pcm_sample_bit_depth_chroma = value + 1;
 
         UEV_PARSE("log2_min_pcm_coding_block_size_minus3", value, ps_bitstrm);
-        if(value < (ps_sps->i1_log2_min_coding_block_size - 3) || value > (MIN(ctb_log2_size_y, 5) - 3))
+        if(value < (MIN(ps_sps->i1_log2_min_coding_block_size, 5) - 3) || value > (MIN(ctb_log2_size_y, 5) - 3))
         {
             return IHEVCD_INVALID_PARAMETER;
         }
