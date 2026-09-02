@@ -1721,9 +1721,15 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ps_codec->apf_hbd_intra_pred_luma[luma_pred_func_idx]((UWORD16 *)pu1_ref_sub_out, 1,
-                                    (UWORD16 *)y_cb_tu.pu1_pred, y_cb_tu.pred_strd, trans_size, u1_luma_pred_mode,
-                                    (UWORD8)i4_bit_depth_luma);
+                                ps_codec->apf_hbd_intra_pred_luma[luma_pred_func_idx](
+                                                (UWORD16 *)pu1_ref_sub_out, 1,
+                                                (UWORD16 *)y_cb_tu.pu1_pred,
+                                                y_cb_tu.pred_strd,
+                                                trans_size,
+                                                (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26) ?
+                                                                disable_boundary_filter :
+                                                                u1_luma_pred_mode,
+                                                (UWORD8)i4_bit_depth_luma);
                             }
                         }
                         else

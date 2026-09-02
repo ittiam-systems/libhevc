@@ -1483,7 +1483,7 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     ps_codec->pv_pic_buf_base = (UWORD8 *)pv_buf;
 
     /* TO hold scratch buffers needed for each SAO context */
-    size = 4 * MAX_CTB_SIZE * MAX_CTB_SIZE + 8 * MAX_CTB_SIZE * MAX_CTB_SIZE;
+    size = (4 * MAX_CTB_SIZE * MAX_CTB_SIZE + 8 * MAX_CTB_SIZE * MAX_CTB_SIZE) * sizeof(UWORD16);
 
     size *= MAX_PROCESS_THREADS;
 
@@ -1494,10 +1494,10 @@ WORD32 ihevcd_allocate_static_bufs(iv_obj_t **pps_codec_obj,
     for(i = 0; i < MAX_PROCESS_THREADS; i++)
     {
         ps_codec->as_process[i].s_sao_ctxt.pu1_tmp_buf_luma = (UWORD8 *)pu1_buf;
-        pu1_buf += 4 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD8);
+        pu1_buf += 4 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD16);
 
         ps_codec->as_process[i].s_sao_ctxt.pu1_tmp_buf_chroma = (UWORD8 *)pu1_buf;
-        pu1_buf += 8 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD8);
+        pu1_buf += 8 * MAX_CTB_SIZE * MAX_CTB_SIZE * sizeof(UWORD16);
     }
 
     /* Allocate intra pred modes buffer */
