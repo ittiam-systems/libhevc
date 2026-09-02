@@ -187,7 +187,7 @@ typedef void ihevc_hbd_intra_pred_luma_horz_ft(
                 UWORD16 *pu2_dst,
                 WORD32 dst_strd,
                 WORD32 nt,
-                WORD32 mode,
+                WORD32 disable_boundary_filter,
                 UWORD8 bit_depth);
 
 
@@ -197,7 +197,7 @@ typedef void ihevc_hbd_intra_pred_luma_ver_ft(
                 UWORD16 *pu2_dst,
                 WORD32 dst_strd,
                 WORD32 nt,
-                WORD32 mode,
+                WORD32 disable_boundary_filter,
                 UWORD8 bit_depth);
 
 
