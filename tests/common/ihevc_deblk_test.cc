@@ -194,12 +194,6 @@ class DeblkChromaTest : public ::testing::TestWithParam<DeblkChromaParam> {
 };
 
 TEST_P(DeblkChromaTest, ChromaVert) {
-#if defined(__arm__) || defined(__aarch64__) || defined(__arm64__)
-  if ((chroma_fmt_idc == 3) && (qp_p != 12 && qp_q != 12) &&
-      (qp_p == 44 || qp_q == 44)) {
-    GTEST_SKIP() << "Skipping failing ARM Chroma deblk tests for YUV444 and QP 44/28";
-  }
-#endif
   InitializeBuffers();
 
   ref->ihevc_deblk_chroma_vert_fptr(
@@ -214,12 +208,6 @@ TEST_P(DeblkChromaTest, ChromaVert) {
 }
 
 TEST_P(DeblkChromaTest, ChromaHorz) {
-#if defined(__arm__) || defined(__aarch64__) || defined(__arm64__)
-  if ((chroma_fmt_idc == 3) && (qp_p != 12 && qp_q != 12) &&
-      (qp_p == 44 || qp_q == 44)) {
-    GTEST_SKIP() << "Skipping failing ARM Chroma deblk tests for YUV444 and QP 44/28";
-  }
-#endif
   InitializeBuffers();
 
   ref->ihevc_deblk_chroma_horz_fptr(
