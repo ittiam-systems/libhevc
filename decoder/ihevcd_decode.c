@@ -737,14 +737,27 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
         ps_codec->i4_nal_ofst = nal_ofst;
         {
             WORD32 bytes_remaining = ps_codec->i4_bytes_remaining - nal_ofst;
+            WORD32 cur_nal_size;
 
-			/* If the required buffer exceeds the current bitstream buffer, reallocate the dynamic bitstream buffer */
-			if((UWORD32)bytes_remaining > ps_codec->u4_bitsbuf_size)
-			{
-				ihevcd_reallocate_dynamic_bitstream_buf(ps_codec, bytes_remaining + 16);
-			}
+            /* Search for the next start code to determine the size of the current NAL unit */
+            cur_nal_size = ihevcd_nal_search_start_code(ps_codec->pu1_inp_bitsbuf + nal_ofst,
+                                                        bytes_remaining);
 
-            bytes_remaining = MIN((UWORD32)bytes_remaining, ps_codec->u4_bitsbuf_size);
+            /* If the current NAL unit size exceeds the current bitstream buffer, reallocate */
+            if((UWORD32)cur_nal_size > ps_codec->u4_bitsbuf_size)
+            {
+                WORD32 ret;
+                ret = ihevcd_reallocate_dynamic_bitstream_buf(ps_codec, cur_nal_size + 16);
+                if(ret != IV_SUCCESS)
+                {
+                    ps_codec->i4_error_code = IVD_MEM_ALLOC_FAILED;
+                    ps_dec_op->u4_error_code = 1 << IVD_FATALERROR;
+                    ps_dec_op->u4_error_code |= IVD_MEM_ALLOC_FAILED;
+                    return IV_FAIL;
+                }
+            }
+
+            bytes_remaining = cur_nal_size;
             ihevcd_nal_remv_emuln_bytes(ps_codec->pu1_inp_bitsbuf + nal_ofst,
                                         ps_codec->pu1_bitsbuf,
                                         bytes_remaining,
