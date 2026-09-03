@@ -48,6 +48,7 @@ const IV_ARCH_T supportedArchitectures[] = {
     ARCH_X86_GENERIC, ARCH_X86_SSSE3, ARCH_X86_SSE42};
 
 const static int kMaxNumDecodeCalls = 100;
+const static int kMaxNumDecodeCallsNoSimd = 10;
 const static int kSupportedColorFormats = NELEMENTS(supportedColorFormats);
 const static int kSupportedArchitectures = NELEMENTS(supportedArchitectures);
 const static int kMaxCores = 4;
@@ -80,7 +81,7 @@ class Codec {
   IV_API_CALL_STATUS_T decodeFrame(const uint8_t *data, size_t size,
                                    size_t *bytesConsumed);
   void setParams(IVD_VIDEO_DECODE_MODE_T mode);
-  void setArchitecture(FuzzedDataProvider &fdp);
+  void setArchitecture(IV_ARCH_T arch);
 
  private:
   IV_COLOR_FORMAT_T mColorFormat;
@@ -182,19 +183,20 @@ void Codec::setParams(IVD_VIDEO_DECODE_MODE_T mode) {
   ivd_api_function(mCodec, (void *)&s_ctl_ip, (void *)&s_ctl_op);
 }
 
-void Codec::setArchitecture(FuzzedDataProvider &fdp) {
+void Codec::setArchitecture(IV_ARCH_T arch) {
   ihevcd_cxa_ctl_set_processor_ip_t s_ctl_ip{};
   ihevcd_cxa_ctl_set_processor_op_t s_ctl_op{};
   s_ctl_ip.e_cmd = IVD_CMD_VIDEO_CTL;
   s_ctl_ip.e_sub_cmd =
       (IVD_CONTROL_API_COMMAND_TYPE_T)IHEVCD_CXA_CMD_CTL_SET_PROCESSOR;
-  s_ctl_ip.u4_arch = (IV_ARCH_T)fdp.PickValueInArray(supportedArchitectures);
+  s_ctl_ip.u4_arch = arch;
   s_ctl_ip.u4_soc = SOC_GENERIC;
   s_ctl_ip.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_ip_t);
   s_ctl_op.u4_size = sizeof(ihevcd_cxa_ctl_set_processor_op_t);
 
   ivd_api_function(mCodec, (void *)&s_ctl_ip, (void *)&s_ctl_op);
 }
+
 void Codec::freeFrame() {
   for (int i = 0; i < mOutBufHandle.u4_num_bufs; i++) {
     if (mOutBufHandle.pu1_bufs[i]) {
@@ -370,13 +372,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t numDecodeCalls = 0;
   Codec *codec = new Codec(fdp);
   codec->createCodec(fdp);
-  codec->setArchitecture(fdp);
+
+  IV_ARCH_T arch = (IV_ARCH_T)fdp.PickValueInArray(supportedArchitectures);
+  codec->setArchitecture(arch);
+
+  uint64_t maxDecodeCalls;
+  if ((arch == ARCH_ARM_NONEON) || (arch == ARCH_X86_GENERIC)) {
+    maxDecodeCalls = kMaxNumDecodeCallsNoSimd;
+  } else {
+    maxDecodeCalls = kMaxNumDecodeCalls;
+  }
+
   codec->setCores(fdp);
   codec->decodeHeader(data, size);
   codec->setParams(IVD_DECODE_FRAME);
   codec->allocFrame();
 
-  while (size > 0 && numDecodeCalls < kMaxNumDecodeCalls) {
+  while (size > 0 && numDecodeCalls < maxDecodeCalls) {
     IV_API_CALL_STATUS_T ret;
     size_t bytesConsumed;
     ret = codec->decodeFrame(data, size, &bytesConsumed);
