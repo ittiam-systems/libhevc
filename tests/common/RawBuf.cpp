@@ -93,7 +93,7 @@ bool RawBuf::allocBuffer(size_t width, size_t height, size_t bitDepth,
     mOffsets[i] = 0;
   }
 
-  size_t elementSize = (mBitDepth + 7) / 8;
+  size_t pixelSize = (mBitDepth + 7) / 8;
   for (size_t i = 0; i < planesCount; ++i) {
     size_t w = planeWidth(i);
     size_t h = planeHeight(i);
@@ -102,7 +102,7 @@ bool RawBuf::allocBuffer(size_t width, size_t height, size_t bitDepth,
     size_t alignedStride = (w + alignment - 1) & ~(alignment - 1);
     mStrides[i] = alignedStride;
     mOffsets[i] = totalSize;
-    totalSize += alignedStride * h * elementSize;
+    totalSize += alignedStride * h * pixelSize;
   }
 
   mStorage.resize(totalSize);
