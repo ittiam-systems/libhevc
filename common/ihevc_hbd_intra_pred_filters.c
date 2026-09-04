@@ -867,7 +867,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
                                     UWORD16 *pu2_dst,
                                     WORD32 dst_strd,
                                     WORD32 nt,
-                                    WORD32 mode,
+                                    WORD32 disable_boundary_filter,
                                     UWORD8 bit_depth)
 {
 
@@ -877,7 +877,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 
     two_nt = 2 * nt;
 
-    if(nt == 32)
+    if(nt == 32 || disable_boundary_filter)
     {
         for(row = 0; row < nt; row++)
             for(col = 0; col < nt; col++)
@@ -946,14 +946,14 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
                                    UWORD16 *pu2_dst,
                                    WORD32 dst_strd,
                                    WORD32 nt,
-                                   WORD32 mode,
+                                   WORD32 disable_boundary_filter,
                                    UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD16 s2_predpixel;
     WORD32 two_nt = 2 * nt;
 
-    if(nt == 32)
+    if(nt == 32 || disable_boundary_filter)
     {
         /* Replication to next columns*/
         for(row = 0; row < nt; row++)
