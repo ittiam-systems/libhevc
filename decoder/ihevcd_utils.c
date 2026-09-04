@@ -194,7 +194,7 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
                                      WORD32 ht)
 {
     WORD32 size;
-    WORD32 i4_pixel_size = ps_codec->i4_pixel_size_y;
+    WORD32 pixel_size = ps_codec->i4_pixel_size_y;
     WORD32 num_luma_samples;
     WORD32 max_dpb_size;
     WORD32 num_samples;
@@ -239,7 +239,7 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
 
 
     /* Account for bit depth of pixels */
-    size *= i4_pixel_size;
+    size *= pixel_size;
 
     return size;
 }
@@ -499,12 +499,12 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
 
-    WORD32 i4_pixel_size_y;
-    WORD32 i4_pixel_size_uv;
+    WORD32 pixel_size_y;
+    WORD32 pixel_size_uv;
 
     /* Derive the pixel size for luma and chroma */
-    i4_pixel_size_y  = ps_codec->i4_pixel_size_y;
-    i4_pixel_size_uv = ps_codec->i4_pixel_size_uv;
+    pixel_size_y  = ps_codec->i4_pixel_size_y;
+    pixel_size_uv = ps_codec->i4_pixel_size_uv;
 
 
     /* Initialize Pic buffer manager */
@@ -540,7 +540,7 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
         WORD32 chroma_samples;
         pic_buf_size_allocated = ps_codec->i4_total_pic_buf_size;
 
-        luma_samples = (ps_codec->i4_strd * i4_pixel_size_y) *
+        luma_samples = (ps_codec->i4_strd * pixel_size_y) *
                         (ps_sps->i2_pic_height_in_luma_samples + PAD_HT);
 
         if(CHROMA_FMT_IDC_MONOCHROME == ps_sps->i1_chroma_format_idc)
@@ -566,14 +566,14 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
                 return IHEVCD_INSUFFICIENT_MEM_PICBUF;
             }
 
-            ps_pic_buf->pu1_luma = pu1_buf + (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * i4_pixel_size_y;
+            ps_pic_buf->pu1_luma = pu1_buf + (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * pixel_size_y;
             pu1_buf += luma_samples;
 
             if(chroma_samples)
             {
                 ps_pic_buf->pu1_chroma = pu1_buf
                                 + ((ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
-                                + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * i4_pixel_size_uv;
+                                + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * pixel_size_uv;
                 pu1_buf += chroma_samples;
             }
             else
@@ -653,9 +653,9 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
             {
                 break;
             }
-            ps_pic_buf->pu1_luma += (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * i4_pixel_size_y;
+            ps_pic_buf->pu1_luma += (ps_codec->i4_strd * PAD_TOP + PAD_LEFT) * pixel_size_y;
             ps_pic_buf->pu1_chroma += ((ps_codec->i4_strd * chroma_pixel_strd / h_samp_factor) * (PAD_TOP / v_samp_factor)
-                            + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * i4_pixel_size_uv;
+                            + (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * pixel_size_uv;
         }
     }
 
