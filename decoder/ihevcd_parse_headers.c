@@ -3497,7 +3497,10 @@ IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec, nal_header_t *ps_nal)
 
         u4_payload_size += u4_last_payload_size_byte;
         u4_bits_left = ihevcd_bits_num_bits_remaining(ps_bitstrm);
-        u4_payload_size = MIN(u4_payload_size, u4_bits_left / 8);
+        if(u4_payload_size > (u4_bits_left / 8))
+        {
+            return (IHEVCD_ERROR_T)IHEVCD_INVALID_PARAMETER;
+        }
         ihevcd_parse_sei_payload(ps_codec, u4_payload_type, u4_payload_size,
                                  ps_nal->i1_nal_unit_type);
 
