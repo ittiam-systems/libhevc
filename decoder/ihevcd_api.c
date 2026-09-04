@@ -1756,7 +1756,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
     void *pv_buf;
     UWORD8 *pu1_buf;
     WORD32 size;
-    WORD32 i4_pixel_size = ps_codec->i4_pixel_size_y;
+    WORD32 pixel_size = ps_codec->i4_pixel_size_y;
 
     /* Free any dynamic buffers that are allocated earlier. As ps_codec is memset to zero */
     /* at the beginning, it is safe to call this even if no memory was allocated earlier  */
@@ -2203,7 +2203,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pv_buf + wd / MIN_CTB_SIZE /* Offset 1 row */;
     }
 
-        if (sizeof(UWORD8) == i4_pixel_size)
+        if (sizeof(UWORD8) == pixel_size)
         {
     /* 4 bytes per color component per CTB */
     size = 3 * 4;
@@ -2237,15 +2237,15 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
 
         if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
         {
-            size = wd * ht * 3 * i4_pixel_size;
+            size = wd * ht * 3 * pixel_size;
         }
         else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
         {
-            size = wd * ht * 2 * i4_pixel_size;
+            size = wd * ht * 2 * pixel_size;
         }
         else
         {
-            size = wd * ht * i4_pixel_size;
+            size = wd * ht * pixel_size;
         }
 
         if(size > MIN_BITSBUF_SIZE)
@@ -2767,7 +2767,7 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     codec_t *ps_codec;
     WORD32 wd, ht;
     WORD32 aligned_wd, aligned_ht;
-    WORD32  i4_pixel_size_y, i4_pixel_size_uv;
+    WORD32  pixel_size_y, pixel_size_uv;
     ivd_ctl_getstatus_op_t *ps_ctl_op = (ivd_ctl_getstatus_op_t *)pv_api_op;
 
     UNUSED(pv_api_ip);
@@ -2803,8 +2803,8 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
 
     if(ps_codec->i4_sps_done)
     {
-        i4_pixel_size_y  = ps_codec->i4_pixel_size_y;
-        i4_pixel_size_uv = ps_codec->i4_pixel_size_uv;
+        pixel_size_y  = ps_codec->i4_pixel_size_y;
+        pixel_size_uv = ps_codec->i4_pixel_size_uv;
 
         if(0 == ps_codec->i4_share_disp_buf)
         {
@@ -2820,8 +2820,8 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     }
     else
     {
-        i4_pixel_size_y  = sizeof(UWORD16);
-        i4_pixel_size_uv = i4_pixel_size_y;
+        pixel_size_y  = sizeof(UWORD16);
+        pixel_size_uv = pixel_size_y;
 
         if(1 == ps_codec->i4_share_disp_buf)
         {
@@ -2864,21 +2864,21 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     aligned_ht = ALIGN2(ht);
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 2) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * aligned_ht) >> 2) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 2) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * aligned_ht) >> 2) * pixel_size_uv;
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) * pixel_size_uv;
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 1) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 1) * pixel_size_uv;
         ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_GRAY)
@@ -2889,9 +2889,9 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * ht) >> 1) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * ht) >> 1) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * ht) >> 1) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * ht) >> 1) * pixel_size_uv;
     }
     ps_ctl_op->u4_pic_ht = ht;
     ps_ctl_op->u4_pic_wd = wd;
@@ -2945,7 +2945,7 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     UWORD32 i = 0;
     WORD32 wd, ht;
     WORD32 aligned_wd, aligned_ht;
-    WORD32  i4_pixel_size_y, i4_pixel_size_uv;
+    WORD32  pixel_size_y, pixel_size_uv;
     ivd_ctl_getbufinfo_op_t *ps_ctl_op =
                     (ivd_ctl_getbufinfo_op_t *)pv_api_op;
     ps_ctl_op->u4_error_code = 0;
@@ -3001,8 +3001,8 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
 
     if(ps_codec->i4_sps_done)
     {
-        i4_pixel_size_y  = ps_codec->i4_pixel_size_y;
-        i4_pixel_size_uv = ps_codec->i4_pixel_size_uv;
+        pixel_size_y  = ps_codec->i4_pixel_size_y;
+        pixel_size_uv = ps_codec->i4_pixel_size_uv;
 
         if(0 == ps_codec->i4_share_disp_buf)
         {
@@ -3018,8 +3018,8 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     }
     else
     {
-        i4_pixel_size_y = sizeof(UWORD16);
-        i4_pixel_size_uv = i4_pixel_size_y;
+        pixel_size_y = sizeof(UWORD16);
+        pixel_size_uv = pixel_size_y;
 
         if(1 == ps_codec->i4_share_disp_buf)
         {
@@ -3063,21 +3063,21 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     aligned_ht = ALIGN2(ht);
     if(ps_codec->e_chroma_fmt == IV_YUV_420P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 2) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * aligned_ht) >> 2) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 2) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * aligned_ht) >> 2) * pixel_size_uv;
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_444P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = (wd * ht) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = (wd * ht) * pixel_size_uv;
     }
     else if((ps_codec->e_chroma_fmt == IV_YUV_420SP_UV)
                     || (ps_codec->e_chroma_fmt == IV_YUV_420SP_VU))
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 1) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * aligned_ht) >> 1) * pixel_size_uv;
         ps_ctl_op->u4_min_out_buf_size[2] = 0;
     }
     else if(ps_codec->e_chroma_fmt == IV_GRAY)
@@ -3088,9 +3088,9 @@ WORD32 ihevcd_get_buf_info(iv_obj_t *ps_codec_obj,
     }
     else if(ps_codec->e_chroma_fmt == IV_YUV_422P)
     {
-        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * i4_pixel_size_y;
-        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * ht) >> 1) * i4_pixel_size_uv;
-        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * ht) >> 1) * i4_pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[0] = (wd * ht) * pixel_size_y;
+        ps_ctl_op->u4_min_out_buf_size[1] = ((aligned_wd * ht) >> 1) * pixel_size_uv;
+        ps_ctl_op->u4_min_out_buf_size[2] = ((aligned_wd * ht) >> 1) * pixel_size_uv;
     }
     ps_codec->i4_num_disp_bufs = ps_ctl_op->u4_num_disp_bufs;
 
