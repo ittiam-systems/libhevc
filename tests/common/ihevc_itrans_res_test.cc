@@ -72,11 +72,11 @@ protected:
     ref = get_ref_func_ptr();
   }
 
-  template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
+  template <typename FuncPtr> void RunTest(FuncPtr func_ptr, UWORD8 bit_depth) {
     (ref->*func_ptr)(src_buf.data(), tmp_buf.data(), dst_buf_ref.data(),
-                      src_strd, dst_strd, 0, 0);
+                      src_strd, dst_strd, 0, 0, bit_depth);
     (tst->*func_ptr)(src_buf.data(), tmp_buf.data(), dst_buf_tst.data(),
-                      src_strd, dst_strd, 0, 0);
+                      src_strd, dst_strd, 0, 0, bit_depth);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<WORD16>(
         dst_buf_ref, dst_buf_tst, trans_size, trans_size, dst_strd));
@@ -95,18 +95,20 @@ protected:
 };
 
 TEST_P(ITransResTest, Run) {
-  if (trans_size == 4) {
-    if (ttype == 1) {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_ttype1_fptr);
-    } else {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_fptr);
+  for (UWORD8 bit_depth : {8, 10}) {
+    if (trans_size == 4) {
+      if (ttype == 1) {
+        RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_ttype1_fptr, bit_depth);
+      } else {
+        RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_fptr, bit_depth);
+      }
+    } else if (trans_size == 8) {
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_8x8_fptr, bit_depth);
+    } else if (trans_size == 16) {
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_16x16_fptr, bit_depth);
+    } else if (trans_size == 32) {
+      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_32x32_fptr, bit_depth);
     }
-  } else if (trans_size == 8) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_8x8_fptr);
-  } else if (trans_size == 16) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_16x16_fptr);
-  } else if (trans_size == 32) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_res_32x32_fptr);
   }
 }
 

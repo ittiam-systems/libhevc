@@ -767,12 +767,12 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
                                                        ps_proc->pi2_itrans_intrmd_buf, residue_out,
                                                        ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
                                                        ps_pl_tu_ctxt->zero_cols,
-                                                       ps_pl_tu_ctxt->zero_rows);
+                                                       ps_pl_tu_ctxt->zero_rows, 8 /*bit_depth*/);
             }
             else /* DC only */
             {
                 ps_codec->apf_itrans_res_dc(residue_out, trans_size, log2_trans_size,
-                                            ps_pl_tu_ctxt->coeff_value);
+                                            ps_pl_tu_ctxt->coeff_value, 8 /*bit_depth*/);
             }
             ps_pl_tu_ctxt->zero_cols = 0;
         }

@@ -62,7 +62,8 @@ void ihevc_itrans_res_4x4_ttype1(WORD16 *pi2_src,
                                  WORD32 src_strd,
                                  WORD32 dst_strd,
                                  WORD32 zero_cols,
-                                 WORD32 zero_rows)
+                                 WORD32 zero_rows,
+                                 UWORD8 bit_depth)
 {
     WORD32 i, c[4];
     WORD32 add;
@@ -110,7 +111,7 @@ void ihevc_itrans_res_4x4_ttype1(WORD16 *pi2_src,
     pi2_tmp = pi2_tmp_orig;
 
     /* Inverse Transform 2nd stage */
-    shift = IT_SHIFT_STAGE_2;
+    shift = 20 - bit_depth;
     add = 1 << (shift - 1);
 
     for(i = 0; i < trans_size; i++)
@@ -146,7 +147,8 @@ void ihevc_itrans_res_4x4(WORD16 *pi2_src,
                           WORD32 src_strd,
                           WORD32 dst_strd,
                           WORD32 zero_cols,
-                          WORD32 zero_rows)
+                          WORD32 zero_rows,
+                          UWORD8 bit_depth)
 
 {
     WORD32 j;
@@ -202,7 +204,7 @@ void ihevc_itrans_res_4x4(WORD16 *pi2_src,
     pi2_tmp = pi2_tmp_orig;
 
     /* Inverse Transform 2nd stage */
-    shift = IT_SHIFT_STAGE_2;
+    shift = 20 - bit_depth;
     add = 1 << (shift - 1);
 
     for(j = 0; j < trans_size; j++)
@@ -240,7 +242,8 @@ void ihevc_itrans_res_4x4(WORD16 *pi2_src,
 void ihevc_itrans_res_dc(WORD16 *pi2_dst,
                           WORD32 dst_strd,
                           WORD32 log2_trans_size,
-                          WORD16 i2_coeff_value)
+                          WORD16 i2_coeff_value,
+                          UWORD8 bit_depth)
 {
     WORD32 row, col;
     WORD32 add, shift;
@@ -254,7 +257,7 @@ void ihevc_itrans_res_dc(WORD16 *pi2_dst,
     shift = IT_SHIFT_STAGE_1;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((quant_out * 64 + add) >> shift);
-    shift = IT_SHIFT_STAGE_2;
+    shift = 20 - bit_depth;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((dc_value * 64 + add) >> shift);
 
@@ -271,7 +274,8 @@ void ihevc_itrans_res_8x8(WORD16 *pi2_src,
                           WORD32 src_strd,
                           WORD32 dst_strd,
                           WORD32 zero_cols,
-                          WORD32 zero_rows)
+                          WORD32 zero_rows,
+                          UWORD8 bit_depth)
 {
     WORD32 j, k;
     WORD32 e[4], o[4];
@@ -345,7 +349,7 @@ void ihevc_itrans_res_8x8(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
         if((zero_rows_2nd_stage & 0xF0) == 0xF0) /* First 4 rows of output of 1st stage are non-zero */
         {
@@ -486,7 +490,7 @@ void ihevc_itrans_res_8x8(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
         if((zero_rows_2nd_stage & 0xF0) == 0xF0) /* First 4 rows of output of 1st stage are non-zero */
         {
@@ -575,7 +579,8 @@ void ihevc_itrans_res_16x16(WORD16 *pi2_src,
                             WORD32 src_strd,
                             WORD32 dst_strd,
                             WORD32 zero_cols,
-                            WORD32 zero_rows)
+                            WORD32 zero_rows,
+                            UWORD8 bit_depth)
 {
     WORD32 j, k;
     WORD32 e[8], o[8];
@@ -659,7 +664,7 @@ void ihevc_itrans_res_16x16(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
 
         if((zero_rows_2nd_stage & 0xFFF0) == 0xFFF0) /* First 4 rows of output of 1st stage are non-zero */
@@ -897,7 +902,7 @@ void ihevc_itrans_res_16x16(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
 
         if((zero_rows_2nd_stage & 0xFFF0) == 0xFFF0) /* First 4 rows of output of 1st stage are non-zero */
@@ -1159,7 +1164,7 @@ void ihevc_itrans_res_16x16(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
 
         if((zero_rows_2nd_stage & 0xFFF0) == 0xFFF0) /* First 4 rows of output of 1st stage are non-zero */
@@ -1339,7 +1344,8 @@ void ihevc_itrans_res_32x32(WORD16 *pi2_src,
                             WORD32 src_strd,
                             WORD32 dst_strd,
                             WORD32 zero_cols,
-                            WORD32 zero_rows)
+                            WORD32 zero_rows,
+                            UWORD8 bit_depth)
 {
     WORD32 j, k;
     WORD32 e[16], o[16];
@@ -1435,7 +1441,7 @@ void ihevc_itrans_res_32x32(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
         if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
@@ -1742,7 +1748,7 @@ void ihevc_itrans_res_32x32(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
         if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
@@ -2099,7 +2105,7 @@ void ihevc_itrans_res_32x32(WORD16 *pi2_src,
         pi2_tmp = pi2_tmp_orig;
 
         /* Inverse Transform 2nd stage */
-        shift = IT_SHIFT_STAGE_2;
+        shift = 20 - bit_depth;
         add = 1 << (shift - 1);
         if((zero_rows_2nd_stage & 0xFFFFFFF0) == 0xFFFFFFF0) /* First 4 rows of output of 1st stage are non-zero */
         {
