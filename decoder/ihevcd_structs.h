@@ -1639,7 +1639,8 @@ typedef void (*pf_itrans_res)(WORD16 *pi2_src,
                               WORD32 i4_src_strd,
                               WORD32 i4_dst_strd,
                               WORD32 zero_cols,
-                              WORD32 zero_rows);
+                              WORD32 zero_rows,
+                              UWORD8 bit_depth);
 
 typedef void (*pf_itrans_recon)(WORD16 *pi2_src,
                                 WORD16 *pi2_tmp,
@@ -1669,7 +1670,8 @@ typedef void (*pf_itrans_recon_dc)(UWORD8 *pu1_pred,
 typedef void (*pf_itrans_res_dc)(WORD16 *pi2_dst,
                                  WORD32 dst_strd,
                                  WORD32 log2_trans_size,
-                                 WORD16 i2_coeff_value);
+                                 WORD16 i2_coeff_value,
+                                 UWORD8 bit_depth);
 
 
 typedef void (*pf_sao_luma)(UWORD8 *,
@@ -1715,21 +1717,6 @@ typedef void (*pf_hbd_itrans_recon)(WORD16 *pi2_src,
                                     WORD32 i4_zero_cols,
                                     WORD32 i4_zero_rows,
                                     UWORD8 u1_bit_depth);
-
-typedef void (*pf_hbd_itrans_res)(WORD16 *pi2_src,
-                                  WORD16 *pi2_tmp,
-                                  WORD16 *pi2_dst,
-                                  WORD32 src_strd,
-                                  WORD32 dst_strd,
-                                  WORD32 zero_cols,
-                                  WORD32 zero_rows,
-                                  UWORD8 bit_depth);
-
-typedef void (*pf_hbd_itrans_res_dc)(WORD16 *pi2_dst,
-                                     WORD32 dst_strd,
-                                     WORD32 log2_trans_size,
-                                     WORD16 i2_coeff_value,
-                                     UWORD8 bit_depth);
 
 typedef void (*pf_hbd_recon)(WORD16 *pi2_src,
                              UWORD16 *pu2_pred,
@@ -2442,8 +2429,6 @@ struct _codec_t
     pf_hbd_sao_luma                 apf_hbd_sao_luma[4];
     pf_hbd_sao_chroma               apf_hbd_sao_chroma[4];
     pf_hbd_inter_pred               apf_hbd_inter_pred[22];
-    pf_hbd_itrans_res               apf_hbd_itrans_res[5];
-    pf_hbd_itrans_res_dc            apf_hbd_itrans_res_dc;
 
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;

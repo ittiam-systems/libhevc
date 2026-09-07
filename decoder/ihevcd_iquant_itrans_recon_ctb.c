@@ -809,33 +809,16 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
             if(0 == ps_pl_tu_ctxt->coeff_type)
             {
                 WORD32 func_tmp_idx = chroma_plane != NULL_PLANE ? func_idx - 4 : func_idx;
-                if(ps_codec->i4_pixel_size_y > 1) {
-                    ps_codec->apf_hbd_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
-                                                               ps_proc->pi2_itrans_intrmd_buf, residue_out,
-                                                               ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
-                                                               ps_pl_tu_ctxt->zero_cols,
-                                                               ps_pl_tu_ctxt->zero_rows, (UWORD8)bit_depth);
-                }
-                else
-                {
-                    ps_codec->apf_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
-                                                           ps_proc->pi2_itrans_intrmd_buf, residue_out,
-                                                           ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
-                                                           ps_pl_tu_ctxt->zero_cols,
-                                                           ps_pl_tu_ctxt->zero_rows);
-                }
+                ps_codec->apf_itrans_res[func_tmp_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
+                                                       ps_proc->pi2_itrans_intrmd_buf, residue_out,
+                                                       ps_pl_tu_ctxt->tu_coeff_stride, trans_size,
+                                                       ps_pl_tu_ctxt->zero_cols,
+                                                       ps_pl_tu_ctxt->zero_rows, (UWORD8)bit_depth);
             }
             else /* DC only */
             {
-                if(ps_codec->i4_pixel_size_y > 1) {
-                    ps_codec->apf_hbd_itrans_res_dc(residue_out, trans_size, log2_trans_size,
-                                                    ps_pl_tu_ctxt->coeff_value, (UWORD8)bit_depth);
-                }
-                else
-                {
-                    ps_codec->apf_itrans_res_dc(residue_out, trans_size, log2_trans_size,
-                                                ps_pl_tu_ctxt->coeff_value);
-                }
+                ps_codec->apf_itrans_res_dc(residue_out, trans_size, log2_trans_size,
+                                            ps_pl_tu_ctxt->coeff_value, (UWORD8)bit_depth);
             }
             ps_pl_tu_ctxt->zero_cols = 0;
         }
