@@ -1638,7 +1638,8 @@ typedef void (*pf_itrans_res)(WORD16 *pi2_src,
                               WORD32 i4_src_strd,
                               WORD32 i4_dst_strd,
                               WORD32 zero_cols,
-                              WORD32 zero_rows);
+                              WORD32 zero_rows,
+                              UWORD8 bit_depth);
 
 typedef void (*pf_itrans_recon)(WORD16 *pi2_src,
                                 WORD16 *pi2_tmp,
@@ -1668,7 +1669,8 @@ typedef void (*pf_itrans_recon_dc)(UWORD8 *pu1_pred,
 typedef void (*pf_itrans_res_dc)(WORD16 *pi2_dst,
                                  WORD32 dst_strd,
                                  WORD32 log2_trans_size,
-                                 WORD16 i2_coeff_value);
+                                 WORD16 i2_coeff_value,
+                                 UWORD8 bit_depth);
 
 
 typedef void (*pf_sao_luma)(UWORD8 *,
