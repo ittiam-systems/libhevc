@@ -189,19 +189,19 @@ row_kernel_32:
     ld1         {v6.8b, v7.8b}, [x0], x6
     st1         {v2.8b, v3.8b}, [x2], x3
 
-    ld1         {v8.8b, v9.8b}, [x0], x6
+    ld1         {v16.8b, v17.8b}, [x0], x6
     st1         {v4.8b, v5.8b}, [x2], x3
 
-    ld1         {v10.8b, v11.8b}, [x0], x6
+    ld1         {v18.8b, v19.8b}, [x0], x6
     st1         {v6.8b, v7.8b}, [x2], x3
 
-    ld1         {v12.8b, v13.8b}, [x0], x6
-    st1         {v8.8b, v9.8b}, [x2], x3
-    ld1         {v14.8b, v15.8b}, [x0], x6
-    st1         {v10.8b, v11.8b}, [x2], x3
+    ld1         {v20.8b, v21.8b}, [x0], x6
+    st1         {v16.8b, v17.8b}, [x2], x3
+    ld1         {v22.8b, v23.8b}, [x0], x6
+    st1         {v18.8b, v19.8b}, [x2], x3
 
-    st1         {v12.8b, v13.8b}, [x2], x3
-    st1         {v14.8b, v15.8b}, [x2], x3
+    st1         {v20.8b, v21.8b}, [x2], x3
+    st1         {v22.8b, v23.8b}, [x2], x3
 
     subs        x12, x12, #1
     bne         row_kernel_32
