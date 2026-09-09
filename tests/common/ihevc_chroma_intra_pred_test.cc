@@ -144,7 +144,7 @@ std::string PrintChromaIntraPredTestParam(
 
 INSTANTIATE_TEST_SUITE_P(
     ChromaIntraPred, ChromaIntraPredTest,
-    ::testing::Combine(::testing::Values(4, 8, 16), ::testing::Range(0, 35),
+    ::testing::Combine(::testing::Values(4, 8, 16, 32), ::testing::Range(0, 35),
                        ::testing::Values(1, 2),  // Dst Stride Multiplier
                        ::testing::ValuesIn(getTstArch())),
     PrintChromaIntraPredTestParam);
