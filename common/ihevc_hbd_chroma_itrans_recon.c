@@ -46,7 +46,6 @@
 #include "ihevc_defs.h"
 #include "ihevc_trans_tables.h"
 #include "ihevc_chroma_itrans_recon.h"
-#include "ihevc_function_selector.h"
 #include "ihevc_trans_macros.h"
 
 /* All the functions work one component(U or V) of interleaved data depending upon pointers passed to it */

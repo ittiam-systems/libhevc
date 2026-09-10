@@ -38,7 +38,7 @@
 
 #include <string.h>
 #include "ihevc_typedefs.h"
-#include "ihevc_function_selector.h"
+#include "ihevc_padding.h"
 #include "ihevc_platform_macros.h"
 
 /**
