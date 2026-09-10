@@ -754,7 +754,6 @@ void ihevc_weighted_pred_bi_ssse3(WORD16 *pi2_src1,
     __m128i const_temp_4x32b, lvl_shift1_4x32b, lvl_shift2_4x32b, wgt0_8x16b, wgt1_8x16b;
     __m128i res_temp1_4x32b, res_temp2_4x32b, res_temp3_4x32b, res_temp4_4x32b;
 
-#include <assert.h>
     ASSERT(wd % 4 == 0); /* checking assumption*/
     ASSERT(ht % 4 == 0); /* checking assumption*/
 
