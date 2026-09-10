@@ -130,10 +130,10 @@ void ihevc_hbd_chroma_recon_nxn_ccp(WORD16 *pi2_luma_res,
                                     UWORD16 *pu2_dst,
                                     WORD32 alpha,
                                     WORD32 trans_size,
-                                    WORD32 luma_res_stride,
-                                    WORD32 chroma_res_stride,
-                                    WORD32 pred_stride,
-                                    WORD32 dst_stride,
+                                    WORD32 luma_res_strd,
+                                    WORD32 chroma_res_strd,
+                                    WORD32 pred_strd,
+                                    WORD32 dst_strd,
                                     UWORD8 bit_depth);
 
-#endif /*_IHEVC_CHROMA_RECON_H_*/
+#endif /* _IHEVC_CHROMA_RECON_H_ */

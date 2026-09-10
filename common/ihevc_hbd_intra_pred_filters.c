@@ -151,7 +151,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
 
     dc_val = 1 << (bit_depth - 1);
 
-    /* Neighbor Flag Structure*/
+    /* Neighbor Flag Structure */
     /* MSB ---> LSB */
     /*    Top-Left | Top-Right | Top | Left | Bottom-Left
               1         4         4     4         4
@@ -227,16 +227,16 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
             }
             next = 1;
 
-            /* If bottom -left is not available, reverse substitution process*/
+            /* If bottom -left is not available, reverse substitution process */
             if(bot_left == 0)
             {
                 WORD32 a_nbr_flag[5] = { bot_left, left, tp_left, top, tp_right};
 
-                /* Check for the 1st available sample from bottom-left*/
+                /* Check for the 1st available sample from bottom-left */
                 while(!a_nbr_flag[next])
                     next++;
 
-                /* If Left, top-left are available*/
+                /* If Left, top-left are available */
                 if(next <= 2)
                 {
                     idx = nt * next;
@@ -246,7 +246,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
                 }
                 else /* If top, top-right are available */
                 {
-                    /* Idx is changed to copy 1 pixel value for top-left ,if top-left is not available*/
+                    /* Idx is changed to copy 1 pixel value for top-left ,if top-left is not available */
                     idx = (nt * (next - 1)) + 1;
                     pu2_ref = pu2_dst[idx];
                     for(i = 0; i < idx; i++)
@@ -336,7 +336,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
                 for(i = nt; i < two_nt; i++)
                     pu2_dst[two_nt + 1 + i] = 0;
             }
-            /* compute trailing zeors based on nbr_flag for substitution process of below left see section .*/
+            /* compute trailing zeors based on nbr_flag for substitution process of below left see section . */
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
                 nbr_id_from_bl = look_up_trailing_zeros(nbr_flags_temp & 0XF) * 8; /* for below left and left */
@@ -351,10 +351,9 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
                     {
                         nbr_id_from_bl++;
                         nbr_id_from_bl += look_up_trailing_zeros((nbr_flags_temp >> 4) & 0xF) * 8; /* top and top right;  8 pels per nbr bit */
-                        //nbr_id_from_bl += idx * 8;
                     }
                 }
-                /* Reverse Substitution Process*/
+                /* Reverse Substitution Process */
                 if(nbr_id_from_bl)
                 {
                     /* Replicate the bottom-left and subsequent unavailable pixels with the 1st available pixel above */
@@ -371,9 +370,9 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Devide by 8 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> 3);/*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> 3);
 
-                /* The Top-left flag is at the last bit location of nbr_flags*/
+                /* The Top-left flag is at the last bit location of nbr_flags */
                 if(nbr_id_from_bl == (T16_4NT / 2))
                 {
                     get_bits = GET_BIT(nbr_flags_temp, 8);
@@ -448,7 +447,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
                 for(i = nt; i < two_nt; i++)
                     pu2_dst[two_nt + 1 + i] = 0;
             }
-            /* compute trailing ones based on mbr_flag for substitution process of below left see section .*/
+            /* compute trailing ones based on mbr_flag for substitution process of below left see section . */
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
                 nbr_id_from_bl = look_up_trailing_zeros((nbr_flags & 0XFF)) * 8; /* for below left and left */
@@ -464,7 +463,7 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
                         nbr_id_from_bl += look_up_trailing_zeros((nbr_flags >> 8) & 0xFF) * 8;
                     }
                 }
-                /* Reverse Substitution Process*/
+                /* Reverse Substitution Process */
                 if(nbr_id_from_bl)
                 {
                     /* Replicate the bottom-left and subsequent unavailable pixels with the 1st available pixel above */
@@ -479,9 +478,9 @@ void ihevc_hbd_intra_pred_luma_ref_substitution(UWORD16 *pu2_top_left,
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Devide by 8 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> 3);/*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> 3);
 
-                /* The Top-left flag is at the last bit location of nbr_flags*/
+                /* The Top-left flag is at the last bit location of nbr_flags */
                 if(nbr_id_from_bl == (T32_4NT / 2))
                 {
                     get_bits = GET_BIT(nbr_flags, 16);
@@ -587,7 +586,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 *pu2_src,
             bi_linear_int_flag = ((1 == abs_cond_left_flag)
                                     && (1 == abs_cond_top_flag));
         }
-        /* Extremities Untouched*/
+        /* Extremities Untouched */
         au2_flt[0] = pu2_src[0];
         au2_flt[4 * nt] = pu2_src[4 * nt];
 
@@ -613,7 +612,7 @@ void ihevc_hbd_intra_pred_ref_filtering(UWORD16 *pu2_src,
         }
 
         for(i = 0; i < (four_nt + 1); i++)
-             pu2_dst[i] = au2_flt[i];
+            pu2_dst[i] = au2_flt[i];
     }
 }
 
@@ -813,7 +812,7 @@ void ihevc_hbd_intra_pred_luma_dc(UWORD16 *pu2_ref,
             pu2_dst[row * dst_strd] = (pu2_ref[two_nt - 1 - row] + three_dc_val + 2)
                             >> 2;
 
-        /* Fill the remaining rows with DC value*/
+        /* Fill the remaining rows with DC value */
         for(row = 1; row < nt; row++)
             for(col = 1; col < nt; col++)
                 pu2_dst[(row * dst_strd) + col] = dc_val;
@@ -885,7 +884,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
     }
     else
     {
-        /*Filtering done for the 1st row */
+        /* Filtering done for the 1st row */
         for(col = 0; col < nt; col++)
         {
             s2_predpixel = pu2_ref[two_nt - 1]
@@ -895,7 +894,7 @@ void ihevc_hbd_intra_pred_luma_horz(UWORD16 *pu2_ref,
 
         }
 
-        /* Replication to next rows*/
+        /* Replication to next rows */
         for(row = 1; row < nt; row++)
             for(col = 0; col < nt; col++)
                 pu2_dst[(row * dst_strd) + col] = pu2_ref[two_nt - 1 - row];
@@ -955,14 +954,14 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
 
     if(nt == 32 || disable_boundary_filter)
     {
-        /* Replication to next columns*/
+        /* Replication to next columns */
         for(row = 0; row < nt; row++)
             for(col = 0; col < nt; col++)
                 pu2_dst[(row * dst_strd) + col] = pu2_ref[two_nt + 1 + col];
     }
     else
     {
-        /*Filtering done for the 1st column */
+        /* Filtering done for the 1st column */
         for(row = 0; row < nt; row++)
         {
             s2_predpixel = pu2_ref[two_nt + 1]
@@ -971,7 +970,7 @@ void ihevc_hbd_intra_pred_luma_ver(UWORD16 *pu2_ref,
             pu2_dst[row * dst_strd] = CLIP3(s2_predpixel,0,((1<<bit_depth)-1));
         }
 
-        /* Replication to next columns*/
+        /* Replication to next columns */
         for(row = 0; row < nt; row++)
             for(col = 1; col < nt; col++)
                 pu2_dst[(row * dst_strd) + col] = pu2_ref[two_nt + 1 + col];
@@ -1093,7 +1092,7 @@ void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
     WORD32 idx = 0;
     WORD32 two_nt = 2 * nt;
 
-    intra_pred_ang = 32;    /*Default value*/
+    intra_pred_ang = 32;    /* Default value */
 
     /* For mode 18, angle is -45degree */
     if(mode == 18)
@@ -1102,7 +1101,7 @@ void ihevc_hbd_intra_pred_luma_mode_18_34(UWORD16 *pu2_ref,
     else if(mode == 34)
         intra_pred_ang = 32;
     /* For the angle 45 and -45, replication is done from the corresponding angle */
-    /* No interpolation is done for 45 degree*/
+    /* No interpolation is done for 45 degree */
     for(row = 0; row < nt; row++)
     {
         idx = ((row + 1) * intra_pred_ang) >> 5;
@@ -1243,9 +1242,9 @@ void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
                                              WORD32 mode,
                                              UWORD8 bit_depth)
 {
-    /* This function and ihevc_intra_pred_luma_mode_19_to_25 are same except*/
+    /* This function and ihevc_intra_pred_luma_mode_19_to_25 are same except */
     /* for ref main & side samples assignment,can be combined for */
-    /* optimzation*/
+    /* optimzation */
 
     WORD32 row, col, k;
     WORD32 two_nt;
@@ -1263,7 +1262,7 @@ void ihevc_hbd_intra_pred_luma_mode_11_to_17(UWORD16 *pu2_ref,
 
     inv_ang = gai4_ihevc_inv_ang_table[mode - 11];
     /* Intermediate reference samples for negative angle modes */
-    /* This have to be removed during optimization*/
+    /* This have to be removed during optimization */
     /* For horizontal modes, (ref main = ref left) (ref side = ref above) */
 
     ref_main = ref_temp + nt - 1;
@@ -1363,7 +1362,7 @@ void ihevc_hbd_intra_pred_luma_mode_19_to_25(UWORD16 *pu2_ref,
     inv_ang = gai4_ihevc_inv_ang_table[mode - 12];
 
     /* Intermediate reference samples for negative angle modes */
-    /* This have to be removed during optimization*/
+    /* This have to be removed during optimization */
     /* For horizontal modes, (ref main = ref above) (ref side = ref left) */
     ref_main = ref_temp + nt - 1;
     for(k = 0; k < (nt + 1); k++)

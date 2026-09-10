@@ -61,14 +61,14 @@
  * au4_avail[7] - bottom-right
  */
 void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
-                                    WORD32 i4_src_strd,
+                                    WORD32 src_strd,
                                     UWORD16 *pu2_src_left,
                                     UWORD16 *pu2_src_top,
                                     UWORD16 *pu2_src_top_left,
-                                    WORD32 i4_sao_band_pos,
+                                    WORD32 sao_band_pos,
                                     WORD8 *pi1_sao_offset,
-                                    WORD32 i4_wd,
-                                    WORD32 i4_ht,
+                                    WORD32 wd,
+                                    WORD32 ht,
                                     UWORD32 u4_bit_depth)
 {
     WORD32 band_shift;
@@ -77,14 +77,14 @@ void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
     WORD32 row, col;
 
     /* Updating left and top and top-left */
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
-        pu2_src_left[row] = pu2_src[row * i4_src_strd + (i4_wd - 1)];
+        pu2_src_left[row] = pu2_src[row * src_strd + (wd - 1)];
     }
-    pu2_src_top_left[0] = pu2_src_top[i4_wd - 1];
-    for(col = 0; col < i4_wd; col++)
+    pu2_src_top_left[0] = pu2_src_top[wd - 1];
+    for(col = 0; col < wd; col++)
     {
-        pu2_src_top[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        pu2_src_top[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     band_shift = u4_bit_depth - 5;
@@ -94,12 +94,12 @@ void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
     }
     for(i = 0; i < 4; i++)
     {
-        band_table[(i + i4_sao_band_pos) & 31] = i + 1;
+        band_table[(i + sao_band_pos) & 31] = i + 1;
     }
 
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
-        for(col = 0; col < i4_wd; col++)
+        for(col = 0; col < wd; col++)
         {
             WORD32 band_idx;
             WORD32 idx = pu2_src[col] >> band_shift;
@@ -107,21 +107,21 @@ void ihevc_hbd_sao_band_offset_luma(UWORD16 *pu2_src,
             band_idx = (idx < NUM_BAND_TABLE) ? band_table[idx] : 0;
             pu2_src[col] = CLIP3(pu2_src[col] + pi1_sao_offset[band_idx], 0, (1 << (band_shift + 5)) - 1);
         }
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
     }
 }
 
 void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
-                                      WORD32 i4_src_strd,
+                                      WORD32 src_strd,
                                       UWORD16 *pu2_src_left,
                                       UWORD16 *pu2_src_top,
                                       UWORD16 *pu2_src_top_left,
-                                      WORD32 i4_sao_band_pos_u,
-                                      WORD32 i4_sao_band_pos_v,
+                                      WORD32 sao_band_pos_u,
+                                      WORD32 sao_band_pos_v,
                                       WORD8 *pi1_sao_offset_u,
                                       WORD8 *pi1_sao_offset_v,
-                                      WORD32 i4_wd,
-                                      WORD32 i4_ht,
+                                      WORD32 wd,
+                                      WORD32 ht,
                                       UWORD32 u4_bit_depth)
 {
     WORD32 band_shift;
@@ -131,16 +131,16 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
     WORD32 row, col;
 
     /* Updating left and top and top-left */
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
-        pu2_src_left[2 * row] = pu2_src[row * i4_src_strd + (i4_wd - 2)];
-        pu2_src_left[2 * row + 1] = pu2_src[row * i4_src_strd + (i4_wd - 1)];
+        pu2_src_left[2 * row] = pu2_src[row * src_strd + (wd - 2)];
+        pu2_src_left[2 * row + 1] = pu2_src[row * src_strd + (wd - 1)];
     }
-    pu2_src_top_left[0] = pu2_src_top[i4_wd - 2];
-    pu2_src_top_left[1] = pu2_src_top[i4_wd - 1];
-    for(col = 0; col < i4_wd; col++)
+    pu2_src_top_left[0] = pu2_src_top[wd - 2];
+    pu2_src_top_left[1] = pu2_src_top[wd - 1];
+    for(col = 0; col < wd; col++)
     {
-        pu2_src_top[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        pu2_src_top[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     band_shift = u4_bit_depth - 5;
@@ -151,13 +151,13 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
     }
     for(i = 0; i < 4; i++)
     {
-        band_table_u[(i + i4_sao_band_pos_u) & 31] = i + 1;
-        band_table_v[(i + i4_sao_band_pos_v) & 31] = i + 1;
+        band_table_u[(i + sao_band_pos_u) & 31] = i + 1;
+        band_table_v[(i + sao_band_pos_v) & 31] = i + 1;
     }
 
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
-        for(col = 0; col < i4_wd; col++)
+        for(col = 0; col < wd; col++)
         {
             WORD32 band_idx;
             WORD8 *pi1_sao_offset;
@@ -174,12 +174,12 @@ void ihevc_hbd_sao_band_offset_chroma(UWORD16 *pu2_src,
             }
             pu2_src[col] = CLIP3(pu2_src[col] + pi1_sao_offset[band_idx], 0, (1 << (band_shift + 5)) - 1);
         }
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
-                                      WORD32 i4_src_strd,
+                                      WORD32 src_strd,
                                       UWORD16 *pu2_src_left,
                                       UWORD16 *pu2_src_top,
                                       UWORD16 *pu2_src_top_left,
@@ -187,8 +187,8 @@ void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
                                       UWORD16 *pu2_src_bot_left,
                                       UWORD8 *pu1_avail,
                                       WORD8 *pi1_sao_offset,
-                                      WORD32 i4_wd,
-                                      WORD32 i4_ht,
+                                      WORD32 wd,
+                                      WORD32 ht,
                                       UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -200,14 +200,14 @@ void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update top and top-left arrays */
-    *pu2_src_top_left = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    *pu2_src_top_left = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[row] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[row] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        pu2_src_top[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        pu2_src_top[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* Update masks based on the availability flags */
@@ -217,15 +217,15 @@ void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
     }
     if(0 == pu1_avail[1])
     {
-        au1_mask[i4_wd - 1] = 0;
+        au1_mask[wd - 1] = 0;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
             u1_sign_left = SIGN(pu2_src[0] - pu2_src_left[row]);
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
 
@@ -241,19 +241,19 @@ void ihevc_hbd_sao_edge_offset_class0(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
     }
 
     /* Update left array */
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
-                                             WORD32 i4_src_strd,
+                                             WORD32 src_strd,
                                              UWORD16 *pu2_src_left,
                                              UWORD16 *pu2_src_top,
                                              UWORD16 *pu2_src_top_left,
@@ -262,8 +262,8 @@ void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
                                              UWORD8 *pu1_avail,
                                              WORD8 *pi1_sao_offset_u,
                                              WORD8 *pi1_sao_offset_v,
-                                             WORD32 i4_wd,
-                                             WORD32 i4_ht,
+                                             WORD32 wd,
+                                             WORD32 ht,
                                              UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -276,16 +276,16 @@ void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    pu2_src_top_left[0] = pu2_src_top[i4_wd - 2];
-    pu2_src_top_left[1] = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    pu2_src_top_left[0] = pu2_src_top[wd - 2];
+    pu2_src_top_left[1] = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[2 * row] = pu2_src[row * i4_src_strd + i4_wd - 2];
-        au2_src_left_tmp[2 * row + 1] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[2 * row] = pu2_src[row * src_strd + wd - 2];
+        au2_src_left_tmp[2 * row + 1] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        pu2_src_top[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        pu2_src_top[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* Update masks based on the availability flags */
@@ -295,16 +295,16 @@ void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
     }
     if(0 == pu1_avail[1])
     {
-        au1_mask[(i4_wd - 1) >> 1] = 0;
+        au1_mask[(wd - 1) >> 1] = 0;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
             u1_sign_left_u = SIGN(pu2_src[0] - pu2_src_left[2 * row]);
             u1_sign_left_v = SIGN(pu2_src[1] - pu2_src_left[2 * row + 1]);
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
                 WORD8 *pi1_sao_offset;
@@ -332,18 +332,18 @@ void ihevc_hbd_sao_edge_offset_class0_chroma(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
     }
 
-    for(row = 0; row < 2 * i4_ht; row++)
+    for(row = 0; row < 2 * ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
-                                      WORD32 i4_src_strd,
+                                      WORD32 src_strd,
                                       UWORD16 *pu2_src_left,
                                       UWORD16 *pu2_src_top,
                                       UWORD16 *pu2_src_top_left,
@@ -351,8 +351,8 @@ void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
                                       UWORD16 *pu2_src_bot_left,
                                       UWORD8 *pu1_avail,
                                       WORD8 *pi1_sao_offset,
-                                      WORD32 i4_wd,
-                                      WORD32 i4_ht,
+                                      WORD32 wd,
+                                      WORD32 ht,
                                       UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -365,47 +365,47 @@ void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    *pu2_src_top_left = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    *pu2_src_top_left = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        pu2_src_left[row] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        pu2_src_left[row] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* Update height and source pointers based on the availability flags */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
-        i4_ht--;
-        for(col = 0; col < i4_wd; col++)
+        pu2_src += src_strd;
+        ht--;
+        for(col = 0; col < wd; col++)
         {
-            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - i4_src_strd]);
+            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - src_strd]);
         }
     }
     else
     {
-        for(col = 0; col < i4_wd; col++)
+        for(col = 0; col < wd; col++)
         {
             au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col]);
         }
     }
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
 
-                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + i4_src_strd]);
+                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + src_strd]);
                 edge_idx = 2 + au1_sign_up[col] + u1_sign_down;
                 au1_sign_up[col] = -u1_sign_down;
 
@@ -417,18 +417,18 @@ void ihevc_hbd_sao_edge_offset_class1(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
     }
 
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
-                                             WORD32 i4_src_strd,
+                                             WORD32 src_strd,
                                              UWORD16 *pu2_src_left,
                                              UWORD16 *pu2_src_top,
                                              UWORD16 *pu2_src_top_left,
@@ -437,8 +437,8 @@ void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
                                              UWORD8 *pu1_avail,
                                              WORD8 *pi1_sao_offset_u,
                                              WORD8 *pi1_sao_offset_v,
-                                             WORD32 i4_wd,
-                                             WORD32 i4_ht,
+                                             WORD32 wd,
+                                             WORD32 ht,
                                              UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -451,52 +451,52 @@ void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    pu2_src_top_left[0] = pu2_src_top[i4_wd - 2];
-    pu2_src_top_left[1] = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    pu2_src_top_left[0] = pu2_src_top[wd - 2];
+    pu2_src_top_left[1] = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        pu2_src_left[2 * row] = pu2_src[row * i4_src_strd + i4_wd - 2];
-        pu2_src_left[2 * row + 1] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        pu2_src_left[2 * row] = pu2_src[row * src_strd + wd - 2];
+        pu2_src_left[2 * row + 1] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* Update height and source pointers based on the availability flags */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
-        i4_ht--;
-        for(col = 0; col < i4_wd; col++)
+        pu2_src += src_strd;
+        ht--;
+        for(col = 0; col < wd; col++)
         {
-            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - i4_src_strd]);
+            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - src_strd]);
         }
     }
     else
     {
-        for(col = 0; col < i4_wd; col++)
+        for(col = 0; col < wd; col++)
         {
             au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col]);
         }
     }
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
                 WORD8 *pi1_sao_offset;
 
                 pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
 
-                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + i4_src_strd]);
+                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + src_strd]);
                 edge_idx = 2 + au1_sign_up[col] + u1_sign_down;
                 au1_sign_up[col] = -u1_sign_down;
 
@@ -508,18 +508,18 @@ void ihevc_hbd_sao_edge_offset_class1_chroma(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
     }
 
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
-                                      WORD32 i4_src_strd,
+                                      WORD32 src_strd,
                                       UWORD16 *pu2_src_left,
                                       UWORD16 *pu2_src_top,
                                       UWORD16 *pu2_src_top_left,
@@ -527,8 +527,8 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
                                       UWORD16 *pu2_src_bot_left,
                                       UWORD8 *pu1_avail,
                                       WORD8 *pi1_sao_offset,
-                                      WORD32 i4_wd,
-                                      WORD32 i4_ht,
+                                      WORD32 wd,
+                                      WORD32 ht,
                                       UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -552,14 +552,14 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    u2_src_top_left_tmp = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    u2_src_top_left_tmp = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[row] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[row] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* If top-left is available, process separately */
@@ -568,7 +568,7 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
         WORD32 edge_idx;
 
         edge_idx = 2 + SIGN(pu2_src[0] - pu2_src_top_left[0]) +
-                        SIGN(pu2_src[0] - pu2_src[1 + i4_src_strd]);
+                        SIGN(pu2_src[0] - pu2_src[1 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
@@ -591,23 +591,23 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
     {
         WORD32 edge_idx;
 
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd- 1 - i4_src_strd]) +
-                        SIGN(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd + 1 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 1 + (ht - 1) * src_strd] - pu2_src[wd - 1 + (ht - 1) * src_strd- 1 - src_strd]) +
+                        SIGN(pu2_src[wd - 1 + (ht - 1) * src_strd] - pu2_src[wd - 1 + (ht - 1) * src_strd + 1 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_ht_tmp = CLIP3(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_ht_tmp = CLIP3(pu2_src[wd - 1 + (ht - 1) * src_strd] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_ht_tmp = pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd];
+            u2_pos_wd_ht_tmp = pu2_src[wd - 1 + (ht - 1) * src_strd];
         }
     }
     else
     {
-        u2_pos_wd_ht_tmp = pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd];
+        u2_pos_wd_ht_tmp = pu2_src[wd - 1 + (ht - 1) * src_strd];
     }
 
     /* If Left is not available */
@@ -619,17 +619,17 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
     /* If Top is not available */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
-        i4_ht--;
+        pu2_src += src_strd;
+        ht--;
         pu2_src_left_cpy += 1;
-        for(col = 1;col < i4_wd; col++)
+        for(col = 1;col < wd; col++)
         {
-            pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - 1 - i4_src_strd]);
+            pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - 1 - src_strd]);
         }
     }
     else
     {
-        for(col = 1;col < i4_wd; col++)
+        for(col = 1;col < wd; col++)
         {
             pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col - 1]);
         }
@@ -638,25 +638,25 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
     /* If Right is not available */
     if(0 == pu1_avail[1])
     {
-        au1_mask[i4_wd - 1] = 0;
+        au1_mask[wd - 1] = 0;
     }
 
     /* If Bottom is not available */
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
             pu1_sign_up[0] = SIGN(pu2_src[0] - pu2_src_left_cpy[row - 1]);
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
 
-                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + 1 + i4_src_strd]);
+                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + 1 + src_strd]);
                 edge_idx = 2 + pu1_sign_up[col] + u1_sign_down;
                 pu1_sign_up_tmp[col + 1] = -u1_sign_down;
 
@@ -675,30 +675,30 @@ void ihevc_hbd_sao_edge_offset_class2(UWORD16 *pu2_src,
                 pu1_sign_up_tmp = pu1_swap_tmp;
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
 
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd] = u2_pos_0_0_tmp;
-        pu2_src[(pu1_avail[3] ? i4_wd - 1 - i4_src_strd : i4_wd - 1)] = u2_pos_wd_ht_tmp;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd] = u2_pos_0_0_tmp;
+        pu2_src[(pu1_avail[3] ? wd - 1 - src_strd : wd - 1)] = u2_pos_wd_ht_tmp;
     }
 
     if(0 == pu1_avail[2])
-        i4_ht++;
+        ht++;
     if(0 == pu1_avail[3])
-        i4_ht++;
+        ht++;
     *pu2_src_top_left = u2_src_top_left_tmp;
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
-                                             WORD32 i4_src_strd,
+                                             WORD32 src_strd,
                                              UWORD16 *pu2_src_left,
                                              UWORD16 *pu2_src_top,
                                              UWORD16 *pu2_src_top_left,
@@ -707,8 +707,8 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
                                              UWORD8 *pu1_avail,
                                              WORD8 *pi1_sao_offset_u,
                                              WORD8 *pi1_sao_offset_v,
-                                             WORD32 i4_wd,
-                                             WORD32 i4_ht,
+                                             WORD32 wd,
+                                             WORD32 ht,
                                              UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -734,16 +734,16 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    au2_src_top_left_tmp[0] = pu2_src_top[i4_wd - 2];
-    au2_src_top_left_tmp[1] = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    au2_src_top_left_tmp[0] = pu2_src_top[wd - 2];
+    au2_src_top_left_tmp[1] = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[2 * row] = pu2_src[row * i4_src_strd + i4_wd - 2];
-        au2_src_left_tmp[2 * row + 1] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[2 * row] = pu2_src[row * src_strd + wd - 2];
+        au2_src_left_tmp[2 * row + 1] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* If top-left is available, process separately */
@@ -753,7 +753,7 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
 
         /* U */
         edge_idx = 2 + SIGN(pu2_src[0] - pu2_src_top_left[0]) +
-                        SIGN(pu2_src[0] - pu2_src[2 + i4_src_strd]);
+                        SIGN(pu2_src[0] - pu2_src[2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
@@ -768,7 +768,7 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
 
         /* V */
         edge_idx = 2 + SIGN(pu2_src[1] - pu2_src_top_left[1]) +
-                        SIGN(pu2_src[1] - pu2_src[1 + 2 + i4_src_strd]);
+                        SIGN(pu2_src[1] - pu2_src[1 + 2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
@@ -793,39 +793,39 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
         WORD32 edge_idx;
 
         /* U */
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd - 2 - i4_src_strd]) +
-                        SIGN(pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd + 2 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 2 + (ht - 1) * src_strd] - pu2_src[wd - 2 + (ht - 1) * src_strd - 2 - src_strd]) +
+                        SIGN(pu2_src[wd - 2 + (ht - 1) * src_strd] - pu2_src[wd - 2 + (ht - 1) * src_strd + 2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_ht_tmp_u = CLIP3(pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_ht_tmp_u = CLIP3(pu2_src[wd - 2 + (ht - 1) * src_strd] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_ht_tmp_u = pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd];
+            u2_pos_wd_ht_tmp_u = pu2_src[wd - 2 + (ht - 1) * src_strd];
         }
 
         /* V */
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd - 2 - i4_src_strd]) +
-                        SIGN(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] - pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd + 2 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 1 + (ht - 1) * src_strd] - pu2_src[wd - 1 + (ht - 1) * src_strd - 2 - src_strd]) +
+                        SIGN(pu2_src[wd - 1 + (ht - 1) * src_strd] - pu2_src[wd - 1 + (ht - 1) * src_strd + 2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_ht_tmp_v = CLIP3(pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_ht_tmp_v = CLIP3(pu2_src[wd - 1 + (ht - 1) * src_strd] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_ht_tmp_v = pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd];
+            u2_pos_wd_ht_tmp_v = pu2_src[wd - 1 + (ht - 1) * src_strd];
         }
     }
     else
     {
-        u2_pos_wd_ht_tmp_u = pu2_src[i4_wd - 2 + (i4_ht - 1) * i4_src_strd];
-        u2_pos_wd_ht_tmp_v = pu2_src[i4_wd - 1 + (i4_ht - 1) * i4_src_strd];
+        u2_pos_wd_ht_tmp_u = pu2_src[wd - 2 + (ht - 1) * src_strd];
+        u2_pos_wd_ht_tmp_v = pu2_src[wd - 1 + (ht - 1) * src_strd];
     }
 
     /* If Left is not available */
@@ -837,17 +837,17 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
     /* If Top is not available */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
         pu2_src_left_cpy += 2;
-        i4_ht--;
-        for(col = 2; col < i4_wd; col++)
+        ht--;
+        for(col = 2; col < wd; col++)
         {
-            pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - 2 - i4_src_strd]);
+            pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col - 2 - src_strd]);
         }
     }
     else
     {
-        for(col = 2; col < i4_wd; col++)
+        for(col = 2; col < wd; col++)
         {
             pu1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col - 2]);
         }
@@ -856,29 +856,29 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
     /* If Right is not available */
     if(0 == pu1_avail[1])
     {
-        au1_mask[(i4_wd - 1) >> 1] = 0;
+        au1_mask[(wd - 1) >> 1] = 0;
     }
 
     /* If Bottom is not available */
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
             pu1_sign_up[0] = SIGN(pu2_src[0] - pu2_src_left_cpy[2 * (row - 1)]);
             pu1_sign_up[1] = SIGN(pu2_src[1] - pu2_src_left_cpy[2 * (row - 1) + 1]);
-            for(col = 0; col < i4_wd; col++)
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
                 WORD8 *pi1_sao_offset;
 
                 pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
 
-                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + 2 + i4_src_strd]);
+                u1_sign_down = SIGN(pu2_src[col] - pu2_src[col + 2 + src_strd]);
                 edge_idx = 2 + pu1_sign_up[col] + u1_sign_down;
                 pu1_sign_up_tmp[col + 2] = -u1_sign_down;
 
@@ -897,33 +897,33 @@ void ihevc_hbd_sao_edge_offset_class2_chroma(UWORD16 *pu2_src,
                 pu1_sign_up_tmp = pu1_swap_tmp;
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
 
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd] = u2_pos_0_0_tmp_u;
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd + 1] = u2_pos_0_0_tmp_v;
-        pu2_src[(pu1_avail[3] ? i4_wd - 2 - i4_src_strd : i4_wd - 2)] = u2_pos_wd_ht_tmp_u;
-        pu2_src[(pu1_avail[3] ? i4_wd - 1 - i4_src_strd : i4_wd - 1)] = u2_pos_wd_ht_tmp_v;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd] = u2_pos_0_0_tmp_u;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd + 1] = u2_pos_0_0_tmp_v;
+        pu2_src[(pu1_avail[3] ? wd - 2 - src_strd : wd - 2)] = u2_pos_wd_ht_tmp_u;
+        pu2_src[(pu1_avail[3] ? wd - 1 - src_strd : wd - 1)] = u2_pos_wd_ht_tmp_v;
     }
 
     if(0 == pu1_avail[2])
-        i4_ht++;
+        ht++;
     if(0 == pu1_avail[3])
-        i4_ht++;
+        ht++;
     pu2_src_top_left[0] = au2_src_top_left_tmp[0];
     pu2_src_top_left[1] = au2_src_top_left_tmp[1];
-    for(row = 0; row < 2 * i4_ht; row++)
+    for(row = 0; row < 2 * ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
 }
 
 void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
-                                      WORD32 i4_src_strd,
+                                      WORD32 src_strd,
                                       UWORD16 *pu2_src_left,
                                       UWORD16 *pu2_src_top,
                                       UWORD16 *pu2_src_top_left,
@@ -931,8 +931,8 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
                                       UWORD16 *pu2_src_bot_left,
                                       UWORD8 *pu1_avail,
                                       WORD8 *pi1_sao_offset,
-                                      WORD32 i4_wd,
-                                      WORD32 i4_ht,
+                                      WORD32 wd,
+                                      WORD32 ht,
                                       UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -953,14 +953,14 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    u2_src_top_left_tmp = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    u2_src_top_left_tmp = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[row] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[row] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* If top-right is available, process separately */
@@ -968,23 +968,23 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
     {
         WORD32 edge_idx;
 
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 1] - pu2_src_top_right[0]) +
-                        SIGN(pu2_src[i4_wd - 1] - pu2_src[i4_wd - 1 - 1 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 1] - pu2_src_top_right[0]) +
+                        SIGN(pu2_src[wd - 1] - pu2_src[wd - 1 - 1 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_0_tmp = CLIP3(pu2_src[i4_wd - 1] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_0_tmp = CLIP3(pu2_src[wd - 1] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_0_tmp = pu2_src[i4_wd - 1];
+            u2_pos_wd_0_tmp = pu2_src[wd - 1];
         }
     }
     else
     {
-        u2_pos_wd_0_tmp = pu2_src[i4_wd - 1];
+        u2_pos_wd_0_tmp = pu2_src[wd - 1];
     }
 
     /* If bottom-left is available, process separately */
@@ -992,23 +992,23 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
     {
         WORD32 edge_idx;
 
-        edge_idx = 2 + SIGN(pu2_src[(i4_ht - 1) * i4_src_strd] - pu2_src[(i4_ht - 1) * i4_src_strd + 1 - i4_src_strd]) +
-                        SIGN(pu2_src[(i4_ht - 1) * i4_src_strd] - pu2_src_bot_left[0]);
+        edge_idx = 2 + SIGN(pu2_src[(ht - 1) * src_strd] - pu2_src[(ht - 1) * src_strd + 1 - src_strd]) +
+                        SIGN(pu2_src[(ht - 1) * src_strd] - pu2_src_bot_left[0]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_0_ht_tmp = CLIP3(pu2_src[(i4_ht - 1) * i4_src_strd] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_0_ht_tmp = CLIP3(pu2_src[(ht - 1) * src_strd] + pi1_sao_offset[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_0_ht_tmp = pu2_src[(i4_ht - 1) * i4_src_strd];
+            u2_pos_0_ht_tmp = pu2_src[(ht - 1) * src_strd];
         }
     }
     else
     {
-        u2_pos_0_ht_tmp = pu2_src[(i4_ht - 1) * i4_src_strd];
+        u2_pos_0_ht_tmp = pu2_src[(ht - 1) * src_strd];
     }
 
     /* If Left is not available */
@@ -1020,17 +1020,17 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
     /* If Top is not available */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
-        i4_ht--;
+        pu2_src += src_strd;
+        ht--;
         pu2_src_left_cpy += 1;
-        for(col = 0; col < i4_wd - 1; col++)
+        for(col = 0; col < wd - 1; col++)
         {
-            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col + 1 - i4_src_strd]);
+            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col + 1 - src_strd]);
         }
     }
     else
     {
-        for(col = 0; col < i4_wd - 1; col++)
+        for(col = 0; col < wd - 1; col++)
         {
             au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col + 1]);
         }
@@ -1039,26 +1039,26 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
     /* If Right is not available */
     if(0 == pu1_avail[1])
     {
-        au1_mask[i4_wd - 1] = 0;
+        au1_mask[wd - 1] = 0;
     }
 
     /* If Bottom is not available */
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
-            au1_sign_up[i4_wd - 1] = SIGN(pu2_src[i4_wd - 1] - pu2_src[i4_wd - 1 + 1 - i4_src_strd]);
-            for(col = 0; col < i4_wd; col++)
+            au1_sign_up[wd - 1] = SIGN(pu2_src[wd - 1] - pu2_src[wd - 1 + 1 - src_strd]);
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
 
                 u1_sign_down = SIGN(pu2_src[col] - ((col == 0) ? pu2_src_left_cpy[row + 1] :
-                                                            pu2_src[col - 1 + i4_src_strd]));
+                                                            pu2_src[col - 1 + src_strd]));
                 edge_idx = 2 + au1_sign_up[col] + u1_sign_down;
                 if(col > 0)
                     au1_sign_up[col - 1] = -u1_sign_down;
@@ -1071,23 +1071,23 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
 
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd + i4_wd - 1] = u2_pos_wd_0_tmp;
-        pu2_src[(pu1_avail[3] ?  (-i4_src_strd) : 0)] = u2_pos_0_ht_tmp;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd + wd - 1] = u2_pos_wd_0_tmp;
+        pu2_src[(pu1_avail[3] ?  (-src_strd) : 0)] = u2_pos_0_ht_tmp;
     }
 
     if(0 == pu1_avail[2])
-        i4_ht++;
+        ht++;
     if(0 == pu1_avail[3])
-        i4_ht++;
+        ht++;
     *pu2_src_top_left = u2_src_top_left_tmp;
-    for(row = 0; row < i4_ht; row++)
+    for(row = 0; row < ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
@@ -1095,7 +1095,7 @@ void ihevc_hbd_sao_edge_offset_class3(UWORD16 *pu2_src,
 
 
 void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
-                                             WORD32 i4_src_strd,
+                                             WORD32 src_strd,
                                              UWORD16 *pu2_src_left,
                                              UWORD16 *pu2_src_top,
                                              UWORD16 *pu2_src_top_left,
@@ -1104,8 +1104,8 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
                                              UWORD8 *pu1_avail,
                                              WORD8 *pi1_sao_offset_u,
                                              WORD8 *pi1_sao_offset_v,
-                                             WORD32 i4_wd,
-                                             WORD32 i4_ht,
+                                             WORD32 wd,
+                                             WORD32 ht,
                                              UWORD32 u4_bit_depth)
 {
     WORD32 row, col;
@@ -1127,16 +1127,16 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
     memset(au1_mask, 0xFF, MAX_CTB_SIZE);
 
     /* Update left, top and top-left arrays */
-    au2_src_top_left_tmp[0] = pu2_src_top[i4_wd - 2];
-    au2_src_top_left_tmp[1] = pu2_src_top[i4_wd - 1];
-    for(row = 0; row < i4_ht; row++)
+    au2_src_top_left_tmp[0] = pu2_src_top[wd - 2];
+    au2_src_top_left_tmp[1] = pu2_src_top[wd - 1];
+    for(row = 0; row < ht; row++)
     {
-        au2_src_left_tmp[2 * row] = pu2_src[row * i4_src_strd + i4_wd - 2];
-        au2_src_left_tmp[2 * row + 1] = pu2_src[row * i4_src_strd + i4_wd - 1];
+        au2_src_left_tmp[2 * row] = pu2_src[row * src_strd + wd - 2];
+        au2_src_left_tmp[2 * row + 1] = pu2_src[row * src_strd + wd - 1];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
-        au2_src_top_tmp[col] = pu2_src[(i4_ht - 1) * i4_src_strd + col];
+        au2_src_top_tmp[col] = pu2_src[(ht - 1) * src_strd + col];
     }
 
     /* If top-right is available, process separately */
@@ -1145,39 +1145,39 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
         WORD32 edge_idx;
 
         /* U */
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 2] - pu2_src_top_right[0]) +
-                        SIGN(pu2_src[i4_wd - 2] - pu2_src[i4_wd - 2 - 2 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 2] - pu2_src_top_right[0]) +
+                        SIGN(pu2_src[wd - 2] - pu2_src[wd - 2 - 2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_0_tmp_u = CLIP3(pu2_src[i4_wd - 2] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_0_tmp_u = CLIP3(pu2_src[wd - 2] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_0_tmp_u = pu2_src[i4_wd - 2];
+            u2_pos_wd_0_tmp_u = pu2_src[wd - 2];
         }
 
         /* V */
-        edge_idx = 2 + SIGN(pu2_src[i4_wd - 1] - pu2_src_top_right[1]) +
-                        SIGN(pu2_src[i4_wd - 1] - pu2_src[i4_wd - 1 - 2 + i4_src_strd]);
+        edge_idx = 2 + SIGN(pu2_src[wd - 1] - pu2_src_top_right[1]) +
+                        SIGN(pu2_src[wd - 1] - pu2_src[wd - 1 - 2 + src_strd]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_wd_0_tmp_v = CLIP3(pu2_src[i4_wd - 1] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_wd_0_tmp_v = CLIP3(pu2_src[wd - 1] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_wd_0_tmp_v = pu2_src[i4_wd - 1];
+            u2_pos_wd_0_tmp_v = pu2_src[wd - 1];
         }
     }
     else
     {
-        u2_pos_wd_0_tmp_u = pu2_src[i4_wd - 2];
-        u2_pos_wd_0_tmp_v = pu2_src[i4_wd - 1];
+        u2_pos_wd_0_tmp_u = pu2_src[wd - 2];
+        u2_pos_wd_0_tmp_v = pu2_src[wd - 1];
     }
 
     /* If bottom-left is available, process separately */
@@ -1186,39 +1186,39 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
         WORD32 edge_idx;
 
         /* U */
-        edge_idx = 2 + SIGN(pu2_src[(i4_ht - 1) * i4_src_strd] - pu2_src[(i4_ht - 1) * i4_src_strd + 2 - i4_src_strd]) +
-                        SIGN(pu2_src[(i4_ht - 1) * i4_src_strd] - pu2_src_bot_left[0]);
+        edge_idx = 2 + SIGN(pu2_src[(ht - 1) * src_strd] - pu2_src[(ht - 1) * src_strd + 2 - src_strd]) +
+                        SIGN(pu2_src[(ht - 1) * src_strd] - pu2_src_bot_left[0]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_0_ht_tmp_u = CLIP3(pu2_src[(i4_ht - 1) * i4_src_strd] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_0_ht_tmp_u = CLIP3(pu2_src[(ht - 1) * src_strd] + pi1_sao_offset_u[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_0_ht_tmp_u = pu2_src[(i4_ht - 1) * i4_src_strd];
+            u2_pos_0_ht_tmp_u = pu2_src[(ht - 1) * src_strd];
         }
 
         /* V */
-        edge_idx = 2 + SIGN(pu2_src[(i4_ht - 1) * i4_src_strd + 1] - pu2_src[(i4_ht - 1) * i4_src_strd + 1 + 2 - i4_src_strd]) +
-                        SIGN(pu2_src[(i4_ht - 1) * i4_src_strd + 1] - pu2_src_bot_left[1]);
+        edge_idx = 2 + SIGN(pu2_src[(ht - 1) * src_strd + 1] - pu2_src[(ht - 1) * src_strd + 1 + 2 - src_strd]) +
+                        SIGN(pu2_src[(ht - 1) * src_strd + 1] - pu2_src_bot_left[1]);
 
         edge_idx = gi4_ihevc_hbd_table_edge_idx[edge_idx];
 
         if(0 != edge_idx)
         {
-            u2_pos_0_ht_tmp_v = CLIP3(pu2_src[(i4_ht - 1) * i4_src_strd + 1] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
+            u2_pos_0_ht_tmp_v = CLIP3(pu2_src[(ht - 1) * src_strd + 1] + pi1_sao_offset_v[edge_idx], 0, (1 << u4_bit_depth) - 1);
         }
         else
         {
-            u2_pos_0_ht_tmp_v = pu2_src[(i4_ht - 1) * i4_src_strd + 1];
+            u2_pos_0_ht_tmp_v = pu2_src[(ht - 1) * src_strd + 1];
         }
     }
     else
     {
-        u2_pos_0_ht_tmp_u = pu2_src[(i4_ht - 1) * i4_src_strd];
-        u2_pos_0_ht_tmp_v = pu2_src[(i4_ht - 1) * i4_src_strd + 1];
+        u2_pos_0_ht_tmp_u = pu2_src[(ht - 1) * src_strd];
+        u2_pos_0_ht_tmp_v = pu2_src[(ht - 1) * src_strd + 1];
     }
 
     /* If Left is not available */
@@ -1230,17 +1230,17 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
     /* If Top is not available */
     if(0 == pu1_avail[2])
     {
-        pu2_src += i4_src_strd;
-        i4_ht--;
+        pu2_src += src_strd;
+        ht--;
         pu2_src_left_cpy += 2;
-        for(col = 0; col < i4_wd - 2; col++)
+        for(col = 0; col < wd - 2; col++)
         {
-            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col + 2 - i4_src_strd]);
+            au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src[col + 2 - src_strd]);
         }
     }
     else
     {
-        for(col = 0; col < i4_wd - 2; col++)
+        for(col = 0; col < wd - 2; col++)
         {
             au1_sign_up[col] = SIGN(pu2_src[col] - pu2_src_top[col + 2]);
         }
@@ -1249,22 +1249,22 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
     /* If Right is not available */
     if(0 == pu1_avail[1])
     {
-        au1_mask[(i4_wd - 1) >> 1] = 0;
+        au1_mask[(wd - 1) >> 1] = 0;
     }
 
     /* If Bottom is not available */
     if(0 == pu1_avail[3])
     {
-        i4_ht--;
+        ht--;
     }
 
     /* Processing is done on the intermediate buffer and the output is written to the source buffer */
     {
-        for(row = 0; row < i4_ht; row++)
+        for(row = 0; row < ht; row++)
         {
-            au1_sign_up[i4_wd - 2] = SIGN(pu2_src[i4_wd - 2] - pu2_src[i4_wd - 2 + 2 - i4_src_strd]);
-            au1_sign_up[i4_wd - 1] = SIGN(pu2_src[i4_wd - 1] - pu2_src[i4_wd - 1 + 2 - i4_src_strd]);
-            for(col = 0; col < i4_wd; col++)
+            au1_sign_up[wd - 2] = SIGN(pu2_src[wd - 2] - pu2_src[wd - 2 + 2 - src_strd]);
+            au1_sign_up[wd - 1] = SIGN(pu2_src[wd - 1] - pu2_src[wd - 1 + 2 - src_strd]);
+            for(col = 0; col < wd; col++)
             {
                 WORD32 edge_idx;
                 WORD8 *pi1_sao_offset;
@@ -1272,7 +1272,7 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
                 pi1_sao_offset = (0 == col % 2) ? pi1_sao_offset_u : pi1_sao_offset_v;
 
                 u1_sign_down = SIGN(pu2_src[col] - ((col < 2) ? pu2_src_left_cpy[2 * (row + 1) + col] :
-                                                                    pu2_src[col - 2 + i4_src_strd]));
+                                                                    pu2_src[col - 2 + src_strd]));
                 edge_idx = 2 + au1_sign_up[col] + u1_sign_down;
                 if(col > 1)
                     au1_sign_up[col - 2] = -u1_sign_down;
@@ -1285,26 +1285,26 @@ void ihevc_hbd_sao_edge_offset_class3_chroma(UWORD16 *pu2_src,
                 }
             }
 
-            pu2_src += i4_src_strd;
+            pu2_src += src_strd;
         }
 
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd + i4_wd - 2] = u2_pos_wd_0_tmp_u;
-        pu2_src[- (pu1_avail[2] ? i4_ht : i4_ht + 1) * i4_src_strd + i4_wd - 1] = u2_pos_wd_0_tmp_v;
-        pu2_src[(pu1_avail[3] ?  (-i4_src_strd) : 0)] = u2_pos_0_ht_tmp_u;
-        pu2_src[(pu1_avail[3] ?  (-i4_src_strd) : 0) + 1] = u2_pos_0_ht_tmp_v;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd + wd - 2] = u2_pos_wd_0_tmp_u;
+        pu2_src[- (pu1_avail[2] ? ht : ht + 1) * src_strd + wd - 1] = u2_pos_wd_0_tmp_v;
+        pu2_src[(pu1_avail[3] ?  (-src_strd) : 0)] = u2_pos_0_ht_tmp_u;
+        pu2_src[(pu1_avail[3] ?  (-src_strd) : 0) + 1] = u2_pos_0_ht_tmp_v;
     }
 
     if(0 == pu1_avail[2])
-        i4_ht++;
+        ht++;
     if(0 == pu1_avail[3])
-        i4_ht++;
+        ht++;
     pu2_src_top_left[0] = au2_src_top_left_tmp[0];
     pu2_src_top_left[1] = au2_src_top_left_tmp[1];
-    for(row = 0; row < 2 * i4_ht; row++)
+    for(row = 0; row < 2 * ht; row++)
     {
         pu2_src_left[row] = au2_src_left_tmp[row];
     }
-    for(col = 0; col < i4_wd; col++)
+    for(col = 0; col < wd; col++)
     {
         pu2_src_top[col] = au2_src_top_tmp[col];
     }
