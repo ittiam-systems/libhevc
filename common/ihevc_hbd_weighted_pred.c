@@ -44,8 +44,6 @@
 #include "ihevc_defs.h"
 #include "ihevc_macros.h"
 #include "ihevc_platform_macros.h"
-#include "ihevc_function_selector.h"
-
 #include "ihevc_inter_pred.h"
 
 /**
