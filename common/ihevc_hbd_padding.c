@@ -53,7 +53,7 @@
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -79,7 +79,7 @@
 *******************************************************************************
 */
 void ihevc_hbd_pad_vert(UWORD16 *pu2_src,
-                        WORD32 i4_src_strd,
+                        WORD32 src_strd,
                         WORD32 ht,
                         WORD32 wd,
                         WORD32 pad_size)
@@ -88,9 +88,9 @@ void ihevc_hbd_pad_vert(UWORD16 *pu2_src,
 
     for(row = 1; row <= pad_size; row++)
     {
-        memcpy(pu2_src - row * i4_src_strd, pu2_src, wd * sizeof(UWORD16));
-        memcpy(pu2_src + (ht + row - 1) * i4_src_strd,
-               pu2_src + (ht - 1) * i4_src_strd, wd * sizeof(UWORD16));
+        memcpy(pu2_src - row * src_strd, pu2_src, wd * sizeof(UWORD16));
+        memcpy(pu2_src + (ht + row - 1) * src_strd,
+               pu2_src + (ht - 1) * src_strd, wd * sizeof(UWORD16));
     }
 }
 /**
@@ -105,7 +105,7 @@ void ihevc_hbd_pad_vert(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -131,7 +131,7 @@ void ihevc_hbd_pad_vert(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_horz_chroma(UWORD16 *pu2_src,
-                               WORD32 i4_src_strd,
+                               WORD32 src_strd,
                                WORD32 ht,
                                WORD32 wd,
                                WORD32 pad_size)
@@ -140,7 +140,7 @@ void ihevc_hbd_pad_horz_chroma(UWORD16 *pu2_src,
     WORD32 col;
     UWORD32 *pu4_src = (UWORD32 *)pu2_src;
 
-    i4_src_strd >>= 1;
+    src_strd >>= 1;
     wd >>= 1;
     pad_size >>= 1;
 
@@ -156,7 +156,7 @@ void ihevc_hbd_pad_horz_chroma(UWORD16 *pu2_src,
         for(col = 0; col < pad_size; col++)
             pu4_src[col+wd] = u4_uv_val;
 
-        pu4_src += i4_src_strd;
+        pu4_src += src_strd;
     }
 }
 
@@ -172,7 +172,7 @@ void ihevc_hbd_pad_horz_chroma(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -198,7 +198,7 @@ void ihevc_hbd_pad_horz_chroma(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_horz_luma(UWORD16 *pu2_src,
-                             WORD32 i4_src_strd,
+                             WORD32 src_strd,
                              WORD32 ht,
                              WORD32 wd,
                              WORD32 pad_size)
@@ -212,7 +212,7 @@ void ihevc_hbd_pad_horz_luma(UWORD16 *pu2_src,
             pu2_src[col - pad_size] = *pu2_src;
             pu2_src[col + wd] = *(pu2_src + wd - 1);
         }
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
     }
 }
 
@@ -230,7 +230,7 @@ void ihevc_hbd_pad_horz_luma(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -256,7 +256,7 @@ void ihevc_hbd_pad_horz_luma(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_top(UWORD16 *pu2_src,
-                       WORD32 i4_src_strd,
+                       WORD32 src_strd,
                        WORD32 wd,
                        WORD32 pad_size)
 {
@@ -264,7 +264,7 @@ void ihevc_hbd_pad_top(UWORD16 *pu2_src,
 
     for(row = 1; row <= pad_size; row++)
     {
-        memcpy(pu2_src - row * i4_src_strd, pu2_src, wd * sizeof(UWORD16));
+        memcpy(pu2_src - row * src_strd, pu2_src, wd * sizeof(UWORD16));
     }
 }
 
@@ -281,7 +281,7 @@ void ihevc_hbd_pad_top(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -307,7 +307,7 @@ void ihevc_hbd_pad_top(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_bottom(UWORD16 *pu2_src,
-                          WORD32 i4_src_strd,
+                          WORD32 src_strd,
                           WORD32 wd,
                           WORD32 pad_size)
 {
@@ -315,8 +315,8 @@ void ihevc_hbd_pad_bottom(UWORD16 *pu2_src,
 
     for(row = 1; row <= pad_size; row++)
     {
-        memcpy(pu2_src + (row - 1) * i4_src_strd,
-               pu2_src - 1 * i4_src_strd, wd * sizeof(UWORD16));
+        memcpy(pu2_src + (row - 1) * src_strd,
+               pu2_src - 1 * src_strd, wd * sizeof(UWORD16));
     }
 }
 
@@ -334,7 +334,7 @@ void ihevc_hbd_pad_bottom(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -361,7 +361,7 @@ void ihevc_hbd_pad_bottom(UWORD16 *pu2_src,
 */
 
 void ihevc_hbd_pad_left_luma(UWORD16 *pu2_src,
-                             WORD32 i4_src_strd,
+                             WORD32 src_strd,
                              WORD32 ht,
                              WORD32 pad_size)
 {
@@ -373,7 +373,7 @@ void ihevc_hbd_pad_left_luma(UWORD16 *pu2_src,
         {
             pu2_src[col - pad_size] = *pu2_src;
         }
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
     }
 }
 
@@ -392,7 +392,7 @@ void ihevc_hbd_pad_left_luma(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -418,7 +418,7 @@ void ihevc_hbd_pad_left_luma(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_left_chroma(UWORD16 *pu2_src,
-                               WORD32 i4_src_strd,
+                               WORD32 src_strd,
                                WORD32 ht,
                                WORD32 pad_size)
 {
@@ -426,7 +426,7 @@ void ihevc_hbd_pad_left_chroma(UWORD16 *pu2_src,
     WORD32 col;
     UWORD32 *pu4_src = (UWORD32 *)pu2_src;
 
-    i4_src_strd >>= 1;
+    src_strd >>= 1;
     pad_size >>= 1;
 
     for(row = 0; row < ht; row++)
@@ -437,7 +437,7 @@ void ihevc_hbd_pad_left_chroma(UWORD16 *pu2_src,
         for(col = -pad_size; col < 0; col++)
             pu4_src[col] = u4_uv_val;
 
-        pu4_src += i4_src_strd;
+        pu4_src += src_strd;
     }
 }
 
@@ -456,7 +456,7 @@ void ihevc_hbd_pad_left_chroma(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -482,7 +482,7 @@ void ihevc_hbd_pad_left_chroma(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_right_luma(UWORD16 *pu2_src,
-                              WORD32 i4_src_strd,
+                              WORD32 src_strd,
                               WORD32 ht,
                               WORD32 pad_size)
 {
@@ -495,7 +495,7 @@ void ihevc_hbd_pad_right_luma(UWORD16 *pu2_src,
             pu2_src[col] = *(pu2_src - 1);
         }
 
-        pu2_src += i4_src_strd;
+        pu2_src += src_strd;
     }
 }
 
@@ -513,7 +513,7 @@ void ihevc_hbd_pad_right_luma(UWORD16 *pu2_src,
 * @param[in] pu1_src
 *  UWORD8 pointer to the source
 *
-* @param[in] i4_src_strd
+* @param[in] src_strd
 *  integer source stride
 *
 * @param[in] ht
@@ -539,7 +539,7 @@ void ihevc_hbd_pad_right_luma(UWORD16 *pu2_src,
 *******************************************************************************
 */
 void ihevc_hbd_pad_right_chroma(UWORD16 *pu2_src,
-                                WORD32 i4_src_strd,
+                                WORD32 src_strd,
                                 WORD32 ht,
                                 WORD32 pad_size)
 {
@@ -547,7 +547,7 @@ void ihevc_hbd_pad_right_chroma(UWORD16 *pu2_src,
     WORD32 col;
     UWORD32 *pu4_src = (UWORD32 *)pu2_src;
 
-    i4_src_strd >>= 1;
+    src_strd >>= 1;
     pad_size >>= 1;
 
     for(row = 0; row < ht; row++)
@@ -558,7 +558,7 @@ void ihevc_hbd_pad_right_chroma(UWORD16 *pu2_src,
         for(col = 0; col < pad_size; col++)
             pu4_src[col] = u4_uv_val;
 
-        pu4_src += i4_src_strd;
+        pu4_src += src_strd;
     }
 }
 

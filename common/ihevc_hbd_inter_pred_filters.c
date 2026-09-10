@@ -178,19 +178,19 @@ void ihevc_hbd_inter_pred_luma_horz(UWORD16 *pu2_src,
                                     UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i - 3)];
+                tmp += pi1_coeff[i] * pu2_src[col + (i - 3)];
 
-            i4_tmp = (i4_tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
-            i4_tmp = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
-            pu2_dst[col] = (UWORD16)i4_tmp;
+            tmp = (tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp = CLIP3(tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = (UWORD16)tmp;
         }
 
         pu2_src += src_strd;
@@ -250,19 +250,19 @@ void ihevc_hbd_inter_pred_luma_vert(UWORD16 *pu2_src,
                                     UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i - 3) * src_strd];
+                tmp += pi1_coeff[i] * pu2_src[col + (i - 3) * src_strd];
 
-            i4_tmp = (i4_tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
-            i4_tmp = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
-            pu2_dst[col] = (UWORD16)i4_tmp;
+            tmp = (tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp = CLIP3(tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = (UWORD16)tmp;
         }
 
         pu2_src += src_strd;
@@ -388,16 +388,16 @@ void ihevc_hbd_inter_pred_luma_horz_w16out(UWORD16 *pu2_src,
                                            UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i - 3)];
-            pi2_dst[col] = i4_tmp >> (FILTER_PREC - (14-bit_depth));
+                tmp += pi1_coeff[i] * pu2_src[col + (i - 3)];
+            pi2_dst[col] = tmp >> (FILTER_PREC - (14-bit_depth));
         }
 
         pu2_src += src_strd;
@@ -458,17 +458,17 @@ void ihevc_hbd_inter_pred_luma_vert_w16out(UWORD16 *pu2_src,
                                            UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i - 3) * src_strd];
+                tmp += pi1_coeff[i] * pu2_src[col + (i - 3) * src_strd];
 
-            pi2_dst[col] = i4_tmp >> (FILTER_PREC - (14-bit_depth));
+            pi2_dst[col] = tmp >> (FILTER_PREC - (14-bit_depth));
         }
 
         pu2_src += src_strd;
@@ -528,19 +528,19 @@ void ihevc_hbd_inter_pred_luma_vert_w16inp(WORD16 *pi2_src,
                                            UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pi2_src[col + (i - 3) * src_strd];
+                tmp += pi1_coeff[i] * pi2_src[col + (i - 3) * src_strd];
 
-            i4_tmp = ((i4_tmp >> (14-bit_depth)) + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp = ((tmp >> (14-bit_depth)) + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
 
-            i4_tmp = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
-            pu2_dst[col] = i4_tmp;
+            tmp = CLIP3(tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = tmp;
         }
 
         pi2_src += src_strd;
@@ -602,18 +602,18 @@ void ihevc_hbd_inter_pred_luma_vert_w16inp_w16out(WORD16 *pi2_src,
                                                   UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_LUMA; i++)
-                i4_tmp += pi1_coeff[i] * pi2_src[col + (i - 3) * src_strd];
-            i4_tmp = (i4_tmp >> FILTER_PREC) - OFFSET14;
+                tmp += pi1_coeff[i] * pi2_src[col + (i - 3) * src_strd];
+            tmp = (tmp >> FILTER_PREC) - OFFSET14;
 
-            pi2_dst[col] = i4_tmp;
+            pi2_dst[col] = tmp;
         }
 
         pi2_src += src_strd;
@@ -739,28 +739,28 @@ void ihevc_hbd_inter_pred_chroma_horz(UWORD16 *pu2_src,
                                       UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp_u, i4_tmp_v;
+    WORD32 tmp_u, tmp_v;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2*wd; col+=2)
         {
-            i4_tmp_u = 0;
-            i4_tmp_v = 0;
+            tmp_u = 0;
+            tmp_v = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp_u += pi1_coeff[i] * pu2_src[col + (i-1)*2];
-                i4_tmp_v += pi1_coeff[i] * pu2_src[col + 1 + (i-1)*2];
+                tmp_u += pi1_coeff[i] * pu2_src[col + (i-1)*2];
+                tmp_v += pi1_coeff[i] * pu2_src[col + 1 + (i-1)*2];
             }
 
-            i4_tmp_u = (i4_tmp_u + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
-            i4_tmp_v = (i4_tmp_v + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp_u = (tmp_u + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp_v = (tmp_v + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
 
-            i4_tmp_u = CLIP3(i4_tmp_u,0,((1<<bit_depth)-1));
-            i4_tmp_v = CLIP3(i4_tmp_v,0,((1<<bit_depth)-1));
+            tmp_u = CLIP3(tmp_u,0,((1<<bit_depth)-1));
+            tmp_v = CLIP3(tmp_v,0,((1<<bit_depth)-1));
 
-            pu2_dst[col] = (UWORD16)i4_tmp_u;
-            pu2_dst[col + 1] = (UWORD16)i4_tmp_v;
+            pu2_dst[col] = (UWORD16)tmp_u;
+            pu2_dst[col + 1] = (UWORD16)tmp_v;
         }
 
         pu2_src += src_strd;
@@ -822,22 +822,22 @@ void ihevc_hbd_inter_pred_chroma_vert(UWORD16 *pu2_src,
                                       UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i-1) * src_strd];
+                tmp += pi1_coeff[i] * pu2_src[col + (i-1) * src_strd];
             }
 
-            i4_tmp = (i4_tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp = (tmp + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
 
-            i4_tmp = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
-            pu2_dst[col] = (UWORD16)i4_tmp;
+            tmp = CLIP3(tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = (UWORD16)tmp;
         }
 
         pu2_src += src_strd;
@@ -965,22 +965,22 @@ void ihevc_hbd_inter_pred_chroma_horz_w16out(UWORD16 *pu2_src,
                                              UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp_u, i4_tmp_v;
+    WORD32 tmp_u, tmp_v;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2*wd; col+=2)
         {
-            i4_tmp_u = 0;
-            i4_tmp_v = 0;
+            tmp_u = 0;
+            tmp_v = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp_u += pi1_coeff[i] * pu2_src[col + (i-1)*2];
-                i4_tmp_v += pi1_coeff[i] * pu2_src[col + 1 + (i-1)*2];
+                tmp_u += pi1_coeff[i] * pu2_src[col + (i-1)*2];
+                tmp_v += pi1_coeff[i] * pu2_src[col + 1 + (i-1)*2];
             }
 
-            pi2_dst[col] = i4_tmp_u >> (FILTER_PREC - (14-bit_depth));
-            pi2_dst[col + 1] = i4_tmp_v >> (FILTER_PREC - (14-bit_depth));
+            pi2_dst[col] = tmp_u >> (FILTER_PREC - (14-bit_depth));
+            pi2_dst[col + 1] = tmp_v >> (FILTER_PREC - (14-bit_depth));
         }
 
         pu2_src += src_strd;
@@ -1042,19 +1042,19 @@ void ihevc_hbd_inter_pred_chroma_vert_w16out(UWORD16 *pu2_src,
                                              UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp += pi1_coeff[i] * pu2_src[col + (i-1) * src_strd];
+                tmp += pi1_coeff[i] * pu2_src[col + (i-1) * src_strd];
             }
 
-            pi2_dst[col] = i4_tmp >> (FILTER_PREC - (14-bit_depth));
+            pi2_dst[col] = tmp >> (FILTER_PREC - (14-bit_depth));
         }
 
         pu2_src += src_strd;
@@ -1114,22 +1114,22 @@ void ihevc_hbd_inter_pred_chroma_vert_w16inp(WORD16 *pi2_src,
                                              UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp += pi1_coeff[i] * pi2_src[col + (i-1) * src_strd];
+                tmp += pi1_coeff[i] * pi2_src[col + (i-1) * src_strd];
             }
 
-            i4_tmp = ((i4_tmp >> (14-bit_depth)) + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
+            tmp = ((tmp >> (14-bit_depth)) + (1<<(FILTER_PREC-1))) >> FILTER_PREC;
 
-            i4_tmp = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
-            pu2_dst[col] = i4_tmp;
+            tmp = CLIP3(tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = tmp;
         }
 
         pi2_src += src_strd;
@@ -1191,21 +1191,21 @@ void ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out(WORD16 *pi2_src,
                                                     UWORD8 bit_depth)
 {
     WORD32 row, col, i;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col++)
         {
-            i4_tmp = 0;
+            tmp = 0;
             for(i = 0; i < NTAPS_CHROMA; i++)
             {
-                i4_tmp += pi1_coeff[i] * pi2_src[col + (i-1) * src_strd];
+                tmp += pi1_coeff[i] * pi2_src[col + (i-1) * src_strd];
             }
 
-            i4_tmp = (i4_tmp >> FILTER_PREC);
+            tmp = (tmp >> FILTER_PREC);
 
-            pi2_dst[col] = i4_tmp;
+            pi2_dst[col] = tmp;
         }
 
         pi2_src += src_strd;
