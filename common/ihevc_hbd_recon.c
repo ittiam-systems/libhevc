@@ -46,7 +46,6 @@
 #include "ihevc_defs.h"
 #include "ihevc_trans_tables.h"
 #include "ihevc_recon.h"
-#include "ihevc_function_selector.h"
 #include "ihevc_trans_macros.h"
 
 /* All the functions here are replicated from ihevc.c and modified to */
