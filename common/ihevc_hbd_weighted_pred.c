@@ -113,24 +113,24 @@ void ihevc_hbd_weighted_pred_uni(WORD16 *pi2_src,
                                  UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = (pi2_src[col] + lvl_shift) * wgt0;
-            i4_tmp += 1 << (shift - 1);
-            i4_tmp = (i4_tmp >> shift) + off0;
+            tmp = (pi2_src[col] + lvl_shift) * wgt0;
+            tmp += 1 << (shift - 1);
+            tmp = (tmp >> shift) + off0;
 
-            pu2_dst[col] = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp,0,((1<<bit_depth)-1));
         }
 
         pi2_src += src_strd;
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_UNI
+ // WEIGHTED_PRED_HBD_UNI
 
 /**
 *******************************************************************************
@@ -199,30 +199,30 @@ void ihevc_hbd_weighted_pred_chroma_uni(WORD16 *pi2_src,
                                         UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col += 2)
         {
-            i4_tmp = (pi2_src[col] + lvl_shift) * wgt0_cb;
-            i4_tmp += 1 << (shift - 1);
-            i4_tmp = (i4_tmp >> shift) + off0_cb;
+            tmp = (pi2_src[col] + lvl_shift) * wgt0_cb;
+            tmp += 1 << (shift - 1);
+            tmp = (tmp >> shift) + off0_cb;
 
-            pu2_dst[col] = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp,0,((1<<bit_depth)-1));
 
-            i4_tmp = (pi2_src[col + 1] + lvl_shift) * wgt0_cr;
-            i4_tmp += 1 << (shift - 1);
-            i4_tmp = (i4_tmp >> shift) + off0_cr;
+            tmp = (pi2_src[col + 1] + lvl_shift) * wgt0_cr;
+            tmp += 1 << (shift - 1);
+            tmp = (tmp >> shift) + off0_cr;
 
-            pu2_dst[col+1] = CLIP3(i4_tmp,0,((1<<bit_depth)-1));
+            pu2_dst[col+1] = CLIP3(tmp,0,((1<<bit_depth)-1));
         }
 
         pi2_src += src_strd;
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_CHROMA_UNI
+ // WEIGHTED_PRED_HBD_CHROMA_UNI
 
 /**
 *******************************************************************************
@@ -306,17 +306,17 @@ void ihevc_hbd_weighted_pred_bi(WORD16 *pi2_src1,
                                 UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = (pi2_src1[col] + lvl_shift1) * wgt0;
-            i4_tmp += (pi2_src2[col] + lvl_shift2) * wgt1;
-            i4_tmp += (off0 + off1 + 1) << (shift - 1);
+            tmp = (pi2_src1[col] + lvl_shift1) * wgt0;
+            tmp += (pi2_src2[col] + lvl_shift2) * wgt1;
+            tmp += (off0 + off1 + 1) << (shift - 1);
 
-            pu2_dst[col] = CLIP3(i4_tmp >> shift,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp >> shift,0,((1<<bit_depth)-1));
         }
 
         pi2_src1 += src_strd1;
@@ -324,7 +324,7 @@ void ihevc_hbd_weighted_pred_bi(WORD16 *pi2_src1,
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_BI
+ // WEIGHTED_PRED_HBD_BI
 
 /**
 *******************************************************************************
@@ -412,23 +412,23 @@ void ihevc_hbd_weighted_pred_chroma_bi(WORD16 *pi2_src1,
                                        UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
 
     for(row = 0; row < ht; row++)
     {
         for(col = 0; col < 2 * wd; col += 2)
         {
-            i4_tmp = (pi2_src1[col] + lvl_shift1) * wgt0_cb;
-            i4_tmp += (pi2_src2[col] + lvl_shift2) * wgt1_cb;
-            i4_tmp += (off0_cb + off1_cb + 1) << (shift - 1);
+            tmp = (pi2_src1[col] + lvl_shift1) * wgt0_cb;
+            tmp += (pi2_src2[col] + lvl_shift2) * wgt1_cb;
+            tmp += (off0_cb + off1_cb + 1) << (shift - 1);
 
-            pu2_dst[col] = CLIP3(i4_tmp >> shift,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp >> shift,0,((1<<bit_depth)-1));
 
-            i4_tmp = (pi2_src1[col + 1] + lvl_shift1) * wgt0_cr;
-            i4_tmp += (pi2_src2[col + 1] + lvl_shift2) * wgt1_cr;
-            i4_tmp += (off0_cr + off1_cr + 1) << (shift - 1);
+            tmp = (pi2_src1[col + 1] + lvl_shift1) * wgt0_cr;
+            tmp += (pi2_src2[col + 1] + lvl_shift2) * wgt1_cr;
+            tmp += (off0_cr + off1_cr + 1) << (shift - 1);
 
-            pu2_dst[col+1] = CLIP3(i4_tmp >> shift,0,((1<<bit_depth)-1));
+            pu2_dst[col+1] = CLIP3(tmp >> shift,0,((1<<bit_depth)-1));
         }
 
         pi2_src1 += src_strd1;
@@ -436,7 +436,7 @@ void ihevc_hbd_weighted_pred_chroma_bi(WORD16 *pi2_src1,
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_CHROMA_BI
+ // WEIGHTED_PRED_HBD_CHROMA_BI
 
 /**
 *******************************************************************************
@@ -500,7 +500,7 @@ void ihevc_hbd_weighted_pred_bi_default(WORD16 *pi2_src1,
                                         UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
     WORD32 shift;
 
     shift = 14 - bit_depth + 1;
@@ -508,11 +508,11 @@ void ihevc_hbd_weighted_pred_bi_default(WORD16 *pi2_src1,
     {
         for(col = 0; col < wd; col++)
         {
-            i4_tmp = pi2_src1[col] + lvl_shift1;
-            i4_tmp += pi2_src2[col] + lvl_shift2;
-            i4_tmp += 1 << (shift - 1);
+            tmp = pi2_src1[col] + lvl_shift1;
+            tmp += pi2_src2[col] + lvl_shift2;
+            tmp += 1 << (shift - 1);
 
-            pu2_dst[col] = CLIP3(i4_tmp >> shift,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp >> shift,0,((1<<bit_depth)-1));
         }
 
         pi2_src1 += src_strd1;
@@ -520,7 +520,7 @@ void ihevc_hbd_weighted_pred_bi_default(WORD16 *pi2_src1,
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_BI_DEFAULT
+ // WEIGHTED_PRED_HBD_BI_DEFAULT
 
 /**
 *******************************************************************************
@@ -584,7 +584,7 @@ void ihevc_hbd_weighted_pred_chroma_bi_default(WORD16 *pi2_src1,
                                                UWORD8 bit_depth)
 {
     WORD32 row, col;
-    WORD32 i4_tmp;
+    WORD32 tmp;
     WORD32 shift;
 
     shift = 14 - bit_depth + 1;
@@ -592,11 +592,11 @@ void ihevc_hbd_weighted_pred_chroma_bi_default(WORD16 *pi2_src1,
     {
         for(col = 0; col < 2 * wd; col++)
         {
-            i4_tmp = pi2_src1[col] + lvl_shift1;
-            i4_tmp += pi2_src2[col] + lvl_shift2;
-            i4_tmp += 1 << (shift - 1);
+            tmp = pi2_src1[col] + lvl_shift1;
+            tmp += pi2_src2[col] + lvl_shift2;
+            tmp += 1 << (shift - 1);
 
-            pu2_dst[col] = CLIP3(i4_tmp >> shift,0,((1<<bit_depth)-1));
+            pu2_dst[col] = CLIP3(tmp >> shift,0,((1<<bit_depth)-1));
         }
 
         pi2_src1 += src_strd1;
@@ -604,4 +604,4 @@ void ihevc_hbd_weighted_pred_chroma_bi_default(WORD16 *pi2_src1,
         pu2_dst += dst_strd;
     }
 }
- //WEIGHTED_PRED_HBD_CHROMA_BI_DEFAULT
+ // WEIGHTED_PRED_HBD_CHROMA_BI_DEFAULT
