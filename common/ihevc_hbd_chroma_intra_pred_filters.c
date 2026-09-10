@@ -159,7 +159,7 @@ void ihevc_hbd_intra_pred_chroma_ref_filtering(UWORD16 *pu2_src,
     }
     else
     {
-        /* Extremities Untouched*/
+        /* Extremities Untouched */
         au2_flt[0] = pu2_src[0];
         au2_flt[1] = pu2_src[1];
         au2_flt[four_nt * 2] = pu2_src[four_nt * 2];
@@ -238,11 +238,10 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
     WORD32 bot_left, left, top, tp_right, tp_left;
     WORD32 idx, nbr_id_from_bl, frwd_nbr_flag;
     WORD32 a_nbr_flag[5];
-    /* Neighbor Flag Structure*/
-    /* WORD32 nbr_flags MSB-->LSB   TOP LEFT | TOP-RIGHT |  TOP   | LEFT    | BOTTOM LEFT*/
+    /* Neighbor Flag Structure */
+    /* WORD32 nbr_flags MSB-->LSB   TOP LEFT | TOP-RIGHT |  TOP   | LEFT    | BOTTOM LEFT */
     /*                              (1 bit)     (4 bits)  (4 bits) (4 bits)  (4 bits)  */
     /* If no neighbor flags are present, fill the neighbor samples with DC value */
-    /*dc_val = 1 << (BIT_DEPTH - 1);*/
     dc_val = 1 << (bit_depth - 1);
     if(nbr_flags == 0)
     {
@@ -321,14 +320,14 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
             a_nbr_flag[3] = top;
             a_nbr_flag[4] = tp_right;
 
-            /* If bottom -left is not available, reverse substitution process*/
+            /* If bottom -left is not available, reverse substitution process */
             if(bot_left == 0)
             {
-                /* Check for the 1st available sample from bottom-left*/
+                /* Check for the 1st available sample from bottom-left */
                 while(!a_nbr_flag[next])
                     next++;
 
-                /* If Left, top-left are available*/
+                /* If Left, top-left are available */
                 if(next <= 2)
                 {
                     idx = (nt * next);
@@ -342,7 +341,7 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
                 }
                 else /* If top, top-right are available */
                 {
-                    /* Idx is changed to copy 1 pixel value for top-left ,if top-left is not available*/
+                    /* Idx is changed to copy 1 pixel value for top-left ,if top-left is not available */
                     idx = (nt * (next - 1)) + 1;
                     pu2_ref_u = pu2_dst[2 * idx];
                     pu2_ref_v = pu2_dst[(2 * idx) + 1];
@@ -393,7 +392,7 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
                             + ((nbr_flags & 0x3000) >> 6)
                             + ((nbr_flags & 0x10000) >> 8);
 
-            /* compute trailing zeors based on nbr_flag for substitution process of below left see section .*/
+            /* compute trailing zeors based on nbr_flag for substitution process of below left see section . */
             /* as each bit in nbr flags corresponds to 8 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
                 nbr_id_from_bl = look_up_trailing_zeros(nbr_flags_temp & 0XF) * (4 * sub_sample); /* for bottom left and left */
@@ -411,7 +410,7 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
 
                     }
                 }
-                /* Reverse Substitution Process*/
+                /* Reverse Substitution Process */
                 if(nbr_id_from_bl)
                 {
                     /* Replicate the bottom-left and subsequent unavailable pixels with the 1st available pixel above */
@@ -430,9 +429,9 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Divide by 8 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2));/*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2));
 
-                /* The Top-left flag is at the last bit location of nbr_flags*/
+                /* The Top-left flag is at the last bit location of nbr_flags */
                 if(nbr_id_from_bl == (T8C_4NT * sub_sample / 2))
                 {
                     get_bits = GET_BIT(nbr_flags_temp, 8);
@@ -465,7 +464,7 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
         else if(nt == 16 || (nt == 32 && chroma_format_idc == CHROMA_FMT_IDC_YUV444))
         {
             WORD32 sub_sample = chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 2 : 1;
-            /* compute trailing ones based on mbr_flag for substitution process of below left see section .*/
+            /* compute trailing ones based on mbr_flag for substitution process of below left see section . */
             /* as each bit in nbr flags corresponds to 4 pels for bot_left, left, top and topright but 1 pel for topleft */
             {
                 nbr_id_from_bl = look_up_trailing_zeros((nbr_flags & 0XFF)) * 4 * sub_sample; /* for bottom left and left */
@@ -481,7 +480,7 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
                         nbr_id_from_bl += look_up_trailing_zeros((nbr_flags >> 8) & 0xFF) * 4 * sub_sample;
                     }
                 }
-                /* Reverse Substitution Process*/
+                /* Reverse Substitution Process */
                 if(nbr_id_from_bl)
                 {
                     /* Replicate the bottom-left and subsequent unavailable pixels with the 1st available pixel above */
@@ -500,9 +499,9 @@ void ihevc_hbd_intra_pred_chroma_ref_substitution(UWORD16 *pu2_top_left,
             {
                 /* To Obtain the next unavailable idx flag after reverse neighbor substitution  */
                 /* Divide by 4 to obtain the original index */
-                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2));/*+ (nbr_id_from_bl & 0x1);*/
+                frwd_nbr_flag = (nbr_id_from_bl >> (chroma_format_idc == CHROMA_FMT_IDC_YUV444 ? 3 : 2));
 
-                /* The Top-left flag is at the last bit location of nbr_flags*/
+                /* The Top-left flag is at the last bit location of nbr_flags */
                 if(nbr_id_from_bl == (T16C_4NT * sub_sample / 2))
                 {
                     get_bits = GET_BIT(nbr_flags, 16);
@@ -707,7 +706,7 @@ void ihevc_hbd_intra_pred_chroma_dc(UWORD16 *pu2_ref,
     dc_val_u = (acc_dc_u + nt) >> (log2nt + 1);
     dc_val_v = (acc_dc_v + nt) >> (log2nt + 1);
 
-    /* Fill the remaining rows with DC value*/
+    /* Fill the remaining rows with DC value */
     for(row = 0; row < nt; row++)
     {
         for(col = 0; col < (2 * nt); col+=2)
@@ -766,7 +765,7 @@ void ihevc_hbd_intra_pred_chroma_horz(UWORD16 *pu2_ref,
 {
     WORD32 row, col;
 
-    /* Replication to next rows*/
+    /* Replication to next rows */
     for(row = 0; row < nt ; row++)
     {
         for(col = 0; col < (2 * nt); col+=2)
@@ -826,7 +825,7 @@ void ihevc_hbd_intra_pred_chroma_ver(UWORD16 *pu2_ref,
 {
     WORD32 row, col;
 
-    /* Replication to next columns*/
+    /* Replication to next columns */
     for(row = 0; row < nt; row++)
     {
         for(col =0; col < (2 * nt); col+=2)
@@ -952,7 +951,7 @@ void ihevc_hbd_intra_pred_chroma_mode_18_34(UWORD16 *pu2_ref,
     WORD32 intra_pred_ang;
     WORD32 idx = 0;
 
-    intra_pred_ang = 32; /*Default value*/
+    intra_pred_ang = 32; /* Default value */
     /* For mode 18, angle is -45degree */
     if(mode == 18)
     {
@@ -964,7 +963,7 @@ void ihevc_hbd_intra_pred_chroma_mode_18_34(UWORD16 *pu2_ref,
         intra_pred_ang = 32;
     }
     /* For the angle 45 and -45, replication is done from the corresponding angle */
-    /* No interpolation is done for 45 degree*/
+    /* No interpolation is done for 45 degree */
     for(row = 0; row < nt; row++)
     {
         idx = ((row + 1) * intra_pred_ang) >> 5;
@@ -1109,9 +1108,9 @@ void ihevc_hbd_intra_pred_chroma_mode_11_to_17(UWORD16 *pu2_ref,
                                                WORD32 nt,
                                                WORD32 mode)
 {
-    /* This function and ihevc_intra_pred_CHROMA_mode_19_to_25 are same except*/
+    /* This function and ihevc_intra_pred_CHROMA_mode_19_to_25 are same except */
     /* for ref main & side samples assignment,can be combined for */
-    /* optimzation*/
+    /* optimzation */
 
     WORD32 row, col, k;
     WORD32 intra_pred_ang, inv_ang, inv_ang_sum;
@@ -1126,7 +1125,7 @@ void ihevc_hbd_intra_pred_chroma_mode_11_to_17(UWORD16 *pu2_ref,
 
     inv_ang = gai4_ihevc_inv_ang_table[mode - 11];
     /* Intermediate reference samples for negative angle modes */
-    /* This have to be removed during optimization*/
+    /* This have to be removed during optimization */
 
     /* For horizontal modes, (ref main = ref left) (ref side = ref above) */
 
@@ -1235,7 +1234,7 @@ void ihevc_hbd_intra_pred_chroma_mode_19_to_25(UWORD16 *pu2_ref,
     inv_ang = gai4_ihevc_inv_ang_table_chroma[mode - 12];
 
     /* Intermediate reference samples for negative angle modes */
-    /* This have to be removed during optimization*/
+    /* This have to be removed during optimization */
     /* For horizontal modes, (ref main = ref above) (ref side = ref left) */
     ref_main = ref_temp + 2*nt;
     for(k = 0; k < (2 * (nt + 1)); k+=2)

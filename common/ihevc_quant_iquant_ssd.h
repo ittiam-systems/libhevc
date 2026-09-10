@@ -93,7 +93,7 @@ typedef WORD32 ihevc_hbd_quant_iquant_ssd_ft
     WORD32 *zero_row,
     WORD16 *pi2_dequant_coeff,
     LWORD64 *pi8_cost,
-    WORD32 i4_bit_depth
+    WORD32 bit_depth
     );
 
 

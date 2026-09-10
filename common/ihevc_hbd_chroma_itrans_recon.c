@@ -82,19 +82,19 @@
  * @param[out] pu2_dst
  *  Output 4x4 block
  *
- * @param[in] i4_src_strd
+ * @param[in] src_strd
  *  Input stride
  *
- * @param[in] i4_pred_strd
+ * @param[in] pred_strd
  *  Prediction stride
  *
- * @param[in] i4_dst_strd
+ * @param[in] dst_strd
  *  Output Stride
  *
  * @param[in] shift
  *  Output shift
  *
- * @param[in] i4_zero_cols
+ * @param[in] zero_cols
  *  Zero columns in pi2_src
  *
  * @returns  Void
@@ -109,11 +109,11 @@ void ihevc_hbd_chroma_itrans_recon_4x4(WORD16 *pi2_src,
                                        WORD16 *pi2_tmp,
                                        UWORD16 *pu2_pred,
                                        UWORD16 *pu2_dst,
-                                       WORD32 i4_src_strd,
-                                       WORD32 i4_pred_strd,
-                                       WORD32 i4_dst_strd,
-                                       WORD32 i4_zero_cols,
-                                       WORD32 i4_zero_rows,
+                                       WORD32 src_strd,
+                                       WORD32 pred_strd,
+                                       WORD32 dst_strd,
+                                       WORD32 zero_cols,
+                                       WORD32 zero_rows,
                                        UWORD8 u1_bit_depth)
 {
     WORD32 j;
@@ -135,21 +135,21 @@ void ihevc_hbd_chroma_itrans_recon_4x4(WORD16 *pi2_src,
     for(j = 0; j < trans_size; j++)
     {
         /* Checking for Zero Cols */
-        if((i4_zero_cols & 1) == 1)
+        if((zero_cols & 1) == 1)
         {
             memset(pi2_tmp, 0, trans_size * sizeof(WORD16));
         }
         else
         {
             /* Utilizing symmetry properties to the maximum to minimize the number of multiplications */
-            o[0] = g_ai2_ihevc_trans_4[1][0] * pi2_src[i4_src_strd]
-                            + g_ai2_ihevc_trans_4[3][0] * pi2_src[3 * i4_src_strd];
-            o[1] = g_ai2_ihevc_trans_4[1][1] * pi2_src[i4_src_strd]
-                            + g_ai2_ihevc_trans_4[3][1] * pi2_src[3 * i4_src_strd];
+            o[0] = g_ai2_ihevc_trans_4[1][0] * pi2_src[src_strd]
+                            + g_ai2_ihevc_trans_4[3][0] * pi2_src[3 * src_strd];
+            o[1] = g_ai2_ihevc_trans_4[1][1] * pi2_src[src_strd]
+                            + g_ai2_ihevc_trans_4[3][1] * pi2_src[3 * src_strd];
             e[0] = g_ai2_ihevc_trans_4[0][0] * pi2_src[0]
-                            + g_ai2_ihevc_trans_4[2][0] * pi2_src[2 * i4_src_strd];
+                            + g_ai2_ihevc_trans_4[2][0] * pi2_src[2 * src_strd];
             e[1] = g_ai2_ihevc_trans_4[0][1] * pi2_src[0]
-                            + g_ai2_ihevc_trans_4[2][1] * pi2_src[2 * i4_src_strd];
+                            + g_ai2_ihevc_trans_4[2][1] * pi2_src[2 * src_strd];
 
             pi2_tmp[0] =
                             CLIP_S16( ((e[0] + o[0] + add)>>shift) );
@@ -162,7 +162,7 @@ void ihevc_hbd_chroma_itrans_recon_4x4(WORD16 *pi2_src,
         }
         pi2_src++;
         pi2_tmp += trans_size;
-        i4_zero_cols = i4_zero_cols >> 1;
+        zero_cols = zero_cols >> 1;
     }
 
     pi2_tmp = pi2_tmp_orig;
@@ -170,7 +170,7 @@ void ihevc_hbd_chroma_itrans_recon_4x4(WORD16 *pi2_src,
     /* Inverse Transform 2nd stage */
     shift = 20 - u1_bit_depth;
     add = 1 << (shift - 1);
-    clip_limit = (1 << u1_bit_depth) -1;
+    clip_limit = (1 << u1_bit_depth) - 1;
 
     for(j = 0; j < trans_size; j++)
     {
@@ -199,7 +199,7 @@ void ihevc_hbd_chroma_itrans_recon_4x4(WORD16 *pi2_src,
         pu2_dst[3 * 2] = CLIP3( (itrans_out + pu2_pred[3 * 2] ), 0, clip_limit);
 
         pi2_tmp++;
-        pu2_pred += i4_pred_strd;
-        pu2_dst += i4_dst_strd;
+        pu2_pred += pred_strd;
+        pu2_dst += dst_strd;
     }
 }

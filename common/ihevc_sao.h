@@ -68,7 +68,7 @@ typedef void ihevc_hbd_sao_band_offset_luma_ft(UWORD16 *pu2_src,
                                                WORD8 *pi1_sao_offset,
                                                WORD32 wd,
                                                WORD32 ht,
-                                               UWORD32 bitdepth);
+                                               UWORD32 bit_depth);
 
 typedef void ihevc_sao_band_offset_chroma_ft(UWORD8 *pu1_src,
                                              WORD32 src_strd,

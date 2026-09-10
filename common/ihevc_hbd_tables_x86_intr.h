@@ -24,7 +24,7 @@
 *  Declarations for the fucntions defined in  ihevc_intra_pred_filters
 *
 * @author
-*  Mamatha
+*  Ittiam
 *
 *
 * @remarks
@@ -37,13 +37,13 @@
 #define IHEVC_HBD_TABLES_X86_INTR_H_
 
 
-//Luma intra pred
+// Luma intra pred
 extern const UWORD8 IHEVCE_SHUFFLEMASKY1_HBD[16];
 extern const UWORD8 IHEVCE_SHUFFLEMASKY2_HBD[16] ;
 extern const UWORD8 IHEVCE_SHUFFLEMASKY3_HBD[16] ;
 extern const UWORD8 IHEVCE_SHUFFLEMASK4_HBD[16] ;
 extern const UWORD8 IHEVCE_SHUFFLEMASK5_HBD[16] ;
-//Chroma intra pred
+// Chroma intra pred
 extern const UWORD8 IHEVCE_SHUFFLEMASKY7_HBD[16] ;
 
 extern const UWORD8 IHEVCE_SHUFFLEMASKY8_HBD[16] ;
@@ -67,7 +67,7 @@ extern const WORD16 delta1_hbd[8];
 extern const WORD32 shuffle_uv_hbd[4];
 extern const WORD32 shuffle_uv_hbd1[4];
 extern const WORD32 shuffle_uv_hbd2[4];
-//SAO  TABLES
+// SAO TABLES
 extern  const WORD8 gi1_table_edge_idx_hbd[5] ;
 extern  const WORD8 gi1_table_band_idx_hbd[44];
 extern  const WORD32 gi4_ihevc_hbd_table_edge_idx[5];
@@ -76,4 +76,4 @@ extern  const WORD32 gi4_ihevc_hbd_table_edge_idx[5];
 extern const WORD16 g_ai2_ihevc_trans_16_even_hbd[12][8];
 extern const WORD16 g_ai2_ihevc_trans_16_odd_hbd[32][8];
 
-#endif /*IHEVC_TABLES_X86_INTR_H_*/
+#endif /* IHEVC_HBD_TABLES_X86_INTR_H_ */
