@@ -2024,6 +2024,14 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         BITS_PARSE("sps_extension_4bits", value, ps_bitstrm, 4);
         ps_sps->i1_sps_extension_4bits = value;
     }
+    else
+    {
+        ps_sps->i1_sps_range_extension_flag = 0;
+        ps_sps->i1_sps_multilayer_extension_flag = 0;
+        ps_sps->i1_sps_3d_extension_flag = 0;
+        ps_sps->i1_sps_scc_extension_flag = 0;
+        ps_sps->i1_sps_extension_4bits = 0;
+    }
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
     if(ps_sps->i1_sps_range_extension_flag)
@@ -2379,6 +2387,14 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
 
     ps_pps = (ps_codec->s_parse.ps_pps_base + MAX_PPS_CNT - 1);
+    /* Reset PPS to zero */
+    {
+        WORD16 *pi2_scaling_mat = ps_pps->pi2_scaling_mat;
+        tile_t *ps_tile = ps_pps->ps_tile;
+        memset(ps_pps, 0, sizeof(pps_t));
+        ps_pps->pi2_scaling_mat = pi2_scaling_mat;
+        ps_pps->ps_tile = ps_tile;
+    }
 
     ps_pps->i1_pps_id = pps_id;
 
@@ -2740,6 +2756,14 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
 
         BITS_PARSE("pps_extension_4bits", value, ps_bitstrm, 4);
         ps_pps->i1_pps_extension_4bits = value;
+    }
+    else
+    {
+        ps_pps->i1_pps_range_extension_flag = 0;
+        ps_pps->i1_pps_multilayer_extension_flag = 0;
+        ps_pps->i1_pps_3d_extension_flag = 0;
+        ps_pps->i1_pps_scc_extension_flag = 0;
+        ps_pps->i1_pps_extension_4bits = 0;
     }
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
