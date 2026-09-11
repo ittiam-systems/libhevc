@@ -334,6 +334,15 @@ bool DecHelper::decodeHeader(size_t& bytesConsumed) {
     return false;
   }
 
+  // Ensure input buffer is large enough for a frame
+  size_t requiredInputSize = std::max<size_t>(
+      mWidth * mHeight * 3 * ((mBitDepth + 7) / 8), 1024 * 1024);
+  if (mInputBuf.capacity() < requiredInputSize) {
+    if (!mInputBuf.allocBuffer(requiredInputSize)) {
+      return false;
+    }
+  }
+
   // Transition decoder to frame decode mode using config helper
   if (!setDecoderConfig(mCodec, IVD_DECODE_FRAME, 0)) {
     return false;
@@ -489,7 +498,7 @@ bool DecHelper::decodeFile() {
       if (!decodeHeader(consumed)) {
         return false;
       }
-      inputFrameSize = mWidth * mHeight * 3;
+      inputFrameSize = mInputBuf.capacity();
     } else {
       bool frameReady = false;
 
