@@ -496,7 +496,9 @@ bool DecHelper::decodeFile() {
     size_t consumed = 0;
     if (!mHeaderDecoded) {
       if (!decodeHeader(consumed)) {
-        return false;
+        if (consumed == 0) {
+          return false;
+        }
       }
       inputFrameSize = mInputBuf.capacity();
     } else {
