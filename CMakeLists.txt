@@ -5,6 +5,7 @@ option(ENABLE_COVERAGE "Enable coverage" OFF)
 if(ENABLE_COVERAGE)
   add_compile_options(-O0 -g)
 endif()
+option(ENABLE_TESTS "Enables gtest based unit tests" ON)
 
 
 if(POLICY CMP0135)
@@ -58,7 +59,9 @@ endif()
 include("${HEVC_ROOT}/cmake/utils.cmake")
 
 libhevc_add_compile_options()
-libhevc_add_gtest()
+if(ENABLE_TESTS)
+  libhevc_add_gtest()
+endif()
 libhevc_add_definitions()
 libhevc_set_link_libraries()
 
@@ -72,4 +75,6 @@ include("${HEVC_ROOT}/examples/encoder/hevcenc.cmake")
 include("${HEVC_ROOT}/fuzzer/hevc_dec_fuzzer.cmake")
 include("${HEVC_ROOT}/fuzzer/hevc_enc_fuzzer.cmake")
 
-include("${HEVC_ROOT}/tests/common/common.cmake")
+if(ENABLE_TESTS)
+  include("${HEVC_ROOT}/tests/common/common.cmake")
+endif()
