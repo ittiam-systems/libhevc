@@ -3752,6 +3752,8 @@ void ihevcd_copy_slice_hdr(codec_t *ps_codec, WORD32 slice_idx, WORD32 slice_idx
     pu4_entry_offset_backup = ps_slice_hdr->pu4_entry_point_offset;
     memcpy(ps_slice_hdr, ps_slice_hdr_ref, sizeof(slice_header_t));
     ps_slice_hdr->pu4_entry_point_offset = pu4_entry_offset_backup;
+    ps_slice_hdr->i2_ctb_x = -1;
+    ps_slice_hdr->i2_ctb_y = -1;
 }
 
 
