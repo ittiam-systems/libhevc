@@ -927,7 +927,7 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         WORD32 slice_idx;
         WORD32 slice_start_idx;
 
-        slice_start_idx = ps_codec->i4_slice_error ? 2 : 1;
+        slice_start_idx = (ps_codec->i4_slice_error && !ps_slice_hdr->i1_first_slice_in_pic_flag) ? 2 : 1;
 
         for(slice_idx = slice_start_idx; slice_idx < MAX_SLICE_HDR_CNT; slice_idx++)
         {
