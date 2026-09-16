@@ -50,21 +50,15 @@
 
 #endif //DEBUG_CODEC
 
-#ifndef ASSERT_EXIT
+#ifdef IGNORE_ASSERT
+
+#define ASSERT(x) {}
+
+#else //IGNORE_ASSERT
 
 #define ASSERT(x) assert((x))
-//#define ASSERT(x) ihevcd_debug_ASSERT((x))
 
-#else
-#define ASSERT(x)                        \
-{                                        \
-    if (!(x))                            \
-    {                                    \
-        printf("ASSERT %s %d\n", __FILE__, __LINE__);              \
-        exit(-1);                        \
-    }                                    \
-}
-#endif
+#endif //IGNORE_ASSERT
 
 #endif /* _IHEVC_DEBUG_H_ */
 
