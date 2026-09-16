@@ -258,6 +258,11 @@ typedef struct {
      * Stride/Pitch of the Chroma (Cr) Buffer
      */
     UWORD32                                     u4_v_strd;
+
+    /**
+     * Bit depth of the YUV Buffers
+     */
+    UWORD32                                     u4_bit_depth;
 }iv_yuv_buf_t;
 
 
