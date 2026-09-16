@@ -204,11 +204,13 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
     {
         ps_dec_op->u4_pic_wd = ps_codec->i4_disp_wd;
         ps_dec_op->u4_pic_ht = ps_codec->i4_disp_ht;
+        ps_dec_op->u4_bit_depth = 8;
     }
     else
     {
         ps_dec_op->u4_pic_wd = 0;
         ps_dec_op->u4_pic_ht = 0;
+        ps_dec_op->u4_bit_depth = 0;
     }
 
     ps_dec_op->e_pic_type = ps_codec->e_dec_pic_type;
@@ -249,6 +251,8 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         ps_dec_op->u4_frame_decoded_flag = 0;
 
     }
+    ps_dec_op->s_disp_frm_buf.u4_bit_depth      = ps_dec_op->u4_bit_depth;
+
     /* If there is a display buffer */
     if(ps_codec->ps_disp_buf)
     {
