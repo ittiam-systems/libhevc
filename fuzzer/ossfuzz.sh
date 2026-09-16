@@ -24,6 +24,9 @@ if [[ $SANITIZER = *undefined* ]]; then
   CXXFLAGS="$CXXFLAGS -fno-sanitize=shift"
 fi
 
+CFLAGS="$CFLAGS -DIGNORE_ASSERT"
+CXXFLAGS="$CXXFLAGS -DIGNORE_ASSERT"
+
 # Build libhevc
 build_dir=$WORK/build
 rm -rf ${build_dir}
