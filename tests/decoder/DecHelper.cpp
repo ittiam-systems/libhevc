@@ -318,21 +318,38 @@ bool DecHelper::decodeHeader(size_t& bytesConsumed) {
 
   bytesConsumed = decodeOp.s_ivd_video_decode_op_t.u4_num_bytes_consumed;
 
-  if (ret == IV_SUCCESS) {
-    mWidth = decodeOp.s_ivd_video_decode_op_t.u4_pic_wd;
-    mHeight = decodeOp.s_ivd_video_decode_op_t.u4_pic_ht;
-    mHeaderDecoded = true;
-
-    // Allocate the output reconstructed YUV frame buffer
-    if (!mOutputBuf.allocBuffer(mWidth, mHeight, mFormat)) {
-      return false;
-    }
-
-    // Transition decoder to frame decode mode using config helper
-    return setDecoderConfig(mCodec, IVD_DECODE_FRAME, 0);
+  if (ret != IV_SUCCESS ||
+      decodeOp.s_ivd_video_decode_op_t.u4_error_code != 0 ||
+      decodeOp.s_ivd_video_decode_op_t.u4_pic_wd == 0 ||
+      decodeOp.s_ivd_video_decode_op_t.u4_pic_ht == 0) {
+    return false;
   }
 
-  return false;
+  mWidth = decodeOp.s_ivd_video_decode_op_t.u4_pic_wd;
+  mHeight = decodeOp.s_ivd_video_decode_op_t.u4_pic_ht;
+  mBitDepth = decodeOp.s_ivd_video_decode_op_t.u4_bit_depth;
+
+  // Allocate the output reconstructed YUV frame buffer
+  if (!mOutputBuf.allocBuffer(mWidth, mHeight, mBitDepth, mFormat)) {
+    return false;
+  }
+
+  // Ensure input buffer is large enough for a frame
+  size_t requiredInputSize = std::max<size_t>(
+      mWidth * mHeight * 3 * ((mBitDepth + 7) / 8), 1024 * 1024);
+  if (mInputBuf.capacity() < requiredInputSize) {
+    if (!mInputBuf.allocBuffer(requiredInputSize)) {
+      return false;
+    }
+  }
+
+  // Transition decoder to frame decode mode using config helper
+  if (!setDecoderConfig(mCodec, IVD_DECODE_FRAME, 0)) {
+    return false;
+  }
+
+  mHeaderDecoded = true;
+  return true;
 }
 
 bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
@@ -410,7 +427,7 @@ bool DecHelper::flushDecoder(size_t& frameIndex) {
 
     IV_API_CALL_STATUS_T ret = ihevcd_cxa_api_function(
         static_cast<iv_obj_t*>(mCodec), &flushIp, &flushOp);
-    if (ret != IV_SUCCESS) {
+    if (ret != IV_SUCCESS || flushOp.u4_error_code != 0) {
       return false;
     }
     mInFlushMode = true;
@@ -421,6 +438,11 @@ bool DecHelper::flushDecoder(size_t& frameIndex) {
     size_t consumed = 0;
     bool frameReady = false;
     if (!decodeFrame(consumed, frameReady, frameIndex, true)) {
+      // Decoder returns an error once all the frames are flushed
+      // which is expected. So return true here.
+      return true;
+    }
+    if (!frameReady) {
       break;
     }
   }
@@ -435,12 +457,13 @@ std::string DecHelper::computeFrameMd5(const RawBuf& buf) {
   size_t planesCount = buf.numPlanes();
   for (size_t p = 0; p < planesCount; ++p) {
     const uint8_t* planePtr = buf.planeData(p);
+    size_t pixelSize = (buf.bitDepth() + 7) / 8;
     size_t planeW = buf.planeWidth(p);
     size_t planeH = buf.planeHeight(p);
     size_t planeStride = buf.stride(p);
 
     for (size_t r = 0; r < planeH; ++r) {
-      md5.update(planePtr + (r * planeStride), planeW);
+      md5.update(planePtr + (r * planeStride * pixelSize), planeW * pixelSize);
     }
   }
 
@@ -472,18 +495,18 @@ bool DecHelper::decodeFile() {
 
     size_t consumed = 0;
     if (!mHeaderDecoded) {
-      bool header_ret = decodeHeader(consumed);
-      if (!header_ret) {
+      if (!decodeHeader(consumed)) {
         if (consumed == 0) {
           return false;
         }
-      } else {
-        inputFrameSize = mWidth * mHeight * 3;
       }
+      inputFrameSize = mInputBuf.capacity();
     } else {
       bool frameReady = false;
 
-      decodeFrame(consumed, frameReady, frameIndex);
+      if (!decodeFrame(consumed, frameReady, frameIndex)) {
+        return false;
+      }
       if (consumed == 0 && !frameReady) {
         break;
       }
@@ -492,9 +515,15 @@ bool DecHelper::decodeFile() {
     mBitsFile.seek(inputFileOffset);
   }
 
+  if (!mHeaderDecoded) {
+    return false;
+  }
+
   // Flush remaining frames (invokes processDecodedFrame internally for all
   // remaining frames)
-  flushDecoder(frameIndex);
+  if (!flushDecoder(frameIndex)) {
+    return false;
+  }
 
   return true;
 }

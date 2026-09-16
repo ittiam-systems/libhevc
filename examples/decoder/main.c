@@ -989,12 +989,14 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
         if(0 != file_save)
         {
             UWORD8 *buf;
+            WORD32 pixel_size;
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
+            pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
             {
-                fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd, ps_op_file);
-                buf += s_dump_disp_frm_buf.u4_y_strd;
+                fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_wd * pixel_size), ps_op_file);
+                buf += s_dump_disp_frm_buf.u4_y_strd * pixel_size;
             }
 
             if(ps_app_ctx->e_output_chroma_format != IV_GRAY)
@@ -1002,25 +1004,27 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
                 buf = (UWORD8*)s_dump_disp_frm_buf.pv_u_buf;
                 for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
                 {
-                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_u_wd, ps_op_file);
-                    buf += s_dump_disp_frm_buf.u4_u_strd;
+                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_u_wd * pixel_size, ps_op_file);
+                    buf += s_dump_disp_frm_buf.u4_u_strd * pixel_size;
                 }
                 buf = (UWORD8*)s_dump_disp_frm_buf.pv_v_buf;
                 for(i = 0; i < s_dump_disp_frm_buf.u4_v_ht; i++)
                 {
-                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_v_wd, ps_op_file);
-                    buf += s_dump_disp_frm_buf.u4_v_strd;
+                    fwrite(buf, 1, s_dump_disp_frm_buf.u4_v_wd * pixel_size, ps_op_file);
+                    buf += s_dump_disp_frm_buf.u4_v_strd * pixel_size;
                 }
             }
-
         }
 
         if(0 != chksum_save)
         {
             UWORD8 au1_y_chksum[16];
+            WORD32 pixel_size;
+
+            pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_y_buf,
-                           s_dump_disp_frm_buf.u4_y_strd,
-                           s_dump_disp_frm_buf.u4_y_wd,
+                           s_dump_disp_frm_buf.u4_y_strd * pixel_size,
+                           s_dump_disp_frm_buf.u4_y_wd * pixel_size,
                            s_dump_disp_frm_buf.u4_y_ht,
                            au1_y_chksum);
             fwrite(au1_y_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
@@ -1030,13 +1034,13 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
                 UWORD8 au1_u_chksum[16];
                 UWORD8 au1_v_chksum[16];
                 calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_u_buf,
-                               s_dump_disp_frm_buf.u4_u_strd,
-                               s_dump_disp_frm_buf.u4_u_wd,
+                               s_dump_disp_frm_buf.u4_u_strd * pixel_size,
+                               s_dump_disp_frm_buf.u4_u_wd * pixel_size,
                                s_dump_disp_frm_buf.u4_u_ht,
                                au1_u_chksum);
                 calc_md5_cksum((UWORD8 *)s_dump_disp_frm_buf.pv_v_buf,
-                               s_dump_disp_frm_buf.u4_v_strd,
-                               s_dump_disp_frm_buf.u4_v_wd,
+                               s_dump_disp_frm_buf.u4_v_strd * pixel_size,
+                               s_dump_disp_frm_buf.u4_v_wd * pixel_size,
                                s_dump_disp_frm_buf.u4_v_ht,
                                au1_v_chksum);
                 fwrite(au1_u_chksum, sizeof(UWORD8), 16, ps_op_chksum_file);
@@ -1059,19 +1063,21 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
 #else
         {
             UWORD8 *buf;
+            WORD32 pixel_size;
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_y_buf;
+            pixel_size = 1 + (s_dump_disp_frm_buf.u4_bit_depth > 8);
             for(i = 0; i < s_dump_disp_frm_buf.u4_y_ht; i++)
             {
-                fwrite(buf, 1, s_dump_disp_frm_buf.u4_y_wd, ps_op_file);
-                buf += s_dump_disp_frm_buf.u4_y_strd;
+                fwrite(buf, 1, (s_dump_disp_frm_buf.u4_y_wd * pixel_size), ps_op_file);
+                buf += s_dump_disp_frm_buf.u4_y_strd * pixel_size;
             }
 
             buf = (UWORD8 *)s_dump_disp_frm_buf.pv_u_buf;
             for(i = 0; i < s_dump_disp_frm_buf.u4_u_ht; i++)
             {
-                fwrite(buf, 1, s_dump_disp_frm_buf.u4_u_wd, ps_op_file);
-                buf += s_dump_disp_frm_buf.u4_u_strd;
+                fwrite(buf, 1, (s_dump_disp_frm_buf.u4_u_wd * pixel_size), ps_op_file);
+                buf += s_dump_disp_frm_buf.u4_u_strd * pixel_size;
             }
         }
 #endif
@@ -2400,40 +2406,41 @@ int main(WORD32 argc, CHAR *argv[])
             }
 
 #ifdef ADAPTIVE_TEST
+            WORD32 pixel_size = 1 + (ps_video_decode_op->s_disp_frm_buf.u4_bit_depth > 8 );
             switch(s_app_ctx.e_output_chroma_format)
             {
                 case IV_YUV_420P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 2) * pixel_size;
                     break;
                 }
                 case IV_YUV_420SP_UV:
                 case IV_YUV_420SP_VU:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * pixel_size;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;
                 }
                 case IV_YUV_422P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT >> 1) * pixel_size;
                     break;
                 }
                 case IV_YUV_444P:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[1] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
-                    s_ctl_op.u4_min_out_buf_size[2] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[1] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
+                    s_ctl_op.u4_min_out_buf_size[2] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
                     break;
                 }
                 case IV_GRAY:
                 {
-                    s_ctl_op.u4_min_out_buf_size[0] = ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT;
+                    s_ctl_op.u4_min_out_buf_size[0] = (ADAPTIVE_MAX_WD * ADAPTIVE_MAX_HT) * pixel_size;
                     s_ctl_op.u4_min_out_buf_size[1] = 0;
                     s_ctl_op.u4_min_out_buf_size[2] = 0;
                     break;
