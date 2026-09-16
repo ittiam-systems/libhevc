@@ -30,8 +30,8 @@ class RawBuf {
   ~RawBuf() = default;
 
   // Allocates buffer with aligned strides for each plane based on video format.
-  bool allocBuffer(size_t width, size_t height, libhevc::test::Format format,
-                   size_t alignment = 1);
+  bool allocBuffer(size_t width, size_t height, size_t bitDepth,
+                   libhevc::test::Format format, size_t alignment = 1);
   void freeBuffer();
 
   uint8_t* planeData(size_t planeIdx);
@@ -40,6 +40,7 @@ class RawBuf {
   size_t stride(size_t planeIdx) const { return mStrides[planeIdx]; }
   size_t planeWidth(size_t planeIdx) const;
   size_t planeHeight(size_t planeIdx) const;
+  size_t bitDepth() const { return mBitDepth; }
   size_t numPlanes() const;
 
   size_t width() const { return mWidth; }
@@ -50,6 +51,7 @@ class RawBuf {
   std::vector<uint8_t> mStorage;
   size_t mWidth = 0;
   size_t mHeight = 0;
+  size_t mBitDepth = 0;
   libhevc::test::Format mFormat = libhevc::test::Format::yuv420p;
   size_t mStrides[3] = {0, 0, 0};
   size_t mOffsets[3] = {0, 0, 0};

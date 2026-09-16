@@ -215,7 +215,7 @@ bool EncHelper::initEncoder() {
     return false;
   }
 
-  if (!mInputBuf.allocBuffer(mWidth, mHeight, mFormat)) {
+  if (!mInputBuf.allocBuffer(mWidth, mHeight, /* bitDepth */ 8, mFormat)) {
     deinitEncoder();
     return false;
   }

@@ -107,6 +107,7 @@ class DecHelper {
   bool mInFlushMode = false;
   size_t mWidth = 0;
   size_t mHeight = 0;
+  size_t mBitDepth = 8;
   libhevc::test::Format mFormat = libhevc::test::Format::yuv420p;
   size_t mCores = 1;
   libhevc::test::Arch mArch = libhevc::test::Arch::defaultArch;
