@@ -204,7 +204,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
     {
         ps_dec_op->u4_pic_wd = ps_codec->i4_disp_wd;
         ps_dec_op->u4_pic_ht = ps_codec->i4_disp_ht;
-        ps_dec_op->u4_bit_depth = 8;
+        ps_dec_op->u4_bit_depth = ps_codec->i4_bit_depth_luma;
     }
     else
     {

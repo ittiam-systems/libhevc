@@ -1820,6 +1820,31 @@ struct _codec_t
     IV_PICTURE_CODING_TYPE_T e_dec_pic_type;
 
     /**
+     * ChromaFormatIDC
+     */
+    WORD32  i4_chroma_format_idc;
+
+    /**
+     * Luma bit depth - 8 and 10 bits are supported
+     */
+    WORD32  i4_bit_depth_luma;
+
+    /**
+     * Chroma bit depth - 8 and 10 bits are supported
+     */
+    WORD32  i4_bit_depth_chroma;
+
+    /**
+     * Luma sample size in bytes - 1 for 8 bit, 2 for hbd
+     */
+    WORD32  i4_pixel_size_y;
+
+    /**
+     * Chroma sample size in bytes - 1 for 8 bit, 2 for hbd
+     */
+    WORD32  i4_pixel_size_uv;
+
+    /**
      * Flag to signal if a frame was decoded in this call
      */
     WORD32 i4_pic_decoded;
