@@ -78,10 +78,25 @@ typedef void ihevcd_fmt_conv_444sp_to_444p_ft(UWORD8 *pu1_y_src,
                                               WORD32 dst_y_strd,
                                               WORD32 dst_uv_strd);
 
+typedef void ihevcd_hbd_fmt_conv_420sp_to_420p_ft(UWORD16 *pu1_y_src,
+                                                  UWORD16 *pu1_uv_src,
+                                                  UWORD16 *pu1_y_dst,
+                                                  UWORD16 *pu1_u_dst,
+                                                  UWORD16 *pu1_v_dst,
+                                                  WORD32 wd,
+                                                  WORD32 ht,
+                                                  WORD32 src_y_strd,
+                                                  WORD32 src_uv_strd,
+                                                  WORD32 dst_y_strd,
+                                                  WORD32 dst_uv_strd,
+                                                  WORD32 is_u_first,
+                                                  WORD32 disable_luma_copy);
+
 /* C function declarations */
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp;
 ihevcd_fmt_conv_420sp_to_420p_ft ihevcd_fmt_conv_420sp_to_420p;
 ihevcd_fmt_conv_444sp_to_444p_ft ihevcd_fmt_conv_444sp_to_444p;
+ihevcd_hbd_fmt_conv_420sp_to_420p_ft ihevcd_hbd_fmt_conv_420sp_to_420p;
 
 /* A9Q function declarations */
 ihevcd_fmt_conv_420sp_to_420sp_ft ihevcd_fmt_conv_420sp_to_420sp_a9q;
