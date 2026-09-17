@@ -113,12 +113,12 @@ void ihevcd_itrans_recon_dc_luma(UWORD8 *pu1_pred,
 }
 
 void ihevcd_hbd_itrans_recon_dc_luma(UWORD16 *pu2_pred,
-                                    UWORD16 *pu2_dst,
-                                    WORD32 pred_strd,
-                                    WORD32 dst_strd,
-                                    WORD32 log2_trans_size,
-                                    WORD16 i2_coeff_value,
-                                    WORD32 i4_bit_depth)
+                                     UWORD16 *pu2_dst,
+                                     WORD32 pred_strd,
+                                     WORD32 dst_strd,
+                                     WORD32 log2_trans_size,
+                                     WORD16 i2_coeff_value,
+                                     WORD32 bit_depth)
 {
     WORD32 row, col;
     WORD32 add, shift;
@@ -132,16 +132,14 @@ void ihevcd_hbd_itrans_recon_dc_luma(UWORD16 *pu2_pred,
     shift = IT_SHIFT_STAGE_1;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((quant_out * 64 + add) >> shift);
-    shift = 20 - i4_bit_depth;//IT_SHIFT_STAGE_2;
+    shift = 20 - bit_depth;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((dc_value * 64 + add) >> shift);
 
     for(row = 0; row < trans_size; row++)
         for(col = 0; col < trans_size; col++)
-        {
             pu2_dst[row * dst_strd + col] = CLIP3((pu2_pred[row * pred_strd + col] + dc_value),
-                                                    0,((1<<(i4_bit_depth))-1));
-        }
+                                                  0, ((1 << bit_depth) - 1));
 
 }
 
@@ -181,13 +179,12 @@ void ihevcd_hbd_itrans_recon_dc_chroma(UWORD16 *pu2_pred,
                                        WORD32 dst_strd,
                                        WORD32 log2_trans_size,
                                        WORD16 i2_coeff_value,
-                                       WORD32 i4_bit_depth)
+                                       WORD32 bit_depth)
 {
     WORD32 row, col;
     WORD32 add, shift;
     WORD32 dc_value, quant_out;
     WORD32 trans_size;
-
 
     trans_size = (1 << log2_trans_size);
 
@@ -196,16 +193,14 @@ void ihevcd_hbd_itrans_recon_dc_chroma(UWORD16 *pu2_pred,
     shift = IT_SHIFT_STAGE_1;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((quant_out * 64 + add) >> shift);
-    shift = 20 - i4_bit_depth;//IT_SHIFT_STAGE_2;
+    shift = 20 - bit_depth;
     add = 1 << (shift - 1);
     dc_value = CLIP_S16((dc_value * 64 + add) >> shift);
 
     for(row = 0; row < trans_size; row++)
         for(col = 0; col < trans_size; col++)
-        {
             pu2_dst[row * dst_strd + (col << 1)] = CLIP3((pu2_pred[row * pred_strd + (col << 1)] + dc_value),
-                                                         0, ((1 << i4_bit_depth) - 1));
-        }
+                                                         0, ((1 << bit_depth) - 1));
 
 }
 

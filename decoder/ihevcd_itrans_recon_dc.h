@@ -56,14 +56,14 @@ typedef void ihevcd_hbd_itrans_recon_dc_luma_ft(UWORD16 *pu2_pred,
                                                 WORD32 dst_strd,
                                                 WORD32 log2_trans_size,
                                                 WORD16 i2_coeff_value,
-                                                WORD32 i4_bit_depth);
+                                                WORD32 bit_depth);
 typedef void ihevcd_hbd_itrans_recon_dc_chroma_ft(UWORD16 *pu2_pred,
                                                   UWORD16 *pu2_dst,
                                                   WORD32 pred_strd,
                                                   WORD32 dst_strd,
                                                   WORD32 log2_trans_size,
                                                   WORD16 i2_coeff_value,
-                                                  WORD32 i4_bit_depth);
+                                                  WORD32 bit_depth);
 
 /* C function declarations */
 ihevcd_itrans_recon_dc_luma_ft ihevcd_itrans_recon_dc_luma;
