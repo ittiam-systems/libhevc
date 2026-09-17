@@ -113,379 +113,6 @@
 *
 *******************************************************************************
 */
-void ihevcd_fmt_conv_420sp_to_rgb565(UWORD8 *pu1_y_src,
-                                     UWORD8 *pu1_uv_src,
-                                     UWORD16 *pu2_rgb_dst,
-                                     WORD32 wd,
-                                     WORD32 ht,
-                                     WORD32 src_y_strd,
-                                     WORD32 src_uv_strd,
-                                     WORD32 dst_strd,
-                                     WORD32 is_u_first)
-{
-
-
-    WORD16  i2_r, i2_g, i2_b;
-    UWORD32  u4_r, u4_g, u4_b;
-    WORD16  i2_i, i2_j;
-    UWORD8  *pu1_y_src_nxt;
-    UWORD16 *pu2_rgb_dst_NextRow;
-
-    UWORD8 *pu1_u_src, *pu1_v_src;
-
-    if(is_u_first)
-    {
-        pu1_u_src = (UWORD8 *)pu1_uv_src;
-        pu1_v_src = (UWORD8 *)pu1_uv_src + 1;
-    }
-    else
-    {
-        pu1_u_src = (UWORD8 *)pu1_uv_src + 1;
-        pu1_v_src = (UWORD8 *)pu1_uv_src;
-    }
-
-    pu1_y_src_nxt   = pu1_y_src + src_y_strd;
-    pu2_rgb_dst_NextRow = pu2_rgb_dst + dst_strd;
-
-    for(i2_i = 0; i2_i < (ht >> 1); i2_i++)
-    {
-        for(i2_j = (wd >> 1); i2_j > 0; i2_j--)
-        {
-            i2_b = ((*pu1_u_src - 128) * COEFF4 >> 13);
-            i2_g = ((*pu1_u_src - 128) * COEFF2 + (*pu1_v_src - 128) * COEFF3) >> 13;
-            i2_r = ((*pu1_v_src - 128) * COEFF1) >> 13;
-
-            pu1_u_src += 2;
-            pu1_v_src += 2;
-            /* pixel 0 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src + i2_b);
-            u4_b >>= 3;
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src + i2_g);
-            u4_g >>= 2;
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src + i2_r);
-            u4_r >>= 3;
-
-            pu1_y_src++;
-            *pu2_rgb_dst++ = ((u4_r << 11) | (u4_g << 5) | u4_b);
-
-            /* pixel 1 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src + i2_b);
-            u4_b >>= 3;
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src + i2_g);
-            u4_g >>= 2;
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src + i2_r);
-            u4_r >>= 3;
-
-            pu1_y_src++;
-            *pu2_rgb_dst++ = ((u4_r << 11) | (u4_g << 5) | u4_b);
-
-            /* pixel 2 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src_nxt + i2_b);
-            u4_b >>= 3;
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src_nxt + i2_g);
-            u4_g >>= 2;
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src_nxt + i2_r);
-            u4_r >>= 3;
-
-            pu1_y_src_nxt++;
-            *pu2_rgb_dst_NextRow++ = ((u4_r << 11) | (u4_g << 5) | u4_b);
-
-            /* pixel 3 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src_nxt + i2_b);
-            u4_b >>= 3;
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src_nxt + i2_g);
-            u4_g >>= 2;
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src_nxt + i2_r);
-            u4_r >>= 3;
-
-            pu1_y_src_nxt++;
-            *pu2_rgb_dst_NextRow++ = ((u4_r << 11) | (u4_g << 5) | u4_b);
-
-        }
-
-        pu1_u_src = pu1_u_src + src_uv_strd - wd;
-        pu1_v_src = pu1_v_src + src_uv_strd - wd;
-
-        pu1_y_src = pu1_y_src + (src_y_strd << 1) - wd;
-        pu1_y_src_nxt = pu1_y_src_nxt + (src_y_strd << 1) - wd;
-
-        pu2_rgb_dst = pu2_rgb_dst_NextRow - wd + dst_strd;
-        pu2_rgb_dst_NextRow = pu2_rgb_dst_NextRow + (dst_strd << 1) - wd;
-    }
-
-
-}
-
-void ihevcd_fmt_conv_420sp_to_rgba8888(UWORD8 *pu1_y_src,
-                                       UWORD8 *pu1_uv_src,
-                                       UWORD32 *pu4_rgba_dst,
-                                       WORD32 wd,
-                                       WORD32 ht,
-                                       WORD32 src_y_strd,
-                                       WORD32 src_uv_strd,
-                                       WORD32 dst_strd,
-                                       WORD32 is_u_first)
-{
-
-
-    WORD16  i2_r, i2_g, i2_b;
-    UWORD32  u4_r, u4_g, u4_b;
-    WORD16  i2_i, i2_j;
-    UWORD8  *pu1_y_src_nxt;
-    UWORD32 *pu4_rgba_dst_NextRow;
-
-    UWORD8 *pu1_u_src, *pu1_v_src;
-
-    if(is_u_first)
-    {
-        pu1_u_src = (UWORD8 *)pu1_uv_src;
-        pu1_v_src = (UWORD8 *)pu1_uv_src + 1;
-    }
-    else
-    {
-        pu1_u_src = (UWORD8 *)pu1_uv_src + 1;
-        pu1_v_src = (UWORD8 *)pu1_uv_src;
-    }
-
-    pu1_y_src_nxt   = pu1_y_src + src_y_strd;
-    pu4_rgba_dst_NextRow = pu4_rgba_dst + dst_strd;
-
-    for(i2_i = 0; i2_i < (ht >> 1); i2_i++)
-    {
-        for(i2_j = (wd >> 1); i2_j > 0; i2_j--)
-        {
-            i2_b = ((*pu1_u_src - 128) * COEFF4 >> 13);
-            i2_g = ((*pu1_u_src - 128) * COEFF2 + (*pu1_v_src - 128) * COEFF3) >> 13;
-            i2_r = ((*pu1_v_src - 128) * COEFF1) >> 13;
-
-            pu1_u_src += 2;
-            pu1_v_src += 2;
-            /* pixel 0 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src + i2_b);
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src + i2_g);
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src + i2_r);
-
-            pu1_y_src++;
-            *pu4_rgba_dst++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 1 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src + i2_b);
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src + i2_g);
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src + i2_r);
-
-            pu1_y_src++;
-            *pu4_rgba_dst++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 2 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src_nxt + i2_b);
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src_nxt + i2_g);
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src_nxt + i2_r);
-
-            pu1_y_src_nxt++;
-            *pu4_rgba_dst_NextRow++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 3 */
-            /* B */
-            u4_b = CLIP_U8(*pu1_y_src_nxt + i2_b);
-            /* G */
-            u4_g = CLIP_U8(*pu1_y_src_nxt + i2_g);
-            /* R */
-            u4_r = CLIP_U8(*pu1_y_src_nxt + i2_r);
-
-            pu1_y_src_nxt++;
-            *pu4_rgba_dst_NextRow++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-        }
-
-        pu1_u_src = pu1_u_src + src_uv_strd - wd;
-        pu1_v_src = pu1_v_src + src_uv_strd - wd;
-
-        pu1_y_src = pu1_y_src + (src_y_strd << 1) - wd;
-        pu1_y_src_nxt = pu1_y_src_nxt + (src_y_strd << 1) - wd;
-
-        pu4_rgba_dst = pu4_rgba_dst_NextRow - wd + dst_strd;
-        pu4_rgba_dst_NextRow = pu4_rgba_dst_NextRow + (dst_strd << 1) - wd;
-    }
-
-
-}
-void ihevcd_hbd_fmt_conv_420sp_to_rgba8888(UWORD16 *pu2_y_src,
-                                    UWORD16 *pu2_uv_src,
-                                    UWORD32 *pu4_rgba_dst,
-                                    WORD32 wd,
-                                    WORD32 ht,
-                                    WORD32 src_y_strd,
-                                    WORD32 src_uv_strd,
-                                    WORD32 dst_strd,
-                                    WORD32 is_u_first,
-                                    WORD32 i4_bit_depth_luma)
-{
-
-
-    WORD16  i2_r, i2_g, i2_b;
-    UWORD32  u4_r, u4_g, u4_b;
-    WORD16  i2_i, i2_j;
-    UWORD16  *pu2_y_src_nxt;
-    UWORD32 *pu4_rgba_dst_NextRow;
-    UWORD32 *pu4_rgba_dst_back;
-
-    UWORD16 *pu2_u_src, *pu2_v_src;
-    UWORD32 normalise_val,clip_val;
-
-
-    clip_val = (i4_bit_depth_luma-8);
-    normalise_val = 128<<(clip_val);
-
-    if(is_u_first)
-    {
-        pu2_u_src = (UWORD16 *)pu2_uv_src;
-        pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
-    }
-    else
-    {
-        pu2_u_src = (UWORD16 *)pu2_uv_src + 1;
-        pu2_v_src = (UWORD16 *)pu2_uv_src;
-    }
-
-    pu2_y_src_nxt   = pu2_y_src + src_y_strd;
-    pu4_rgba_dst_NextRow = pu4_rgba_dst + dst_strd;
-    pu4_rgba_dst_back = pu4_rgba_dst;
-
-    for(i2_i = 0; i2_i < (ht >> 1); i2_i++)
-    {
-        for(i2_j = (wd >> 1); i2_j > 0; i2_j--)
-        {
-            i2_b = ((*pu2_u_src - normalise_val) * 16530 >> 13);
-            i2_g = ((*pu2_u_src - normalise_val) * COEFF2 + (*pu2_v_src - normalise_val) * COEFF3) >> 13;
-            i2_r = ((*pu2_v_src - normalise_val) * COEFF1) >> 13;
-
-            pu2_u_src += 2;
-            pu2_v_src += 2;
-            /* pixel 0 */
-            /* B */
-            u4_b = CLIP_U8((*pu2_y_src + i2_b) >> clip_val);
-            /* G */
-            u4_g = CLIP_U8((*pu2_y_src + i2_g) >> clip_val);
-            /* R */
-            u4_r = CLIP_U8((*pu2_y_src + i2_r) >> clip_val);
-
-            pu2_y_src++;
-            *pu4_rgba_dst++  = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 1 */
-            /* B */
-            u4_b = CLIP_U8((*pu2_y_src + i2_b) >> clip_val);
-            /* G */
-            u4_g = CLIP_U8((*pu2_y_src + i2_g) >> clip_val);
-            /* R */
-            u4_r = CLIP_U8((*pu2_y_src + i2_r) >> clip_val);
-
-            pu2_y_src++;
-            *pu4_rgba_dst++  = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 2 */
-            /* B */
-            u4_b = CLIP_U8((*pu2_y_src_nxt + i2_b) >> clip_val);
-            /* G */
-            u4_g = CLIP_U8((*pu2_y_src_nxt + i2_g) >> clip_val);
-            /* R */
-            u4_r = CLIP_U8((*pu2_y_src_nxt + i2_r) >> clip_val);
-
-            pu2_y_src_nxt++;
-            *pu4_rgba_dst_NextRow++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-            /* pixel 3 */
-            /* B */
-            u4_b = CLIP_U8((*pu2_y_src_nxt + i2_b) >> clip_val);
-            /* G */
-            u4_g = CLIP_U8((*pu2_y_src_nxt + i2_g) >> clip_val);
-            /* R */
-            u4_r = CLIP_U8((*pu2_y_src_nxt + i2_r) >> clip_val);
-
-            pu2_y_src_nxt++;
-            *pu4_rgba_dst_NextRow++ = ((u4_r << 16) | (u4_g << 8) | (u4_b << 0));
-
-        }
-
-        pu2_u_src = pu2_u_src + src_uv_strd - wd;
-        pu2_v_src = pu2_v_src + src_uv_strd - wd;
-
-        pu2_y_src = pu2_y_src + (src_y_strd << 1) - wd;
-        pu2_y_src_nxt = pu2_y_src_nxt + (src_y_strd << 1) - wd;
-
-        pu4_rgba_dst = pu4_rgba_dst_NextRow - wd + dst_strd ;
-        pu4_rgba_dst_NextRow = pu4_rgba_dst_NextRow + (dst_strd << 1) - wd;
-    }
-
-
-}
-/**
-*******************************************************************************
-*
-* @brief Function used from copying a 420SP buffer
-*
-* @par   Description
-* Function used from copying a 420SP buffer
-*
-* @param[in] pu1_y_src
-*   Input Y pointer
-*
-* @param[in] pu1_uv_src
-*   Input UV pointer (UV is interleaved either in UV or VU format)
-*
-* @param[in] pu1_y_dst
-*   Output Y pointer
-*
-* @param[in] pu1_uv_dst
-*   Output UV pointer (UV is interleaved in the same format as that of input)
-*
-* @param[in] wd
-*   Width
-*
-* @param[in] ht
-*   Height
-*
-* @param[in] src_y_strd
-*   Input Y Stride
-*
-* @param[in] src_uv_strd
-*   Input UV stride
-*
-* @param[in] dst_y_strd
-*   Output Y stride
-*
-* @param[in] dst_uv_strd
-*   Output UV stride
-*
-* @returns None
-*
-* @remarks In case there is a need to perform partial frame copy then
-* by passion appropriate source and destination pointers and appropriate
-* values for wd and ht it can be done
-*
-*******************************************************************************
-*/
 
 void ihevcd_fmt_conv_420sp_to_420sp(UWORD8 *pu1_y_src,
                                     UWORD8 *pu1_uv_src,
@@ -549,8 +176,8 @@ void ihevcd_hbd_fmt_conv_420sp_to_420sp(UWORD16 *pu2_y_src,
                                         WORD32 dst_y_strd,
                                         WORD32 dst_uv_strd)
 {
-    UWORD8 *pu1_src,*pu1_dst;
-    WORD32 num_rows,num_cols,src_strd,dst_strd;
+    UWORD8 *pu1_src, *pu1_dst;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
     WORD32 i;
 
     /* copy luma */
@@ -563,9 +190,9 @@ void ihevcd_hbd_fmt_conv_420sp_to_420sp(UWORD16 *pu2_y_src,
     src_strd = src_y_strd * sizeof(UWORD16);
     dst_strd = dst_y_strd * sizeof(UWORD16);
 
-    for(i = 0;i < num_rows ; i++)
+    for(i = 0; i < num_rows; i++)
     {
-        memcpy(pu1_dst,pu1_src,num_cols);
+        memcpy(pu1_dst, pu1_src, num_cols);
         pu1_dst += dst_strd;
         pu1_src += src_strd;
     }
@@ -580,9 +207,9 @@ void ihevcd_hbd_fmt_conv_420sp_to_420sp(UWORD16 *pu2_y_src,
     src_strd = src_uv_strd * sizeof(UWORD16);
     dst_strd = dst_uv_strd * sizeof(UWORD16);
 
-    for(i = 0;i < num_rows ; i++)
+    for(i = 0; i < num_rows; i++)
     {
-        memcpy(pu1_dst,pu1_src,num_cols);
+        memcpy(pu1_dst, pu1_src, num_cols);
         pu1_dst += dst_strd;
         pu1_src += src_strd;
     }
@@ -721,8 +348,10 @@ void ihevcd_fmt_conv_400_to_420sp(UWORD8 *pu1_y_src,
                                   WORD32 dst_y_strd,
                                   WORD32 dst_uv_strd)
 {
+    WORD32 i;
+
     ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
-    for(int i = 0; i < ALIGN2(ht) / 2; i++)
+    for(i = 0; i < ALIGN2(ht) / 2; i++)
     {
         memset(pu1_uv_dst, 128, ALIGN2(wd));
         pu1_uv_dst += dst_uv_strd;
@@ -748,6 +377,7 @@ void ihevcd_hbd_fmt_conv_400_to_420p(UWORD16 *pu2_y_src,
     WORD32 src_strd = src_y_strd;
     WORD32 dst_strd = dst_y_strd;
     WORD32 i, j;
+    UWORD16 neutral;
 
     for(i = 0; i < num_rows; i++)
     {
@@ -756,7 +386,7 @@ void ihevcd_hbd_fmt_conv_400_to_420p(UWORD16 *pu2_y_src,
         pu2_src += src_strd;
     }
 
-    UWORD16 neutral = (UWORD16)(1 << (bit_depth - 1));
+    neutral = (UWORD16)(1 << (bit_depth - 1));
     for(i = 0; i < ALIGN2(ht) / 2; i++)
     {
         for(j = 0; j < ALIGN2(wd) / 2; j++)
@@ -767,6 +397,7 @@ void ihevcd_hbd_fmt_conv_400_to_420p(UWORD16 *pu2_y_src,
         pu2_u_dst += dst_uv_strd;
         pu2_v_dst += dst_uv_strd;
     }
+    return;
 }
 
 void ihevcd_hbd_fmt_conv_400_to_420sp(UWORD16 *pu2_y_src,
@@ -786,6 +417,7 @@ void ihevcd_hbd_fmt_conv_400_to_420sp(UWORD16 *pu2_y_src,
     WORD32 src_strd = src_y_strd;
     WORD32 dst_strd = dst_y_strd;
     WORD32 i, j;
+    UWORD16 neutral;
 
     for(i = 0; i < num_rows; i++)
     {
@@ -794,7 +426,7 @@ void ihevcd_hbd_fmt_conv_400_to_420sp(UWORD16 *pu2_y_src,
         pu2_src += src_strd;
     }
 
-    UWORD16 neutral = (UWORD16)(1 << (bit_depth - 1));
+    neutral = (UWORD16)(1 << (bit_depth - 1));
     for(i = 0; i < ALIGN2(ht) / 2; i++)
     {
         for(j = 0; j < ALIGN2(wd); j++)
@@ -803,6 +435,7 @@ void ihevcd_hbd_fmt_conv_400_to_420sp(UWORD16 *pu2_y_src,
         }
         pu2_uv_dst += dst_uv_strd;
     }
+    return;
 }
 
 /**
@@ -906,64 +539,6 @@ void ihevcd_fmt_conv_420sp_to_420sp_swap_uv(UWORD8 *pu1_y_src,
     }
     return;
 }
-
-void ihevcd_hbd_fmt_conv_420sp_to_420sp_swap_uv(UWORD16 *pu2_y_src,
-                                                UWORD16 *pu2_uv_src,
-                                                UWORD16 *pu2_y_dst,
-                                                UWORD16 *pu2_uv_dst,
-                                                WORD32 wd,
-                                                WORD32 ht,
-                                                WORD32 src_y_strd,
-                                                WORD32 src_uv_strd,
-                                                WORD32 dst_y_strd,
-                                                WORD32 dst_uv_strd)
-{
-    UWORD8 *pu1_src,*pu1_dst;
-    UWORD16 *pu2_src, *pu2_dst;
-    WORD32 num_rows,num_cols,src_strd,dst_strd;
-    WORD32 i;
-
-    /* copy luma */
-    pu1_src = (UWORD8 *)pu2_y_src;
-    pu1_dst = (UWORD8 *)pu2_y_dst;
-
-    num_rows = ht;
-    num_cols = wd * sizeof(UWORD16);
-
-    src_strd = src_y_strd * sizeof(UWORD16);
-    dst_strd = dst_y_strd * sizeof(UWORD16);
-
-    for(i = 0;i < num_rows ; i++)
-    {
-        memcpy(pu1_dst,pu1_src,num_cols);
-        pu1_dst += dst_strd;
-        pu1_src += src_strd;
-    }
-
-    /* copy U and V */
-    pu2_src = pu2_uv_src;
-    pu2_dst = pu2_uv_dst;
-
-    num_rows = ht >> 1;
-    num_cols = wd;
-
-    src_strd = src_uv_strd;
-    dst_strd = dst_uv_strd;
-
-    for(i = 0;i < num_rows ; i++)
-    {
-        WORD32 j;
-        for(j = 0; j < num_cols; j+=2)
-        {
-            pu2_dst[j + 0] = pu2_src[j + 1];
-            pu2_dst[j + 1] = pu2_src[j + 0];
-        }
-        pu2_dst += dst_strd;
-        pu2_src += src_strd;
-    }
-    return;
-}
-
 /**
 *******************************************************************************
 *
@@ -1172,27 +747,31 @@ void ihevcd_fmt_conv_444sp_to_444p(UWORD8 *pu1_y_src,
     return;
 }
 
-void ihevcd_fmt_conv_hbd_444sp_to_444p(UWORD16* pu2_y_src,
-    UWORD16* pu2_uv_src,
-    UWORD16* pu2_y_dst,
-    UWORD16* pu2_u_dst,
-    UWORD16* pu2_v_dst,
-    WORD32 wd,
-    WORD32 ht,
-    WORD32 src_y_strd,
-    WORD32 src_uv_strd,
-    WORD32 dst_y_strd,
-    WORD32 dst_uv_strd)
+void ihevcd_fmt_conv_hbd_444sp_to_444p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd)
 {
-    ihevcd_fmt_conv_luma_copy((UWORD8*)pu2_y_src, (UWORD8*)pu2_y_dst, wd * 2, ht, src_y_strd * 2, dst_y_strd * 2);
+    UWORD16 *pu2_u_src;
+    UWORD16 *pu2_v_src;
+    WORD32 i, j;
+
+    ihevcd_fmt_conv_luma_copy((UWORD8 *)pu2_y_src, (UWORD8 *)pu2_y_dst, wd * 2, ht, src_y_strd * 2, dst_y_strd * 2);
 
     /* de-interleave U and V and copy to destination */
-    UWORD16* pu2_u_src = (UWORD16*)pu2_uv_src;
-    UWORD16* pu2_v_src = (UWORD16*)pu2_uv_src + 1;
+    pu2_u_src = (UWORD16 *)pu2_uv_src;
+    pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
 
-    for (WORD32 i = 0; i < ht; i++)
+    for(i = 0; i < ht; i++)
     {
-        for (WORD32 j = 0; j < wd; j++)
+        for(j = 0; j < wd; j++)
         {
             pu2_u_dst[j] = pu2_u_src[j * 2];
             pu2_v_dst[j] = pu2_v_src[j * 2];
@@ -1272,6 +851,7 @@ void ihevcd_hbd_fmt_conv_444sp_to_420p(UWORD16 *pu2_y_src,
     UWORD16 *pu2_src, *pu2_dst;
     UWORD16 *pu2_u_src, *pu2_v_src;
     WORD32 i, j;
+    WORD32 cb_sum, cr_sum, count;
 
     if(0 == disable_luma_copy)
     {
@@ -1303,9 +883,9 @@ void ihevcd_hbd_fmt_conv_444sp_to_420p(UWORD16 *pu2_y_src,
     {
         for(j = 0; j < wd; j += 2)
         {
-            WORD32 cb_sum = pu2_u_src[j * 2];
-            WORD32 cr_sum = pu2_v_src[j * 2];
-            WORD32 count = 1;
+            cb_sum = pu2_u_src[j * 2];
+            cr_sum = pu2_v_src[j * 2];
+            count = 1;
 
             if((j + 1) < wd)
             {
@@ -1425,9 +1005,9 @@ void ihevcd_hbd_fmt_conv_422sp_to_422p(UWORD16 *pu2_y_src,
                                        WORD32 is_u_first,
                                        WORD32 disable_luma_copy)
 {
-    UWORD16 *pu2_src,*pu2_dst;
-    UWORD16 *pu2_u_src,*pu2_v_src;
-    WORD32 num_rows,num_cols,src_strd,dst_strd;
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
     WORD32 i, j;
 
     if(0 == disable_luma_copy)
@@ -1442,9 +1022,9 @@ void ihevcd_hbd_fmt_conv_422sp_to_422p(UWORD16 *pu2_y_src,
         src_strd = src_y_strd;
         dst_strd = dst_y_strd;
 
-        for(i = 0;i < num_rows ; i++)
+        for(i = 0; i < num_rows; i++)
         {
-            memcpy(pu2_dst,pu2_src,num_cols*sizeof(UWORD16));
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
             pu2_dst += dst_strd;
             pu2_src += src_strd;
         }
@@ -1467,7 +1047,7 @@ void ihevcd_hbd_fmt_conv_422sp_to_422p(UWORD16 *pu2_y_src,
     src_strd = src_uv_strd;
     dst_strd = dst_uv_strd;
 
-    for(i = 0; i < num_rows ; i++)
+    for(i = 0; i < num_rows; i++)
     {
         for(j = 0; j < num_cols; j++)
         {
@@ -1497,10 +1077,11 @@ void ihevcd_hbd_fmt_conv_422sp_to_420p(UWORD16 *pu2_y_src,
                                        WORD32 is_u_first,
                                        WORD32 disable_luma_copy)
 {
-    UWORD16 *pu2_src,*pu2_dst;
-    UWORD16 *pu2_u_src,*pu2_v_src;
-    WORD32 num_rows,num_cols;
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols;
     WORD32 i, j;
+    WORD32 cb_sum, cr_sum;
 
     if(0 == disable_luma_copy)
     {
@@ -1511,9 +1092,9 @@ void ihevcd_hbd_fmt_conv_422sp_to_420p(UWORD16 *pu2_y_src,
         num_rows = ht;
         num_cols = wd;
 
-        for(i = 0;i < num_rows ; i++)
+        for(i = 0; i < num_rows; i++)
         {
-            memcpy(pu2_dst,pu2_src,num_cols*sizeof(UWORD16));
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
             pu2_dst += dst_y_strd;
             pu2_src += src_y_strd;
         }
@@ -1534,12 +1115,12 @@ void ihevcd_hbd_fmt_conv_422sp_to_420p(UWORD16 *pu2_y_src,
     num_rows = ht;
     num_cols = wd >> 1;
 
-    for(i = 0; i < num_rows ; i += 2)
+    for(i = 0; i < num_rows; i += 2)
     {
         for(j = 0; j < num_cols; j++)
         {
-            WORD32 cb_sum = pu2_u_src[j * 2];
-            WORD32 cr_sum = pu2_v_src[j * 2];
+            cb_sum = pu2_u_src[j * 2];
+            cr_sum = pu2_v_src[j * 2];
 
             if((i + 1) < num_rows)
             {
@@ -1575,9 +1156,9 @@ void ihevcd_hbd_fmt_conv_420sp_to_420p(UWORD16 *pu2_y_src,
                                        WORD32 is_u_first,
                                        WORD32 disable_luma_copy)
 {
-    UWORD16 *pu2_src,*pu2_dst;
-    UWORD16 *pu2_u_src,*pu2_v_src;
-    WORD32 num_rows,num_cols,src_strd,dst_strd;
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
     WORD32 i, j;
 
     if(0 == disable_luma_copy)
@@ -1592,9 +1173,9 @@ void ihevcd_hbd_fmt_conv_420sp_to_420p(UWORD16 *pu2_y_src,
         src_strd = src_y_strd;
         dst_strd = dst_y_strd;
 
-        for(i = 0;i < num_rows ; i++)
+        for(i = 0; i < num_rows; i++)
         {
-            memcpy(pu2_dst,pu2_src,num_cols*sizeof(UWORD16));
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
             pu2_dst += dst_strd;
             pu2_src += src_strd;
         }
@@ -1618,7 +1199,7 @@ void ihevcd_hbd_fmt_conv_420sp_to_420p(UWORD16 *pu2_y_src,
     src_strd = src_uv_strd;
     dst_strd = dst_uv_strd;
 
-    for(i = 0; i < num_rows ; i++)
+    for(i = 0; i < num_rows; i++)
     {
         for(j = 0; j < num_cols; j++)
         {
@@ -1676,8 +1257,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
     UWORD8 *pu1_y_src, *pu1_uv_src;
     UWORD8 *pu1_y_dst_tmp, *pu1_uv_dst_tmp;
     UWORD8 *pu1_u_dst_tmp, *pu1_v_dst_tmp;
-    UWORD16 *pu2_rgb_dst_tmp;
-    UWORD32 *pu4_rgb_dst_tmp;
     WORD32 is_u_first;
     UWORD8 *pu1_luma;
     UWORD8 *pu1_chroma;
@@ -1707,12 +1286,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
         crop_unit_y = 2;
     }
     else if(CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
-    {
-        crop_unit_x = 2;
-        crop_unit_y = 1;
-    }
-
-    if (CHROMA_FMT_IDC_YUV422 == ps_sps->i1_chroma_format_idc)
     {
         crop_unit_x = 2;
         crop_unit_y = 1;
@@ -1773,10 +1346,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
             }
         }
-        pu2_rgb_dst_tmp  = (UWORD16 *)pu1_y_dst;
-        pu2_rgb_dst_tmp  += cur_row * ps_codec->i4_disp_strd;
-        pu4_rgb_dst_tmp  = (UWORD32 *)pu1_y_dst;
-        pu4_rgb_dst_tmp  += cur_row * ps_codec->i4_disp_strd;
         pu1_y_dst_tmp  = pu1_y_dst  + cur_row * ps_codec->i4_disp_strd * ps_codec->i4_pixel_size_y;
         if(IV_YUV_444P == ps_codec->e_chroma_fmt)
         {
@@ -1924,12 +1493,11 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
                 else
                 {
-                    ihevcd_fmt_conv_hbd_444sp_to_444p(
-                                    (UWORD16*)pu1_y_src, (UWORD16*)pu1_uv_src,
-                                    (UWORD16*)pu1_y_dst_tmp, (UWORD16*)pu1_u_dst_tmp, (UWORD16*)pu1_v_dst_tmp,
-                                    ps_codec->i4_disp_wd, num_rows,
-                                    ps_codec->i4_strd, src_chroma_row_stride,
-                                    ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
+                    ihevcd_fmt_conv_hbd_444sp_to_444p((UWORD16 *)pu1_y_src, (UWORD16 *)pu1_uv_src,
+                                                      (UWORD16 *)pu1_y_dst_tmp, (UWORD16 *)pu1_u_dst_tmp, (UWORD16 *)pu1_v_dst_tmp,
+                                                      ps_codec->i4_disp_wd, num_rows,
+                                                      ps_codec->i4_strd, src_chroma_row_stride,
+                                                      ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
                 }
             }
         }
@@ -1995,6 +1563,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 {
                     fmt_conv_fptr = ihevcd_fmt_conv_420sp_to_420p;
                 }
+
                 if(0 == disable_luma_copy)
                 {
                     // copy luma
@@ -2007,6 +1576,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                         pu1_y_dst_tmp += ps_codec->i4_disp_strd * ps_codec->i4_pixel_size_y;
                         pu1_y_src += ps_codec->i4_strd * ps_codec->i4_pixel_size_y;
                     }
+
                     disable_luma_copy = 1;
                 }
 
@@ -2025,17 +1595,18 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
                 else
                 {
-                    ps_codec->s_func_selector.ihevcd_hbd_fmt_conv_420sp_to_420p_fptr((UWORD16 *)pu1_y_src, (UWORD16 *)pu1_uv_src,
-                                                  (UWORD16 *)pu1_y_dst_tmp, (UWORD16 *)pu1_u_dst_tmp,
-                                                  (UWORD16 *)pu1_v_dst_tmp,
-                                                   ps_codec->i4_disp_wd,
-                                                   num_rows,
-                                                   ps_codec->i4_strd,
-                                                   ps_codec->i4_strd,
-                                                   ps_codec->i4_disp_strd,
-                                                   (ps_codec->i4_disp_strd / 2),
-                                                   is_u_first,
-                                                   disable_luma_copy);
+                    ps_codec->s_func_selector.ihevcd_hbd_fmt_conv_420sp_to_420p_fptr(
+                                    (UWORD16 *)pu1_y_src, (UWORD16 *)pu1_uv_src,
+                                    (UWORD16 *)pu1_y_dst_tmp, (UWORD16 *)pu1_u_dst_tmp,
+                                    (UWORD16 *)pu1_v_dst_tmp,
+                                    ps_codec->i4_disp_wd,
+                                    num_rows,
+                                    ps_codec->i4_strd,
+                                    ps_codec->i4_strd,
+                                    ps_codec->i4_disp_strd,
+                                    (ps_codec->i4_disp_strd / 2),
+                                    is_u_first,
+                                    disable_luma_copy);
                 }
             }
             else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
@@ -2089,8 +1660,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
             }
         }
-
-    } /* End of format conversion block */
+    }
     return (ret);
 }
 

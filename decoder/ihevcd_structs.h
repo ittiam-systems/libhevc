@@ -1704,7 +1704,7 @@ typedef void (*pf_hbd_itrans_recon_dc)(UWORD16 *pu2_pred,
                                        WORD32 dst_strd,
                                        WORD32 log2_trans_size,
                                        WORD16 i2_coeff_value,
-                                       WORD32 i4_bit_depth);
+                                       WORD32 bit_depth);
 
 typedef void (*pf_hbd_itrans_recon)(WORD16 *pi2_src,
                                     WORD16 *pi2_tmp,
