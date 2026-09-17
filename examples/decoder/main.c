@@ -1013,8 +1013,8 @@ void dump_output(vid_dec_ctx_t *ps_app_ctx,
                     fwrite(buf, 1, s_dump_disp_frm_buf.u4_v_wd * pixel_size, ps_op_file);
                     buf += s_dump_disp_frm_buf.u4_v_strd * pixel_size;
                 }
-                }
             }
+        }
 
         if(0 != chksum_save)
         {

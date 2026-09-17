@@ -37,7 +37,6 @@
 
 #ifndef _IHEVCD_STRUCTS_H_
 #define _IHEVCD_STRUCTS_H_
-
 typedef enum
 {
     INIT_DONE, HEADER_DONE, FIRST_FRAME_DONE,
@@ -1885,6 +1884,21 @@ struct _codec_t
     IV_COLOR_FORMAT_T e_ref_chroma_fmt;
 
     /**
+     * Frame skip mode
+     */
+    IVD_FRAME_SKIP_MODE_T e_pic_skip_mode;
+
+    /**
+     * Display or decode order dump of output
+     */
+    IVD_DISPLAY_FRAME_OUT_MODE_T e_pic_out_order;
+
+    /**
+     * Coding type of the picture that is decoded
+     */
+    IV_PICTURE_CODING_TYPE_T e_dec_pic_type;
+
+    /**
      * ChromaFormatIDC
      */
     WORD32  i4_chroma_format_idc;
@@ -1918,21 +1932,6 @@ struct _codec_t
      * QP bit depth Offset chroma
      */
     WORD32  i4_qp_bd_offset_uv;
-
-    /**
-     * Frame skip mode
-     */
-    IVD_FRAME_SKIP_MODE_T e_pic_skip_mode;
-
-    /**
-     * Display or decode order dump of output
-     */
-    IVD_DISPLAY_FRAME_OUT_MODE_T e_pic_out_order;
-
-    /**
-     * Coding type of the picture that is decoded
-     */
-    IV_PICTURE_CODING_TYPE_T e_dec_pic_type;
 
     /**
      * Flag to signal if a frame was decoded in this call
@@ -2411,14 +2410,14 @@ struct _codec_t
     pf_sao_chroma apf_sao_chroma[4];
 
     /* HBD function pointers */
-    pf_hbd_intra_pred_luma          apf_hbd_intra_pred_luma[11];
-    pf_hbd_intra_pred_chroma        apf_hbd_intra_pred_chroma[11];
-    pf_hbd_itrans_recon             apf_hbd_itrans_recon[9];
-    pf_hbd_itrans_recon_dc          apf_hbd_itrans_recon_dc[2];
-    pf_hbd_recon                    apf_hbd_recon[9];
-    pf_hbd_sao_luma                 apf_hbd_sao_luma[4];
-    pf_hbd_sao_chroma               apf_hbd_sao_chroma[4];
-    pf_hbd_inter_pred               apf_hbd_inter_pred[22];
+    pf_hbd_intra_pred_luma apf_hbd_intra_pred_luma[11];
+    pf_hbd_intra_pred_chroma apf_hbd_intra_pred_chroma[11];
+    pf_hbd_itrans_recon apf_hbd_itrans_recon[9];
+    pf_hbd_itrans_recon_dc apf_hbd_itrans_recon_dc[2];
+    pf_hbd_recon apf_hbd_recon[9];
+    pf_hbd_sao_luma apf_hbd_sao_luma[4];
+    pf_hbd_sao_chroma apf_hbd_sao_chroma[4];
+    pf_hbd_inter_pred apf_hbd_inter_pred[22];
 
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;

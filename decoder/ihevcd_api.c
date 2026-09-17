@@ -91,7 +91,6 @@
 #include "ihevcd_decode.h"
 #include "ihevcd_job_queue.h"
 #include "ihevcd_statistics.h"
-#include "ihevcd_parse_residual.h"
 
 
 #define ALIGNED_FREE(ps_codec, y) \
@@ -177,12 +176,6 @@ static IV_API_CALL_STATUS_T api_check_struct_sanity(iv_obj_t *ps_handle,
                 return IV_FAIL;
             }
 
-            if(ps_handle->pv_fxns != ihevcd_cxa_api_function)
-            {
-                *(pu4_api_op + 1) |= 1 << IVD_UNSUPPORTEDPARAM;
-                *(pu4_api_op + 1) |= IVD_INVALID_HANDLE_NULL;
-                return IV_FAIL;
-            }
 
             if(ps_handle->pv_codec_handle == NULL)
             {
@@ -1182,7 +1175,6 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     /* If the codec is in shared mode and required format is 420 SP VU interleaved then change
      * reference buffers chroma format
      */
-    /* Nithya: 422 assignment happens after sps parsing */
     if(IV_YUV_420SP_VU == ps_codec->e_chroma_fmt)
     {
         ps_codec->e_ref_chroma_fmt = IV_YUV_420SP_VU;
@@ -1237,7 +1229,8 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ihevc_dpb_mgr_init((dpb_mgr_t *)ps_codec->pv_dpb_mgr);
 
     ps_codec->e_processor_soc = SOC_GENERIC;
-    ps_codec->u4_nctb = 0x7FFFFFFF; //MAX_NCTB;
+    /* The following can be over-ridden using soc parameter as a hack */
+    ps_codec->u4_nctb = 0x7FFFFFFF;
     ihevcd_init_arch(ps_codec);
 
     ihevcd_init_function_ptr(ps_codec);
@@ -1968,6 +1961,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             size += ps_codec->i4_pixel_size_uv * max_ctb_rows * 2;
 
         }
+
         size = ALIGN64(size);
 
         pu1_buf = ps_codec->pf_aligned_alloc(pv_mem_ctxt, 128, size);
@@ -1989,8 +1983,8 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_left_chroma = (UWORD8 *)pu1_buf;
             pu1_buf += MAX(ht, wd) * (chroma_pixel_strd / v_samp_factor) * ps_codec->i4_pixel_size_uv;
-
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_top_luma = (UWORD8 *)pu1_buf;
@@ -2006,8 +2000,8 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             }
             ps_codec->s_parse.s_sao_ctxt.pu1_sao_src_top_chroma = (UWORD8 *)pu1_buf;
             pu1_buf += wd * (chroma_pixel_strd / h_samp_factor) * ps_codec->i4_pixel_size_uv;
-
         }
+
         for(i = 0; i < MAX_PROCESS_THREADS; i++)
         {
             ps_codec->as_process[i].s_sao_ctxt.pu1_sao_src_luma_top_left_ctb = (UWORD8 *)pu1_buf;
@@ -2195,15 +2189,15 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pv_buf + wd / MIN_CTB_SIZE /* Offset 1 row */;
     }
 
-        if (sizeof(UWORD8) == pixel_size)
-        {
-    /* 4 bytes per color component per CTB */
-    size = 3 * 4;
-        }
-        else /* HBD: currently upto 12 bit depth case */
-        {
-            size = sizeof(sao_10bd_t);
-        }
+    if (sizeof(UWORD8) == pixel_size)
+    {
+        /* 4 bytes per color component per CTB */
+        size = 3 * 4;
+    }
+    else /* HBD: currently upto 12 bit depth case */
+    {
+        size = sizeof(sao_10bd_t);
+    }
 
     /* MAX number of CTBs in a row */
     size *= wd / MIN_CTB_SIZE;

@@ -360,28 +360,28 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          filter_p, filter_q);
                     if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
                     {
-                    ps_codec->s_func_selector.ihevc_deblk_luma_vert_fptr(pu1_src, src_strd,
-                                                                         u4_bs & 3, qp_p, qp_q,
-                                                                         i1_beta_offset_div2,
-                                                                         i1_tc_offset_div2,
-                                                                         filter_p, filter_q);
-                }
+                        ps_codec->s_func_selector.ihevc_deblk_luma_vert_fptr(pu1_src, src_strd,
+                                                                             u4_bs & 3, qp_p, qp_q,
+                                                                             i1_beta_offset_div2,
+                                                                             i1_tc_offset_div2,
+                                                                             filter_p, filter_q);
+                    }
                     else
                     {
                         ps_codec->s_func_selector.ihevc_hbd_deblk_luma_vert_fptr((UWORD16 *)pu1_src,
-                                                  src_strd,
-                                                  u4_bs & 3, qp_p, qp_q,
-                                                  i1_beta_offset_div2,
-                                                  i1_tc_offset_div2,
-                                                  filter_p, filter_q,
-                                                  u1_bit_depth_luma);
+                                                                                 src_strd,
+                                                                                 u4_bs & 3, qp_p, qp_q,
+                                                                                 i1_beta_offset_div2,
+                                                                                 i1_tc_offset_div2,
+                                                                                 filter_p, filter_q,
+                                                                                 u1_bit_depth_luma);
                     }
                 }
 
                 pu1_src += 4 * src_strd * pixel_size_y;
                 u4_bs = u4_bs >> 2;
                 row++;
-            } /* End of loop over rows */
+            }
 
             if((64 == ctb_size) ||
                             ((32 == ctb_size) && (col & 1)))
@@ -516,20 +516,20 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          filter_p, filter_q);
                     if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
                     {
-                    ps_codec->s_func_selector.ihevc_deblk_luma_horz_fptr(pu1_src, src_strd,
-                                                                         u4_bs & 3, qp_p, qp_q,
-                                                                         i1_beta_offset_div2,
-                                                                         i1_tc_offset_div2, filter_p, filter_q);
-                }
+                        ps_codec->s_func_selector.ihevc_deblk_luma_horz_fptr(pu1_src, src_strd,
+                                                                             u4_bs & 3, qp_p, qp_q,
+                                                                             i1_beta_offset_div2,
+                                                                             i1_tc_offset_div2, filter_p, filter_q);
+                    }
                     else
                     {
                         ps_codec->s_func_selector.ihevc_hbd_deblk_luma_horz_fptr((UWORD16 *)pu1_src,
-                                                  src_strd,
-                                                  u4_bs & 3, qp_p, qp_q,
-                                                  i1_beta_offset_div2,
-                                                  i1_tc_offset_div2,
-                                                  filter_p, filter_q,
-                                                  u1_bit_depth_luma);
+                                                                                 src_strd,
+                                                                                 u4_bs & 3, qp_p, qp_q,
+                                                                                 i1_beta_offset_div2,
+                                                                                 i1_tc_offset_div2,
+                                                                                 filter_p, filter_q,
+                                                                                 u1_bit_depth_luma);
                     }
                 }
 
@@ -579,8 +579,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             WORD32 shift = 0;
 
             if(is_yuv444 && 6 != log2_ctb_size)
-
                 shift = (col & 1) << (log2_ctb_size - 1);
+
             /* BS for the column - Last row is excluded and the top row is included*/
             u4_bs = (pu4_vert_bs[0] >> shift) << 2;
 
@@ -739,7 +739,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 pu1_src += 4 * chroma_strd * pixel_size_uv;
                 u4_bs = u4_bs >> (2 * v_samp_factor);
                 row++;
-            } /* End of loop over rows */
+            }
 
             pu1_src -= ((((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv);
             if(is_yuv444)
@@ -754,8 +754,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         }
     }
 
-
     /* Chroma Horizontal Edge */
+
     if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && 0 == i4_is_last_ctb_y)
     {
 

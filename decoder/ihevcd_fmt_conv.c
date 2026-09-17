@@ -1799,6 +1799,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
             pu1_uv_dst_tmp = pu1_u_dst + ((cur_row + 1) / 2) * ALIGN2(ps_codec->i4_disp_strd) * ps_codec->i4_pixel_size_uv;
 
         }
+
         /* In case of multi threaded implementation, format conversion might be called
          * before reconstruction is completed. If the frame being converted/copied
          * is same as the frame being reconstructed,
@@ -1830,7 +1831,7 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
 
                 /*Check if the row below is completely processed before proceeding with format conversion*/
                 status = 1;
-                for( ctb_in_row = 0; ctb_in_row < ps_sps->i2_pic_wd_in_ctb ; ctb_in_row++)
+                for(ctb_in_row = 0; (WORD32)ctb_in_row < ps_sps->i2_pic_wd_in_ctb; ctb_in_row++)
                 {
                     pu1_buf = (ps_codec->pu1_proc_map + idx + ctb_in_row);
                     status &= *pu1_buf;
@@ -1853,21 +1854,21 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
             {
                 if(1 == ps_codec->i4_pixel_size_y)
                 {
-                ihevcd_fmt_conv_420sp_to_420sp_ft *fmt_conv_fptr;
-                if(ps_codec->i4_disp_wd >= MIN_FMT_CONV_SIMD_WIDTH)
-                {
-                    fmt_conv_fptr = ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420sp_fptr;
+                    ihevcd_fmt_conv_420sp_to_420sp_ft *fmt_conv_fptr;
+                    if(ps_codec->i4_disp_wd >= MIN_FMT_CONV_SIMD_WIDTH)
+                    {
+                        fmt_conv_fptr = ps_codec->s_func_selector.ihevcd_fmt_conv_420sp_to_420sp_fptr;
+                    }
+                    else
+                    {
+                        fmt_conv_fptr = ihevcd_fmt_conv_420sp_to_420sp;
+                    }
+                    fmt_conv_fptr(pu1_y_src, pu1_uv_src,
+                                pu1_y_dst_tmp, pu1_uv_dst_tmp,
+                                ps_codec->i4_disp_wd, num_rows,
+                                ps_codec->i4_strd, ps_codec->i4_strd,
+                                ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
                 }
-                else
-                {
-                    fmt_conv_fptr = ihevcd_fmt_conv_420sp_to_420sp;
-                }
-                fmt_conv_fptr(pu1_y_src, pu1_uv_src,
-                              pu1_y_dst_tmp, pu1_uv_dst_tmp,
-                              ps_codec->i4_disp_wd, num_rows,
-                              ps_codec->i4_strd, ps_codec->i4_strd,
-                              ps_codec->i4_disp_strd, ps_codec->i4_disp_strd);
-            }
                 else
                 {
                     ihevcd_hbd_fmt_conv_420sp_to_420sp((UWORD16 *)pu1_y_src, (UWORD16 *)pu1_uv_src,
@@ -1993,7 +1994,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 else
                 {
                     fmt_conv_fptr = ihevcd_fmt_conv_420sp_to_420p;
-
                 }
                 if(0 == disable_luma_copy)
                 {
