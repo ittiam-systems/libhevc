@@ -187,6 +187,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
                                 void *pv_api_ip,
                                 void *pv_api_op)
 {
+
     ihevcd_cxa_video_decode_ip_t *ps_hevcd_dec_ip;
     ihevcd_cxa_video_decode_op_t *ps_hevcd_dec_op;
     ivd_video_decode_ip_t *ps_dec_ip;
