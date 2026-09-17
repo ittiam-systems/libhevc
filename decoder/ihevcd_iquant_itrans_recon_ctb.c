@@ -861,6 +861,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
     UWORD32 top_avail_bits;
     sps_t *ps_sps;
     pps_t *ps_pps;
+    WORD32  pixel_size_y, pixel_size_uv;
     WORD32 intra_flag;
     UWORD8 *pu1_pic_intra_flag;
     WORD32 h_samp_factor, v_samp_factor;
@@ -903,6 +904,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
     pic_strd = ps_codec->i4_strd;
 
+    pixel_size_y     = ps_codec->i4_pixel_size_y;
+    pixel_size_uv    = ps_codec->i4_pixel_size_uv;
     pi2_tu_coeff = pi2_ctb_coeff;
 
     ps_tu = ps_proc->ps_tu;
@@ -1048,7 +1051,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
             pcm_flag = 1;
 
             tu_y_offset = tu_x + tu_y * pic_strd;
-            pu1_y_dst += tu_x + tu_y * pic_strd;
+            pu1_y_dst += (tu_x + tu_y * pic_strd) * pixel_size_y;
 
             /* First byte points to number of coded blocks */
             pu1_tu_coeff_data++;
@@ -1063,18 +1066,17 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                 for(i = 0; i < cb_size; i++)
                 {
-                    //pu1_y_dst[i * pic_strd + j] = *pu1_buf++;
-                    memcpy(&pu1_y_dst[i * pic_strd], pu1_buf, cb_size);
-                    pu1_buf += cb_size;
+                    memcpy(&pu1_y_dst[i * pic_strd * pixel_size_y], pu1_buf, (cb_size * pixel_size_y));
+                    pu1_buf += cb_size * pixel_size_y;
                 }
 
                 if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
                 {
                     WORD32 chroma_strd = (pic_strd * chroma_pixel_strd) / h_samp_factor;
 
-                    pu1_uv_dst += (tu_x * chroma_pixel_strd / h_samp_factor)
-                                    + (tu_y * chroma_pixel_strd * pic_strd / (h_samp_factor * v_samp_factor));
-                    pu1_uv_dst = pu1_uv_dst + chroma_yuv420sp_vu_u_offset;
+                    pu1_uv_dst += ((tu_x * chroma_pixel_strd / h_samp_factor)
+                                    + (tu_y * chroma_pixel_strd * pic_strd / (h_samp_factor * v_samp_factor))) * pixel_size_uv;
+                    pu1_uv_dst = pu1_uv_dst + chroma_yuv420sp_vu_u_offset * pixel_size_uv;
 
                     /* U */
                     for(i = 0; i < cb_size / v_samp_factor; i++)
@@ -1085,7 +1087,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
                     }
 
-                    pu1_uv_dst = pu1_uv_dst + 1 + chroma_yuv420sp_vu_v_offset;
+                    pu1_uv_dst = pu1_uv_dst + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv;
 
                     /* V */
                     for(i = 0; i < cb_size / v_samp_factor; i++)
@@ -1141,8 +1143,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     qp_rem = ps_tu->b7_qp % 6;
 
                     y_cb_tu.pi2_tu_coeff = pi2_tu_coeff;
-                    y_cb_tu.pu1_pred = pu1_y_dst_ctb + tu_y_offset;
-                    y_cb_tu.pu1_dst = pu1_y_dst_ctb + tu_y_offset;
+                    y_cb_tu.pu1_pred = pu1_y_dst_ctb + tu_y_offset * pixel_size_y;
+                    y_cb_tu.pu1_dst = pu1_y_dst_ctb + tu_y_offset * pixel_size_y;
                     y_cb_tu.tu_coeff_stride = trans_size;
                     y_cb_tu.pred_strd = pic_strd;
                     y_cb_tu.dst_strd = pic_strd;
@@ -1252,16 +1254,16 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     qp_rem_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] % 6;
 
                     y_cb_tu.pi2_tu_coeff = pi2_tu_coeff;
-                    y_cb_tu.pu1_pred = pu1_uv_dst_ctb + tu_uv_offset + chroma_yuv420sp_vu_u_offset; /* Pointing to start byte of U*/
-                    y_cb_tu.pu1_dst = pu1_uv_dst_ctb + tu_uv_offset + chroma_yuv420sp_vu_u_offset; /* Pointing to start byte of U*/
+                    y_cb_tu.pu1_pred = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv; /* Pointing to start byte of U*/
+                    y_cb_tu.pu1_dst = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv; /* Pointing to start byte of U*/
                     y_cb_tu.tu_coeff_stride = trans_size;
                     y_cb_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     y_cb_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     y_cb_tu.cbf = ps_tu->b1_cb_cbf;
 
                     cr_tu.pi2_tu_coeff = pi2_tu_coeff + trans_size * trans_size;
-                    cr_tu.pu1_pred = y_cb_tu.pu1_pred + 1 + chroma_yuv420sp_vu_v_offset; /* Pointing to start byte of V*/
-                    cr_tu.pu1_dst = y_cb_tu.pu1_dst + 1 + chroma_yuv420sp_vu_v_offset; /* Pointing to start byte of V*/
+                    cr_tu.pu1_pred = y_cb_tu.pu1_pred + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv; /* Pointing to start byte of V*/
+                    cr_tu.pu1_dst = y_cb_tu.pu1_dst + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv; /* Pointing to start byte of V*/
                     cr_tu.tu_coeff_stride = trans_size;
                     cr_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     cr_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1287,8 +1289,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                     {
                         cb_sub_tu.pi2_tu_coeff = ps_proc->pi2_invscan_out_subtu;
-                        cb_sub_tu.pu1_pred = y_cb_tu.pu1_pred + trans_size * y_cb_tu.pred_strd;
-                        cb_sub_tu.pu1_dst = y_cb_tu.pu1_dst + trans_size * y_cb_tu.dst_strd;
+                        cb_sub_tu.pu1_pred = y_cb_tu.pu1_pred + trans_size * y_cb_tu.pred_strd * pixel_size_uv;
+                        cb_sub_tu.pu1_dst = y_cb_tu.pu1_dst + trans_size * y_cb_tu.dst_strd * pixel_size_uv;
                         cb_sub_tu.tu_coeff_stride = trans_size;
                         cb_sub_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cb_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1327,8 +1329,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                     {
                         cr_sub_tu.pi2_tu_coeff = ps_proc->pi2_invscan_out_subtu + trans_size * trans_size;
-                        cr_sub_tu.pu1_pred = cr_tu.pu1_pred + trans_size * cr_tu.pred_strd;
-                        cr_sub_tu.pu1_dst = cr_tu.pu1_dst + trans_size * cr_tu.dst_strd;
+                        cr_sub_tu.pu1_pred = cr_tu.pu1_pred + trans_size * cr_tu.pred_strd * pixel_size_uv;
+                        cr_sub_tu.pu1_dst = cr_tu.pu1_dst + trans_size * cr_tu.dst_strd * pixel_size_uv;
                         cr_sub_tu.tu_coeff_stride = trans_size;
                         cr_sub_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                         cr_sub_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1365,13 +1367,16 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 /***************************************************************/
                 if(intra_flag) /* Intra */
                 {
+                    WORD32 pixel_size = (c_idx == 0) ? pixel_size_y : pixel_size_uv;
                     /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actaul size needed,
                        au1_ref_sub_out size is kept as multiple of 8,
                        so that SIMD functions can load 64 bits. Also some SIMD
                        modules read few bytes before the start of the array, so
-                       allocate 16 extra bytes at the start */
-                    UWORD8 au1_ref_sub_out[16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8] = {0};
-                    UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16];
+                       allocate 16 extra bytes at the start.
+                       Multiplied by pixel_size to allocate for HBD. */
+                    UWORD8 au1_ref_sub_out[(16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * 2];
+                    memset(au1_ref_sub_out, 0, (16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * pixel_size);
+                    UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16 * pixel_size];
                     UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
                     WORD32 luma_pred_func_idx, chroma_pred_func_idx;
 
@@ -1475,9 +1480,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
 
                         /* Initializing nbr pointers */
-                        pu1_top = y_cb_tu.pu1_pred - pic_strd;
-                        pu1_left = y_cb_tu.pu1_pred - 1;
-                        pu1_top_left = y_cb_tu.pu1_pred - pic_strd - 1;
+                        pu1_top = y_cb_tu.pu1_pred - pic_strd * pixel_size_y;
+                        pu1_left = y_cb_tu.pu1_pred - pixel_size_y;
+                        pu1_top_left = y_cb_tu.pu1_pred - (pic_strd + 1) * pixel_size_y;
 
                         /* call reference array substitution */
                         if(luma_nbr_flags == 0x1ffff)
@@ -1565,9 +1570,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
 
                         /* Initializing nbr pointers */
-                        pu1_top = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor);
-                        pu1_left = pu1_pred_orig - 2;
-                        pu1_top_left = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor) - 2;
+                        pu1_top = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                        pu1_left = pu1_pred_orig - 2 * pixel_size_uv;
+                        pu1_top_left = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor + 2) * pixel_size_uv;
 
                         if(subtu_idx == 0)
                         {
