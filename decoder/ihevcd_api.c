@@ -1174,7 +1174,7 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ps_codec->i4_max_prev_poc_lsb = -1;
     ps_codec->s_parse.i4_abs_pic_order_cnt = -1;
 
-    ps_codec->i4_chroma_array_type = CHROMA_FMT_IDC_YUV420;
+    ps_codec->i4_chroma_format_idc = CHROMA_FMT_IDC_YUV420;
 
     /* Set ref chroma format by default to 420SP UV interleaved */
     ps_codec->e_ref_chroma_fmt = IV_YUV_420SP_UV;
