@@ -2215,7 +2215,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
                             (ps_codec->i4_disp_ht != disp_ht) ||
                             (ps_codec->i4_bit_depth_luma != ps_sps->i1_bit_depth_luma_minus8 + 8) ||
                             (ps_codec->i4_bit_depth_chroma != ps_sps->i1_bit_depth_chroma_minus8 + 8) ||
-                            (ps_codec->i4_chroma_array_type != ps_sps->i1_chroma_format_idc)))
+                            (ps_codec->i4_chroma_format_idc != ps_sps->i1_chroma_format_idc)))
         {
             if(0 == ps_codec->i4_first_pic_done)
             {
@@ -2230,7 +2230,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
             }
 
             // Do not support change in chroma format once decoder is initialized
-            if(ps_codec->i4_chroma_array_type != ps_sps->i1_chroma_format_idc)
+            if(ps_codec->i4_chroma_format_idc != ps_sps->i1_chroma_format_idc)
             {
                 return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
             }
@@ -2242,7 +2242,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->i4_disp_wd = disp_wd;
         ps_codec->i4_disp_ht = disp_ht;
 
-        ps_codec->i4_chroma_array_type = ps_sps->i1_chroma_format_idc;
+        ps_codec->i4_chroma_format_idc = ps_sps->i1_chroma_format_idc;
         ps_codec->i4_sub_width_chroma  = 2;
         ps_codec->i4_sub_height_chroma = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) ? 1 : 2;
 

@@ -1885,9 +1885,9 @@ struct _codec_t
     IV_COLOR_FORMAT_T e_ref_chroma_fmt;
 
     /**
-     * ChromaArrayType
+     * ChromaFormatIDC
      */
-    WORD32  i4_chroma_array_type;
+    WORD32  i4_chroma_format_idc;
 
     /**
      * Luma bit depth - 8 and 10 bits are supported
