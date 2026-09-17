@@ -115,6 +115,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     UWORD8 *pu1_qp;
     UWORD16 *pu2_ctb_no_loop_filter_flag;
     UWORD16 au2_ctb_no_loop_filter_flag[9];
+    WORD32 pixel_size_y, pixel_size_uv;
 
     WORD32 col, row;
 
@@ -146,6 +147,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     log2_ctb_size = ps_sps->i1_log2_ctb_size;
     ctb_size = (1 << ps_sps->i1_log2_ctb_size);
+    pixel_size_y     = ps_codec->i4_pixel_size_y;
+    pixel_size_uv    = ps_codec->i4_pixel_size_uv;
 
     if(is_yuv422)
     {
@@ -246,12 +249,13 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << (log2_ctb_size));
-        pu1_src += i4_is_last_ctb_y ? ps_deblk->ps_codec->i4_strd << log2_ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_luma +
+            ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_codec->i4_strd) << (log2_ctb_size)) * pixel_size_y;
+        pu1_src += i4_is_last_ctb_y ? ((ps_codec->i4_strd << log2_ctb_size) * pixel_size_y) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Vertical edge processing is done by shifting the CTB up by four pixels */
-        pu1_src -= 4 * src_strd;
+        pu1_src -= 4 * src_strd * pixel_size_y;
 
         for(col = 0; col < ctb_size / 8; col++)
         {
@@ -287,9 +291,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 {
                     u4_bs = u4_bs >> (bs_tz << 1);
                     if((row + bs_tz) >= (ctb_size / 4))
-                        pu1_src += 4 * (ctb_size / 4 - row) * src_strd;
+                        pu1_src += 4 * (ctb_size / 4 - row) * src_strd * pixel_size_y;
                     else
-                        pu1_src += 4 * bs_tz  * src_strd;
+                        pu1_src += 4 * bs_tz  * src_strd * pixel_size_y;
 
                     row += bs_tz;
                     continue;
@@ -357,7 +361,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                                                          filter_p, filter_q);
                 }
 
-                pu1_src += 4 * src_strd;
+                pu1_src += 4 * src_strd * pixel_size_y;
                 u4_bs = u4_bs >> 2;
                 row++;
             }
@@ -367,8 +371,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_vert_bs++;
             }
-            pu1_src -= (src_strd << log2_ctb_size);
-            pu1_src += 8;
+            pu1_src -= ((src_strd << log2_ctb_size) * pixel_size_y);
+            pu1_src += 8 * pixel_size_y;
         }
         pu4_vert_bs = pu4_ctb_vert_bs;
     }
@@ -387,12 +391,13 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 cur_ctb_indx += 1;
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
-        pu1_src = ps_deblk->pu1_cur_pic_luma + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_x ? ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_luma +
+            ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * ps_codec->i4_strd) << log2_ctb_size) * pixel_size_y;
+        pu1_src += i4_is_last_ctb_x ? (ctb_size * pixel_size_y) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Horizontal edge processing is done by shifting the CTB left by four pixels */
-        pu1_src -= 4;
+        pu1_src -= 4 * pixel_size_y;
         for(row = 0; row < ctb_size / 8; row++)
         {
             WORD32 shift = 0;
@@ -429,9 +434,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     u4_bs = u4_bs >> (bs_tz << 1);
 
                     if((col + bs_tz) >= (ctb_size / 4))
-                        pu1_src += 4 * (ctb_size / 4 - col);
+                        pu1_src += 4 * (ctb_size / 4 - col) * pixel_size_y;
                     else
-                        pu1_src += 4 * bs_tz;
+                        pu1_src += 4 * bs_tz * pixel_size_y;
 
                     col += bs_tz;
                     continue;
@@ -498,7 +503,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                                                          i1_tc_offset_div2, filter_p, filter_q);
                 }
 
-                pu1_src += 4;
+                pu1_src += 4 * pixel_size_y;
                 u4_bs = u4_bs >> 2;
                 col++;
             }
@@ -508,8 +513,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_horz_bs++;
             }
-            pu1_src -= ctb_size;
-            pu1_src += (src_strd << 3);
+            pu1_src -= ctb_size * pixel_size_y;
+            pu1_src += ((src_strd << 3) * pixel_size_y);
         }
         pu4_horz_bs = pu4_ctb_horz_bs;
     }
@@ -529,12 +534,15 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_top = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - ps_sps->i2_pic_wd_in_ctb];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_y ? ((ps_codec->i4_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_chroma +
+            ((((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor) +
+               ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv);
+        pu1_src += i4_is_last_ctb_y ?
+            ((((ps_codec->i4_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv) : 0;
 
         /** Deblocking is done on a shifted CTB -
          *  Vertical edge processing is done by shifting the CTB up by four pixels */
-        pu1_src -= 4 * chroma_strd;
+        pu1_src -= 4 * chroma_strd * pixel_size_uv;
 
         for(col = 0; col < ctb_size / (8 * h_samp_factor); col++)
         {
@@ -570,9 +578,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                 if(0 != bs_tz)
                 {
                     if((row + bs_tz) >= (ctb_size / (4 * v_samp_factor)))
-                        pu1_src += 4 * (ctb_size / (4 * v_samp_factor) - row) * chroma_strd;
+                        pu1_src += 4 * (ctb_size / (4 * v_samp_factor) - row) * chroma_strd * pixel_size_uv;
                     else
-                        pu1_src += 4 * bs_tz  * chroma_strd;
+                        pu1_src += 4 * bs_tz  * chroma_strd * pixel_size_uv;
                     row += bs_tz;
                     u4_bs = u4_bs >> (bs_tz << v_samp_factor);
                     continue;
@@ -664,12 +672,12 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     }
                 }
 
-                pu1_src += 4 * chroma_strd;
+                pu1_src += 4 * chroma_strd * pixel_size_uv;
                 u4_bs = u4_bs >> (2 * v_samp_factor);
                 row++;
             }
 
-            pu1_src -= (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size);
+            pu1_src -= ((((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv);
             if(is_yuv444)
             {
                 if((64 ==ctb_size) || ((32 == ctb_size) && (col & 1))) pu4_vert_bs++;
@@ -678,7 +686,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_vert_bs += (64 == ctb_size) ? 2 : 1;
             }
-            pu1_src += 16;
+            pu1_src += 16 * pixel_size_uv;
         }
     }
 
@@ -696,12 +704,14 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             ps_slice_hdr_left = ps_codec->ps_slice_hdr_base + ps_deblk->pu1_slice_idx[cur_ctb_indx - 1];
         }
 
-        pu1_src = ps_deblk->pu1_cur_pic_chroma + ((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor + ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (v_samp_factor * h_samp_factor)) << log2_ctb_size);
-        pu1_src += i4_is_last_ctb_x ? ctb_size * chroma_pixel_strd / h_samp_factor : 0;
+        pu1_src = ps_deblk->pu1_cur_pic_chroma +
+            ((((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor) +
+               ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (v_samp_factor * h_samp_factor)) << log2_ctb_size) * pixel_size_uv);
+        pu1_src += i4_is_last_ctb_x ? (ctb_size * chroma_pixel_strd / h_samp_factor * pixel_size_uv) : 0;
 
         /** Deblocking is done on a shifted CTB -
          * Vertical edge processing is done by shifting the CTB up by four pixels (8 here beacuse UV are interleaved) */
-        pu1_src -= 8;
+        pu1_src -= 8 * pixel_size_uv;
         for(row = 0; row < ctb_size / (8 * v_samp_factor); row++)
         {
             WORD32 shift = 0;
@@ -740,9 +750,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     u4_bs = u4_bs >> (bs_tz << h_samp_factor);
 
                     if((col + bs_tz) >= (ctb_size / (4 * h_samp_factor)))
-                        pu1_src += 8 * (ctb_size / (4 * h_samp_factor) - col);
+                        pu1_src += 8 * (ctb_size / (4 * h_samp_factor) - col) * pixel_size_uv;
                     else
-                        pu1_src += 8 * bs_tz;
+                        pu1_src += 8 * bs_tz * pixel_size_uv;
 
                     col += bs_tz;
                     continue;
@@ -833,7 +843,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     }
                 }
 
-                pu1_src += 8;
+                pu1_src += 8 * pixel_size_uv;
                 u4_bs = u4_bs >> (2 * h_samp_factor);
                 col++;
             }
@@ -845,8 +855,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             {
                 pu4_horz_bs += (64 == ctb_size) ? 2 : 1;
             }
-            pu1_src -= ctb_size * (chroma_pixel_strd / h_samp_factor);
-            pu1_src += 8 * chroma_strd;
+            pu1_src -= ctb_size * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+            pu1_src += 8 * chroma_strd * pixel_size_uv;
 
         }
     }
