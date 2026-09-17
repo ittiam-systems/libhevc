@@ -2243,9 +2243,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->i4_disp_ht = disp_ht;
 
         ps_codec->i4_chroma_format_idc = ps_sps->i1_chroma_format_idc;
-        ps_codec->i4_sub_width_chroma  = 2;
-        ps_codec->i4_sub_height_chroma = (ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422) ? 1 : 2;
-
         ps_codec->i4_bit_depth_luma = ps_sps->i1_bit_depth_luma_minus8 + 8;
         ps_codec->i4_pixel_size_y   = 1 + (ps_sps->i1_bit_depth_luma_minus8 > 0);
         ps_codec->i4_qp_bd_offset_y = 6 * ps_sps->i1_bit_depth_luma_minus8;

@@ -151,7 +151,6 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
     WORD32 is_yuv420, is_yuv422, is_yuv444;
-    WORD32  i4_sub_ht_c;
     WORD32 wp_ofst_bd_shift_luma, wp_ofst_bd_shift_chroma;
 
     PROFILE_DISABLE_INTER_PRED();
@@ -167,7 +166,6 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     pixel_size_uv    = ps_codec->i4_pixel_size_uv;
     i4_bit_depth_luma   = ps_codec->i4_bit_depth_luma;
     i4_bit_depth_chroma = ps_codec->i4_bit_depth_chroma;
-    i4_sub_ht_c         = ps_codec->i4_sub_height_chroma;
 
     /*
      * In case of tiles, the next ctb belonging to the same tile must be used to get the PU index

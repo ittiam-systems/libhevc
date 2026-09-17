@@ -1910,16 +1910,6 @@ struct _codec_t
     WORD32  i4_pixel_size_uv;
 
     /**
-     * SubWidthC
-     */
-    WORD32  i4_sub_width_chroma;
-
-    /**
-     * SubHeightC
-     */
-    WORD32  i4_sub_height_chroma;
-
-    /**
      * QP bit depth Offset luma
      */
     WORD32  i4_qp_bd_offset_y;

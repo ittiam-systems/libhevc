@@ -132,8 +132,6 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     ihevc_deblk_chroma_horz_ft *pf_deblk_chroma_horz;
     ihevc_deblk_chroma_vert_ft *pf_deblk_chroma_vert;
-    WORD32  i4_sub_ht_c;
-    WORD32  i4_rt_shift_chroma;
 
     PROFILE_DISABLE_DEBLK();
 
@@ -154,12 +152,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     pixel_size_uv    = ps_codec->i4_pixel_size_uv;
     u1_bit_depth_luma   = (UWORD8)ps_codec->i4_bit_depth_luma;
     u1_bit_depth_chroma = (UWORD8)ps_codec->i4_bit_depth_chroma;
-    i4_sub_ht_c         = ps_codec->i4_sub_height_chroma;
-    if (1 == i4_sub_ht_c) {
-        i4_rt_shift_chroma = 1;
-    } else {
-        i4_rt_shift_chroma  = 0;
-    }
+
 
     if(is_yuv422)
     {
