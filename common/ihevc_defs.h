@@ -272,6 +272,13 @@ enum
 #define BIT_DEPTH           8
 #define BIT_DEPTH_LUMA      BIT_DEPTH
 #define BIT_DEPTH_CHROMA    BIT_DEPTH
+
+#define BIT_DEPTH_8BITS     8
+#define BIT_DEPTH_10BITS    10
+
+#define PIXEL_SIZE_1BYTE    sizeof(UWORD8)
+#define PIXEL_SIZE_2BYTES   sizeof(UWORD16)
+
 /*****************************************************************************/
 /* Profile tier level defs                                                   */
 /*****************************************************************************/
