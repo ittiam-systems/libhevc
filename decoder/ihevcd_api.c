@@ -1168,6 +1168,10 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ps_codec->s_parse.i4_abs_pic_order_cnt = -1;
 
     ps_codec->i4_chroma_format_idc = CHROMA_FMT_IDC_YUV420;
+    ps_codec->i4_pixel_size_y = PIXEL_SIZE_1BYTE;
+    ps_codec->i4_pixel_size_uv = PIXEL_SIZE_1BYTE;
+    ps_codec->i4_bit_depth_luma = BIT_DEPTH_8BITS;
+    ps_codec->i4_bit_depth_chroma = BIT_DEPTH_8BITS;
 
     /* Set ref chroma format by default to 420SP UV interleaved */
     ps_codec->e_ref_chroma_fmt = IV_YUV_420SP_UV;
