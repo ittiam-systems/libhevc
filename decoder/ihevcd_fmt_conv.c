@@ -165,6 +165,56 @@ void ihevcd_fmt_conv_420sp_to_420sp(UWORD8 *pu1_y_src,
     return;
 }
 
+void ihevcd_hbd_fmt_conv_420sp_to_420sp(UWORD16 *pu2_y_src,
+                                        UWORD16 *pu2_uv_src,
+                                        UWORD16 *pu2_y_dst,
+                                        UWORD16 *pu2_uv_dst,
+                                        WORD32 wd,
+                                        WORD32 ht,
+                                        WORD32 src_y_strd,
+                                        WORD32 src_uv_strd,
+                                        WORD32 dst_y_strd,
+                                        WORD32 dst_uv_strd)
+{
+    UWORD8 *pu1_src, *pu1_dst;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
+    WORD32 i;
+
+    /* copy luma */
+    pu1_src = (UWORD8 *)pu2_y_src;
+    pu1_dst = (UWORD8 *)pu2_y_dst;
+
+    num_rows = ht;
+    num_cols = wd * sizeof(UWORD16);
+
+    src_strd = src_y_strd * sizeof(UWORD16);
+    dst_strd = dst_y_strd * sizeof(UWORD16);
+
+    for(i = 0; i < num_rows; i++)
+    {
+        memcpy(pu1_dst, pu1_src, num_cols);
+        pu1_dst += dst_strd;
+        pu1_src += src_strd;
+    }
+
+    /* copy U and V */
+    pu1_src = (UWORD8 *)pu2_uv_src;
+    pu1_dst = (UWORD8 *)pu2_uv_dst;
+
+    num_rows = ht >> 1;
+    num_cols = wd * sizeof(UWORD16);
+
+    src_strd = src_uv_strd * sizeof(UWORD16);
+    dst_strd = dst_uv_strd * sizeof(UWORD16);
+
+    for(i = 0; i < num_rows; i++)
+    {
+        memcpy(pu1_dst, pu1_src, num_cols);
+        pu1_dst += dst_strd;
+        pu1_src += src_strd;
+    }
+    return;
+}
 
 /**
 *******************************************************************************
@@ -285,6 +335,105 @@ void ihevcd_fmt_conv_400_to_420p(UWORD8 *pu1_y_src,
         memset(pu1_v_dst, 128, ALIGN2(wd) / 2);
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
+    }
+    return;
+}
+
+void ihevcd_fmt_conv_400_to_420sp(UWORD8 *pu1_y_src,
+                                  UWORD8 *pu1_y_dst,
+                                  UWORD8 *pu1_uv_dst,
+                                  WORD32 wd,
+                                  WORD32 ht,
+                                  WORD32 src_y_strd,
+                                  WORD32 dst_y_strd,
+                                  WORD32 dst_uv_strd)
+{
+    WORD32 i;
+
+    ihevcd_fmt_conv_luma_copy(pu1_y_src, pu1_y_dst, wd, ht, src_y_strd, dst_y_strd);
+    for(i = 0; i < ALIGN2(ht) / 2; i++)
+    {
+        memset(pu1_uv_dst, 128, ALIGN2(wd));
+        pu1_uv_dst += dst_uv_strd;
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_400_to_420p(UWORD16 *pu2_y_src,
+                                     UWORD16 *pu2_y_dst,
+                                     UWORD16 *pu2_u_dst,
+                                     UWORD16 *pu2_v_dst,
+                                     WORD32 wd,
+                                     WORD32 ht,
+                                     WORD32 src_y_strd,
+                                     WORD32 dst_y_strd,
+                                     WORD32 dst_uv_strd,
+                                     WORD32 bit_depth)
+{
+    UWORD16 *pu2_src = pu2_y_src;
+    UWORD16 *pu2_dst = pu2_y_dst;
+    WORD32 num_rows = ht;
+    WORD32 num_cols = wd;
+    WORD32 src_strd = src_y_strd;
+    WORD32 dst_strd = dst_y_strd;
+    WORD32 i, j;
+    UWORD16 neutral;
+
+    for(i = 0; i < num_rows; i++)
+    {
+        memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
+        pu2_dst += dst_strd;
+        pu2_src += src_strd;
+    }
+
+    neutral = (UWORD16)(1 << (bit_depth - 1));
+    for(i = 0; i < ALIGN2(ht) / 2; i++)
+    {
+        for(j = 0; j < ALIGN2(wd) / 2; j++)
+        {
+            pu2_u_dst[j] = neutral;
+            pu2_v_dst[j] = neutral;
+        }
+        pu2_u_dst += dst_uv_strd;
+        pu2_v_dst += dst_uv_strd;
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_400_to_420sp(UWORD16 *pu2_y_src,
+                                      UWORD16 *pu2_y_dst,
+                                      UWORD16 *pu2_uv_dst,
+                                      WORD32 wd,
+                                      WORD32 ht,
+                                      WORD32 src_y_strd,
+                                      WORD32 dst_y_strd,
+                                      WORD32 dst_uv_strd,
+                                      WORD32 bit_depth)
+{
+    UWORD16 *pu2_src = pu2_y_src;
+    UWORD16 *pu2_dst = pu2_y_dst;
+    WORD32 num_rows = ht;
+    WORD32 num_cols = wd;
+    WORD32 src_strd = src_y_strd;
+    WORD32 dst_strd = dst_y_strd;
+    WORD32 i, j;
+    UWORD16 neutral;
+
+    for(i = 0; i < num_rows; i++)
+    {
+        memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
+        pu2_dst += dst_strd;
+        pu2_src += src_strd;
+    }
+
+    neutral = (UWORD16)(1 << (bit_depth - 1));
+    for(i = 0; i < ALIGN2(ht) / 2; i++)
+    {
+        for(j = 0; j < ALIGN2(wd); j++)
+        {
+            pu2_uv_dst[j] = neutral;
+        }
+        pu2_uv_dst += dst_uv_strd;
     }
     return;
 }
@@ -598,6 +747,43 @@ void ihevcd_fmt_conv_444sp_to_444p(UWORD8 *pu1_y_src,
     return;
 }
 
+void ihevcd_fmt_conv_hbd_444sp_to_444p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd)
+{
+    UWORD16 *pu2_u_src;
+    UWORD16 *pu2_v_src;
+    WORD32 i, j;
+
+    ihevcd_fmt_conv_luma_copy((UWORD8 *)pu2_y_src, (UWORD8 *)pu2_y_dst, wd * 2, ht, src_y_strd * 2, dst_y_strd * 2);
+
+    /* de-interleave U and V and copy to destination */
+    pu2_u_src = (UWORD16 *)pu2_uv_src;
+    pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
+
+    for(i = 0; i < ht; i++)
+    {
+        for(j = 0; j < wd; j++)
+        {
+            pu2_u_dst[j] = pu2_u_src[j * 2];
+            pu2_v_dst[j] = pu2_v_src[j * 2];
+        }
+        pu2_u_dst += dst_uv_strd;
+        pu2_v_dst += dst_uv_strd;
+        pu2_u_src += src_uv_strd;
+        pu2_v_src += src_uv_strd;
+    }
+    return;
+}
+
 void ihevcd_fmt_conv_444sp_to_420p(UWORD8 *pu1_y_src,
                                    UWORD8 *pu1_uv_src,
                                    UWORD8 *pu1_y_dst,
@@ -644,6 +830,88 @@ void ihevcd_fmt_conv_444sp_to_420p(UWORD8 *pu1_y_src,
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
         pu1_uv_src += (src_uv_strd * 2);
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_444sp_to_420p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd,
+                                       WORD32 is_u_first,
+                                       WORD32 disable_luma_copy)
+{
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 i, j;
+    WORD32 cb_sum, cr_sum, count;
+
+    if(0 == disable_luma_copy)
+    {
+        /* copy luma */
+        pu2_src = pu2_y_src;
+        pu2_dst = pu2_y_dst;
+
+        for(i = 0; i < ht; i++)
+        {
+            memcpy(pu2_dst, pu2_src, wd * sizeof(UWORD16));
+            pu2_dst += dst_y_strd;
+            pu2_src += src_y_strd;
+        }
+    }
+
+    /* de-interleave U and V, downsample horizontally and vertically, and copy to destination */
+    if(is_u_first)
+    {
+        pu2_u_src = pu2_uv_src;
+        pu2_v_src = pu2_uv_src + 1;
+    }
+    else
+    {
+        pu2_u_src = pu2_uv_src + 1;
+        pu2_v_src = pu2_uv_src;
+    }
+
+    for(i = 0; i < ht; i += 2)
+    {
+        for(j = 0; j < wd; j += 2)
+        {
+            cb_sum = pu2_u_src[j * 2];
+            cr_sum = pu2_v_src[j * 2];
+            count = 1;
+
+            if((j + 1) < wd)
+            {
+                cb_sum += pu2_u_src[(j + 1) * 2];
+                cr_sum += pu2_v_src[(j + 1) * 2];
+                count++;
+            }
+            if((i + 1) < ht)
+            {
+                cb_sum += pu2_u_src[j * 2 + src_uv_strd];
+                cr_sum += pu2_v_src[j * 2 + src_uv_strd];
+                count++;
+            }
+            if((j + 1) < wd && (i + 1) < ht)
+            {
+                cb_sum += pu2_u_src[(j + 1) * 2 + src_uv_strd];
+                cr_sum += pu2_v_src[(j + 1) * 2 + src_uv_strd];
+                count++;
+            }
+            pu2_u_dst[j / 2] = (cb_sum + (count >> 1)) / count;
+            pu2_v_dst[j / 2] = (cr_sum + (count >> 1)) / count;
+        }
+        pu2_u_dst += dst_uv_strd;
+        pu2_v_dst += dst_uv_strd;
+        pu2_u_src += (src_uv_strd * 2);
+        pu2_v_src += (src_uv_strd * 2);
     }
     return;
 }
@@ -719,6 +987,230 @@ void ihevcd_fmt_conv_422sp_to_420p(UWORD8 *pu1_y_src,
         pu1_u_dst += dst_uv_strd;
         pu1_v_dst += dst_uv_strd;
         pu1_uv_src += (src_uv_strd * 2);
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_422sp_to_422p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd,
+                                       WORD32 is_u_first,
+                                       WORD32 disable_luma_copy)
+{
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
+    WORD32 i, j;
+
+    if(0 == disable_luma_copy)
+    {
+        /* copy luma */
+        pu2_src = (UWORD16 *)pu2_y_src;
+        pu2_dst = (UWORD16 *)pu2_y_dst;
+
+        num_rows = ht;
+        num_cols = wd;
+
+        src_strd = src_y_strd;
+        dst_strd = dst_y_strd;
+
+        for(i = 0; i < num_rows; i++)
+        {
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
+            pu2_dst += dst_strd;
+            pu2_src += src_strd;
+        }
+    }
+    /* de-interleave U and V and copy to destination */
+    if(is_u_first)
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src;
+        pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
+    }
+    else
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src + 1;
+        pu2_v_src = (UWORD16 *)pu2_uv_src;
+    }
+
+    num_rows = ht;
+    num_cols = wd >> 1;
+
+    src_strd = src_uv_strd;
+    dst_strd = dst_uv_strd;
+
+    for(i = 0; i < num_rows; i++)
+    {
+        for(j = 0; j < num_cols; j++)
+        {
+            pu2_u_dst[j] = pu2_u_src[j * 2];
+            pu2_v_dst[j] = pu2_v_src[j * 2];
+        }
+
+        pu2_u_dst += dst_strd;
+        pu2_v_dst += dst_strd;
+        pu2_u_src += src_strd;
+        pu2_v_src += src_strd;
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_422sp_to_420p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd,
+                                       WORD32 is_u_first,
+                                       WORD32 disable_luma_copy)
+{
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols;
+    WORD32 i, j;
+    WORD32 cb_sum, cr_sum;
+
+    if(0 == disable_luma_copy)
+    {
+        /* copy luma */
+        pu2_src = (UWORD16 *)pu2_y_src;
+        pu2_dst = (UWORD16 *)pu2_y_dst;
+
+        num_rows = ht;
+        num_cols = wd;
+
+        for(i = 0; i < num_rows; i++)
+        {
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
+            pu2_dst += dst_y_strd;
+            pu2_src += src_y_strd;
+        }
+    }
+
+    /* de-interleave U and V, downsample vertically and copy to destination */
+    if(is_u_first)
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src;
+        pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
+    }
+    else
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src + 1;
+        pu2_v_src = (UWORD16 *)pu2_uv_src;
+    }
+
+    num_rows = ht;
+    num_cols = wd >> 1;
+
+    for(i = 0; i < num_rows; i += 2)
+    {
+        for(j = 0; j < num_cols; j++)
+        {
+            cb_sum = pu2_u_src[j * 2];
+            cr_sum = pu2_v_src[j * 2];
+
+            if((i + 1) < num_rows)
+            {
+                cb_sum += pu2_u_src[j * 2 + src_uv_strd] + 1;
+                cr_sum += pu2_v_src[j * 2 + src_uv_strd] + 1;
+
+                cb_sum >>= 1;
+                cr_sum >>= 1;
+            }
+            pu2_u_dst[j] = cb_sum;
+            pu2_v_dst[j] = cr_sum;
+        }
+
+        pu2_u_dst += dst_uv_strd;
+        pu2_v_dst += dst_uv_strd;
+        pu2_u_src += (src_uv_strd * 2);
+        pu2_v_src += (src_uv_strd * 2);
+    }
+    return;
+}
+
+void ihevcd_hbd_fmt_conv_420sp_to_420p(UWORD16 *pu2_y_src,
+                                       UWORD16 *pu2_uv_src,
+                                       UWORD16 *pu2_y_dst,
+                                       UWORD16 *pu2_u_dst,
+                                       UWORD16 *pu2_v_dst,
+                                       WORD32 wd,
+                                       WORD32 ht,
+                                       WORD32 src_y_strd,
+                                       WORD32 src_uv_strd,
+                                       WORD32 dst_y_strd,
+                                       WORD32 dst_uv_strd,
+                                       WORD32 is_u_first,
+                                       WORD32 disable_luma_copy)
+{
+    UWORD16 *pu2_src, *pu2_dst;
+    UWORD16 *pu2_u_src, *pu2_v_src;
+    WORD32 num_rows, num_cols, src_strd, dst_strd;
+    WORD32 i, j;
+
+    if(0 == disable_luma_copy)
+    {
+        /* copy luma */
+        pu2_src = (UWORD16 *)pu2_y_src;
+        pu2_dst = (UWORD16 *)pu2_y_dst;
+
+        num_rows = ht;
+        num_cols = wd;
+
+        src_strd = src_y_strd;
+        dst_strd = dst_y_strd;
+
+        for(i = 0; i < num_rows; i++)
+        {
+            memcpy(pu2_dst, pu2_src, num_cols * sizeof(UWORD16));
+            pu2_dst += dst_strd;
+            pu2_src += src_strd;
+        }
+    }
+    /* de-interleave U and V and copy to destination */
+    if(is_u_first)
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src;
+        pu2_v_src = (UWORD16 *)pu2_uv_src + 1;
+    }
+    else
+    {
+        pu2_u_src = (UWORD16 *)pu2_uv_src + 1;
+        pu2_v_src = (UWORD16 *)pu2_uv_src;
+    }
+
+
+    num_rows = ht >> 1;
+    num_cols = wd >> 1;
+
+    src_strd = src_uv_strd;
+    dst_strd = dst_uv_strd;
+
+    for(i = 0; i < num_rows; i++)
+    {
+        for(j = 0; j < num_cols; j++)
+        {
+            pu2_u_dst[j] = pu2_u_src[j * 2];
+            pu2_v_dst[j] = pu2_v_src[j * 2];
+        }
+
+        pu2_u_dst += dst_strd;
+        pu2_v_dst += dst_strd;
+        pu2_u_src += src_strd;
+        pu2_v_src += src_strd;
     }
     return;
 }
