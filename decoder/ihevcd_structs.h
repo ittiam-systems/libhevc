@@ -1924,6 +1924,16 @@ struct _codec_t
     WORD32  i4_pixel_size_uv;
 
     /**
+     * QP bit depth Offset luma
+     */
+    WORD32  i4_qp_bd_offset_y;
+
+    /**
+     * QP bit depth Offset chroma
+     */
+    WORD32  i4_qp_bd_offset_uv;
+
+    /**
      * Flag to signal if a frame was decoded in this call
      */
     WORD32 i4_pic_decoded;

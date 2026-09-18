@@ -2197,6 +2197,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->i4_disp_wd = disp_wd;
         ps_codec->i4_disp_ht = disp_ht;
 
+        ps_codec->i4_qp_bd_offset_y = 6 * ps_sps->i1_bit_depth_luma_minus8;
+        ps_codec->i4_qp_bd_offset_uv  = 6 * ps_sps->i1_bit_depth_chroma_minus8;
+
 
         ps_codec->i4_wd = ps_sps->i2_pic_width_in_luma_samples;
         ps_codec->i4_ht = ps_sps->i2_pic_height_in_luma_samples;

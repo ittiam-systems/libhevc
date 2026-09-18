@@ -1115,6 +1115,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
 
                 if(c_idx == 0) /* Y */
                 {
+                    WORD32  i4_qp_bd_offset_y = ps_codec->i4_qp_bd_offset_y;
+
                     /* Initializing variables */
 
                     log2_y_trans_size_minus_2 = ps_tu->b3_size;
@@ -1139,8 +1141,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         e_trans_type = (TRANSFORM_TYPE)(log2_y_trans_size_minus_2 + 1);
                     }
 
-                    qp_div = ps_tu->b7_qp / 6;
-                    qp_rem = ps_tu->b7_qp % 6;
+                    qp_div = (ps_tu->b7_qp + i4_qp_bd_offset_y) / 6;
+                    qp_rem = (ps_tu->b7_qp + i4_qp_bd_offset_y) % 6;
 
                     y_cb_tu.pi2_tu_coeff = pi2_tu_coeff;
                     y_cb_tu.pu1_pred = pu1_y_dst_ctb + tu_y_offset * pixel_size_y;

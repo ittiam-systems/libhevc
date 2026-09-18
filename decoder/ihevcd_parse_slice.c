@@ -2169,6 +2169,7 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
             WORD32 cur_cu_offset;
             tu_t *ps_tu = ps_codec->s_parse.ps_tu;
             WORD32 cb_size = 1 << ps_codec->s_parse.s_cu.i4_log2_cb_size;
+            WORD32 i4_qp_bd_offset_y = ps_codec->i4_qp_bd_offset_y;
 
             cu_pos_x = ps_codec->s_parse.s_cu.i4_pos_x << 3;
             cu_pos_y = ps_codec->s_parse.s_cu.i4_pos_y << 3;
@@ -2192,7 +2193,8 @@ IHEVCD_ERROR_T ihevcd_parse_coding_quadtree(codec_t *ps_codec,
             qp_pred = (qp_left + qp_top + 1) >> 1;
             /* Since qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta can be negative,
             52 is added before taking modulo 52 */
-            qp = (qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta + 52) % 52;
+            qp = ((qp_pred + ps_codec->s_parse.s_cu.i4_cu_qp_delta + 52 + 2 * i4_qp_bd_offset_y) % (52 + i4_qp_bd_offset_y)) -
+                        i4_qp_bd_offset_y;
 
             cur_cu_offset = (cu_pos_x >> 3) + cu_pos_y;
             for(i = 0; i < (cb_size >> 3); i++)
@@ -2780,7 +2782,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     }
 
     slice_qp = ps_slice_hdr->i1_slice_qp_delta + ps_pps->i1_pic_init_qp;
-    slice_qp = CLIP3(slice_qp, 0, 51);
+    slice_qp = CLIP3(slice_qp, -(ps_codec->i4_qp_bd_offset_y), 51);
 
     /*Update QP value for every indepndent slice or for every dependent slice that begins at the start of a new tile*/
     if((0 == ps_slice_hdr->i1_dependent_slice_flag) ||
@@ -2855,7 +2857,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                         && (!((0 == ps_codec->s_parse.i4_ctb_slice_x) && (0 == ps_codec->s_parse.i4_ctb_slice_y))))
         {
             slice_qp = ps_slice_hdr->i1_slice_qp_delta + ps_pps->i1_pic_init_qp;
-            slice_qp = CLIP3(slice_qp, 0, 51);
+            slice_qp = CLIP3(slice_qp, -(ps_codec->i4_qp_bd_offset_y), 51);
             ps_codec->s_parse.u4_qp = slice_qp;
 
             ihevcd_get_tile_pos(ps_pps, ps_sps, ps_codec->s_parse.i4_ctb_x,
