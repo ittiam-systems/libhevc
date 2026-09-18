@@ -180,7 +180,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     pu4_ctb_horz_bs = pu4_horz_bs;
 
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pi1_qp = (WORD8 *)ps_deblk->s_bs_ctxt.pu1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = ps_deblk->s_bs_ctxt.pi1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     pu2_ctb_no_loop_filter_flag = ps_deblk->au2_ctb_no_loop_filter_flag;
 
