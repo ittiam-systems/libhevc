@@ -1028,13 +1028,29 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
 
     if(0 == ps_codec->u4_pic_cnt)
     {
-        memset(ps_cur_pic->pu1_luma, 128, (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples);
+        WORD32 luma_samples = (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * ps_sps->i2_pic_height_in_luma_samples;
+        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
+        {
+            memset(ps_cur_pic->pu1_luma, 128, luma_samples);
+        }
+        else
+        {
+            ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_luma, (1 << (ps_codec->i4_bit_depth_luma - 1)), luma_samples);
+        }
+
         if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
         {
-            memset(ps_cur_pic->pu1_chroma,
-                   128,
-                   (((ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor))
-                                   * ps_sps->i2_pic_height_in_luma_samples / v_samp_factor));
+            WORD32 chroma_samples = (((ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor))
+                                            * ps_sps->i2_pic_height_in_luma_samples / v_samp_factor);
+            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
+            {
+                memset(ps_cur_pic->pu1_chroma, 128, chroma_samples);
+            }
+            else
+            {
+                ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_chroma, (1 << (ps_codec->i4_bit_depth_chroma - 1)),
+                    chroma_samples);
+            }
         }
     }
 
