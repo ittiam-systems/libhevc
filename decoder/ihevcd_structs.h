@@ -407,7 +407,7 @@ typedef struct
     /**
      *  Qp array stored for each 8x8 pixels
      */
-    UWORD8  *pu1_pic_qp;
+    WORD8   *pi1_pic_qp;
 
     /**
      * Current TU structure - set to CTB tu_t pointer at the start of CTB processing and incremented
