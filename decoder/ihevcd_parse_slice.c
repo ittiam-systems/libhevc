@@ -249,7 +249,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                 }
 #endif
             }
-        } /* End of if(trafo_depth == 0 || log2_trafo_size > 2) */
+        }
         if(split_transform_flag)
         {
             WORD32 intra_pred_mode_tmp;
@@ -542,7 +542,7 @@ WORD32 ihevcd_parse_transform_tree(codec_t *ps_codec,
                         ihevcd_parse_residual_coding(ps_codec, x0, y0 + (1 << log2_trafo_size_c), log2_trafo_size_c, 2, intra_pred_mode_chroma);
                     }
 #endif
-                } /* End of if (log2_trafo_size > 2) */
+                }
                 else if(blk_idx == 3)
                 {
                     if(ps_codec->s_parse.s_cu.ai1_cbf_cb[trafo_depth])
@@ -3302,7 +3302,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             if(ps_slice_hdr->i1_slice_sao_luma_flag || ps_slice_hdr->i1_slice_sao_chroma_flag)
             {
                 if ((8 == ps_codec->i4_bit_depth_chroma) && (8 == ps_codec->i4_bit_depth_luma)) {
-                ihevcd_parse_sao(ps_codec);
+                    ihevcd_parse_sao(ps_codec);
                 } else {
                     ihevcd_10bd_parse_sao(ps_codec);
                 }
@@ -4021,8 +4021,8 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         /* If the bytes for the current slice are exhausted
          * set end_of_slice flag to 1
          * This slice will be treated as incomplete */
-        if(ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
-                        ((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
+        if((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu1_buf_max + BITSTRM_OFF_THRS <
+                                        ((UWORD8 *)ps_codec->s_parse.s_bitstrm.pu4_buf + (ps_codec->s_parse.s_bitstrm.u4_bit_ofst / 8)))
         {
             // end_of_slice_flag = ps_codec->i4_slice_error ? 0 : 1;
 

@@ -347,11 +347,11 @@ WORD32 ihevcd_ctb_boundary_strength_islice(bs_ctxt_t *ps_bs_ctxt)
                     for(col = start_pos_x; col < start_pos_x + tu_size; col += 2)
                     {
                         pi1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
+                    }
                 }
             }
         }
 
-    }
     }
     {
         /*Determine if the slice is dependent, and is its left neighbor belongs to the same slice, in a different tile*/

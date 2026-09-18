@@ -749,7 +749,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                 ps_slice_hdr->i1_slice_disable_deblocking_filter_flag = value;
                 disable_deblocking_filter_flag = ps_slice_hdr->i1_slice_disable_deblocking_filter_flag;
 
-
                 if(!ps_slice_hdr->i1_slice_disable_deblocking_filter_flag)
                 {
                     SEV_PARSE("beta_offset_div2", i4_value, ps_bitstrm);

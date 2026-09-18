@@ -238,7 +238,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     }
 
     src_strd = ps_codec->i4_strd;
-    chroma_strd = (src_strd * chroma_pixel_strd / h_samp_factor);
+    chroma_strd = src_strd * chroma_pixel_strd / h_samp_factor;
 
     /* Luma Vertical Edge */
 
@@ -390,7 +390,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
             }
             pu1_src -= ((src_strd << log2_ctb_size) * pixel_size_y);
             pu1_src += 8 * pixel_size_y;
-        } /* End of loop over columns */
+        }
         pu4_vert_bs = pu4_ctb_vert_bs;
     }
 
@@ -479,7 +479,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
                     qp_q = u4_qp_const_in_ctb[2] ?
                                     pi1_qp[-ctb_size / 8] :
-                                    pi1_qp[row *qp_strd - 1];
+                                    pi1_qp[row * qp_strd - 1];
                 }
                 else
                 {
@@ -565,7 +565,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         }
 
         pu1_src = ps_deblk->pu1_cur_pic_chroma +
-            (((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor +
+            ((((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor) +
                ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv);
         pu1_src += i4_is_last_ctb_y ?
             ((((ps_codec->i4_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_ctb_size) * pixel_size_uv) : 0;
@@ -769,7 +769,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         }
 
         pu1_src = ps_deblk->pu1_cur_pic_chroma +
-            (((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor +
+            ((((ps_deblk->i4_ctb_x * chroma_pixel_strd / h_samp_factor) +
                ps_deblk->i4_ctb_y * ps_deblk->ps_codec->i4_strd * chroma_pixel_strd / (v_samp_factor * h_samp_factor)) << log2_ctb_size) * pixel_size_uv);
         pu1_src += i4_is_last_ctb_x ? (ctb_size * chroma_pixel_strd / h_samp_factor * pixel_size_uv) : 0;
 
