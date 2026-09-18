@@ -2361,7 +2361,6 @@ IHEVCD_ERROR_T ihevcd_parse_pps(codec_t *ps_codec)
     UWORD32 value;
     WORD32 i4_value;
     WORD32 pps_id;
-    WORD32 i4_pps_ext_present_flag;
 
     pps_t *ps_pps;
     sps_t *ps_sps;

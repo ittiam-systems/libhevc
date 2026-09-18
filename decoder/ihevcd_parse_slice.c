@@ -744,7 +744,7 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
     tu_t *ps_tu = ps_codec->s_parse.ps_tu;
     tu_sblk_coeff_data_t *ps_tu_sblk_coeff_data;
     UWORD8 *pu1_coeff_data;
-    WORD32 i4_bit_depth;
+    WORD32 bit_depth;
     ps_sps = ps_codec->s_parse.ps_sps;
 
     UNUSED(value);
@@ -782,7 +782,7 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
     pu1_coeff_data = (UWORD8 *)&ps_tu_sblk_coeff_data->ai2_level[0];
 
     num_bits = ps_sps->i1_pcm_sample_bit_depth_luma;
-    i4_bit_depth = ps_codec->i4_bit_depth_luma;
+    bit_depth = ps_codec->i4_bit_depth_luma;
 
     WORD32 luma_samples = 1 << (log2_cb_size << 1);
     for(i = 0; i < luma_samples; i++)
@@ -791,21 +791,21 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
         BITS_PARSE("pcm_sample_luma", value, ps_bitstrm, num_bits);
 
         //ps_pcmsample_t->i1_pcm_sample_luma[i] = value;
-        if (i4_bit_depth > 8)
+        if (bit_depth > 8)
         {
-            *(UWORD16 *)pu1_coeff_data = value << (i4_bit_depth - num_bits);
+            *(UWORD16 *)pu1_coeff_data = value << (bit_depth - num_bits);
             pu1_coeff_data += 2;
         }
         else
         {
-            *pu1_coeff_data++ = value << (i4_bit_depth - num_bits);
+            *pu1_coeff_data++ = value << (bit_depth - num_bits);
         }
     }
 
     if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
     {
         WORD32 chroma_samples = 0;
-        i4_bit_depth = ps_codec->i4_bit_depth_chroma;
+        bit_depth = ps_codec->i4_bit_depth_chroma;
 
         if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
             chroma_samples = luma_samples << 1;
@@ -818,14 +818,14 @@ IHEVCD_ERROR_T  ihevcd_parse_pcm_sample(codec_t *ps_codec,
         {
             TRACE_CABAC_CTXT("pcm_sample_chroma", ps_cabac->u4_range, 0);
             BITS_PARSE("pcm_sample_chroma", value, ps_bitstrm, num_bits);
-            if (i4_bit_depth > 8)
+            if (bit_depth > 8)
             {
-                *(UWORD16 *)pu1_coeff_data = value << (i4_bit_depth - num_bits);
+                *(UWORD16 *)pu1_coeff_data = value << (bit_depth - num_bits);
                 pu1_coeff_data += 2;
             }
             else
             {
-                *pu1_coeff_data++ = value << (i4_bit_depth - num_bits);
+                *pu1_coeff_data++ = value << (bit_depth - num_bits);
             }
         }
     }
