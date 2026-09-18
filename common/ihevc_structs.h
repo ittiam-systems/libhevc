@@ -1793,7 +1793,7 @@ typedef struct _ctb_t
     /**
      *  Qp array stored for each 8x8 pixels
      */
-    UWORD8 *pu1_qp;
+    WORD8 *pi1_qp;
 
     /**
      *  Pointer to current frame's pu_t array

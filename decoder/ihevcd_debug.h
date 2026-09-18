@@ -128,7 +128,7 @@ UWORD32 au4_pic_ctb_slice_xy[MAX_WD * MAX_HT / MIN_CTB_SIZE / MIN_CTB_SIZE];
 
 #define DUMP_PRE_ILF(pu1_cur_pic_luma, pu1_cur_pic_chroma, pic_wd, pic_ht, pic_strd) ihevcd_debug_dump_pic(pu1_cur_pic_luma, pu1_cur_pic_chroma, pic_wd, pic_ht, pic_strd)
 #define DUMP_BS(pu4_pic_vert_bs, pu4_pic_horz_bs, vert_size_in_bytes, horz_size_in_bytes) ihevcd_debug_dump_bs(pu4_pic_vert_bs, pu4_pic_horz_bs, vert_size_in_bytes, horz_size_in_bytes)
-#define DUMP_QP(pu1_qp, size_in_bytes) ihevcd_debug_dump_qp(pu1_qp, size_in_bytes)
+#define DUMP_QP(pi1_qp, size_in_bytes) ihevcd_debug_dump_qp(pi1_qp, size_in_bytes)
 #define DUMP_QP_CONST_IN_CTB(pu1_qp_const_in_ctb, size_in_bytes) ihevcs_dump_qp_const_in_ctb(pu1_qp_const_in_ctb, size_in_bytes)
 #define DUMP_NO_LOOP_FILTER(pu1_pic_no_loop_filter, size_in_bytes) ihevcd_debug_dump_no_loop_filter(pu1_pic_no_loop_filter, size_in_bytes)
 #define DUMP_OFFSETS(beta_offset_div_2, tc_offset_div_2, qp_offset_u, qp_offset_v) ihevcd_debug_dump_offsets(beta_offset_div_2, tc_offset_div_2, qp_offset_u, qp_offset_v)
@@ -137,7 +137,7 @@ UWORD32 au4_pic_ctb_slice_xy[MAX_WD * MAX_HT / MIN_CTB_SIZE / MIN_CTB_SIZE];
 
 #define DUMP_PRE_ILF(pu1_cur_pic_luma, pu1_cur_pic_chroma, pic_wd, pic_ht, pic_strd)
 #define DUMP_BS(pu4_pic_vert_bs, pu4_pic_horz_bs, vert_size_in_bytes, horz_size_in_bytes)
-#define DUMP_QP(pu1_qp, size_in_bytes)
+#define DUMP_QP(pi1_qp, size_in_bytes)
 #define DUMP_QP_CONST_IN_CTB(pu1_qp_const_in_ctb, size_in_bytes)
 #define DUMP_NO_LOOP_FILTER(pu1_pic_no_loop_filter, size_in_bytes)
 #define DUMP_OFFSETS(beta_offset_div_2, tc_offset_div_2, qp_offset_u, qp_offset_v)

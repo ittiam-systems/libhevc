@@ -3525,7 +3525,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         {
             bs_ctxt_t *ps_bs_ctxt = &ps_codec->s_parse.s_bs_ctxt;
             WORD32 log2_ctb_size = ps_sps->i1_log2_ctb_size;
-            UWORD8 *pu1_qp;
+            WORD8 *pi1_qp;
             WORD32 qp_strd;
             WORD32 u4_qp_const_in_ctb;
             WORD32 cur_ctb_idx;
@@ -3537,7 +3537,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
             cur_ctb_idx = ps_codec->s_parse.i4_ctb_x + ps_sps->i2_pic_wd_in_ctb * ps_codec->s_parse.i4_ctb_y;
             /* ctb_size/8 elements per CTB */
             qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-            pu1_qp = ps_bs_ctxt->pu1_pic_qp + ((ps_codec->s_parse.i4_ctb_x + ps_codec->s_parse.i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+            pi1_qp = ps_bs_ctxt->pi1_pic_qp + ((ps_codec->s_parse.i4_ctb_x + ps_codec->s_parse.i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
             u4_qp_const_in_ctb = ps_bs_ctxt->pu1_pic_qp_const_in_ctb[cur_ctb_idx >> 3] & (1 << (cur_ctb_idx & 7));
 
@@ -3561,7 +3561,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 
             if(u4_qp_const_in_ctb)
             {
-                pu1_qp[0] = ps_tu->b7_qp;
+                pi1_qp[0] = ps_tu->b7_qp;
             }
             else
             {
@@ -3585,7 +3585,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                         {
                             for(col = start_pos_x; col < start_pos_x + tu_size; col += 2)
                             {
-                                pu1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
+                                pi1_qp[(row >> 1) * qp_strd + (col >> 1)] = ps_tu->b7_qp;
                             }
                         }
                     }

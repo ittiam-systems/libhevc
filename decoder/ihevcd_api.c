@@ -2150,9 +2150,9 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
             ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu4_pic_horz_bs = (UWORD32 *)pu1_buf;
             pu1_buf += horz_bs_size;
 
-            ps_codec->as_process[i].s_bs_ctxt.pu1_pic_qp = (UWORD8 *)pu1_buf;
-            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp = (UWORD8 *)pu1_buf;
-            ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pu1_pic_qp = (UWORD8 *)pu1_buf;
+            ps_codec->as_process[i].s_bs_ctxt.pi1_pic_qp = (WORD8 *)pu1_buf;
+            ps_codec->as_process[i].s_deblk_ctxt.s_bs_ctxt.pi1_pic_qp = (WORD8 *)pu1_buf;
+            ps_codec->s_parse.s_deblk_ctxt.s_bs_ctxt.pi1_pic_qp = (WORD8 *)pu1_buf;
             pu1_buf += qp_size;
 
             ps_codec->as_process[i].s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)pu1_buf;
@@ -2168,7 +2168,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->s_parse.s_bs_ctxt.pu4_pic_horz_bs = (UWORD32 *)pu1_buf;
         pu1_buf += horz_bs_size;
 
-        ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp = (UWORD8 *)pu1_buf;
+        ps_codec->s_parse.s_bs_ctxt.pi1_pic_qp = (WORD8 *)pu1_buf;
         pu1_buf += qp_size;
 
         ps_codec->s_parse.s_bs_ctxt.pu1_pic_qp_const_in_ctb = (UWORD8 *)pu1_buf;
