@@ -1,5 +1,6 @@
 package {
     // Inherit applicable licenses from root
+    default_team: "trendy_team_android_media_codec_framework",
     default_applicable_licenses: ["external_libhevc_license"],
 }
 
