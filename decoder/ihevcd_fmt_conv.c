@@ -1366,7 +1366,6 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                         || IV_YUV_420SP_VU == ps_codec->e_chroma_fmt)
         {
             pu1_uv_dst_tmp = pu1_u_dst + ((cur_row + 1) / 2) * ALIGN2(ps_codec->i4_disp_strd) * ps_codec->i4_pixel_size_uv;
-
         }
 
         /* In case of multi threaded implementation, format conversion might be called
