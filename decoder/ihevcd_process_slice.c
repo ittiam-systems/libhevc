@@ -1196,8 +1196,9 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                         * ps_codec->i4_strd) * ps_codec->i4_pixel_size_y;
 
                         pad_ht_luma = ctb_size;
-                        pad_ht_luma += (ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y ? 8 : 0;                        /* Pad left after 1st CTB is processed */
-                        if (1 == ps_codec->i4_pixel_size_y)
+                        pad_ht_luma += (ps_sps->i2_pic_ht_in_ctb - 1) == ps_proc->i4_ctb_y ? 8 : 0;
+                        /* Pad left after 1st CTB is processed */
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                         {
                             ps_codec->s_func_selector.ihevc_pad_left_luma_fptr(ps_proc->pu1_cur_ctb_luma - 8 * ps_codec->i4_strd,
                                 ps_codec->i4_strd, pad_ht_luma, PAD_LEFT);
@@ -1213,7 +1214,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                             + ((ps_proc->i4_ctb_x * ctb_size * chroma_pixel_strd / h_samp_factor)
                                             + (ps_proc->i4_ctb_y * ctb_size * chroma_row_strd / v_samp_factor)) * ps_codec->i4_pixel_size_uv;
                             pad_ht_chroma = ctb_size / v_samp_factor;
-                            if (1 == ps_codec->i4_pixel_size_uv)
+                            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                             {
                                 ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(
                                                 ps_proc->pu1_cur_ctb_chroma - (8 * v_samp_factor) * chroma_row_strd,
@@ -1252,7 +1253,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             if (CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                             {
                                 pad_ht_chroma += (8 * v_samp_factor);
-                                if (1 == ps_codec->i4_pixel_size_uv)
+                                if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                                 {
                                     ps_codec->s_func_selector.ihevc_pad_left_chroma_fptr(
                                                     ps_proc->pu1_cur_pic_chroma + ((ps_sps->i2_pic_height_in_luma_samples / v_samp_factor) - (8 * v_samp_factor)) * chroma_row_strd,
@@ -1269,7 +1270,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             }
                         }
                         /* Pad right after last CTB in the current row is processed */
-                        if (1 == ps_codec->i4_pixel_size_y)
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                         {
                             ps_codec->s_func_selector.ihevc_pad_right_luma_fptr(
                                 ps_proc->pu1_cur_ctb_luma + cols_remaining - 8 * ps_codec->i4_strd,
@@ -1282,7 +1283,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                         }
                         if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                         {
-                            if (1 == ps_codec->i4_pixel_size_uv)
+                            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                             {
                                  ps_codec->s_func_selector.ihevc_pad_right_chroma_fptr(
                                                 ps_proc->pu1_cur_ctb_chroma + (cols_remaining * chroma_pixel_strd / h_samp_factor) - (8 * v_samp_factor) * chroma_row_strd,
@@ -1304,7 +1305,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             /* Since SAO is shifted by 8x8, chroma padding can not be done till second row is processed */
                             /* Hence moving top padding to to end of frame, Moving it to second row also results in problems when there is only one row */
                             /* Pad top after padding left and right for current rows after processing 1st CTB row */
-                            if (1 == ps_codec->i4_pixel_size_y)
+                            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                             {
                                 ihevc_pad_top(ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd,
                                     ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP);
@@ -1316,7 +1317,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             }
                             if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                             {
-                                if (1 == ps_codec->i4_pixel_size_uv)
+                                if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                                 {
                                      ihevc_pad_top(ps_proc->pu1_cur_pic_chroma - PAD_LEFT * (chroma_pixel_strd / h_samp_factor),
                                                   chroma_row_strd,
@@ -1335,7 +1336,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             /* Pad bottom after padding left and right for current rows after processing 1st CTB row */
                             pu1_buf = ps_proc->pu1_cur_pic_luma +
                                 (ps_codec->i4_strd * ps_sps->i2_pic_height_in_luma_samples - PAD_LEFT) * ps_codec->i4_pixel_size_y;
-                            if (1 == ps_codec->i4_pixel_size_y)
+                            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                             {
                                 ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd,
                                                  ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
@@ -1350,7 +1351,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                 pu1_buf = ps_proc->pu1_cur_pic_chroma
                                                 + (chroma_row_strd * (ps_sps->i2_pic_height_in_luma_samples / v_samp_factor)
                                                 - (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * ps_codec->i4_pixel_size_uv;
-                                if (1 == ps_codec->i4_pixel_size_uv)
+                                if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                                 {
                                      ihevc_pad_bottom(pu1_buf,
                                                      chroma_row_strd,
