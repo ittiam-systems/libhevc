@@ -1698,6 +1698,85 @@ typedef void (*pf_sao_chroma)(UWORD8 *,
                               WORD32,
                               WORD32);
 
+typedef void (*pf_hbd_itrans_recon_dc)(UWORD16 *pu2_pred,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 pred_strd,
+                                       WORD32 dst_strd,
+                                       WORD32 log2_trans_size,
+                                       WORD16 i2_coeff_value,
+                                       WORD32 bit_depth);
+
+typedef void (*pf_hbd_itrans_recon)(WORD16 *pi2_src,
+                                    WORD16 *pi2_tmp,
+                                    UWORD16 *pu2_pred,
+                                    UWORD16 *pu2_dst,
+                                    WORD32 i4_src_strd,
+                                    WORD32 i4_pred_strd,
+                                    WORD32 i4_dst_strd,
+                                    WORD32 i4_zero_cols,
+                                    WORD32 i4_zero_rows,
+                                    UWORD8 u1_bit_depth);
+
+typedef void (*pf_hbd_recon)(WORD16 *pi2_src,
+                             UWORD16 *pu2_pred,
+                             UWORD16 *pu2_dst,
+                             WORD32 i4_src_strd,
+                             WORD32 i4_pred_strd,
+                             WORD32 i4_dst_strd,
+                             WORD32 i4_zero_cols,
+                             UWORD8 u1_bit_depth);
+
+typedef void (*pf_hbd_intra_pred_luma)(UWORD16 *pu2_ref,
+                                       WORD32 src_strd,
+                                       UWORD16 *pu2_dst,
+                                       WORD32 dst_strd,
+                                       WORD32 nt,
+                                       WORD32 mode,
+                                       UWORD8 bit_depth);
+
+typedef void (*pf_hbd_intra_pred_chroma)(UWORD16 *pu2_ref,
+                                         WORD32 src_strd,
+                                         UWORD16 *pu2_dst,
+                                         WORD32 dst_strd,
+                                         WORD32 nt,
+                                         WORD32 mode);
+
+typedef void (*pf_hbd_sao_luma)(UWORD16 *pu2_src,
+                                WORD32 src_strd,
+                                UWORD16 *pu2_src_left,
+                                UWORD16 *pu2_src_top,
+                                UWORD16 *pu2_src_top_left,
+                                UWORD16 *pu2_src_top_left_left,
+                                UWORD16 *pu2_src_top_left_top,
+                                UWORD8 *pu1_avail,
+                                WORD8 *pi1_offset,
+                                WORD32 luma_wd,
+                                WORD32 luma_ht,
+                                UWORD32 edge_idx);
+
+typedef void (*pf_hbd_sao_chroma)(UWORD16 *pu2_src,
+                                  WORD32 src_strd,
+                                  UWORD16 *pu2_src_left,
+                                  UWORD16 *pu2_src_top,
+                                  UWORD16 *pu2_src_top_left,
+                                  UWORD16 *pu2_src_top_left_left,
+                                  UWORD16 *pu2_src_top_left_top,
+                                  UWORD8 *pu1_avail,
+                                  WORD8 *pi1_offset_u,
+                                  WORD8 *pi1_offset_v,
+                                  WORD32 chroma_wd,
+                                  WORD32 chroma_ht,
+                                  UWORD32 edge_idx);
+
+typedef void (*pf_hbd_inter_pred)(void *pv_src,
+                                  void *pv_dst,
+                                  WORD32 src_strd,
+                                  WORD32 dst_strd,
+                                  WORD8 *pi1_coeff,
+                                  WORD32 ht,
+                                  WORD32 wd,
+                                  UWORD8 u1_bit_depth);
+
 /**
  * Codec context
  */
@@ -2319,6 +2398,16 @@ struct _codec_t
 
     /**  Funtion pointers for sao_chroma leaf level functions */
     pf_sao_chroma apf_sao_chroma[4];
+
+    /* HBD function pointers */
+    pf_hbd_intra_pred_luma apf_hbd_intra_pred_luma[11];
+    pf_hbd_intra_pred_chroma apf_hbd_intra_pred_chroma[11];
+    pf_hbd_itrans_recon apf_hbd_itrans_recon[9];
+    pf_hbd_itrans_recon_dc apf_hbd_itrans_recon_dc[2];
+    pf_hbd_recon apf_hbd_recon[9];
+    pf_hbd_sao_luma apf_hbd_sao_luma[4];
+    pf_hbd_sao_chroma apf_hbd_sao_chroma[4];
+    pf_hbd_inter_pred apf_hbd_inter_pred[22];
 
     /**  Funtion pointers for all the leaf level functions */
     func_selector_t s_func_selector;

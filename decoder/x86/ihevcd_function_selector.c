@@ -61,6 +61,7 @@
 void ihevcd_init_function_ptr(void *pv_codec)
 {
     codec_t *ps_codec = (codec_t *)pv_codec;
+    ihevcd_init_function_ptr_generic(&ps_codec->s_func_selector);
     switch(ps_codec->e_processor_arch)
     {
         case ARCH_X86_GENERIC:
