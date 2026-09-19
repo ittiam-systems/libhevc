@@ -112,7 +112,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     UWORD32 *pu4_ctb_vert_bs, *pu4_ctb_horz_bs;
     WORD32 bs_strd;
     WORD32 src_strd, chroma_strd;
-    UWORD8 *pu1_qp;
+    WORD8 *pi1_qp;
     UWORD16 *pu2_ctb_no_loop_filter_flag;
     UWORD16 au2_ctb_no_loop_filter_flag[9];
 
@@ -173,7 +173,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
     pu4_ctb_horz_bs = pu4_horz_bs;
 
     qp_strd = ps_sps->i2_pic_wd_in_ctb << (log2_ctb_size - 3);
-    pu1_qp = ps_deblk->s_bs_ctxt.pu1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
+    pi1_qp = ps_deblk->s_bs_ctxt.pi1_pic_qp + ((ps_deblk->i4_ctb_x + ps_deblk->i4_ctb_y * qp_strd) << (log2_ctb_size - 3));
 
     pu2_ctb_no_loop_filter_flag = ps_deblk->au2_ctb_no_loop_filter_flag;
 
@@ -188,7 +188,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
          * 2 is the number of bits needed for each BS value */
         memset(pu4_vert_bs, 0, 1 << (2 * log2_ctb_size - 7));
 
-        pu1_qp += (qp_strd << (log2_ctb_size - 3));
+        pi1_qp += (qp_strd << (log2_ctb_size - 3));
         pu2_ctb_no_loop_filter_flag += (ctb_size >> 3);
         ctb_indx += ps_sps->i2_pic_wd_in_ctb;
     }
@@ -199,7 +199,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         pu4_ctb_horz_bs = pu4_horz_bs;
         memset(pu4_horz_bs, 0, 1 << (2 * log2_ctb_size - 7));
 
-        pu1_qp += (ctb_size >> 3);
+        pi1_qp += (ctb_size >> 3);
 
         for(row = 0; row < (ctb_size >> 3) + 1; row++)
             au2_ctb_no_loop_filter_flag[row] = ps_deblk->au2_ctb_no_loop_filter_flag[row] >> (ctb_size >> 3);
@@ -303,38 +303,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[col - 1 - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[col - 1 - qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[1] ?
-                                    pu1_qp[-ctb_size / 8 * qp_strd] :
-                                    pu1_qp[col - qp_strd];
+                                    pi1_qp[-ctb_size / 8 * qp_strd] :
+                                    pi1_qp[col - qp_strd];
                 }
                 else
                 {
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[((row - 1) >> 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[((row - 1) >> 1) * qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((row - 1) >> 1) * qp_strd + col - 1];
+                                        pi1_qp[0] :
+                                        pi1_qp[((row - 1) >> 1) * qp_strd + col - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((row - 1) >> 1) * qp_strd + col];
+                                    pi1_qp[0] :
+                                    pi1_qp[((row - 1) >> 1) * qp_strd + col];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[(row + 1) >> 1] >> col) & 1;
@@ -445,38 +445,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[(row - 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[(row - 1) * qp_strd - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[2] ?
-                                    pu1_qp[-ctb_size / 8] :
-                                    pu1_qp[row * qp_strd - 1];
+                                    pi1_qp[-ctb_size / 8] :
+                                    pi1_qp[row * qp_strd - 1];
                 }
                 else
                 {
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[((col - 1) >> 1) - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[((col - 1) >> 1) - qp_strd];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((col - 1) >> 1) + (row - 1) * qp_strd];
+                                        pi1_qp[0] :
+                                        pi1_qp[((col - 1) >> 1) + (row - 1) * qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((col - 1) >> 1) + row * qp_strd];
+                                    pi1_qp[0] :
+                                    pi1_qp[((col - 1) >> 1) + row * qp_strd];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[row] >> ((col + 1) >> 1)) & 1;
@@ -585,38 +585,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[h_samp_factor * col - 1 - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[h_samp_factor * col - 1 - qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[1] ?
-                                    pu1_qp[-ctb_size / 8 * qp_strd] :
-                                    pu1_qp[h_samp_factor * col - qp_strd];
+                                    pi1_qp[-ctb_size / 8 * qp_strd] :
+                                    pi1_qp[h_samp_factor * col - qp_strd];
                 }
                 else
                 {
                     if(0 == col)
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col - 1];
+                                        pi1_qp[0] :
+                                        pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col];
+                                    pi1_qp[0] :
+                                    pi1_qp[((row - 1) >> (2 - v_samp_factor)) * qp_strd + h_samp_factor * col];
                 }
 
                 filter_p = (pu2_ctb_no_loop_filter_flag[(row + (2 - v_samp_factor)) >> (2 - v_samp_factor)] >> (col << (h_samp_factor - 1))) & 1;
@@ -755,38 +755,38 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[0] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
-                                        pu1_qp[-qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8 * qp_strd - ctb_size / 8] :
+                                        pi1_qp[-qp_strd - 1];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[2] ?
-                                        pu1_qp[-ctb_size / 8] :
-                                        pu1_qp[(v_samp_factor * row - 1) * qp_strd - 1];
+                                        pi1_qp[-ctb_size / 8] :
+                                        pi1_qp[(v_samp_factor * row - 1) * qp_strd - 1];
                     }
 
                     qp_q = u4_qp_const_in_ctb[2] ?
-                                    pu1_qp[-ctb_size / 8] :
-                                    pu1_qp[(v_samp_factor * row) * qp_strd - 1];
+                                    pi1_qp[-ctb_size / 8] :
+                                    pi1_qp[(v_samp_factor * row) * qp_strd - 1];
                 }
                 else
                 {
                     if(0 == row)
                     {
                         qp_p = u4_qp_const_in_ctb[1] ?
-                                        pu1_qp[-ctb_size / 8 * qp_strd] :
-                                        pu1_qp[((col - 1) >> (2 - h_samp_factor)) - qp_strd];
+                                        pi1_qp[-ctb_size / 8 * qp_strd] :
+                                        pi1_qp[((col - 1) >> (2 - h_samp_factor)) - qp_strd];
                     }
                     else
                     {
                         qp_p = u4_qp_const_in_ctb[3] ?
-                                        pu1_qp[0] :
-                                        pu1_qp[((col - 1) >> (2 - h_samp_factor)) +  (v_samp_factor * row - 1) * qp_strd];
+                                        pi1_qp[0] :
+                                        pi1_qp[((col - 1) >> (2 - h_samp_factor)) +  (v_samp_factor * row - 1) * qp_strd];
                     }
 
                     qp_q = u4_qp_const_in_ctb[3] ?
-                                    pu1_qp[0] :
-                                    pu1_qp[((col - 1) >> (2 - h_samp_factor)) + v_samp_factor * row * qp_strd];
+                                    pi1_qp[0] :
+                                    pi1_qp[((col - 1) >> (2 - h_samp_factor)) + v_samp_factor * row * qp_strd];
                 }
                 filter_p = (pu2_ctb_no_loop_filter_flag[row * v_samp_factor] >> ((col + 2 - h_samp_factor) >> (2 - h_samp_factor))) & 1;
                 filter_q = (pu2_ctb_no_loop_filter_flag[(row * v_samp_factor) + 1] >> ((col + 2 - h_samp_factor) >> (2 - h_samp_factor))) & 1;
