@@ -113,8 +113,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     WORD32 clr_indx;
     WORD32 ntaps;
 
-    WORD32 pixel_size_y, pixel_size_uv;
-    WORD32 i4_bit_depth_luma, i4_bit_depth_chroma;
+
 
     WORD32 ai2_xint[2] = { 0, 0 }, ai2_yint[2] = { 0, 0 };
     WORD32 ai2_xfrac[2] = { 0, 0 }, ai2_yfrac[2] = { 0, 0 };
@@ -151,22 +150,22 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     WORD32 h_samp_factor, v_samp_factor;
     WORD32 chroma_pixel_strd = 2;
     WORD32 is_yuv420, is_yuv422, is_yuv444;
+    WORD32 pixel_size_y, pixel_size_uv;
+    WORD32 bit_depth_luma, bit_depth_chroma;
     WORD32 wp_ofst_bd_shift_luma, wp_ofst_bd_shift_chroma;
 
     PROFILE_DISABLE_INTER_PRED();
     ps_codec = ps_proc->ps_codec;
+    pixel_size_y     = ps_codec->i4_pixel_size_y;
+    pixel_size_uv    = ps_codec->i4_pixel_size_uv;
+    bit_depth_luma   = ps_codec->i4_bit_depth_luma;
+    bit_depth_chroma = ps_codec->i4_bit_depth_chroma;
     ps_slice_hdr = ps_proc->ps_slice_hdr;
     ps_wt_ofst = &ps_slice_hdr->s_wt_ofst;
     ps_pps = ps_proc->ps_pps;
     ps_sps = ps_proc->ps_sps;
     cur_ctb_idx = ps_proc->i4_ctb_x
                     + ps_proc->i4_ctb_y * (ps_sps->i2_pic_wd_in_ctb);
-
-    pixel_size_y     = ps_codec->i4_pixel_size_y;
-    pixel_size_uv    = ps_codec->i4_pixel_size_uv;
-    i4_bit_depth_luma   = ps_codec->i4_bit_depth_luma;
-    i4_bit_depth_chroma = ps_codec->i4_bit_depth_chroma;
-
     /*
      * In case of tiles, the next ctb belonging to the same tile must be used to get the PU index
      */
@@ -214,8 +213,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
     h_samp_factor = is_yuv444 ? 1 : 2;
     v_samp_factor = is_yuv420 ? 2 : 1;
 
-    wp_ofst_bd_shift_luma = ps_sps->i1_use_high_precision_pred_wt ? 0 : (i4_bit_depth_luma - 8);
-    wp_ofst_bd_shift_chroma = ps_sps->i1_use_high_precision_pred_wt ? 0 : (i4_bit_depth_chroma - 8);
+    wp_ofst_bd_shift_luma = ps_sps->i1_use_high_precision_pred_wt ? 0 : (bit_depth_luma - 8);
+    wp_ofst_bd_shift_chroma = ps_sps->i1_use_high_precision_pred_wt ? 0 : (bit_depth_chroma - 8);
 
     for(pu_indx = 0; pu_indx < i4_pu_cnt; pu_indx++, ps_pu++)
     {
@@ -277,8 +276,8 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
         /*luma and chroma components*/
         for(clr_indx = 0; clr_indx < num_comp; clr_indx++)
         {
-            WORD32  pixel_size;
-            UWORD8  u1_bit_depth;
+            WORD32 pixel_size;
+            UWORD8 u1_bit_depth;
 
             PROFILE_DISABLE_INTER_PRED_LUMA(clr_indx);
             PROFILE_DISABLE_INTER_PRED_CHROMA(clr_indx);
@@ -287,7 +286,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
             {
                 WORD32 mv;
                 pixel_size = pixel_size_y;
-                u1_bit_depth  = (UWORD8)i4_bit_depth_luma;
+                u1_bit_depth  = (UWORD8)bit_depth_luma;
 
                 if(ps_pu->b2_pred_mode != PRED_L1)
                 {
@@ -335,7 +334,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
             {
                 WORD32 mv;
                 pixel_size = pixel_size_uv;
-                u1_bit_depth  = (UWORD8)i4_bit_depth_chroma;
+                u1_bit_depth  = (UWORD8)bit_depth_chroma;
 
                 /* xint is upshifted by 1 because the chroma components are  */
                 /* interleaved which is not the assumption made by standard  */
@@ -454,7 +453,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_ht += (ai2_xfrac[0] && ai2_yfrac[0]) ? ntaps - 1 : 0;
 
-                if (1 == pixel_size)
+                if (PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     func_ptr1(func_src, func_dst, func_src_strd, func_dst_strd,
                               func_coeff, func_ht, func_wd);
@@ -488,7 +487,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
                 func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
 
-                if (1 == pixel_size)
+                if (PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     func_ptr2(func_src, func_dst, func_src_strd, func_dst_strd,
                               func_coeff, func_ht, func_wd);
@@ -531,7 +530,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
 
                 func_ht += (ai2_xfrac[1] && ai2_yfrac[1]) ? ntaps - 1 : 0;
 
-                if (1 == pixel_size)
+                if (PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     func_ptr3(func_src, func_dst, func_src_strd, func_dst_strd,
                               func_coeff, func_ht, func_wd);
@@ -566,7 +565,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 func_wd = pu_wd >> (is_yuv444 ? 0 : clr_indx);
                 func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
 
-                if (1 == pixel_size)
+                if (PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     func_ptr4(func_src, func_dst, func_src_strd, func_dst_strd,
                               func_coeff, func_ht, func_wd);
@@ -597,9 +596,9 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 if(0 == clr_indx)
                 {
                     shift = ps_wt_ofst->i1_luma_log2_weight_denom
-                                + (14 - i4_bit_depth_luma) + 1; //+ SHIFT_14_MINUS_BIT_DEPTH + 1;
+                                + 14 - bit_depth_luma + 1;
 
-                    if (1 == pixel_size_y)
+                    if (PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
                         ps_codec->s_func_selector.ihevc_weighted_pred_bi_fptr(pi2_tmp1,
                                                                             pi2_tmp2,
@@ -619,24 +618,34 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_hbd_weighted_pred_bi_fptr(pi2_tmp1,pi2_tmp2,(UWORD16 *)pu1_dst,
-                                                    pu_wd,pu_wd,ref_strd,
-                                                    luma_weight_l0,luma_offset_l0,
-                                                    luma_weight_l1,luma_offset_l1,
-                                                    shift,lvl_shift1,lvl_shift2,
-                                                    pu_ht,pu_wd,i4_bit_depth_luma);
+                        ps_codec->s_func_selector.ihevc_hbd_weighted_pred_bi_fptr(pi2_tmp1,
+                                                                                  pi2_tmp2,
+                                                                                  (UWORD16 *)pu1_dst,
+                                                                                  pu_wd,
+                                                                                  pu_wd,
+                                                                                  ref_strd,
+                                                                                  luma_weight_l0,
+                                                                                  luma_offset_l0,
+                                                                                  luma_weight_l1,
+                                                                                  luma_offset_l1,
+                                                                                  shift,
+                                                                                  lvl_shift1,
+                                                                                  lvl_shift2,
+                                                                                  pu_ht,
+                                                                                  pu_wd,
+                                                                                  bit_depth_luma);
                     }
                 }
                 else
                 {
                     shift = ps_wt_ofst->i1_chroma_log2_weight_denom
-                                    + (14 - i4_bit_depth_chroma) + 1;
+                                    + 14 - bit_depth_chroma + 1;
                     func_src_strd = pu_wd * (chroma_pixel_strd / h_samp_factor);
                     func_dst_strd = ref_strd * (chroma_pixel_strd / h_samp_factor);
 
                     if(chroma_yuv420sp_vu)
                     {
-                        if (1 == pixel_size_uv)
+                        if (PIXEL_SIZE_1BYTE == pixel_size_uv)
                         {
                             ps_codec->s_func_selector.ihevc_weighted_pred_chroma_bi_fptr(pi2_tmp1,
                                                                                          pi2_tmp2,
@@ -661,30 +670,30 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_bi_fptr(pi2_tmp1,
-                                                                             pi2_tmp2,
-                                                                             (UWORD16 *)pu1_dst,
-                                                                             func_src_strd,
-                                                                             func_src_strd,
-                                                                             func_dst_strd,
-                                                                             chroma_weight_l0_cr,
-                                                                             chroma_weight_l0_cb,
-                                                                             chroma_offset_l0_cr,
-                                                                             chroma_offset_l0_cb,
-                                                                             chroma_weight_l1_cr,
-                                                                             chroma_weight_l1_cb,
-                                                                             chroma_offset_l1_cr,
-                                                                             chroma_offset_l1_cb,
-                                                                             shift,
-                                                                             lvl_shift1,
-                                                                             lvl_shift2,
-                                                                             pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                             pu_wd >> (is_yuv444 ? 0 : clr_indx),
-                                                                             (UWORD8)i4_bit_depth_chroma);
+                                                                                             pi2_tmp2,
+                                                                                             (UWORD16 *)pu1_dst,
+                                                                                             func_src_strd,
+                                                                                             func_src_strd,
+                                                                                             func_dst_strd,
+                                                                                             chroma_weight_l0_cr,
+                                                                                             chroma_weight_l0_cb,
+                                                                                             chroma_offset_l0_cr,
+                                                                                             chroma_offset_l0_cb,
+                                                                                             chroma_weight_l1_cr,
+                                                                                             chroma_weight_l1_cb,
+                                                                                             chroma_offset_l1_cr,
+                                                                                             chroma_offset_l1_cb,
+                                                                                             shift,
+                                                                                             lvl_shift1,
+                                                                                             lvl_shift2,
+                                                                                             pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                             pu_wd >> (is_yuv444 ? 0 : clr_indx),
+                                                                                             (UWORD8)bit_depth_chroma);
                         }
                     }
                     else
                     {
-                        if (1 == pixel_size_uv)
+                        if (PIXEL_SIZE_1BYTE == pixel_size_uv)
                         {
                             ps_codec->s_func_selector.ihevc_weighted_pred_chroma_bi_fptr(pi2_tmp1,
                                                                                          pi2_tmp2,
@@ -709,25 +718,25 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_bi_fptr(pi2_tmp1,
-                                                                             pi2_tmp2,
-                                                                             (UWORD16 *)pu1_dst,
-                                                                             func_src_strd,
-                                                                             func_src_strd,
-                                                                             func_dst_strd,
-                                                                             chroma_weight_l0_cb,
-                                                                             chroma_weight_l0_cr,
-                                                                             chroma_offset_l0_cb,
-                                                                             chroma_offset_l0_cr,
-                                                                             chroma_weight_l1_cb,
-                                                                             chroma_weight_l1_cr,
-                                                                             chroma_offset_l1_cb,
-                                                                             chroma_offset_l1_cr,
-                                                                             shift,
-                                                                             lvl_shift1,
-                                                                             lvl_shift2,
-                                                                             pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                             pu_wd >> (is_yuv444 ? 0 : clr_indx),
-                                                                             (UWORD8)i4_bit_depth_chroma);
+                                                                                             pi2_tmp2,
+                                                                                             (UWORD16 *)pu1_dst,
+                                                                                             func_src_strd,
+                                                                                             func_src_strd,
+                                                                                             func_dst_strd,
+                                                                                             chroma_weight_l0_cb,
+                                                                                             chroma_weight_l0_cr,
+                                                                                             chroma_offset_l0_cb,
+                                                                                             chroma_offset_l0_cr,
+                                                                                             chroma_weight_l1_cb,
+                                                                                             chroma_weight_l1_cr,
+                                                                                             chroma_offset_l1_cb,
+                                                                                             chroma_offset_l1_cr,
+                                                                                             shift,
+                                                                                             lvl_shift1,
+                                                                                             lvl_shift2,
+                                                                                             pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                             pu_wd >> (is_yuv444 ? 0 : clr_indx),
+                                                                                             (UWORD8)bit_depth_chroma);
                         }
                     }
                 }
@@ -750,103 +759,109 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 if(0 == clr_indx)
                 {
                     shift = ps_wt_ofst->i1_luma_log2_weight_denom
-                        + 14 - i4_bit_depth_luma; //+ SHIFT_14_MINUS_BIT_DEPTH;
+                                    + 14 - bit_depth_luma;
 
-                    if (1 == pixel_size_y)
+                    if (PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
                         ps_codec->s_func_selector.ihevc_weighted_pred_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                            pu1_dst,
-                                                                            pu_wd,
-                                                                            ref_strd,
-                                                                            ps_pu->b2_pred_mode == PRED_L0 ? luma_weight_l0 : luma_weight_l1,
-                                                                            ps_pu->b2_pred_mode == PRED_L0 ? luma_offset_l0 : luma_offset_l1,
-                                                                            shift,
-                                                                            lvl_shift1,
-                                                                            pu_ht,
-                                                                            pu_wd);
+                                                                               pu1_dst,
+                                                                               pu_wd,
+                                                                               ref_strd,
+                                                                               ps_pu->b2_pred_mode == PRED_L0 ? luma_weight_l0 : luma_weight_l1,
+                                                                               ps_pu->b2_pred_mode == PRED_L0 ? luma_offset_l0 : luma_offset_l1,
+                                                                               shift,
+                                                                               lvl_shift1,
+                                                                               pu_ht,
+                                                                               pu_wd);
                     }
                     else
                     {
                         ps_codec->s_func_selector.ihevc_hbd_weighted_pred_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                      (UWORD16 *)pu1_dst,pu_wd,ref_strd,
-                                                                      ps_pu->b2_pred_mode == PRED_L0 ? luma_weight_l0 : luma_weight_l1,
-                                                                      ps_pu->b2_pred_mode == PRED_L0 ? luma_offset_l0 : luma_offset_l1,
-                                                                      shift,lvl_shift1,pu_ht,pu_wd,(UWORD8)i4_bit_depth_luma);
+                                                                                   (UWORD16 *)pu1_dst,
+                                                                                   pu_wd,
+                                                                                   ref_strd,
+                                                                                   ps_pu->b2_pred_mode == PRED_L0 ? luma_weight_l0 : luma_weight_l1,
+                                                                                   ps_pu->b2_pred_mode == PRED_L0 ? luma_offset_l0 : luma_offset_l1,
+                                                                                   shift,
+                                                                                   lvl_shift1,
+                                                                                   pu_ht,
+                                                                                   pu_wd,
+                                                                                   (UWORD8)bit_depth_luma);
                     }
                 }
                 else
                 {
-                    shift = ps_slice_hdr->s_wt_ofst.i1_chroma_log2_weight_denom
-                                    + (14 - i4_bit_depth_chroma);
+                    shift = ps_wt_ofst->i1_chroma_log2_weight_denom
+                                    + 14 - bit_depth_chroma;
                     func_src_strd = pu_wd * (chroma_pixel_strd / h_samp_factor);
                     func_dst_strd = ref_strd * (chroma_pixel_strd / h_samp_factor);
 
                     if(chroma_yuv420sp_vu)
                     {
-                        if (1 == pixel_size_uv)
+                        if (PIXEL_SIZE_1BYTE == pixel_size_uv)
                         {
                             ps_codec->s_func_selector.ihevc_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                                        pu1_dst,
-                                                                                        func_src_strd,
-                                                                                        func_dst_strd,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
-                                                                                        shift,
-                                                                                        lvl_shift1,
-                                                                                        pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                                        pu_wd >> (is_yuv444 ? 0 : clr_indx));
+                                                                                          pu1_dst,
+                                                                                          func_src_strd,
+                                                                                          func_dst_strd,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
+                                                                                          shift,
+                                                                                          lvl_shift1,
+                                                                                          pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                          pu_wd >> (is_yuv444 ? 0 : clr_indx));
                         }
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                              (UWORD16 *)pu1_dst,
-                                                                              func_src_strd,
-                                                                              func_dst_strd,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
-                                                                              shift,
-                                                                              lvl_shift1,
-                                                                              pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                              pu_wd >> (is_yuv444 ? 0 : clr_indx),
-                                                                              (UWORD8)i4_bit_depth_chroma);
+                                                                                             (UWORD16 *)pu1_dst,
+                                                                                             func_src_strd,
+                                                                                             func_dst_strd,
+                                                                                             ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
+                                                                                             ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
+                                                                                             ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
+                                                                                             ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
+                                                                                             shift,
+                                                                                             lvl_shift1,
+                                                                                             pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                             pu_wd >> (is_yuv444 ? 0 : clr_indx),
+                                                                                             (UWORD8)bit_depth_chroma);
                         }
                     }
                     else
                     {
-                        if (1 == pixel_size_uv)
+                        if (PIXEL_SIZE_1BYTE == pixel_size_uv)
                         {
                             ps_codec->s_func_selector.ihevc_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                                        pu1_dst,
-                                                                                        func_src_strd,
-                                                                                        func_dst_strd,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
-                                                                                        ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
-                                                                                        shift,
-                                                                                        lvl_shift1,
-                                                                                        pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                                        pu_wd >> (is_yuv444 ? 0 : clr_indx));
+                                                                                          pu1_dst,
+                                                                                          func_src_strd,
+                                                                                          func_dst_strd,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
+                                                                                          ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
+                                                                                          shift,
+                                                                                          lvl_shift1,
+                                                                                          pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                          pu_wd >> (is_yuv444 ? 0 : clr_indx));
                         }
                         else
                         {
                             ps_codec->s_func_selector.ihevc_hbd_weighted_pred_chroma_uni_fptr(ps_pu->b2_pred_mode == PRED_L0 ? pi2_tmp1 : pi2_tmp2,
-                                                                              (UWORD16 *)pu1_dst,
-                                                                              func_src_strd,
-                                                                              func_dst_strd,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
-                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
-                                                                              shift,
-                                                                              lvl_shift1,
-                                                                              pu_ht >> (is_yuv420 ? clr_indx : 0),
-                                                                              pu_wd >> (is_yuv444 ? 0 : clr_indx),
-                                                                              (UWORD8)i4_bit_depth_chroma);
+                                                                                              (UWORD16 *)pu1_dst,
+                                                                                              func_src_strd,
+                                                                                              func_dst_strd,
+                                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cb : chroma_weight_l1_cb,
+                                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_weight_l0_cr : chroma_weight_l1_cr,
+                                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cb : chroma_offset_l1_cb,
+                                                                                              ps_pu->b2_pred_mode == PRED_L0 ? chroma_offset_l0_cr : chroma_offset_l1_cr,
+                                                                                              shift,
+                                                                                              lvl_shift1,
+                                                                                              pu_ht >> (is_yuv420 ? clr_indx : 0),
+                                                                                              pu_wd >> (is_yuv444 ? 0 : clr_indx),
+                                                                                              (UWORD8)bit_depth_chroma);
                         }
                     }
                 }
@@ -873,7 +888,7 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 func_ht = pu_ht >> (is_yuv420 ? clr_indx : 0);
                 func_wd = pu_wd << (is_yuv444 ? clr_indx : 0);
 
-                if (1 == pixel_size)
+                if (PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     ps_codec->s_func_selector.ihevc_weighted_pred_bi_default_fptr(pi2_tmp1,
                                                                                   pi2_tmp2,
@@ -889,16 +904,16 @@ void ihevcd_inter_pred_ctb(process_ctxt_t *ps_proc)
                 else
                 {
                     ps_codec->s_func_selector.ihevc_hbd_weighted_pred_bi_default_fptr(pi2_tmp1,
-                                                                     pi2_tmp2,
-                                                                     (UWORD16 *)pu1_dst,
-                                                                     func_src_strd,
-                                                                     func_src_strd,
-                                                                     func_dst_strd,
-                                                                     lvl_shift1,
-                                                                     lvl_shift2,
-                                                                     func_ht,
-                                                                     func_wd,
-                                                                     u1_bit_depth);
+                                                                                      pi2_tmp2,
+                                                                                      (UWORD16 *)pu1_dst,
+                                                                                      func_src_strd,
+                                                                                      func_src_strd,
+                                                                                      func_dst_strd,
+                                                                                      lvl_shift1,
+                                                                                      lvl_shift2,
+                                                                                      func_ht,
+                                                                                      func_wd,
+                                                                                      u1_bit_depth);
                 }
             }
         }
