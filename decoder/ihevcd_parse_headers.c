@@ -2184,12 +2184,29 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
         if((0 != ps_codec->u4_allocate_dynamic_done) &&
                             ((ps_codec->i4_disp_wd != disp_wd) ||
-                            (ps_codec->i4_disp_ht != disp_ht)))
+                            (ps_codec->i4_disp_ht != disp_ht) ||
+                            (ps_codec->i4_bit_depth_luma != ps_sps->i1_bit_depth_luma_minus8 + 8) ||
+                            (ps_codec->i4_bit_depth_chroma != ps_sps->i1_bit_depth_chroma_minus8 + 8) ||
+                            (ps_codec->i4_chroma_format_idc != ps_sps->i1_chroma_format_idc)))
         {
             if(0 == ps_codec->i4_first_pic_done)
             {
                 return IHEVCD_INVALID_PARAMETER;
             }
+
+            // Do not support change in bit-depth once decoder is initialized
+            if(ps_codec->i4_bit_depth_luma != ps_sps->i1_bit_depth_luma_minus8 + 8 ||
+               ps_codec->i4_bit_depth_chroma != ps_sps->i1_bit_depth_chroma_minus8 + 8)
+            {
+                return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_BIT_DEPTH;
+            }
+
+            // Do not support change in chroma format once decoder is initialized
+            if(ps_codec->i4_chroma_format_idc != ps_sps->i1_chroma_format_idc)
+            {
+                return (IHEVCD_ERROR_T)IHEVCD_UNSUPPORTED_CHROMA_FMT_IDC;
+            }
+
             ps_codec->i4_reset_flag = 1;
             return (IHEVCD_ERROR_T)IVD_RES_CHANGED;
         }
@@ -2197,7 +2214,13 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->i4_disp_wd = disp_wd;
         ps_codec->i4_disp_ht = disp_ht;
 
+        ps_codec->i4_chroma_format_idc = ps_sps->i1_chroma_format_idc;
+        ps_codec->i4_bit_depth_luma = ps_sps->i1_bit_depth_luma_minus8 + 8;
+        ps_codec->i4_pixel_size_y   = 1 + (ps_sps->i1_bit_depth_luma_minus8 > 0);
         ps_codec->i4_qp_bd_offset_y = 6 * ps_sps->i1_bit_depth_luma_minus8;
+
+        ps_codec->i4_bit_depth_chroma = ps_sps->i1_bit_depth_chroma_minus8 + 8;
+        ps_codec->i4_pixel_size_uv    = 1 + (ps_sps->i1_bit_depth_chroma_minus8 > 0);
         ps_codec->i4_qp_bd_offset_uv  = 6 * ps_sps->i1_bit_depth_chroma_minus8;
 
 
