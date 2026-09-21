@@ -2640,6 +2640,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
     WORD32 ctb_addr;
     WORD32 tile_idx;
     WORD32 cabac_init_idc;
+    WORD32 cabac_init_qp;
     WORD32 ctb_size;
     WORD32 num_ctb_in_row;
     WORD32 num_min4x4_in_ctb;
@@ -2825,11 +2826,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 #ifdef ENABLE_MAIN_REXT_PROFILE
             WORD32 ai4_stats[4] = {0};
 #endif
+            cabac_init_qp = CLIP3(slice_qp, 0, 51);
             ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                     &ps_codec->s_parse.s_bitstrm,
-                                    slice_qp,
+                                    cabac_init_qp,
                                     cabac_init_idc,
-                                    &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                    &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                     ,
                                     ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -2929,11 +2931,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
 #ifdef ENABLE_MAIN_REXT_PROFILE
             WORD32 ai4_stats[4] = {0};
 #endif
+                cabac_init_qp = CLIP3(slice_qp, 0, 51);
                 ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                         &ps_codec->s_parse.s_bitstrm,
-                                        slice_qp,
+                                        cabac_init_qp,
                                         cabac_init_idc,
-                                        &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                        &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                         ,
                                         ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -3013,11 +3016,12 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                     WORD32 ai4_stats[4] = {0};
 #endif
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0], size);
+                    cabac_init_qp = CLIP3(slice_qp, 0, 51);
                     ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                             &ps_codec->s_parse.s_bitstrm,
-                                            slice_qp,
+                                            cabac_init_qp,
                                             cabac_init_idc,
-                                            &gau1_ihevc_cab_ctxts[cabac_init_idc][slice_qp][0]
+                                            &gau1_ihevc_cab_ctxts[cabac_init_idc][cabac_init_qp][0]
 #ifdef ENABLE_MAIN_REXT_PROFILE
                                             ,
                                             ps_sps->i1_persistent_rice_adaptation_enabled_flag ? ai4_stats : NULL
@@ -3034,9 +3038,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
                 else
                 {
                     //memcpy(&ps_codec->s_parse.s_cabac.au1_ctxt_models, &ps_codec->s_parse.s_cabac.au1_ctxt_models_sync, size);
+                    cabac_init_qp = CLIP3(slice_qp, 0, 51);
                     ret = ihevcd_cabac_init(&ps_codec->s_parse.s_cabac,
                                             &ps_codec->s_parse.s_bitstrm,
-                                            slice_qp,
+                                            cabac_init_qp,
                                             cabac_init_idc,
                                             (const UWORD8 *)&ps_codec->s_parse.s_cabac.au1_ctxt_models_sync
 #ifdef ENABLE_MAIN_REXT_PROFILE
