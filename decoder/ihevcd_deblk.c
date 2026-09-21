@@ -132,6 +132,8 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
 
     ihevc_deblk_chroma_horz_ft *pf_deblk_chroma_horz;
     ihevc_deblk_chroma_vert_ft *pf_deblk_chroma_vert;
+    ihevc_hbd_deblk_chroma_horz_ft *pf_hbd_deblk_chroma_horz;
+    ihevc_hbd_deblk_chroma_vert_ft *pf_hbd_deblk_chroma_vert;
 
     PROFILE_DISABLE_DEBLK();
 
@@ -164,6 +166,9 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
         pf_deblk_chroma_horz = ps_codec->s_func_selector.ihevc_deblk_chroma_horz_fptr;
         pf_deblk_chroma_vert = ps_codec->s_func_selector.ihevc_deblk_chroma_vert_fptr;
     }
+
+    pf_hbd_deblk_chroma_horz = ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr;
+    pf_hbd_deblk_chroma_vert = ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr;
 
     /* strides are in units of number of bytes */
     /* ctb_size * ctb_size / 8 / 16 is the number of bytes needed per CTB */
@@ -358,7 +363,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          ps_slice_hdr->i1_beta_offset_div2,
                                          ps_slice_hdr->i1_tc_offset_div2,
                                          filter_p, filter_q);
-                    if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
+                    if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                     {
                         ps_codec->s_func_selector.ihevc_deblk_luma_vert_fptr(pu1_src, src_strd,
                                                                              u4_bs & 3, qp_p, qp_q,
@@ -514,7 +519,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                          ps_slice_hdr->i1_beta_offset_div2,
                                          ps_slice_hdr->i1_tc_offset_div2,
                                          filter_p, filter_q);
-                    if (BIT_DEPTH_LUMA == u1_bit_depth_luma)
+                    if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                     {
                         ps_codec->s_func_selector.ihevc_deblk_luma_horz_fptr(pu1_src, src_strd,
                                                                              u4_bs & 3, qp_p, qp_q,
@@ -676,7 +681,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                         {
                             pf_deblk_chroma_vert(pu1_src,
                                                  chroma_strd,
@@ -691,22 +696,22 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_q,
-                                                                               qp_p,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_q,
-                                                                               filter_p,
-                                                                               u1_bit_depth_chroma,
-                                                                               ps_sps->i1_chroma_format_idc);
+                            pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                                                     chroma_strd,
+                                                     qp_q,
+                                                     qp_p,
+                                                     ps_pps->i1_pic_cr_qp_offset,
+                                                     ps_pps->i1_pic_cb_qp_offset,
+                                                     i1_tc_offset_div2,
+                                                     filter_q,
+                                                     filter_p,
+                                                     u1_bit_depth_chroma,
+                                                     ps_sps->i1_chroma_format_idc);
                         }
                     }
                     else
                     {
-                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                         {
                             pf_deblk_chroma_vert(pu1_src,
                                                  chroma_strd,
@@ -721,17 +726,17 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_vert_fptr((UWORD16 *)pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_p,
-                                                                               qp_q,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_p,
-                                                                               filter_q,
-                                                                               u1_bit_depth_chroma,
-                                                                               ps_sps->i1_chroma_format_idc);
+                            pf_hbd_deblk_chroma_vert((UWORD16 *)pu1_src,
+                                                     chroma_strd,
+                                                     qp_p,
+                                                     qp_q,
+                                                     ps_pps->i1_pic_cb_qp_offset,
+                                                     ps_pps->i1_pic_cr_qp_offset,
+                                                     i1_tc_offset_div2,
+                                                     filter_p,
+                                                     filter_q,
+                                                     u1_bit_depth_chroma,
+                                                     ps_sps->i1_chroma_format_idc);
                         }
                     }
                 }
@@ -881,7 +886,7 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                                            filter_p, filter_q);
                     if(chroma_yuv420sp_vu)
                     {
-                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                         {
                             pf_deblk_chroma_horz(pu1_src,
                                                  chroma_strd,
@@ -896,22 +901,22 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_q,
-                                                                               qp_p,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_q,
-                                                                               filter_p,
-                                                                               u1_bit_depth_chroma,
-                                                                               ps_sps->i1_chroma_format_idc);
+                            pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                                                     chroma_strd,
+                                                     qp_q,
+                                                     qp_p,
+                                                     ps_pps->i1_pic_cr_qp_offset,
+                                                     ps_pps->i1_pic_cb_qp_offset,
+                                                     i1_tc_offset_div2,
+                                                     filter_q,
+                                                     filter_p,
+                                                     u1_bit_depth_chroma,
+                                                     ps_sps->i1_chroma_format_idc);
                         }
                     }
                     else
                     {
-                        if (BIT_DEPTH_CHROMA == u1_bit_depth_chroma)
+                        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                         {
                             pf_deblk_chroma_horz(pu1_src,
                                                  chroma_strd,
@@ -926,17 +931,17 @@ void ihevcd_deblk_ctb(deblk_ctxt_t *ps_deblk,
                         }
                         else
                         {
-                            ps_codec->s_func_selector.ihevc_hbd_deblk_chroma_horz_fptr((UWORD16 *)pu1_src,
-                                                                               chroma_strd,
-                                                                               qp_p,
-                                                                               qp_q,
-                                                                               ps_pps->i1_pic_cb_qp_offset,
-                                                                               ps_pps->i1_pic_cr_qp_offset,
-                                                                               i1_tc_offset_div2,
-                                                                               filter_p,
-                                                                               filter_q,
-                                                                               u1_bit_depth_chroma,
-                                                                               ps_sps->i1_chroma_format_idc);
+                            pf_hbd_deblk_chroma_horz((UWORD16 *)pu1_src,
+                                                     chroma_strd,
+                                                     qp_p,
+                                                     qp_q,
+                                                     ps_pps->i1_pic_cb_qp_offset,
+                                                     ps_pps->i1_pic_cr_qp_offset,
+                                                     i1_tc_offset_div2,
+                                                     filter_p,
+                                                     filter_q,
+                                                     u1_bit_depth_chroma,
+                                                     ps_sps->i1_chroma_format_idc);
                         }
                     }
                 }
