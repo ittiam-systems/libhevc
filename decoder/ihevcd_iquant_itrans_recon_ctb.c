@@ -41,7 +41,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "ihevc_typedefs.h"
 #include "iv.h"
@@ -302,7 +301,6 @@ UWORD8* ihevcd_unpack_coeffs(WORD16 *pi2_tu_coeff,
                        dequant_coeff * g_ihevc_iquant_scales[qp_rem],
                        shift_iq, qp_div);
             }
-
             if(trans_skip)
             {
                 WORD32 shift_ts = MAX_TR_DYNAMIC_RANGE - bit_depth - log2_trans_size;
@@ -650,19 +648,19 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
         if(ps_tu->b1_transquant_bypass || ps_pl_tu_ctxt->transform_skip_flag)
         {
             /* Recon */
-            if (1 == pixel_size)
+            if(PIXEL_SIZE_1BYTE == pixel_size)
             {
                 ps_codec->apf_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff, ps_pl_tu_ctxt->pu1_pred,
-                                            ps_pl_tu_ctxt->pu1_dst, ps_pl_tu_ctxt->tu_coeff_stride,
-                                            ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
-                                            ps_pl_tu_ctxt->zero_cols);
+                                              ps_pl_tu_ctxt->pu1_dst, ps_pl_tu_ctxt->tu_coeff_stride,
+                                              ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                              ps_pl_tu_ctxt->zero_cols);
             }
             else
             {
-                    ps_codec->apf_hbd_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
-                                                    (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, ps_pl_tu_ctxt->tu_coeff_stride,
-                                                    ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
-                                                    ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
+                ps_codec->apf_hbd_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
+                                                  (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, ps_pl_tu_ctxt->tu_coeff_stride,
+                                                  ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                                  ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
             }
         }
         else
@@ -670,7 +668,7 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
             /* iQuant , iTrans and Recon */
             if((0 == ps_pl_tu_ctxt->coeff_type))
             {
-                if (1 == pixel_size)
+                if(PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     ps_codec->apf_itrans_recon[func_idx](ps_pl_tu_ctxt->pi2_tu_coeff,
                                                         ps_proc->pi2_itrans_intrmd_buf,
@@ -698,7 +696,7 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
             }
             else /* DC only */
             {
-                if (1 == pixel_size)
+                if(PIXEL_SIZE_1BYTE == pixel_size)
                 {
                     ps_codec->apf_itrans_recon_dc[is_chroma](
                                 ps_pl_tu_ctxt->pu1_pred, ps_pl_tu_ctxt->pu1_dst,
@@ -708,9 +706,9 @@ static void ihevcd_iquant_itrans_recon_tu_plane(process_ctxt_t *ps_proc,
                 else
                 {
                     ps_codec->apf_hbd_itrans_recon_dc[is_chroma](
-                                    (UWORD16 *)ps_pl_tu_ctxt->pu1_pred, (UWORD16 *)ps_pl_tu_ctxt->pu1_dst,
-                                    ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd, log2_trans_size,
-                                    ps_pl_tu_ctxt->coeff_value, bit_depth);
+                                (UWORD16 *)ps_pl_tu_ctxt->pu1_pred, (UWORD16 *)ps_pl_tu_ctxt->pu1_dst,
+                                ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd, log2_trans_size,
+                                ps_pl_tu_ctxt->coeff_value, bit_depth);
                 }
             }
         }
@@ -819,19 +817,19 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
         }
         if(!alpha)
         {
-            if(ps_codec->i4_pixel_size_y > 1)
-            {
-                ps_codec->apf_hbd_recon[func_idx](residue_out, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
-                                                  (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, trans_size,
-                                                  ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
-                                                  ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
-            }
-            else
+            if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
             {
                 ps_codec->apf_recon[func_idx](residue_out, ps_pl_tu_ctxt->pu1_pred,
                                               ps_pl_tu_ctxt->pu1_dst, trans_size,
                                               ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
                                               ps_pl_tu_ctxt->zero_cols);
+            }
+            else
+            {
+                ps_codec->apf_hbd_recon[func_idx](residue_out, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
+                                                  (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, trans_size,
+                                                  ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd,
+                                                  ps_pl_tu_ctxt->zero_cols, (UWORD8)bit_depth);
             }
         }
     }
@@ -841,17 +839,17 @@ static void ihevcd_iquant_itrans_resi_recon_tu_plane(process_ctxt_t *ps_proc,
         {
             memset(residue_out, 0, trans_size * trans_size * sizeof(WORD16));
         }
-        if(ps_codec->i4_pixel_size_y > 1)
-        {
-            ihevc_hbd_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
-                                           (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
-                                           trans_size, ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd, (UWORD8)bit_depth);
-        }
-        else
+        if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
         {
             ihevc_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, ps_pl_tu_ctxt->pu1_pred,
                                        ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
                                        trans_size, ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd);
+        }
+        else
+        {
+            ihevc_hbd_chroma_recon_nxn_ccp(pi2_res, pi2_res_uv, (UWORD16 *)ps_pl_tu_ctxt->pu1_pred,
+                                           (UWORD16 *)ps_pl_tu_ctxt->pu1_dst, alpha, trans_size, trans_size,
+                                           trans_size, ps_pl_tu_ctxt->pred_strd, ps_pl_tu_ctxt->dst_strd, (UWORD8)bit_depth);
         }
     }
 }
@@ -1052,8 +1050,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
         WORD32 qp_div_v = 0, qp_rem_v = 0;
         WORD32 chroma_qp_idx;
         WORD8 i1_chroma_pic_qp_offset, i1_chroma_slice_qp_offset;
-
         WORD16 *pi2_dequant_matrix = NULL, *pi2_dequant_matrix_v = NULL;
+
         WORD32 trans_size = 0;
         TRANSFORM_TYPE e_trans_type;
         WORD32 log2_y_trans_size_minus_2, log2_uv_trans_size_minus_2;
@@ -1125,8 +1123,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
             ps_tu_sblk_coeff_data = (tu_sblk_coeff_data_t *)pu1_tu_coeff_data;
 
             pu1_buf = (UWORD8 *)&ps_tu_sblk_coeff_data->ai2_level[0];
-
             {
+
                 for(i = 0; i < cb_size; i++)
                 {
                     memcpy(&pu1_y_dst[i * pic_strd * pixel_size_y], pu1_buf, (cb_size * pixel_size_y));
@@ -1146,7 +1144,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     {
                         for(j = 0; j < cb_size / h_samp_factor; j++)
                         {
-                            if (1 == pixel_size_uv)
+                            if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                             {
                                 pu1_uv_dst[i * chroma_strd + chroma_pixel_strd * j] = *pu1_buf++;
                             }
@@ -1166,7 +1164,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     {
                         for(j = 0; j < cb_size / h_samp_factor; j++)
                         {
-                            if (1 == pixel_size_uv)
+                            if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                             {
                                 pu1_uv_dst[i * chroma_strd + chroma_pixel_strd * j] = *pu1_buf++;
                             }
@@ -1179,11 +1177,15 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         }
                     }
                 }
-            } /* End of IPCM memcpy block */
+            }
 
             pu1_tu_coeff_data = pu1_buf;
 
-        } /* End of if IPCM */
+        }
+
+
+
+
 
         for(c_idx = 0; c_idx < num_comp; c_idx++)
         {
@@ -1245,7 +1247,6 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 }
                 else /* UV interleaved */
                 {
-                    UWORD32 dummy_coeff_x, dummy_coeff_y;
                     /* Initializing variables */
                     const WORD16 *pi2_ihevcd_chroma_qp =
                                     CHROMA_FMT_IDC_YUV420 != ps_sps->i1_chroma_format_idc ?
@@ -1314,7 +1315,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         chroma_qp_idx += ps_pps->i4_cb_qp_offset_list[ps_tu->b3_cu_chroma_qp_offset_idx];
                     }
 #endif
-                    if (1 == pixel_size_uv)
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
                         chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
                         qp_div = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
@@ -1358,7 +1359,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                         chroma_qp_idx += ps_pps->i4_cr_qp_offset_list[ps_tu->b3_cu_chroma_qp_offset_idx];
                     }
 #endif
-                    if (1 == pixel_size_uv)
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
                         chroma_qp_idx = CLIP3(chroma_qp_idx, 0, 57);
                         qp_div_v = pi2_ihevcd_chroma_qp[chroma_qp_idx] / 6;
@@ -1392,16 +1393,16 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     }
 
                     y_cb_tu.pi2_tu_coeff = pi2_tu_coeff;
-                    y_cb_tu.pu1_pred = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv;
-                    y_cb_tu.pu1_dst = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv;
+                    y_cb_tu.pu1_pred = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv; /* Pointing to start byte of U*/
+                    y_cb_tu.pu1_dst = pu1_uv_dst_ctb + (tu_uv_offset + chroma_yuv420sp_vu_u_offset) * pixel_size_uv; /* Pointing to start byte of U*/
                     y_cb_tu.tu_coeff_stride = trans_size;
                     y_cb_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     y_cb_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     y_cb_tu.cbf = ps_tu->b1_cb_cbf;
 
                     cr_tu.pi2_tu_coeff = pi2_tu_coeff + trans_size * trans_size;
-                    cr_tu.pu1_pred = y_cb_tu.pu1_pred + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv;
-                    cr_tu.pu1_dst = y_cb_tu.pu1_dst + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv;
+                    cr_tu.pu1_pred = y_cb_tu.pu1_pred + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv; /* Pointing to start byte of V*/
+                    cr_tu.pu1_dst = y_cb_tu.pu1_dst + (1 + chroma_yuv420sp_vu_v_offset) * pixel_size_uv; /* Pointing to start byte of V*/
                     cr_tu.tu_coeff_stride = trans_size;
                     cr_tu.pred_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
                     cr_tu.dst_strd = pic_strd * chroma_pixel_strd / h_samp_factor;
@@ -1533,7 +1534,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                                                     ctb_size);
 
                             if(trans_size == 4)
-                            luma_nbr_flags_4x4[(ps_tu->b4_pos_x & 1) + (ps_tu->b4_pos_y & 1)*2] = luma_nbr_flags;
+                                luma_nbr_flags_4x4[(ps_tu->b4_pos_x % 2) + (ps_tu->b4_pos_y % 2) * 2] = luma_nbr_flags;
 
                             if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
                             {
@@ -1624,7 +1625,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             pu1_top_left = y_cb_tu.pu1_pred - (pic_strd + 1) * pixel_size_y;
 
                             /* call reference array substitution */
-                            if (1 == pixel_size_y)
+                            if(PIXEL_SIZE_1BYTE == pixel_size_y)
                             {
                                 if(luma_nbr_flags == 0x1ffff)
                                 {
@@ -1655,12 +1656,14 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_luma_ref_substitution_fptr((UWORD16 *)pu1_top_left,
-                                    (UWORD16 *)pu1_top, (UWORD16 *)pu1_left, y_cb_tu.pred_strd, trans_size,
-                                    luma_nbr_flags, (UWORD16 *)pu1_ref_sub_out, 1, bit_depth_luma);
+                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_luma_ref_substitution_fptr(
+                                                (UWORD16 *)pu1_top_left, (UWORD16 *)pu1_top, (UWORD16 *)pu1_left,
+                                                y_cb_tu.pred_strd, trans_size, luma_nbr_flags,
+                                                (UWORD16 *)pu1_ref_sub_out, 1, bit_depth_luma);
 
                                 /* call reference filtering */
-                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_ref_filtering_fptr((UWORD16 *)pu1_ref_sub_out, trans_size,
+                                ps_codec->s_func_selector.ihevc_hbd_intra_pred_ref_filtering_fptr(
+                                                (UWORD16 *)pu1_ref_sub_out, trans_size,
                                                 (UWORD16 *)pu1_ref_sub_out, u1_luma_pred_mode,
                                                 (ps_sps->i1_intra_smoothing_disabled_flag << 3
                                                                 | ps_sps->i1_strong_intra_smoothing_enable_flag),
@@ -1676,7 +1679,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                                 disable_boundary_filter = 1;
 #endif
                             /* call the intra prediction function */
-                            if (1 == pixel_size_y)
+                            if(PIXEL_SIZE_1BYTE == pixel_size_y)
                             {
                                 ps_codec->apf_intra_pred_luma[luma_pred_func_idx](
                                                 pu1_ref_sub_out, 1,
@@ -1780,7 +1783,7 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                             }
 
                             /* call the chroma reference array substitution */
-                            if (1 == pixel_size_uv)
+                            if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                             {
                                 ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_substitution_fptr(
                                                 pu1_top_left,
@@ -1866,7 +1869,9 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 }
                 while(c_idx != 0 && ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422
                                 && ++subtu_idx < 2);
-            }/* Neighbor availability inside CTB */
+            }
+
+            /* Neighbor availability inside CTB */
             /* 1bit per 4x4. Indicates whether that 4x4 block has been reconstructed(avialable) */
             /* Used for neighbor availability in intra pred */
             if(c_idx == 0)
@@ -1886,10 +1891,8 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                     au4_intra_nbr_avail[1 + ps_tu->b4_pos_y + i] |=
                                     cur_tu_avail_flag;
             }
-
-        } /* End of loop over c_idx */
-
-    } /* End of loop over TUs */
+        }
+    }
     ps_proc->pv_tu_coeff_data = pu1_tu_coeff_data;
 
     return ps_proc->i4_ctb_tu_cnt;
