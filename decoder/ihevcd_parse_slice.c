@@ -2315,6 +2315,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
     slice_header_t *ps_slice_hdr;
     cab_ctxt_t *ps_cabac = &ps_codec->s_parse.s_cabac;
     WORD32 ctxt_idx;
+    WORD32 bit_depth = ps_codec->i4_bit_depth_luma;
 
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base;
     ps_slice_hdr += (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
@@ -2324,8 +2325,6 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
     ry = ps_codec->s_parse.i4_ctb_y;
 
     ps_sao = ps_codec->s_parse.ps_pic_sao + rx + ry * ps_sps->i2_pic_wd_in_ctb;
-
-    WORD32 i4_bit_depth = ps_codec->i4_bit_depth_luma;
 
     /* Default values */
     ps_sao->b3_y_type_idx = 0;
@@ -2419,7 +2418,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
                     WORD32 i;
                     WORD32 sao_offset[4];
                     WORD32 sao_band_position = 0;
-                    WORD32 c_max =  (1 << (MIN(i4_bit_depth, 10) - 5)) - 1;
+                    WORD32 c_max =  (1 << (MIN(bit_depth, 10) - 5)) - 1;
                     for(i = 0; i < 4; i++)
                     {
                         sao_offset[i] = ihevcd_cabac_decode_bypass_bins_tunary(ps_cabac, ps_bitstrm, c_max);
@@ -2501,13 +2500,12 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
                 }
             }
 
-            i4_bit_depth = ps_codec->i4_bit_depth_chroma;
+            bit_depth = ps_codec->i4_bit_depth_chroma;
         }
     }
 
     return ret;
 }
-
 /**
  *******************************************************************************
  *
@@ -3072,9 +3070,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_data(codec_t *ps_codec)
         if(0 == ps_codec->i4_slice_error)
         {
             if(ps_slice_hdr->i1_slice_sao_luma_flag || ps_slice_hdr->i1_slice_sao_chroma_flag)
-            {
                 ihevcd_parse_sao(ps_codec);
-            }
         }
         else
         {
