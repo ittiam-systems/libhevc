@@ -1357,309 +1357,309 @@ WORD32 ihevcd_iquant_itrans_recon_ctb(process_ctxt_t *ps_proc)
                 do
                 {
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                if(subtu_idx != 0 && c_idx != 0)
-                {
-                    ps_cb_tu = &cb_sub_tu;
-                    ps_cr_tu = &cr_sub_tu;
-                    chroma_nbr_flags = chroma_nbr_flags_subtu;
-                }
-#endif
-                /***************************************************************/
-                /******************  Intra Prediction **************************/
-                /***************************************************************/
-                if(intra_flag) /* Intra */
-                {
-                    WORD32 pixel_size = (c_idx == 0) ? pixel_size_y : pixel_size_uv;
-                    /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actaul size needed,
-                       au1_ref_sub_out size is kept as multiple of 8,
-                       so that SIMD functions can load 64 bits. Also some SIMD
-                       modules read few bytes before the start of the array, so
-                       allocate 16 extra bytes at the start.
-                       Multiplied by pixel_size to allocate for HBD. */
-                    UWORD8 au1_ref_sub_out[(16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * 2];
-                    memset(au1_ref_sub_out, 0, (16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * pixel_size);
-                    UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16 * pixel_size];
-                    UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
-                    WORD32 luma_pred_func_idx, chroma_pred_func_idx;
-
-                    /* Get the neighbour availability flags */
-                    /* Done for only Y */
-                    if(c_idx == 0)
+                    if(subtu_idx != 0 && c_idx != 0)
                     {
-                        /* Get neighbor availability for Y only */
-                        luma_nbr_flags = ihevcd_get_intra_nbr_flag(ps_proc,
-                                                                   ps_tu,
-                                                                   au4_intra_nbr_avail,
-                                                                   ps_sps->i2_pic_width_in_luma_samples,
-                                                                   ps_pps->i1_constrained_intra_pred_flag,
-                                                                   trans_size,
-                                                                   ctb_size);
-
-                        if(trans_size == 4)
-                            luma_nbr_flags_4x4[(ps_tu->b4_pos_x % 2) + (ps_tu->b4_pos_y % 2) * 2] = luma_nbr_flags;
-
-                        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
-                        {
-                            chroma_nbr_flags = luma_nbr_flags;
-                        }
-                        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
-                        {
-                            /*
-                             * Neighbor Bitfield Layout in libhevc (17 bits):
-                             *   Bit 16: Top-Left (TL)
-                             *   Bits 15..12: Top-Right (TR) - 4 chunks of 8px (Bits 12, 13, 14, 15)
-                             *   Bits 11..8:  Top (T)       - 4 chunks of 8px (Bits 8, 9, 10, 11)
-                             *   Bits 7..4:   Left (L)      - 4 chunks of 8px (Bits 7, 6, 5, 4)
-                             *   Bits 3..0:   Bottom-Left (BL) - 4 chunks of 8px (Bits 3, 2, 1, 0)
-                             *
-                             * Mapping Rules for 4:2:2:
-                             * 1. Sub-TU 0 (Upper (trans_size/2) x (trans_size/2)):
-                             *    - Left: Upper half of parent Luma Left boundary.
-                             *    - Bottom-Left: Lower half of parent Luma Left boundary.
-                             * 2. Sub-TU 1 (Lower (trans_size/2) x (trans_size/2)):
-                             *    - Top-Left: Bottom pixel of Sub-TU 0 Left boundary.
-                             *    - Top: Always available from reconstructed bottom row of Sub-TU 0.
-                             *    - Top-Right: 0 (not yet decoded in Z-scan order; padded by substitution).
-                             *    - Left: Lower half of parent Luma Left boundary.
-                             *    - Bottom-Left: Parent Luma Bottom-Left boundary.
-                             */
-                            WORD32 tp_left = (luma_nbr_flags & 0x10000);
-
-                            switch (trans_size)
-                            {
-                            case 8:
-                                 {
-                                     /* Luma 8x8 -> Two 4x4 Chroma Sub-TUs (1 chunk of 4/8px per edge) */
-                                     WORD32 chroma_Left = (luma_nbr_flags & 0x80);
-                                     WORD32 chroma_BL = (luma_nbr_flags & 0x80) ? 0x8 : 0;
-                                     chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x1000) | (luma_nbr_flags & 0x100) | chroma_Left | chroma_BL;
-
-                                     WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
-                                     WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x80);
-                                     WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8);
-                                     /* Top of Sub-TU 1 is 1 chunk (Bit 8 = 0x100) from reconstructed Sub-TU 0 */
-                                     chroma_nbr_flags_subtu = tp_left_subtu1 | 0x100 | chroma_Left_subtu | chroma_BL_subtu;
-                                 }
-                                 break;
-                            case 16:
-                                 {
-                                     /* Luma 16x16 -> Two 8x8 Chroma Sub-TUs (1 chunk of 8px per edge) */
-                                     WORD32 chroma_Left = (luma_nbr_flags & 0x80) ? 0xC0 : 0;
-                                     WORD32 chroma_BL = (luma_nbr_flags & 0x40) ? 0xC : 0;
-                                     chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x3000) | (luma_nbr_flags & 0x300) | chroma_Left | chroma_BL;
-
-                                     WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
-                                     WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x40) ? 0xC0 : 0;
-                                     WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8) ? 0xC : 0;
-                                     /* Top of Sub-TU 1 is 2 chunks (Bits 8,9 = 0x300) from reconstructed Sub-TU 0 */
-                                     chroma_nbr_flags_subtu = tp_left_subtu1 | 0x300 | chroma_Left_subtu | chroma_BL_subtu;
-                                 }
-                                 break;
-                            case 32:
-                                 {
-                                     /* Luma 32x32 -> Two 16x16 Chroma Sub-TUs (2 chunks of 8px per edge) */
-                                     WORD32 chroma_Left = ((luma_nbr_flags & 0x80) ? 0xC0 : 0) | ((luma_nbr_flags & 0x40) ? 0x30 : 0);
-                                     WORD32 chroma_BL = ((luma_nbr_flags & 0x20) ? 0xC : 0) | ((luma_nbr_flags & 0x10) ? 0x3 : 0);
-                                     chroma_nbr_flags = tp_left | (luma_nbr_flags & 0xF000) | (luma_nbr_flags & 0xF00) | chroma_Left | chroma_BL;
-
-                                     WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x40) ? 0x10000 : 0;
-                                     WORD32 chroma_Left_subtu = ((luma_nbr_flags & 0x20) ? 0xC0 : 0) | ((luma_nbr_flags & 0x10) ? 0x30 : 0);
-                                     WORD32 chroma_BL_subtu = ((luma_nbr_flags & 0x8) ? 0xC : 0) | ((luma_nbr_flags & 0x4) ? 0x3 : 0);
-                                     /* Top of Sub-TU 1 is 4 chunks (Bits 8..11 = 0xF00) from reconstructed Sub-TU 0 */
-                                     chroma_nbr_flags_subtu = tp_left_subtu1 | 0xF00 | chroma_Left_subtu | chroma_BL_subtu;
-                                 }
-                                 break;
-                            default:
-                                chroma_nbr_flags = (luma_nbr_flags & 0x1ff00) | (luma_nbr_flags & 0xf0) | ((luma_nbr_flags & 0xf0) >> 4);
-                                chroma_nbr_flags_subtu = (((luma_nbr_flags & 0xf0) != 0 ? 1 : 0) << 16) | (0xf << 8) | (luma_nbr_flags & 0xff);
-                                break;
-                            }
-                        }
-                        else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
-                        {
-                            if(((ps_tu->b4_pos_x % 2 == 0) && (ps_tu->b4_pos_y % 2 == 0)))
-                                chroma_nbr_flags = luma_nbr_flags;
-                        }
-
-                        /* Initializing nbr pointers */
-                        pu1_top = y_cb_tu.pu1_pred - pic_strd * pixel_size_y;
-                        pu1_left = y_cb_tu.pu1_pred - pixel_size_y;
-                        pu1_top_left = y_cb_tu.pu1_pred - (pic_strd + 1) * pixel_size_y;
-
-                        /* call reference array substitution */
-                        if(luma_nbr_flags == 0x1ffff)
-                            ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_subst_all_avlble_fptr(
-                                            pu1_top_left,
-                                            pu1_top, pu1_left, y_cb_tu.pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
-                        else
-                            ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_substitution_fptr(
-                                            pu1_top_left,
-                                            pu1_top, pu1_left, y_cb_tu.pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
-
-                        /* call reference filtering */
-                        ps_codec->s_func_selector.ihevc_intra_pred_ref_filtering_fptr(
-                                        pu1_ref_sub_out,
-                                        trans_size,
-                                        pu1_ref_sub_out,
-                                        u1_luma_pred_mode,
-#ifdef ENABLE_MAIN_REXT_PROFILE
-                                        (ps_sps->i1_intra_smoothing_disabled_flag << 3
-                                                        | ps_sps->i1_strong_intra_smoothing_enable_flag)
-#else
-                                        ps_sps->i1_strong_intra_smoothing_enable_flag
-#endif
-                                        );
-
-                        /* use the look up to get the function idx */
-                        luma_pred_func_idx = g_i4_ip_funcs[u1_luma_pred_mode];
-
-#ifdef ENABLE_MAIN_REXT_PROFILE
-                        if(ps_sps->i1_implicit_rdpcm_enabled_flag && ps_tu->b1_transquant_bypass
-                                        && (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26))
-                            disable_boundary_filter = 1;
-#endif
-                        /* call the intra prediction function */
-                        ps_codec->apf_intra_pred_luma[luma_pred_func_idx](
-                                        pu1_ref_sub_out, 1,
-                                        y_cb_tu.pu1_pred,
-                                        y_cb_tu.pred_strd,
-                                        trans_size,
-                                        (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26) ?
-                                                        disable_boundary_filter :
-                                                        u1_luma_pred_mode
-                                        );
+                        ps_cb_tu = &cb_sub_tu;
+                        ps_cr_tu = &cr_sub_tu;
+                        chroma_nbr_flags = chroma_nbr_flags_subtu;
                     }
-                    else
+#endif
+                    /***************************************************************/
+                    /******************  Intra Prediction **************************/
+                    /***************************************************************/
+                    if(intra_flag) /* Intra */
                     {
-                        /* In case of yuv420sp_vu, prediction happens as usual.         */
-                        /* So point the pu1_pred pointer to original prediction pointer */
-                        UWORD8 *pu1_pred_orig = ps_cb_tu->pu1_pred - chroma_yuv420sp_vu_u_offset;
+                        WORD32 pixel_size = (c_idx == 0) ? pixel_size_y : pixel_size_uv;
+                        /* While (MAX_TU_SIZE * 2 * 2) + 1 is the actaul size needed,
+                        au1_ref_sub_out size is kept as multiple of 8,
+                        so that SIMD functions can load 64 bits. Also some SIMD
+                        modules read few bytes before the start of the array, so
+                        allocate 16 extra bytes at the start.
+                        Multiplied by pixel_size to allocate for HBD. */
+                        UWORD8 au1_ref_sub_out[(16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * 2];
+                        memset(au1_ref_sub_out, 0, (16 + (MAX_TU_SIZE * 2 * 2 * 2) + 8) * pixel_size);
+                        UWORD8 *pu1_ref_sub_out = &au1_ref_sub_out[16 * pixel_size];
+                        UWORD8 *pu1_top_left, *pu1_top, *pu1_left;
+                        WORD32 luma_pred_func_idx, chroma_pred_func_idx;
 
-                        /*    Top-Left | Top-Right | Top | Left | Bottom-Left
-                         *      1         4         4     4         4
-                         *
-                         * Generating chroma_nbr_flags depending upon the transform size */
-                        if(ps_tu->b3_size == 0)
+                        /* Get the neighbour availability flags */
+                        /* Done for only Y */
+                        if(c_idx == 0)
                         {
-                            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+                            /* Get neighbor availability for Y only */
+                            luma_nbr_flags = ihevcd_get_intra_nbr_flag(ps_proc,
+                                                                    ps_tu,
+                                                                    au4_intra_nbr_avail,
+                                                                    ps_sps->i2_pic_width_in_luma_samples,
+                                                                    ps_pps->i1_constrained_intra_pred_flag,
+                                                                    trans_size,
+                                                                    ctb_size);
+
+                            if(trans_size == 4)
+                                luma_nbr_flags_4x4[(ps_tu->b4_pos_x % 2) + (ps_tu->b4_pos_y % 2) * 2] = luma_nbr_flags;
+
+                            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
                             {
-                                /* Take TL,T,L flags of First luma 4x4 block */
-                                chroma_nbr_flags = (luma_nbr_flags_4x4[0] & 0x10FF0);
-                                /* Take TR flags of Second luma 4x4 block */
-                                chroma_nbr_flags |= (luma_nbr_flags_4x4[1] & 0x0F000);
-                                /* Take BL flags of Third luma 4x4 block */
-                                chroma_nbr_flags |= (luma_nbr_flags_4x4[2] & 0x0000F);
+                                chroma_nbr_flags = luma_nbr_flags;
                             }
                             else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                             {
-                                if(subtu_idx == 0)
+                                /*
+                                * Neighbor Bitfield Layout in libhevc (17 bits):
+                                *   Bit 16: Top-Left (TL)
+                                *   Bits 15..12: Top-Right (TR) - 4 chunks of 8px (Bits 12, 13, 14, 15)
+                                *   Bits 11..8:  Top (T)       - 4 chunks of 8px (Bits 8, 9, 10, 11)
+                                *   Bits 7..4:   Left (L)      - 4 chunks of 8px (Bits 7, 6, 5, 4)
+                                *   Bits 3..0:   Bottom-Left (BL) - 4 chunks of 8px (Bits 3, 2, 1, 0)
+                                *
+                                * Mapping Rules for 4:2:2:
+                                * 1. Sub-TU 0 (Upper (trans_size/2) x (trans_size/2)):
+                                *    - Left: Upper half of parent Luma Left boundary.
+                                *    - Bottom-Left: Lower half of parent Luma Left boundary.
+                                * 2. Sub-TU 1 (Lower (trans_size/2) x (trans_size/2)):
+                                *    - Top-Left: Bottom pixel of Sub-TU 0 Left boundary.
+                                *    - Top: Always available from reconstructed bottom row of Sub-TU 0.
+                                *    - Top-Right: 0 (not yet decoded in Z-scan order; padded by substitution).
+                                *    - Left: Lower half of parent Luma Left boundary.
+                                *    - Bottom-Left: Parent Luma Bottom-Left boundary.
+                                */
+                                WORD32 tp_left = (luma_nbr_flags & 0x10000);
+
+                                switch (trans_size)
+                                {
+                                case 8:
+                                    {
+                                        /* Luma 8x8 -> Two 4x4 Chroma Sub-TUs (1 chunk of 4/8px per edge) */
+                                        WORD32 chroma_Left = (luma_nbr_flags & 0x80);
+                                        WORD32 chroma_BL = (luma_nbr_flags & 0x80) ? 0x8 : 0;
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x1000) | (luma_nbr_flags & 0x100) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x80);
+                                        WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8);
+                                        /* Top of Sub-TU 1 is 1 chunk (Bit 8 = 0x100) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0x100 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                case 16:
+                                    {
+                                        /* Luma 16x16 -> Two 8x8 Chroma Sub-TUs (1 chunk of 8px per edge) */
+                                        WORD32 chroma_Left = (luma_nbr_flags & 0x80) ? 0xC0 : 0;
+                                        WORD32 chroma_BL = (luma_nbr_flags & 0x40) ? 0xC : 0;
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0x3000) | (luma_nbr_flags & 0x300) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x80) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = (luma_nbr_flags & 0x40) ? 0xC0 : 0;
+                                        WORD32 chroma_BL_subtu = (luma_nbr_flags & 0x8) ? 0xC : 0;
+                                        /* Top of Sub-TU 1 is 2 chunks (Bits 8,9 = 0x300) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0x300 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                case 32:
+                                    {
+                                        /* Luma 32x32 -> Two 16x16 Chroma Sub-TUs (2 chunks of 8px per edge) */
+                                        WORD32 chroma_Left = ((luma_nbr_flags & 0x80) ? 0xC0 : 0) | ((luma_nbr_flags & 0x40) ? 0x30 : 0);
+                                        WORD32 chroma_BL = ((luma_nbr_flags & 0x20) ? 0xC : 0) | ((luma_nbr_flags & 0x10) ? 0x3 : 0);
+                                        chroma_nbr_flags = tp_left | (luma_nbr_flags & 0xF000) | (luma_nbr_flags & 0xF00) | chroma_Left | chroma_BL;
+
+                                        WORD32 tp_left_subtu1 = (luma_nbr_flags & 0x40) ? 0x10000 : 0;
+                                        WORD32 chroma_Left_subtu = ((luma_nbr_flags & 0x20) ? 0xC0 : 0) | ((luma_nbr_flags & 0x10) ? 0x30 : 0);
+                                        WORD32 chroma_BL_subtu = ((luma_nbr_flags & 0x8) ? 0xC : 0) | ((luma_nbr_flags & 0x4) ? 0x3 : 0);
+                                        /* Top of Sub-TU 1 is 4 chunks (Bits 8..11 = 0xF00) from reconstructed Sub-TU 0 */
+                                        chroma_nbr_flags_subtu = tp_left_subtu1 | 0xF00 | chroma_Left_subtu | chroma_BL_subtu;
+                                    }
+                                    break;
+                                default:
+                                    chroma_nbr_flags = (luma_nbr_flags & 0x1ff00) | (luma_nbr_flags & 0xf0) | ((luma_nbr_flags & 0xf0) >> 4);
+                                    chroma_nbr_flags_subtu = (((luma_nbr_flags & 0xf0) != 0 ? 1 : 0) << 16) | (0xf << 8) | (luma_nbr_flags & 0xff);
+                                    break;
+                                }
+                            }
+                            else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
+                            {
+                                if(((ps_tu->b4_pos_x % 2 == 0) && (ps_tu->b4_pos_y % 2 == 0)))
+                                    chroma_nbr_flags = luma_nbr_flags;
+                            }
+
+                            /* Initializing nbr pointers */
+                            pu1_top = y_cb_tu.pu1_pred - pic_strd * pixel_size_y;
+                            pu1_left = y_cb_tu.pu1_pred - pixel_size_y;
+                            pu1_top_left = y_cb_tu.pu1_pred - (pic_strd + 1) * pixel_size_y;
+
+                            /* call reference array substitution */
+                            if(luma_nbr_flags == 0x1ffff)
+                                ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_subst_all_avlble_fptr(
+                                                pu1_top_left,
+                                                pu1_top, pu1_left, y_cb_tu.pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
+                            else
+                                ps_codec->s_func_selector.ihevc_intra_pred_luma_ref_substitution_fptr(
+                                                pu1_top_left,
+                                                pu1_top, pu1_left, y_cb_tu.pred_strd, trans_size, luma_nbr_flags, pu1_ref_sub_out, 1);
+
+                            /* call reference filtering */
+                            ps_codec->s_func_selector.ihevc_intra_pred_ref_filtering_fptr(
+                                            pu1_ref_sub_out,
+                                            trans_size,
+                                            pu1_ref_sub_out,
+                                            u1_luma_pred_mode,
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                                            (ps_sps->i1_intra_smoothing_disabled_flag << 3
+                                                            | ps_sps->i1_strong_intra_smoothing_enable_flag)
+#else
+                                            ps_sps->i1_strong_intra_smoothing_enable_flag
+#endif
+                                            );
+
+                            /* use the look up to get the function idx */
+                            luma_pred_func_idx = g_i4_ip_funcs[u1_luma_pred_mode];
+
+#ifdef ENABLE_MAIN_REXT_PROFILE
+                            if(ps_sps->i1_implicit_rdpcm_enabled_flag && ps_tu->b1_transquant_bypass
+                                            && (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26))
+                                disable_boundary_filter = 1;
+#endif
+                            /* call the intra prediction function */
+                            ps_codec->apf_intra_pred_luma[luma_pred_func_idx](
+                                            pu1_ref_sub_out, 1,
+                                            y_cb_tu.pu1_pred,
+                                            y_cb_tu.pred_strd,
+                                            trans_size,
+                                            (u1_luma_pred_mode == 10 || u1_luma_pred_mode == 26) ?
+                                                            disable_boundary_filter :
+                                                            u1_luma_pred_mode
+                                            );
+                        }
+                        else
+                        {
+                            /* In case of yuv420sp_vu, prediction happens as usual.         */
+                            /* So point the pu1_pred pointer to original prediction pointer */
+                            UWORD8 *pu1_pred_orig = ps_cb_tu->pu1_pred - chroma_yuv420sp_vu_u_offset;
+
+                            /*    Top-Left | Top-Right | Top | Left | Bottom-Left
+                            *      1         4         4     4         4
+                            *
+                            * Generating chroma_nbr_flags depending upon the transform size */
+                            if(ps_tu->b3_size == 0)
+                            {
+                                if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV420)
                                 {
                                     /* Take TL,T,L flags of First luma 4x4 block */
                                     chroma_nbr_flags = (luma_nbr_flags_4x4[0] & 0x10FF0);
                                     /* Take TR flags of Second luma 4x4 block */
                                     chroma_nbr_flags |= (luma_nbr_flags_4x4[1] & 0x0F000);
-                                    /* Take BL flags of first luma 4x4 block */
-                                    chroma_nbr_flags |= (luma_nbr_flags_4x4[0] & 0x0000F);
-                                }
-                                else
-                                {
-                                    /* Take TL,T,L flags of Third luma 4x4 block */
-                                    chroma_nbr_flags = (luma_nbr_flags_4x4[2] & 0x10FF0);
                                     /* Take BL flags of Third luma 4x4 block */
                                     chroma_nbr_flags |= (luma_nbr_flags_4x4[2] & 0x0000F);
                                 }
-                            }
-                        }
-
-                        /* Initializing nbr pointers */
-                        pu1_top = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
-                        pu1_left = pu1_pred_orig - 2 * pixel_size_uv;
-                        pu1_top_left = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor + 2) * pixel_size_uv;
-
-                        if(subtu_idx == 0)
-                        {
-                        /* Chroma pred  mode derivation from luma pred mode */
-                        {
-                            tu_t *ps_tu_tmp = ps_tu;
-                            if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV444)
-                            {
-                                while(!ps_tu_tmp->b1_first_tu_in_cu)
+                                else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
                                 {
-                                    ps_tu_tmp--;
+                                    if(subtu_idx == 0)
+                                    {
+                                        /* Take TL,T,L flags of First luma 4x4 block */
+                                        chroma_nbr_flags = (luma_nbr_flags_4x4[0] & 0x10FF0);
+                                        /* Take TR flags of Second luma 4x4 block */
+                                        chroma_nbr_flags |= (luma_nbr_flags_4x4[1] & 0x0F000);
+                                        /* Take BL flags of first luma 4x4 block */
+                                        chroma_nbr_flags |= (luma_nbr_flags_4x4[0] & 0x0000F);
+                                    }
+                                    else
+                                    {
+                                        /* Take TL,T,L flags of Third luma 4x4 block */
+                                        chroma_nbr_flags = (luma_nbr_flags_4x4[2] & 0x10FF0);
+                                        /* Take BL flags of Third luma 4x4 block */
+                                        chroma_nbr_flags |= (luma_nbr_flags_4x4[2] & 0x0000F);
+                                    }
                                 }
                             }
-                            u1_luma_pred_mode_first_tu = ps_tu_tmp->b6_luma_intra_mode;
-                        }
-                        if(4 == u1_chroma_pred_mode)
-                            u1_chroma_pred_mode = u1_luma_pred_mode_first_tu;
-                        else
-                        {
-                            u1_chroma_pred_mode = gau1_intra_pred_chroma_modes[u1_chroma_pred_mode];
 
-                            if(u1_chroma_pred_mode == u1_luma_pred_mode_first_tu)
+                            /* Initializing nbr pointers */
+                            pu1_top = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                            pu1_left = pu1_pred_orig - 2 * pixel_size_uv;
+                            pu1_top_left = pu1_pred_orig - (pic_strd * chroma_pixel_strd / h_samp_factor + 2) * pixel_size_uv;
+
+                            if(subtu_idx == 0)
                             {
-                                u1_chroma_pred_mode = INTRA_ANGULAR(34);
-                            }
-                        }
-                        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
-                        {
-                            u1_chroma_pred_mode = gau1_intra_pred_chroma_modes_422[u1_chroma_pred_mode];
-                        }
-                        }
+                                /* Chroma pred  mode derivation from luma pred mode */
+                                {
+                                    tu_t *ps_tu_tmp = ps_tu;
+                                    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_YUV444)
+                                    {
+                                        while(!ps_tu_tmp->b1_first_tu_in_cu)
+                                        {
+                                            ps_tu_tmp--;
+                                        }
+                                    }
+                                    u1_luma_pred_mode_first_tu = ps_tu_tmp->b6_luma_intra_mode;
+                                }
+                                if(4 == u1_chroma_pred_mode)
+                                    u1_chroma_pred_mode = u1_luma_pred_mode_first_tu;
+                                else
+                                {
+                                    u1_chroma_pred_mode = gau1_intra_pred_chroma_modes[u1_chroma_pred_mode];
 
-                        /* call the chroma reference array substitution */
-                        ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_substitution_fptr(
-                                        pu1_top_left,
-                                        pu1_top, pu1_left,
-                                        ps_cb_tu->pred_strd,
-                                        trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1,
-                                        ps_sps->i1_chroma_format_idc);
+                                    if(u1_chroma_pred_mode == u1_luma_pred_mode_first_tu)
+                                    {
+                                        u1_chroma_pred_mode = INTRA_ANGULAR(34);
+                                    }
+                                }
+                                if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)
+                                {
+                                    u1_chroma_pred_mode = gau1_intra_pred_chroma_modes_422[u1_chroma_pred_mode];
+                                }
+                            }
+
+                            /* call the chroma reference array substitution */
+                            ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_substitution_fptr(
+                                            pu1_top_left,
+                                            pu1_top, pu1_left,
+                                            ps_cb_tu->pred_strd,
+                                            trans_size, chroma_nbr_flags, pu1_ref_sub_out, 1,
+                                            ps_sps->i1_chroma_format_idc);
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                        /* call reference filtering */
-                        if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
-                        {
-                            ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_filtering_fptr(
-                                            pu1_ref_sub_out,
-                                            trans_size,
-                                            pu1_ref_sub_out,
-                                            u1_chroma_pred_mode,
-                                            (ps_sps->i1_intra_smoothing_disabled_flag << 3
-                                                            | ps_sps->i1_strong_intra_smoothing_enable_flag));
-                        }
+                            /* call reference filtering */
+                            if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV444)
+                            {
+                                ps_codec->s_func_selector.ihevc_intra_pred_chroma_ref_filtering_fptr(
+                                                pu1_ref_sub_out,
+                                                trans_size,
+                                                pu1_ref_sub_out,
+                                                u1_chroma_pred_mode,
+                                                (ps_sps->i1_intra_smoothing_disabled_flag << 3
+                                                                | ps_sps->i1_strong_intra_smoothing_enable_flag));
+                            }
 #endif
 
-                        /* use the look up to get the function idx */
-                        chroma_pred_func_idx = g_i4_ip_funcs[u1_chroma_pred_mode];
+                            /* use the look up to get the function idx */
+                            chroma_pred_func_idx = g_i4_ip_funcs[u1_chroma_pred_mode];
 
-                        /* call the intra prediction function */
-                        ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](pu1_ref_sub_out, 1, pu1_pred_orig, ps_cb_tu->pred_strd, trans_size, u1_chroma_pred_mode);
+                            /* call the intra prediction function */
+                            ps_codec->apf_intra_pred_chroma[chroma_pred_func_idx](pu1_ref_sub_out, 1, pu1_pred_orig, ps_cb_tu->pred_strd, trans_size, u1_chroma_pred_mode);
+                        }
                     }
-                }
 
-                /* Updating number of transform types */
-                STATS_UPDATE_ALL_TRANS(e_trans_type, c_idx);
+                    /* Updating number of transform types */
+                    STATS_UPDATE_ALL_TRANS(e_trans_type, c_idx);
 
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                iqitrecon_fptr = get_iqitrec_func(
-                                ps_proc, ps_tu, ps_cb_tu, log2_trans_size,
+                    iqitrecon_fptr = get_iqitrec_func(
+                                    ps_proc, ps_tu, ps_cb_tu, log2_trans_size,
+                                    c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag,
+                                    c_idx == 0 ? u1_luma_pred_mode : u1_chroma_pred_mode);
+#endif
+                    /* IQ, IT and Recon for Y if c_idx == 0, and U if c_idx !=0 */
+                    iqitrecon_fptr(ps_proc, ps_tu, ps_cb_tu, func_idx, log2_trans_size,
                                 c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag,
                                 c_idx == 0 ? u1_luma_pred_mode : u1_chroma_pred_mode);
-#endif
-                /* IQ, IT and Recon for Y if c_idx == 0, and U if c_idx !=0 */
-                iqitrecon_fptr(ps_proc, ps_tu, ps_cb_tu, func_idx, log2_trans_size,
-                               c_idx != 0 ? U_PLANE : NULL_PLANE, intra_flag,
-                               c_idx == 0 ? u1_luma_pred_mode : u1_chroma_pred_mode);
-                /* IQ, IT and Recon for V */
-                if(c_idx != 0)
-                {
+                    /* IQ, IT and Recon for V */
+                    if(c_idx != 0)
+                    {
 #ifdef ENABLE_MAIN_REXT_PROFILE
-                    iqitrecon_fptr = get_iqitrec_func(ps_proc, ps_tu, ps_cr_tu, log2_trans_size,
-                                                      V_PLANE, intra_flag, u1_chroma_pred_mode);
+                        iqitrecon_fptr = get_iqitrec_func(ps_proc, ps_tu, ps_cr_tu, log2_trans_size,
+                                                        V_PLANE, intra_flag, u1_chroma_pred_mode);
 #endif
-                    iqitrecon_fptr(ps_proc, ps_tu, ps_cr_tu, func_idx, log2_trans_size, V_PLANE,
-                                   intra_flag, u1_chroma_pred_mode);
-                }
+                        iqitrecon_fptr(ps_proc, ps_tu, ps_cr_tu, func_idx, log2_trans_size, V_PLANE,
+                                    intra_flag, u1_chroma_pred_mode);
+                    }
                 }
                 while(c_idx != 0 && ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422
                                 && ++subtu_idx < 2);
