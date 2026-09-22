@@ -1529,7 +1529,6 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     WORD32 sps_id;
     WORD32 sps_temporal_id_nesting_flag;
     WORD32 i4_profile_idc;
-    WORD32 i4_extension_present_flag;
     sps_t *ps_sps;
     profile_tier_lvl_info_t s_ptl = {0};
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
@@ -1714,9 +1713,12 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if (value > 2)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
-    if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
-         ((4 == i4_profile_idc) && (4 < value)) )
+    if (((1 == i4_profile_idc) && (0 != value)) ||
+        ((2 == i4_profile_idc) && (2 < value)) ||
+        ((4 == i4_profile_idc) && (4 < value)))
+    {
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
     ps_sps->i1_bit_depth_luma_minus8 = value;
 
     UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
@@ -1724,9 +1726,12 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     if (value > 2)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
-    if ( ((1 == i4_profile_idc) && (0 != value)) || ((2 == i4_profile_idc) && (2 < value)) ||
-         ((4 == i4_profile_idc) && (4 < value)) )
+    if (((1 == i4_profile_idc) && (0 != value)) ||
+        ((2 == i4_profile_idc) && (2 < value)) ||
+        ((4 == i4_profile_idc) && (4 < value)))
+    {
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
     ps_sps->i1_bit_depth_chroma_minus8 = value;
 
     if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
