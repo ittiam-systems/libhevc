@@ -1009,7 +1009,8 @@ static WORD32 ihevcd_get_profile(profile_tier_lvl_t *ps_ptl)
 {
     WORD32 profile = IHEVC_PROFILE_UNKNOWN;
 
-    if(ps_ptl->i1_profile_idc == 1 || ps_ptl->ai1_profile_compatibility_flag[1] == 1)
+    if(ps_ptl->i1_profile_idc == 1 || ps_ptl->ai1_profile_compatibility_flag[1] == 1 ||
+       ps_ptl->i1_profile_idc == 2 || ps_ptl->ai1_profile_compatibility_flag[2] == 1)
         profile = IHEVC_PROFILE_MAIN;
     else if(ps_ptl->i1_profile_idc == 3 || ps_ptl->ai1_profile_compatibility_flag[3] == 1)
         profile = IHEVC_PROFILE_MAIN_STILL;
@@ -1527,8 +1528,9 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     WORD32 sps_max_sub_layers;
     WORD32 sps_id;
     WORD32 sps_temporal_id_nesting_flag;
+    WORD32 i4_profile_idc;
     sps_t *ps_sps;
-    profile_tier_lvl_info_t s_ptl;
+    profile_tier_lvl_info_t s_ptl = {0};
     bitstrm_t *ps_bitstrm = &ps_codec->s_parse.s_bitstrm;
     WORD32 ctb_log2_size_y = 0;
 
@@ -1553,6 +1555,13 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     //profile_and_level( 1, sps_max_sub_layers_minus1 )
     ret = ihevcd_profile_tier_level(ps_bitstrm, &(s_ptl), 1,
                                     (sps_max_sub_layers - 1));
+    if ((IHEVCD_ERROR_T)IHEVCD_SUCCESS != ret)
+    {
+        ps_codec->s_parse.i4_error_code = ret;
+        return ret;
+    }
+
+    i4_profile_idc = (WORD32)s_ptl.s_ptl_gen.i1_profile_idc;
 
     UEV_PARSE("seq_parameter_set_id", value, ps_bitstrm);
     sps_id = value;
@@ -1700,12 +1709,36 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
 
     UEV_PARSE("bit_depth_luma_minus8", value, ps_bitstrm);
-    if(0 != value)
+    // Limit the support to max bit depth of 10-bit
+    if (value > 2)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
-    UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
-    if(0 != value)
+    if (((1 == i4_profile_idc) && (0 != value)) ||
+        ((2 == i4_profile_idc) && (2 < value)) ||
+        ((4 == i4_profile_idc) && (4 < value)))
+    {
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
+    ps_sps->i1_bit_depth_luma_minus8 = value;
+
+    UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
+    // Limit the support to max bit depth of 10-bit
+    if (value > 2)
+        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+
+    if (((1 == i4_profile_idc) && (0 != value)) ||
+        ((2 == i4_profile_idc) && (2 < value)) ||
+        ((4 == i4_profile_idc) && (4 < value)))
+    {
+        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
+    ps_sps->i1_bit_depth_chroma_minus8 = value;
+
+    if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
+    {
+        if (ps_sps->i1_bit_depth_luma_minus8 != ps_sps->i1_bit_depth_chroma_minus8)
+            return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
 
     UEV_PARSE("log2_max_pic_order_cnt_lsb_minus4", value, ps_bitstrm);
     if(value > 12)
@@ -1889,7 +1922,7 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_sps->i1_pcm_sample_bit_depth_chroma = value + 1;
 
         UEV_PARSE("log2_min_pcm_coding_block_size_minus3", value, ps_bitstrm);
-        if(value < (ps_sps->i1_log2_min_coding_block_size - 3) || value > (MIN(ctb_log2_size_y, 5) - 3))
+        if(value < (MIN(ps_sps->i1_log2_min_coding_block_size, 5) - 3) || value > (MIN(ctb_log2_size_y, 5) - 3))
         {
             return IHEVCD_INVALID_PARAMETER;
         }
