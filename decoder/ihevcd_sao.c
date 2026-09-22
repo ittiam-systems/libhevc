@@ -77,51 +77,6 @@
 
 #define SAO_SHIFT_CTB    8
 
-
-
-
-#define GET_SAO_Y_OFFSETS(ai1_offset_y) do { \
-    if(1 == pixel_size_y) { \
-        (ai1_offset_y)[1] = ps_sao->b4_y_offset_1; \
-        (ai1_offset_y)[2] = ps_sao->b4_y_offset_2; \
-        (ai1_offset_y)[3] = ps_sao->b4_y_offset_3; \
-        (ai1_offset_y)[4] = ps_sao->b4_y_offset_4; \
-    } else { \
-        (ai1_offset_y)[1] = ps_sao_10bd->b8_y_offset_1; \
-        (ai1_offset_y)[2] = ps_sao_10bd->b8_y_offset_2; \
-        (ai1_offset_y)[3] = ps_sao_10bd->b8_y_offset_3; \
-        (ai1_offset_y)[4] = ps_sao_10bd->b8_y_offset_4; \
-    } \
-} while(0)
-
-#define GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr) do { \
-    if(1 == pixel_size_uv) { \
-        (ai1_offset_cb)[1] = ps_sao->b4_cb_offset_1; \
-        (ai1_offset_cb)[2] = ps_sao->b4_cb_offset_2; \
-        (ai1_offset_cb)[3] = ps_sao->b4_cb_offset_3; \
-        (ai1_offset_cb)[4] = ps_sao->b4_cb_offset_4; \
-        (ai1_offset_cr)[1] = ps_sao->b4_cr_offset_1; \
-        (ai1_offset_cr)[2] = ps_sao->b4_cr_offset_2; \
-        (ai1_offset_cr)[3] = ps_sao->b4_cr_offset_3; \
-        (ai1_offset_cr)[4] = ps_sao->b4_cr_offset_4; \
-    } else { \
-        (ai1_offset_cb)[1] = ps_sao_10bd->b8_cb_offset_1; \
-        (ai1_offset_cb)[2] = ps_sao_10bd->b8_cb_offset_2; \
-        (ai1_offset_cb)[3] = ps_sao_10bd->b8_cb_offset_3; \
-        (ai1_offset_cb)[4] = ps_sao_10bd->b8_cb_offset_4; \
-        (ai1_offset_cr)[1] = ps_sao_10bd->b8_cr_offset_1; \
-        (ai1_offset_cr)[2] = ps_sao_10bd->b8_cr_offset_2; \
-        (ai1_offset_cr)[3] = ps_sao_10bd->b8_cr_offset_3; \
-        (ai1_offset_cr)[4] = ps_sao_10bd->b8_cr_offset_4; \
-    } \
-} while(0)
-
-#define SAO_Y_TYPE_IDX       (1 == pixel_size_y ? (WORD32)ps_sao->b3_y_type_idx : (WORD32)ps_sao_10bd->b3_y_type_idx)
-#define SAO_CB_TYPE_IDX      (1 == pixel_size_uv ? (WORD32)ps_sao->b3_cb_type_idx : (WORD32)ps_sao_10bd->b3_cb_type_idx)
-#define SAO_Y_BAND_POS       (1 == pixel_size_y ? (WORD32)ps_sao->b5_y_band_pos : (WORD32)ps_sao_10bd->b5_y_band_pos)
-#define SAO_CB_BAND_POS      (1 == pixel_size_uv ? (WORD32)ps_sao->b5_cb_band_pos : (WORD32)ps_sao_10bd->b5_cb_band_pos)
-#define SAO_CR_BAND_POS      (1 == pixel_size_uv ? (WORD32)ps_sao->b5_cr_band_pos : (WORD32)ps_sao_10bd->b5_cr_band_pos)
-
 #define UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_top_left, sao_wd_luma, sao_ht_luma, pixel_size_y) do { \
     if(1 == (pixel_size_y)) { \
         for(row = 0; row < (sao_ht_luma); row++) { \
@@ -175,7 +130,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     WORD32 log2_ctb_size;
     sps_t *ps_sps;
     sao_t *ps_sao;
-    sao_10bd_t *ps_sao_10bd;
     pps_t *ps_pps;
     slice_header_t *ps_slice_hdr, *ps_slice_hdr_base;
     tile_t *ps_tile;
@@ -268,7 +222,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     pu1_sao_src_top_left_chroma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_chroma_top_right + (2 * ps_sao_ctxt->i4_ctb_x * pixel_size_uv);
 
     ps_sao = ps_sao_ctxt->ps_pic_sao + ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
-    ps_sao_10bd = (sao_10bd_t *)ps_sao_ctxt->ps_pic_sao + ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
     loop_filter_strd =  (ps_sps->i2_pic_width_in_luma_samples + 63) >> 6;
     backup_strd = 2 * MAX_CTB_SIZE;
 
@@ -464,7 +417,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma -= (sao_wd_luma + sao_ht_luma * src_strd) * pixel_size_y;
         pu1_src_chroma -= (sao_wd_chroma + sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao -= (1 + ps_sps->i2_pic_wd_in_ctb);
-        ps_sao_10bd -= (1 + ps_sps->i2_pic_wd_in_ctb);
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma) * pixel_size_y;
         pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma) * pixel_size_uv;
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_luma) * pixel_size_y;
@@ -472,14 +424,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
         if(ps_slice_hdr_top_left->i1_slice_sao_luma_flag)
         {
-            if(0 == SAO_Y_TYPE_IDX)
+            if(0 == ps_sao->b3_y_type_idx)
             {
                 UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
             }
 
-            else if(1 == SAO_Y_TYPE_IDX)
+            else if(1 == ps_sao->b3_y_type_idx)
             {
-                GET_SAO_Y_OFFSETS(ai1_offset_y);
+                ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                 if(1 == pixel_size_y)
                 {
@@ -489,7 +444,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         pu1_src_left_luma,
                         pu1_src_top_luma,
                         pu1_sao_src_luma_top_left_ctb,
-                        SAO_Y_BAND_POS,
+                        ps_sao->b5_y_band_pos,
                         ai1_offset_y,
                         sao_wd_luma,
                         sao_ht_luma);
@@ -502,7 +457,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         (UWORD16 *)pu1_src_left_luma,
                         (UWORD16 *)pu1_src_top_luma,
                         (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
-                        SAO_Y_BAND_POS,
+                        ps_sao->b5_y_band_pos,
                         ai1_offset_y,
                         sao_wd_luma,
                         sao_ht_luma,
@@ -512,7 +467,10 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
             else // if(2 <= ps_sao->b3_y_type_idx)
             {
-                GET_SAO_Y_OFFSETS(ai1_offset_y);
+                ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                 for(i = 0; i < 8; i++)
                 {
@@ -758,7 +716,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 {
                     au1_src_top_right[0] = pu1_src_top_luma[sao_wd_luma];
                     u1_sao_src_top_left_luma_bot_left = pu1_src_left_luma[sao_ht_luma];
-                    ps_codec->apf_sao_luma[SAO_Y_TYPE_IDX - 2](pu1_src_luma,
+                    ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
                                                               src_strd,
                                                               pu1_src_left_luma,
                                                               pu1_src_top_luma,
@@ -776,7 +734,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     UWORD16 *pu2_src_left_luma = (UWORD16 *)pu1_src_left_luma;
                     au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
                     u2_sao_src_top_left_luma_bot_left = pu2_src_left_luma[sao_ht_luma];
-                    ps_codec->apf_hbd_sao_luma[SAO_Y_TYPE_IDX - 2]((UWORD16 *)pu1_src_luma,
+                    ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
                                                                   src_strd,
                                                                   (UWORD16 *)pu1_src_left_luma,
                                                                   (UWORD16 *)pu1_src_top_luma,
@@ -799,14 +757,22 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
         if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && ps_slice_hdr_top_left->i1_slice_sao_chroma_flag)
         {
-            if(0 == SAO_CB_TYPE_IDX)
+            if(0 == ps_sao->b3_cb_type_idx)
             {
                 UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
             }
 
-            else if(1 == SAO_CB_TYPE_IDX)
+            else if(1 == ps_sao->b3_cb_type_idx)
             {
-                GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                 if(chroma_yuv420sp_vu)
                 {
@@ -818,8 +784,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             pu1_src_left_chroma,
                             pu1_src_top_chroma,
                             pu1_sao_src_chroma_top_left_ctb,
-                            SAO_CR_BAND_POS,
-                            SAO_CB_BAND_POS,
+                            ps_sao->b5_cr_band_pos,
+                            ps_sao->b5_cb_band_pos,
                             ai1_offset_cr,
                             ai1_offset_cb,
                             sao_wd_chroma,
@@ -833,8 +799,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             (UWORD16 *)pu1_src_left_chroma,
                             (UWORD16 *)pu1_src_top_chroma,
                             (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
-                            SAO_CR_BAND_POS,
-                            SAO_CB_BAND_POS,
+                            ps_sao->b5_cr_band_pos,
+                            ps_sao->b5_cb_band_pos,
                             ai1_offset_cr,
                             ai1_offset_cb,
                             sao_wd_chroma,
@@ -852,8 +818,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             pu1_src_left_chroma,
                             pu1_src_top_chroma,
                             pu1_sao_src_chroma_top_left_ctb,
-                            SAO_CB_BAND_POS,
-                            SAO_CR_BAND_POS,
+                            ps_sao->b5_cb_band_pos,
+                            ps_sao->b5_cr_band_pos,
                             ai1_offset_cb,
                             ai1_offset_cr,
                             sao_wd_chroma,
@@ -867,8 +833,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             (UWORD16 *)pu1_src_left_chroma,
                             (UWORD16 *)pu1_src_top_chroma,
                             (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
-                            SAO_CB_BAND_POS,
-                            SAO_CR_BAND_POS,
+                            ps_sao->b5_cb_band_pos,
+                            ps_sao->b5_cr_band_pos,
                             ai1_offset_cb,
                             ai1_offset_cr,
                             sao_wd_chroma,
@@ -880,7 +846,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
             else // if(2 <= ps_sao->b3_cb_type_idx)
             {
-                GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
                 for(i = 0; i < 8; i++)
                 {
                     au1_avail_chroma[i] = 255;
@@ -1111,7 +1085,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                        ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                      chroma_strd,
                                                                      pu1_src_left_chroma,
                                                                      pu1_src_top_chroma,
@@ -1126,7 +1100,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                        ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                      chroma_strd,
                                                                      pu1_src_left_chroma,
                                                                      pu1_src_top_chroma,
@@ -1158,7 +1132,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                          chroma_strd,
                                                                          (UWORD16 *)pu1_src_left_chroma,
                                                                          (UWORD16 *)pu1_src_top_chroma,
@@ -1174,7 +1148,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                     else
                     {
-                        ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                          chroma_strd,
                                                                          (UWORD16 *)pu1_src_left_chroma,
                                                                          (UWORD16 *)pu1_src_top_chroma,
@@ -1199,7 +1173,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma += (sao_wd_luma + sao_ht_luma * src_strd) * pixel_size_y;
         pu1_src_chroma += (sao_wd_chroma + sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao += (1 + ps_sps->i2_pic_wd_in_ctb);
-        ps_sao_10bd += (1 + ps_sps->i2_pic_wd_in_ctb);
     }
 
 
@@ -1238,7 +1211,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma -= (sao_ht_luma * src_strd) * pixel_size_y;
         pu1_src_chroma -= (sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao -= (ps_sps->i2_pic_wd_in_ctb);
-        ps_sao_10bd -= (ps_sps->i2_pic_wd_in_ctb);
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * pixel_size_y);
         pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv);
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_chroma) * pixel_size_y);
@@ -1248,14 +1220,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_slice_hdr_top->i1_slice_sao_luma_flag)
             {
-                if(0 == SAO_Y_TYPE_IDX)
+                if(0 == ps_sao->b3_y_type_idx)
                 {
                     UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
                 }
 
-                else if(1 == SAO_Y_TYPE_IDX)
+                else if(1 == ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     if(1 == pixel_size_y)
                     {
@@ -1265,7 +1240,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             pu1_src_left_luma,
                             pu1_src_top_luma,
                             pu1_sao_src_luma_top_left_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma);
@@ -1278,7 +1253,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             (UWORD16 *)pu1_src_left_luma,
                             (UWORD16 *)pu1_src_top_luma,
                             (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma,
@@ -1288,7 +1263,10 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     memset(au1_avail_luma, 255, 8);
                     memset(au1_tile_slice_boundary, 0, 8);
@@ -1488,7 +1466,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         au1_src_top_right[0] = pu1_sao_src_top_left_luma_top_right[0];
                         u1_sao_src_top_left_luma_bot_left = pu1_src_luma[sao_ht_luma * src_strd - 1];
-                        ps_codec->apf_sao_luma[SAO_Y_TYPE_IDX - 2](pu1_src_luma,
+                        ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
                                                                   src_strd,
                                                                   pu1_src_left_luma,
                                                                   pu1_src_top_luma,
@@ -1506,7 +1484,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         UWORD16 *pu2_src_luma = (UWORD16 *)pu1_src_luma;
                         au2_src_top_right[0] = pu2_sao_src_top_left_luma_top_right[0];
                         u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
-                        ps_codec->apf_hbd_sao_luma[SAO_Y_TYPE_IDX - 2]((UWORD16 *)pu1_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
                                                                       src_strd,
                                                                       (UWORD16 *)pu1_src_left_luma,
                                                                       (UWORD16 *)pu1_src_top_luma,
@@ -1531,14 +1509,22 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_slice_hdr_top->i1_slice_sao_chroma_flag)
             {
-                if(0 == SAO_CB_TYPE_IDX)
+                if(0 == ps_sao->b3_cb_type_idx)
                 {
                     UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
                 }
 
-                else if(1 == SAO_CB_TYPE_IDX)
+                else if(1 == ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     if(chroma_yuv420sp_vu)
                     {
@@ -1550,8 +1536,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_chroma_top_left_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -1565,8 +1551,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -1584,8 +1570,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_chroma_top_left_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -1599,8 +1585,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -1611,7 +1597,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 }
                 else // if(2 <= ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     for(i = 0; i < 8; i++)
                     {
@@ -1790,7 +1784,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -1805,7 +1799,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -1831,7 +1825,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
@@ -1847,7 +1841,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
@@ -1874,7 +1868,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma += sao_ht_luma * src_strd * pixel_size_y;
         pu1_src_chroma += sao_ht_chroma * chroma_strd * pixel_size_uv;
         ps_sao += (ps_sps->i2_pic_wd_in_ctb);
-        ps_sao_10bd += (ps_sps->i2_pic_wd_in_ctb);
     }
 
     /* Left CTB */
@@ -1911,7 +1904,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma -= sao_wd_luma * pixel_size_y;
         pu1_src_chroma -= sao_wd_chroma * pixel_size_uv;
         ps_sao -= 1;
-        ps_sao_10bd -= 1;
         pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma) * pixel_size_y;
         pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma) * pixel_size_uv;
         pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * pixel_size_y);
@@ -1922,14 +1914,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_slice_hdr_left->i1_slice_sao_luma_flag)
             {
-                if(0 == SAO_Y_TYPE_IDX)
+                if(0 == ps_sao->b3_y_type_idx)
                 {
                     UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
                 }
 
-                else if(1 == SAO_Y_TYPE_IDX)
+                else if(1 == ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     if(1 == pixel_size_y)
                     {
@@ -1939,7 +1934,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             pu1_src_left_luma,
                             pu1_src_top_luma,
                             pu1_sao_src_top_left_luma_curr_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma);
@@ -1952,7 +1947,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             (UWORD16 *)pu1_src_left_luma,
                             (UWORD16 *)pu1_src_top_luma,
                             (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma,
@@ -1962,7 +1957,10 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     for(i = 0; i < 8; i++)
                     {
@@ -2150,7 +2148,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         au1_src_top_right[0] = pu1_src_top_luma[sao_wd_luma];
                         u1_sao_src_top_left_luma_bot_left = pu1_sao_src_top_left_luma_bot_left[0];
-                        ps_codec->apf_sao_luma[SAO_Y_TYPE_IDX - 2](pu1_src_luma,
+                        ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
                                                                   src_strd,
                                                                   pu1_src_left_luma,
                                                                   pu1_src_top_luma,
@@ -2168,7 +2166,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         UWORD16 *pu2_sao_src_top_left_luma_bot_left = (UWORD16 *)pu1_sao_src_top_left_luma_bot_left;
                         au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
                         u2_sao_src_top_left_luma_bot_left = pu2_sao_src_top_left_luma_bot_left[0];
-                        ps_codec->apf_hbd_sao_luma[SAO_Y_TYPE_IDX - 2]((UWORD16 *)pu1_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
                                                                       src_strd,
                                                                       (UWORD16 *)pu1_src_left_luma,
                                                                       (UWORD16 *)pu1_src_top_luma,
@@ -2194,14 +2192,22 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_slice_hdr_left->i1_slice_sao_chroma_flag)
             {
-                if(0 == SAO_CB_TYPE_IDX)
+                if(0 == ps_sao->b3_cb_type_idx)
                 {
                     UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
                 }
 
-                else if(1 == SAO_CB_TYPE_IDX)
+                else if(1 == ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     if(chroma_yuv420sp_vu)
                     {
@@ -2213,8 +2219,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -2228,8 +2234,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -2247,8 +2253,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -2262,8 +2268,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -2275,7 +2281,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 else // if(2 <= ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     for(i = 0; i < 8; i++)
                     {
@@ -2461,7 +2475,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -2476,7 +2490,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -2513,7 +2527,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
@@ -2529,7 +2543,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
@@ -2556,7 +2570,6 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         pu1_src_luma += sao_wd_luma * pixel_size_y;
         pu1_src_chroma += sao_wd_chroma * pixel_size_uv;
         ps_sao += 1;
-        ps_sao_10bd += 1;
     }
 
 
@@ -2605,7 +2618,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_sao_ctxt->ps_slice_hdr->i1_slice_sao_luma_flag)
             {
-                if(0 == SAO_Y_TYPE_IDX)
+                if(0 == ps_sao->b3_y_type_idx)
                 {
                     UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
                     if(1 == pixel_size_y)
@@ -2618,9 +2631,12 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                 }
 
-                else if(1 == SAO_Y_TYPE_IDX)
+                else if(1 == ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     if(1 == pixel_size_y)
                     {
@@ -2630,7 +2646,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             pu1_src_left_luma,
                             pu1_src_top_luma,
                             pu1_sao_src_top_left_luma_curr_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma);
@@ -2643,7 +2659,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             (UWORD16 *)pu1_src_left_luma,
                             (UWORD16 *)pu1_src_top_luma,
                             (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
-                            SAO_Y_BAND_POS,
+                            ps_sao->b5_y_band_pos,
                             ai1_offset_y,
                             sao_wd_luma,
                             sao_ht_luma,
@@ -2653,7 +2669,10 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
                 {
-                    GET_SAO_Y_OFFSETS(ai1_offset_y);
+                    ai1_offset_y[1] = ps_sao->b8_y_offset_1;
+                    ai1_offset_y[2] = ps_sao->b8_y_offset_2;
+                    ai1_offset_y[3] = ps_sao->b8_y_offset_3;
+                    ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
                     for(i = 0; i < 8; i++)
                     {
@@ -2871,7 +2890,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_src_top_right[0] = pu1_src_luma[sao_wd_luma - src_strd];
                         u1_sao_src_top_left_luma_bot_left = pu1_src_luma[sao_ht_luma * src_strd - 1];
 
-                        ps_codec->apf_sao_luma[SAO_Y_TYPE_IDX - 2](pu1_src_luma,
+                        ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
                                                                   src_strd,
                                                                   pu1_src_left_luma,
                                                                   pu1_src_top_luma,
@@ -2891,7 +2910,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au2_src_top_right[0] = pu2_src_luma[sao_wd_luma - src_strd];
                         u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
 
-                        ps_codec->apf_hbd_sao_luma[SAO_Y_TYPE_IDX - 2]((UWORD16 *)pu1_src_luma,
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
                                                                       src_strd,
                                                                       (UWORD16 *)pu1_src_left_luma,
                                                                       (UWORD16 *)pu1_src_top_luma,
@@ -2926,7 +2945,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(ps_sao_ctxt->ps_slice_hdr->i1_slice_sao_chroma_flag)
             {
-                if(0 == SAO_CB_TYPE_IDX)
+                if(0 == ps_sao->b3_cb_type_idx)
                 {
                     UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
                     if(1 == pixel_size_uv)
@@ -2941,9 +2960,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     }
                 }
 
-                else if(1 == SAO_CB_TYPE_IDX)
+                else if(1 == ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     if(chroma_yuv420sp_vu)
                     {
@@ -2955,8 +2982,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -2970,8 +2997,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CR_BAND_POS,
-                                SAO_CB_BAND_POS,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
                                 ai1_offset_cr,
                                 ai1_offset_cb,
                                 sao_wd_chroma,
@@ -2989,8 +3016,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 pu1_src_left_chroma,
                                 pu1_src_top_chroma,
                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -3004,8 +3031,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                                 (UWORD16 *)pu1_src_left_chroma,
                                 (UWORD16 *)pu1_src_top_chroma,
                                 (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
-                                SAO_CB_BAND_POS,
-                                SAO_CR_BAND_POS,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
                                 ai1_offset_cb,
                                 ai1_offset_cr,
                                 sao_wd_chroma,
@@ -3017,7 +3044,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 else // if(2 <= ps_sao->b3_cb_type_idx)
                 {
-                    GET_SAO_CHROMA_OFFSETS(ai1_offset_cb, ai1_offset_cr);
+                    ai1_offset_cb[1] = ps_sao->b8_cb_offset_1;
+                    ai1_offset_cb[2] = ps_sao->b8_cb_offset_2;
+                    ai1_offset_cb[3] = ps_sao->b8_cb_offset_3;
+                    ai1_offset_cb[4] = ps_sao->b8_cb_offset_4;
+
+                    ai1_offset_cr[1] = ps_sao->b8_cr_offset_1;
+                    ai1_offset_cr[2] = ps_sao->b8_cr_offset_2;
+                    ai1_offset_cr[3] = ps_sao->b8_cr_offset_3;
+                    ai1_offset_cr[4] = ps_sao->b8_cr_offset_4;
 
                     for(i = 0; i < 8; i++)
                     {
@@ -3224,7 +3259,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -3239,7 +3274,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_sao_chroma[SAO_CB_TYPE_IDX - 2](pu1_src_chroma,
+                            ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
                                                                          chroma_strd,
                                                                          pu1_src_left_chroma,
                                                                          pu1_src_top_chroma,
@@ -3270,7 +3305,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                         if(chroma_yuv420sp_vu)
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
@@ -3286,7 +3321,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         }
                         else
                         {
-                            ps_codec->apf_hbd_sao_chroma[SAO_CB_TYPE_IDX - 2]((UWORD16 *)pu1_src_chroma,
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
                                                                              chroma_strd,
                                                                              (UWORD16 *)pu1_src_left_chroma,
                                                                              (UWORD16 *)pu1_src_top_chroma,
