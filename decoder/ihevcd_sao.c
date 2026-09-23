@@ -77,7 +77,47 @@
 
 #define SAO_SHIFT_CTB    8
 
+#define UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_top_left, sao_wd_luma, sao_ht_luma, pixel_size_y) do { \
+    if(PIXEL_SIZE_1BYTE == (pixel_size_y)) { \
+        for(row = 0; row < (sao_ht_luma); row++) { \
+            (pu1_src_left_luma)[row] = (pu1_src_luma)[row * (src_strd) + ((sao_wd_luma) - 1)]; \
+        } \
+        (pu1_top_left)[0] = (pu1_src_top_luma)[(sao_wd_luma) - 1]; \
+    } else { \
+        UWORD16 *pu2_src_left = (UWORD16 *)(pu1_src_left_luma); \
+        UWORD16 *pu2_src = (UWORD16 *)(pu1_src_luma); \
+        UWORD16 *pu2_top = (UWORD16 *)(pu1_src_top_luma); \
+        UWORD16 *pu2_top_left = (UWORD16 *)(pu1_top_left); \
+        for(row = 0; row < (sao_ht_luma); row++) { \
+            pu2_src_left[row] = pu2_src[row * (src_strd) + ((sao_wd_luma) - 1)]; \
+        } \
+        pu2_top_left[0] = pu2_top[(sao_wd_luma) - 1]; \
+    } \
+    memcpy((pu1_src_top_luma), &(pu1_src_luma)[((sao_ht_luma) - 1) * (src_strd) * (pixel_size_y)], (sao_wd_luma) * (pixel_size_y)); \
+} while(0)
 
+#define UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_top_left, sao_wd_chroma, sao_ht_chroma, pixel_size_uv) do { \
+    if(PIXEL_SIZE_1BYTE == (pixel_size_uv)) { \
+        for(row = 0; row < (sao_ht_chroma); row++) { \
+            (pu1_src_left_chroma)[2 * row] = (pu1_src_chroma)[row * (chroma_strd) + ((sao_wd_chroma) - 2)]; \
+            (pu1_src_left_chroma)[2 * row + 1] = (pu1_src_chroma)[row * (chroma_strd) + ((sao_wd_chroma) - 1)]; \
+        } \
+        (pu1_top_left)[0] = (pu1_src_top_chroma)[(sao_wd_chroma) - 2]; \
+        (pu1_top_left)[1] = (pu1_src_top_chroma)[(sao_wd_chroma) - 1]; \
+    } else { \
+        UWORD16 *pu2_src_left = (UWORD16 *)(pu1_src_left_chroma); \
+        UWORD16 *pu2_src = (UWORD16 *)(pu1_src_chroma); \
+        UWORD16 *pu2_top = (UWORD16 *)(pu1_src_top_chroma); \
+        UWORD16 *pu2_top_left = (UWORD16 *)(pu1_top_left); \
+        for(row = 0; row < (sao_ht_chroma); row++) { \
+            pu2_src_left[2 * row] = pu2_src[row * (chroma_strd) + ((sao_wd_chroma) - 2)]; \
+            pu2_src_left[2 * row + 1] = pu2_src[row * (chroma_strd) + ((sao_wd_chroma) - 1)]; \
+        } \
+        pu2_top_left[0] = pu2_top[(sao_wd_chroma) - 2]; \
+        pu2_top_left[1] = pu2_top[(sao_wd_chroma) - 1]; \
+    } \
+    memcpy((pu1_src_top_chroma), &(pu1_src_chroma)[((sao_ht_chroma) - 1) * (chroma_strd) * (pixel_size_uv)], (sao_wd_chroma) * (pixel_size_uv)); \
+} while(0)
 
 void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 {
@@ -107,6 +147,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     UWORD8 *pu1_src_left_chroma;
     UWORD8 au1_src_top_right[2];
     UWORD8 au1_src_bot_left[2];
+    UWORD16 au2_src_top_right[2];
+    UWORD16 au2_src_bot_left[2];
     UWORD8 *pu1_no_loop_filter_flag;
     UWORD8 *pu1_src_backup_luma;
     UWORD8 *pu1_src_backup_chroma;
@@ -126,6 +168,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     UWORD8  u1_sao_src_top_left_luma_bot_left;
     UWORD8  *pu1_sao_src_top_left_luma_bot_left;
     UWORD8 *au1_sao_src_top_left_chroma_bot_left;
+    UWORD16 *au2_sao_src_top_left_chroma_bot_left;
+    UWORD16 u2_sao_src_top_left_luma_bot_left;
     UWORD8 *pu1_sao_src_top_left_chroma_bot_left;
     /* Only first 5 values are used, but arrays are large
      enough so that SIMD functions can read 64 bits at a time */
@@ -168,9 +212,11 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     pu1_sao_src_top_left_chroma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_chroma_curr_ctb + (2 * (ps_sao_ctxt->i4_ctb_y) * pixel_size_uv);
     pu1_sao_src_luma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_luma_top_left_ctb + ((ps_sao_ctxt->i4_ctb_y) * pixel_size_y);
     pu1_sao_src_chroma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_chroma_top_left_ctb + (2 * ps_sao_ctxt->i4_ctb_y * pixel_size_uv);
-    u1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->u1_sao_src_top_left_luma_bot_left; // + ((ps_sao_ctxt->i4_ctb_y));
+    u1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->u2_sao_src_top_left_luma_bot_left; // + ((ps_sao_ctxt->i4_ctb_y));
+    u2_sao_src_top_left_luma_bot_left = ps_sao_ctxt->u2_sao_src_top_left_luma_bot_left;
     pu1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_luma_bot_left + ((ps_sao_ctxt->i4_ctb_y) * pixel_size_y);
-    au1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->au1_sao_src_top_left_chroma_bot_left; // + (2 * ps_sao_ctxt->i4_ctb_y);
+    au1_sao_src_top_left_chroma_bot_left = (UWORD8 *)ps_sao_ctxt->au2_sao_src_top_left_chroma_bot_left; // + (2 * ps_sao_ctxt->i4_ctb_y);
+    au2_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->au2_sao_src_top_left_chroma_bot_left;
     pu1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_chroma_bot_left + (2 * ps_sao_ctxt->i4_ctb_y * pixel_size_uv);
     pu1_sao_src_top_left_luma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_luma_top_right + ((ps_sao_ctxt->i4_ctb_x) * pixel_size_y);
     pu1_sao_src_top_left_chroma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_chroma_top_right + (2 * ps_sao_ctxt->i4_ctb_x * pixel_size_uv);
@@ -380,16 +426,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         {
             if(0 == ps_sao->b3_y_type_idx)
             {
-                /* Update left, top and top-left */
-                for(row = 0; row < sao_ht_luma; row++)
-                {
-                    pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-                }
-                pu1_sao_src_luma_top_left_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
-
-
+                UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
             }
 
             else if(1 == ps_sao->b3_y_type_idx)
@@ -399,16 +436,33 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                 ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                 ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(pu1_src_luma,
-                                                                          src_strd,
-                                                                          pu1_src_left_luma,
-                                                                          pu1_src_top_luma,
-                                                                          pu1_sao_src_luma_top_left_ctb,
-                                                                          ps_sao->b5_y_band_pos,
-                                                                          ai1_offset_y,
-                                                                          sao_wd_luma,
-                                                                          sao_ht_luma
-                                                                         );
+                if(PIXEL_SIZE_1BYTE == pixel_size_y)
+                {
+                    ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(
+                        pu1_src_luma,
+                        src_strd,
+                        pu1_src_left_luma,
+                        pu1_src_top_luma,
+                        pu1_sao_src_luma_top_left_ctb,
+                        ps_sao->b5_y_band_pos,
+                        ai1_offset_y,
+                        sao_wd_luma,
+                        sao_ht_luma);
+                }
+                else
+                {
+                    ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(
+                        (UWORD16 *)pu1_src_luma,
+                        src_strd,
+                        (UWORD16 *)pu1_src_left_luma,
+                        (UWORD16 *)pu1_src_top_luma,
+                        (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
+                        ps_sao->b5_y_band_pos,
+                        ai1_offset_y,
+                        sao_wd_luma,
+                        sao_ht_luma,
+                        u4_bit_depth_luma);
+                }
             }
 
             else // if(2 <= ps_sao->b3_y_type_idx)
@@ -658,50 +712,54 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au1_avail_luma[7] = 0;
                 }
 
+                if(PIXEL_SIZE_1BYTE == pixel_size_y)
                 {
                     au1_src_top_right[0] = pu1_src_top_luma[sao_wd_luma];
                     u1_sao_src_top_left_luma_bot_left = pu1_src_left_luma[sao_ht_luma];
                     ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
-                                                                      src_strd,
-                                                                      pu1_src_left_luma,
-                                                                      pu1_src_top_luma,
-                                                                      pu1_sao_src_luma_top_left_ctb,
-                                                                      au1_src_top_right,
-                                                                      &u1_sao_src_top_left_luma_bot_left,
-                                                                      au1_avail_luma,
-                                                                      ai1_offset_y,
-                                                                      sao_wd_luma,
-                                                                      sao_ht_luma);
+                                                              src_strd,
+                                                              pu1_src_left_luma,
+                                                              pu1_src_top_luma,
+                                                              pu1_sao_src_luma_top_left_ctb,
+                                                              au1_src_top_right,
+                                                              &u1_sao_src_top_left_luma_bot_left,
+                                                              au1_avail_luma,
+                                                              ai1_offset_y,
+                                                              sao_wd_luma,
+                                                              sao_ht_luma);
+                }
+                else
+                {
+                    UWORD16 *pu2_src_top_luma = (UWORD16 *)pu1_src_top_luma;
+                    UWORD16 *pu2_src_left_luma = (UWORD16 *)pu1_src_left_luma;
+                    au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
+                    u2_sao_src_top_left_luma_bot_left = pu2_src_left_luma[sao_ht_luma];
+                    ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
+                                                                  src_strd,
+                                                                  (UWORD16 *)pu1_src_left_luma,
+                                                                  (UWORD16 *)pu1_src_top_luma,
+                                                                  (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
+                                                                  au2_src_top_right,
+                                                                  &u2_sao_src_top_left_luma_bot_left,
+                                                                  au1_avail_luma,
+                                                                  ai1_offset_y,
+                                                                  sao_wd_luma,
+                                                                  sao_ht_luma,
+                                                                  u4_bit_depth_luma);
                 }
             }
 
         }
         else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
         {
-            /* Update left, top and top-left */
-            for(row = 0; row < sao_ht_luma; row++)
-            {
-                pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-            }
-            pu1_sao_src_luma_top_left_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-            memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
+            UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
         }
 
         if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && ps_slice_hdr_top_left->i1_slice_sao_chroma_flag)
         {
             if(0 == ps_sao->b3_cb_type_idx)
             {
-                for(row = 0; row < sao_ht_chroma; row++)
-                {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-                }
-                pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
-
+                UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
             }
 
             else if(1 == ps_sao->b3_cb_type_idx)
@@ -718,33 +776,71 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                 if(chroma_yuv420sp_vu)
                 {
-                    ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                chroma_strd,
-                                                                                pu1_src_left_chroma,
-                                                                                pu1_src_top_chroma,
-                                                                                pu1_sao_src_chroma_top_left_ctb,
-                                                                                ps_sao->b5_cr_band_pos,
-                                                                                ps_sao->b5_cb_band_pos,
-                                                                                ai1_offset_cr,
-                                                                                ai1_offset_cb,
-                                                                                sao_wd_chroma,
-                                                                                sao_ht_chroma
-                                                                               );
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                    {
+                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                            pu1_src_chroma,
+                            chroma_strd,
+                            pu1_src_left_chroma,
+                            pu1_src_top_chroma,
+                            pu1_sao_src_chroma_top_left_ctb,
+                            ps_sao->b5_cr_band_pos,
+                            ps_sao->b5_cb_band_pos,
+                            ai1_offset_cr,
+                            ai1_offset_cb,
+                            sao_wd_chroma,
+                            sao_ht_chroma);
+                    }
+                    else
+                    {
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                            (UWORD16 *)pu1_src_chroma,
+                            chroma_strd,
+                            (UWORD16 *)pu1_src_left_chroma,
+                            (UWORD16 *)pu1_src_top_chroma,
+                            (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                            ps_sao->b5_cr_band_pos,
+                            ps_sao->b5_cb_band_pos,
+                            ai1_offset_cr,
+                            ai1_offset_cb,
+                            sao_wd_chroma,
+                            sao_ht_chroma,
+                            u4_bit_depth_chroma);
+                    }
                 }
                 else
                 {
-                    ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                chroma_strd,
-                                                                                pu1_src_left_chroma,
-                                                                                pu1_src_top_chroma,
-                                                                                pu1_sao_src_chroma_top_left_ctb,
-                                                                                ps_sao->b5_cb_band_pos,
-                                                                                ps_sao->b5_cr_band_pos,
-                                                                                ai1_offset_cb,
-                                                                                ai1_offset_cr,
-                                                                                sao_wd_chroma,
-                                                                                sao_ht_chroma
-                                                                               );
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                    {
+                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                            pu1_src_chroma,
+                            chroma_strd,
+                            pu1_src_left_chroma,
+                            pu1_src_top_chroma,
+                            pu1_sao_src_chroma_top_left_ctb,
+                            ps_sao->b5_cb_band_pos,
+                            ps_sao->b5_cr_band_pos,
+                            ai1_offset_cb,
+                            ai1_offset_cr,
+                            sao_wd_chroma,
+                            sao_ht_chroma);
+                    }
+                    else
+                    {
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                            (UWORD16 *)pu1_src_chroma,
+                            chroma_strd,
+                            (UWORD16 *)pu1_src_left_chroma,
+                            (UWORD16 *)pu1_src_top_chroma,
+                            (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                            ps_sao->b5_cb_band_pos,
+                            ps_sao->b5_cr_band_pos,
+                            ai1_offset_cb,
+                            ai1_offset_cr,
+                            sao_wd_chroma,
+                            sao_ht_chroma,
+                            u4_bit_depth_chroma);
+                    }
                 }
             }
 
@@ -975,6 +1071,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     au1_avail_chroma[7] = 0;
                 }
 
+                if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                 {
                     au1_src_top_right[0] = pu1_src_top_chroma[sao_wd_chroma];
                     au1_src_top_right[1] = pu1_src_top_chroma[sao_wd_chroma + 1];
@@ -989,47 +1086,88 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     if(chroma_yuv420sp_vu)
                     {
                         ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                             chroma_strd,
-                                                                             pu1_src_left_chroma,
-                                                                             pu1_src_top_chroma,
-                                                                             pu1_sao_src_chroma_top_left_ctb,
-                                                                             au1_src_top_right,
-                                                                             au1_sao_src_top_left_chroma_bot_left,
-                                                                             au1_avail_chroma,
-                                                                             ai1_offset_cr,
-                                                                             ai1_offset_cb,
-                                                                             sao_wd_chroma,
-                                                                             sao_ht_chroma);
+                                                                     chroma_strd,
+                                                                     pu1_src_left_chroma,
+                                                                     pu1_src_top_chroma,
+                                                                     pu1_sao_src_chroma_top_left_ctb,
+                                                                     au1_src_top_right,
+                                                                     au1_sao_src_top_left_chroma_bot_left,
+                                                                     au1_avail_chroma,
+                                                                     ai1_offset_cr,
+                                                                     ai1_offset_cb,
+                                                                     sao_wd_chroma,
+                                                                     sao_ht_chroma);
                     }
                     else
                     {
                         ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                             chroma_strd,
-                                                                             pu1_src_left_chroma,
-                                                                             pu1_src_top_chroma,
-                                                                             pu1_sao_src_chroma_top_left_ctb,
-                                                                             au1_src_top_right,
-                                                                             au1_sao_src_top_left_chroma_bot_left,
-                                                                             au1_avail_chroma,
-                                                                             ai1_offset_cb,
-                                                                             ai1_offset_cr,
-                                                                             sao_wd_chroma,
-                                                                             sao_ht_chroma);
+                                                                     chroma_strd,
+                                                                     pu1_src_left_chroma,
+                                                                     pu1_src_top_chroma,
+                                                                     pu1_sao_src_chroma_top_left_ctb,
+                                                                     au1_src_top_right,
+                                                                     au1_sao_src_top_left_chroma_bot_left,
+                                                                     au1_avail_chroma,
+                                                                     ai1_offset_cb,
+                                                                     ai1_offset_cr,
+                                                                     sao_wd_chroma,
+                                                                     sao_ht_chroma);
+                    }
+                }
+                else
+                {
+                    UWORD16 *pu2_src_top_chroma = (UWORD16 *)pu1_src_top_chroma;
+                    UWORD16 *pu2_src_left_chroma = (UWORD16 *)pu1_src_left_chroma;
+                    UWORD16 *pu2_src_chroma = (UWORD16 *)pu1_src_chroma;
+
+                    au2_src_top_right[0] = pu2_src_top_chroma[sao_wd_chroma];
+                    au2_src_top_right[1] = pu2_src_top_chroma[sao_wd_chroma + 1];
+                    au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_left_chroma[2 * sao_ht_chroma];
+                    au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_left_chroma[2 * sao_ht_chroma + 1];
+                    if((ctb_size == (8 * v_samp_factor)) && (ps_sao_ctxt->i4_ctb_y != ps_sps->i2_pic_ht_in_ctb - 1))
+                    {
+                        au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 1];
+                    }
+
+                    if(chroma_yuv420sp_vu)
+                    {
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                         chroma_strd,
+                                                                         (UWORD16 *)pu1_src_left_chroma,
+                                                                         (UWORD16 *)pu1_src_top_chroma,
+                                                                         (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                                                         au2_src_top_right,
+                                                                         au2_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cr,
+                                                                         ai1_offset_cb,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma,
+                                                                         u4_bit_depth_chroma);
+                    }
+                    else
+                    {
+                        ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                         chroma_strd,
+                                                                         (UWORD16 *)pu1_src_left_chroma,
+                                                                         (UWORD16 *)pu1_src_top_chroma,
+                                                                         (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                                                         au2_src_top_right,
+                                                                         au2_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cb,
+                                                                         ai1_offset_cr,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma,
+                                                                         u4_bit_depth_chroma);
                     }
                 }
             }
         }
         else if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc && ((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag)))
         {
-            for(row = 0; row < sao_ht_chroma; row++)
-            {
-                pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-            }
-            pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-            pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-            memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
+            UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
         }
 
         pu1_src_luma += (sao_wd_luma + sao_ht_luma * src_strd) * pixel_size_y;
@@ -1084,15 +1222,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_y_type_idx)
                 {
-                    /* Update left, top and top-left */
-                    for(row = 0; row < sao_ht_luma; row++)
-                    {
-                        pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-                    }
-                    pu1_sao_src_luma_top_left_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                    memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
-
+                    UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
                 }
 
                 else if(1 == ps_sao->b3_y_type_idx)
@@ -1102,16 +1232,33 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(pu1_src_luma,
-                                                                              src_strd,
-                                                                              pu1_src_left_luma,
-                                                                              pu1_src_top_luma,
-                                                                              pu1_sao_src_luma_top_left_ctb,
-                                                                              ps_sao->b5_y_band_pos,
-                                                                              ai1_offset_y,
-                                                                              sao_wd_luma,
-                                                                              sao_ht_luma
-                                                                             );
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
+                    {
+                        ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(
+                            pu1_src_luma,
+                            src_strd,
+                            pu1_src_left_luma,
+                            pu1_src_top_luma,
+                            pu1_sao_src_luma_top_left_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma);
+                    }
+                    else
+                    {
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(
+                            (UWORD16 *)pu1_src_luma,
+                            src_strd,
+                            (UWORD16 *)pu1_src_left_luma,
+                            (UWORD16 *)pu1_src_top_luma,
+                            (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma,
+                            u4_bit_depth_luma);
+                    }
                 }
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
@@ -1315,33 +1462,46 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_luma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
                         au1_src_top_right[0] = pu1_sao_src_top_left_luma_top_right[0];
                         u1_sao_src_top_left_luma_bot_left = pu1_src_luma[sao_ht_luma * src_strd - 1];
                         ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
-                                                                          src_strd,
-                                                                          pu1_src_left_luma,
-                                                                          pu1_src_top_luma,
-                                                                          pu1_sao_src_luma_top_left_ctb,
-                                                                          au1_src_top_right,
-                                                                          &u1_sao_src_top_left_luma_bot_left,
-                                                                          au1_avail_luma,
-                                                                          ai1_offset_y,
-                                                                          sao_wd_luma,
-                                                                          sao_ht_luma);
+                                                                  src_strd,
+                                                                  pu1_src_left_luma,
+                                                                  pu1_src_top_luma,
+                                                                  pu1_sao_src_luma_top_left_ctb,
+                                                                  au1_src_top_right,
+                                                                  &u1_sao_src_top_left_luma_bot_left,
+                                                                  au1_avail_luma,
+                                                                  ai1_offset_y,
+                                                                  sao_wd_luma,
+                                                                  sao_ht_luma);
+                    }
+                    else
+                    {
+                        UWORD16 *pu2_sao_src_top_left_luma_top_right = (UWORD16 *)pu1_sao_src_top_left_luma_top_right;
+                        UWORD16 *pu2_src_luma = (UWORD16 *)pu1_src_luma;
+                        au2_src_top_right[0] = pu2_sao_src_top_left_luma_top_right[0];
+                        u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
+                                                                      src_strd,
+                                                                      (UWORD16 *)pu1_src_left_luma,
+                                                                      (UWORD16 *)pu1_src_top_luma,
+                                                                      (UWORD16 *)pu1_sao_src_luma_top_left_ctb,
+                                                                      au2_src_top_right,
+                                                                      &u2_sao_src_top_left_luma_bot_left,
+                                                                      au1_avail_luma,
+                                                                      ai1_offset_y,
+                                                                      sao_wd_luma,
+                                                                      sao_ht_luma,
+                                                                      u4_bit_depth_luma);
                     }
                 }
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                /* Update left, top and top-left */
-                for(row = 0; row < sao_ht_luma; row++)
-                {
-                    pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-                }
-                pu1_sao_src_luma_top_left_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
+                UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_luma_top_left_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
             }
         }
 
@@ -1351,17 +1511,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_cb_type_idx)
                 {
-
-                    for(row = 0; row < sao_ht_chroma; row++)
-                    {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-                    }
-                    pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                    pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                    memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
-
+                    UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
                 }
 
                 else if(1 == ps_sao->b3_cb_type_idx)
@@ -1378,33 +1528,71 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_chroma_top_left_ctb,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ai1_offset_cr,
-                                                                                    ai1_offset_cb,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_chroma_top_left_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_chroma_top_left_ctb,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ai1_offset_cb,
-                                                                                    ai1_offset_cr,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_chroma_top_left_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                 }
                 else // if(2 <= ps_sao->b3_cb_type_idx)
@@ -1587,6 +1775,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
                         au1_src_top_right[0] = pu1_sao_src_top_left_chroma_top_right[0];
                         au1_src_top_right[1] = pu1_sao_src_top_left_chroma_top_right[1];
@@ -1596,32 +1785,75 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_chroma_top_left_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_sao_src_top_left_chroma_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cr,
-                                                                                 ai1_offset_cb,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_chroma_top_left_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cr,
+                                                                         ai1_offset_cb,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
                         }
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_chroma_top_left_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_sao_src_top_left_chroma_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cb,
-                                                                                 ai1_offset_cr,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_chroma_top_left_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cb,
+                                                                         ai1_offset_cr,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
+                        }
+                    }
+                    else
+                    {
+                        UWORD16 *pu2_sao_src_top_left_chroma_top_right = (UWORD16 *)pu1_sao_src_top_left_chroma_top_right;
+                        UWORD16 *pu2_src_chroma = (UWORD16 *)pu1_src_chroma;
+
+                        au2_src_top_right[0] = pu2_sao_src_top_left_chroma_top_right[0];
+                        au2_src_top_right[1] = pu2_sao_src_top_left_chroma_top_right[1];
+                        au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 1];
+
+                        if(chroma_yuv420sp_vu)
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_sao_src_top_left_chroma_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cr,
+                                                                             ai1_offset_cb,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_chroma_top_left_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_sao_src_top_left_chroma_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cb,
+                                                                             ai1_offset_cr,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
                         }
                     }
 
@@ -1629,15 +1861,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                for(row = 0; row < sao_ht_chroma; row++)
-                {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-                }
-                pu1_sao_src_chroma_top_left_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                pu1_sao_src_chroma_top_left_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
+                UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_chroma_top_left_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
             }
         }
 
@@ -1692,16 +1916,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_y_type_idx)
                 {
-                    /* Update left, top and top-left */
-                    for(row = 0; row < sao_ht_luma; row++)
-                    {
-                        pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-                    }
-                    /*Update in next location*/
-                    pu1_sao_src_top_left_luma_curr_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                    memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
-
+                    UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
                 }
 
                 else if(1 == ps_sao->b3_y_type_idx)
@@ -1711,16 +1926,33 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(pu1_src_luma,
-                                                                              src_strd,
-                                                                              pu1_src_left_luma,
-                                                                              pu1_src_top_luma,
-                                                                              pu1_sao_src_top_left_luma_curr_ctb,
-                                                                              ps_sao->b5_y_band_pos,
-                                                                              ai1_offset_y,
-                                                                              sao_wd_luma,
-                                                                              sao_ht_luma
-                                                                             );
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
+                    {
+                        ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(
+                            pu1_src_luma,
+                            src_strd,
+                            pu1_src_left_luma,
+                            pu1_src_top_luma,
+                            pu1_sao_src_top_left_luma_curr_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma);
+                    }
+                    else
+                    {
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(
+                            (UWORD16 *)pu1_src_luma,
+                            src_strd,
+                            (UWORD16 *)pu1_src_left_luma,
+                            (UWORD16 *)pu1_src_top_luma,
+                            (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma,
+                            u4_bit_depth_luma);
+                    }
                 }
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
@@ -1912,35 +2144,47 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_luma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
                         au1_src_top_right[0] = pu1_src_top_luma[sao_wd_luma];
                         u1_sao_src_top_left_luma_bot_left = pu1_sao_src_top_left_luma_bot_left[0];
                         ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
-                                                                          src_strd,
-                                                                          pu1_src_left_luma,
-                                                                          pu1_src_top_luma,
-                                                                          pu1_sao_src_top_left_luma_curr_ctb,
-                                                                          au1_src_top_right,
-                                                                          &u1_sao_src_top_left_luma_bot_left,
-                                                                          au1_avail_luma,
-                                                                          ai1_offset_y,
-                                                                          sao_wd_luma,
-                                                                          sao_ht_luma);
+                                                                  src_strd,
+                                                                  pu1_src_left_luma,
+                                                                  pu1_src_top_luma,
+                                                                  pu1_sao_src_top_left_luma_curr_ctb,
+                                                                  au1_src_top_right,
+                                                                  &u1_sao_src_top_left_luma_bot_left,
+                                                                  au1_avail_luma,
+                                                                  ai1_offset_y,
+                                                                  sao_wd_luma,
+                                                                  sao_ht_luma);
+                    }
+                    else
+                    {
+                        UWORD16 *pu2_src_top_luma = (UWORD16 *)pu1_src_top_luma;
+                        UWORD16 *pu2_sao_src_top_left_luma_bot_left = (UWORD16 *)pu1_sao_src_top_left_luma_bot_left;
+                        au2_src_top_right[0] = pu2_src_top_luma[sao_wd_luma];
+                        u2_sao_src_top_left_luma_bot_left = pu2_sao_src_top_left_luma_bot_left[0];
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
+                                                                      src_strd,
+                                                                      (UWORD16 *)pu1_src_left_luma,
+                                                                      (UWORD16 *)pu1_src_top_luma,
+                                                                      (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
+                                                                      au2_src_top_right,
+                                                                      &u2_sao_src_top_left_luma_bot_left,
+                                                                      au1_avail_luma,
+                                                                      ai1_offset_y,
+                                                                      sao_wd_luma,
+                                                                      sao_ht_luma,
+                                                                      u4_bit_depth_luma);
                     }
 
                 }
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                /* Update left, top and top-left */
-                for(row = 0; row < sao_ht_luma; row++)
-                {
-                    pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
-                }
-                /*Update in next location*/
-                pu1_sao_src_top_left_luma_curr_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
+                UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
             }
         }
 
@@ -1950,15 +2194,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_cb_type_idx)
                 {
-                    for(row = 0; row < sao_ht_chroma; row++)
-                    {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-                    }
-                    pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                    pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                    memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
+                    UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
                 }
 
                 else if(1 == ps_sao->b3_cb_type_idx)
@@ -1975,33 +2211,71 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ai1_offset_cr,
-                                                                                    ai1_offset_cb,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ai1_offset_cb,
-                                                                                    ai1_offset_cr,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                 }
 
@@ -2180,6 +2454,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
                         au1_src_top_right[0] = pu1_src_top_chroma[sao_wd_chroma];
                         au1_src_top_right[1] = pu1_src_top_chroma[sao_wd_chroma + 1];
@@ -2198,36 +2473,89 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                             au1_src_bot_left[1] = pu1_src_chroma[-1 + sao_ht_chroma * chroma_strd];
                         }
 
-
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_src_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cr,
-                                                                                 ai1_offset_cb,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_src_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cr,
+                                                                         ai1_offset_cb,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
                         }
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_src_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cb,
-                                                                                 ai1_offset_cr,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_src_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cb,
+                                                                         ai1_offset_cr,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
+                        }
+                    }
+                    else
+                    {
+                        UWORD16 *pu2_src_top_chroma = (UWORD16 *)pu1_src_top_chroma;
+                        UWORD16 *pu2_sao_src_top_left_chroma_bot_left = (UWORD16 *)pu1_sao_src_top_left_chroma_bot_left;
+                        UWORD16 *pu2_src_chroma = (UWORD16 *)pu1_src_chroma;
+
+                        au2_src_top_right[0] = pu2_src_top_chroma[sao_wd_chroma];
+                        au2_src_top_right[1] = pu2_src_top_chroma[sao_wd_chroma + 1];
+                        au2_src_bot_left[0] = pu2_sao_src_top_left_chroma_bot_left[0];
+                        au2_src_bot_left[1] = pu2_sao_src_top_left_chroma_bot_left[1];
+                        if((ctb_size == (8 * h_samp_factor)) && (ps_sao_ctxt->i4_ctb_y != 0))
+                        {
+                            au2_src_top_right[0] = pu2_src_chroma[sao_wd_chroma - chroma_strd];
+                            au2_src_top_right[1] = pu2_src_chroma[sao_wd_chroma - chroma_strd + 1];
+                        }
+                        if (ctb_size == (8 * h_samp_factor))
+                        {
+                            au2_src_bot_left[0] = pu2_src_chroma[-2 + sao_ht_chroma * chroma_strd];
+                            au2_src_bot_left[1] = pu2_src_chroma[-1 + sao_ht_chroma * chroma_strd];
+                        }
+
+                        if(chroma_yuv420sp_vu)
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_src_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cr,
+                                                                             ai1_offset_cb,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_src_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cb,
+                                                                             ai1_offset_cr,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
                         }
                     }
 
@@ -2235,15 +2563,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                for(row = 0; row < sao_ht_chroma; row++)
-                {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
-                }
-                pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
+                UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
             }
 
         }
@@ -2300,17 +2620,15 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_y_type_idx)
                 {
-                    /* Update left, top and top-left */
-                    for(row = 0; row < sao_ht_luma; row++)
+                    UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
-                        pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
+                        pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
                     }
-                    pu1_sao_src_top_left_luma_curr_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                    memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
-
-                    pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
-
+                    else
+                    {
+                        ((UWORD16 *)pu1_sao_src_top_left_luma_top_right)[0] = ((UWORD16 *)pu1_src_luma)[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
+                    }
                 }
 
                 else if(1 == ps_sao->b3_y_type_idx)
@@ -2320,16 +2638,33 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     ai1_offset_y[3] = ps_sao->b8_y_offset_3;
                     ai1_offset_y[4] = ps_sao->b8_y_offset_4;
 
-                    ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(pu1_src_luma,
-                                                                              src_strd,
-                                                                              pu1_src_left_luma,
-                                                                              pu1_src_top_luma,
-                                                                              pu1_sao_src_top_left_luma_curr_ctb,
-                                                                              ps_sao->b5_y_band_pos,
-                                                                              ai1_offset_y,
-                                                                              sao_wd_luma,
-                                                                              sao_ht_luma
-                                                                             );
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
+                    {
+                        ps_codec->s_func_selector.ihevc_sao_band_offset_luma_fptr(
+                            pu1_src_luma,
+                            src_strd,
+                            pu1_src_left_luma,
+                            pu1_src_top_luma,
+                            pu1_sao_src_top_left_luma_curr_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma);
+                    }
+                    else
+                    {
+                        ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_luma_fptr(
+                            (UWORD16 *)pu1_src_luma,
+                            src_strd,
+                            (UWORD16 *)pu1_src_left_luma,
+                            (UWORD16 *)pu1_src_top_luma,
+                            (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
+                            ps_sao->b5_y_band_pos,
+                            ai1_offset_y,
+                            sao_wd_luma,
+                            sao_ht_luma,
+                            u4_bit_depth_luma);
+                    }
                 }
 
                 else // if(2 <= ps_sao->b3_y_type_idx)
@@ -2550,38 +2885,59 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_luma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_y)
                     {
                         au1_src_top_right[0] = pu1_src_luma[sao_wd_luma - src_strd];
                         u1_sao_src_top_left_luma_bot_left = pu1_src_luma[sao_ht_luma * src_strd - 1];
 
                         ps_codec->apf_sao_luma[ps_sao->b3_y_type_idx - 2](pu1_src_luma,
-                                                                          src_strd,
-                                                                          pu1_src_left_luma,
-                                                                          pu1_src_top_luma,
-                                                                          pu1_sao_src_top_left_luma_curr_ctb,
-                                                                          au1_src_top_right,
-                                                                          &u1_sao_src_top_left_luma_bot_left,
-                                                                          au1_avail_luma,
-                                                                          ai1_offset_y,
-                                                                          sao_wd_luma,
-                                                                          sao_ht_luma);
+                                                                  src_strd,
+                                                                  pu1_src_left_luma,
+                                                                  pu1_src_top_luma,
+                                                                  pu1_sao_src_top_left_luma_curr_ctb,
+                                                                  au1_src_top_right,
+                                                                  &u1_sao_src_top_left_luma_bot_left,
+                                                                  au1_avail_luma,
+                                                                  ai1_offset_y,
+                                                                  sao_wd_luma,
+                                                                  sao_ht_luma);
+                        pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
+                        pu1_sao_src_top_left_luma_bot_left[0] = pu1_src_luma[(sao_ht_luma)*src_strd + sao_wd_luma - 1];
                     }
-                    pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
-                    pu1_sao_src_top_left_luma_bot_left[0] = pu1_src_luma[(sao_ht_luma)*src_strd + sao_wd_luma - 1];
+                    else
+                    {
+                        UWORD16 *pu2_src_luma = (UWORD16 *)pu1_src_luma;
+                        au2_src_top_right[0] = pu2_src_luma[sao_wd_luma - src_strd];
+                        u2_sao_src_top_left_luma_bot_left = pu2_src_luma[sao_ht_luma * src_strd - 1];
+
+                        ps_codec->apf_hbd_sao_luma[ps_sao->b3_y_type_idx - 2]((UWORD16 *)pu1_src_luma,
+                                                                      src_strd,
+                                                                      (UWORD16 *)pu1_src_left_luma,
+                                                                      (UWORD16 *)pu1_src_top_luma,
+                                                                      (UWORD16 *)pu1_sao_src_top_left_luma_curr_ctb,
+                                                                      au2_src_top_right,
+                                                                      &u2_sao_src_top_left_luma_bot_left,
+                                                                      au1_avail_luma,
+                                                                      ai1_offset_y,
+                                                                      sao_wd_luma,
+                                                                      sao_ht_luma,
+                                                                      u4_bit_depth_luma);
+                        ((UWORD16 *)pu1_sao_src_top_left_luma_top_right)[0] = pu2_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
+                        ((UWORD16 *)pu1_sao_src_top_left_luma_bot_left)[0] = pu2_src_luma[(sao_ht_luma)*src_strd + sao_wd_luma - 1];
+                    }
                 }
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                /* Update left, top and top-left */
-                for(row = 0; row < sao_ht_luma; row++)
+                UPDATE_LUMA_BUFFERS(pu1_src_luma, src_strd, pu1_src_left_luma, pu1_src_top_luma, pu1_sao_src_top_left_luma_curr_ctb, sao_wd_luma, sao_ht_luma, pixel_size_y);
+                if(PIXEL_SIZE_1BYTE == pixel_size_y)
                 {
-                    pu1_src_left_luma[row] = pu1_src_luma[row * src_strd + (sao_wd_luma - 1)];
+                    pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
                 }
-                pu1_sao_src_top_left_luma_curr_ctb[0] = pu1_src_top_luma[sao_wd_luma - 1];
-
-                memcpy(pu1_src_top_luma, &pu1_src_luma[(sao_ht_luma - 1) * src_strd], sao_wd_luma);
-
-                pu1_sao_src_top_left_luma_top_right[0] = pu1_src_luma[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
+                else
+                {
+                    ((UWORD16 *)pu1_sao_src_top_left_luma_top_right)[0] = ((UWORD16 *)pu1_src_luma)[(sao_ht_luma - 1) * src_strd + sao_wd_luma];
+                }
             }
         }
 
@@ -2591,18 +2947,17 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             {
                 if(0 == ps_sao->b3_cb_type_idx)
                 {
-                    for(row = 0; row < sao_ht_chroma; row++)
+                    UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
-                        pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                        pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
+                        pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                        pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
                     }
-                    pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                    pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                    memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
-
-                    pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
-                    pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+                    else
+                    {
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[0] = ((UWORD16 *)pu1_src_chroma)[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[1] = ((UWORD16 *)pu1_src_chroma)[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+                    }
                 }
 
                 else if(1 == ps_sao->b3_cb_type_idx)
@@ -2619,33 +2974,71 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
 
                     if(chroma_yuv420sp_vu)
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ai1_offset_cr,
-                                                                                    ai1_offset_cb,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cr_band_pos,
+                                ps_sao->b5_cb_band_pos,
+                                ai1_offset_cr,
+                                ai1_offset_cb,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                     else
                     {
-                        ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(pu1_src_chroma,
-                                                                                    chroma_strd,
-                                                                                    pu1_src_left_chroma,
-                                                                                    pu1_src_top_chroma,
-                                                                                    pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                    ps_sao->b5_cb_band_pos,
-                                                                                    ps_sao->b5_cr_band_pos,
-                                                                                    ai1_offset_cb,
-                                                                                    ai1_offset_cr,
-                                                                                    sao_wd_chroma,
-                                                                                    sao_ht_chroma
-                                                                                   );
+                        if(PIXEL_SIZE_1BYTE == pixel_size_uv)
+                        {
+                            ps_codec->s_func_selector.ihevc_sao_band_offset_chroma_fptr(
+                                pu1_src_chroma,
+                                chroma_strd,
+                                pu1_src_left_chroma,
+                                pu1_src_top_chroma,
+                                pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->s_func_selector.ihevc_hbd_sao_band_offset_chroma_fptr(
+                                (UWORD16 *)pu1_src_chroma,
+                                chroma_strd,
+                                (UWORD16 *)pu1_src_left_chroma,
+                                (UWORD16 *)pu1_src_top_chroma,
+                                (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                ps_sao->b5_cb_band_pos,
+                                ps_sao->b5_cr_band_pos,
+                                ai1_offset_cb,
+                                ai1_offset_cr,
+                                sao_wd_chroma,
+                                sao_ht_chroma,
+                                u4_bit_depth_chroma);
+                        }
                     }
                 }
 
@@ -2856,6 +3249,7 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         au1_avail_chroma[7] = 0;
                     }
 
+                    if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                     {
                         au1_src_top_right[0] = pu1_src_chroma[sao_wd_chroma - chroma_strd];
                         au1_src_top_right[1] = pu1_src_chroma[sao_wd_chroma - chroma_strd + 1];
@@ -2866,56 +3260,102 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         if(chroma_yuv420sp_vu)
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_sao_src_top_left_chroma_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cr,
-                                                                                 ai1_offset_cb,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cr,
+                                                                         ai1_offset_cb,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
                         }
                         else
                         {
                             ps_codec->apf_sao_chroma[ps_sao->b3_cb_type_idx - 2](pu1_src_chroma,
-                                                                                 chroma_strd,
-                                                                                 pu1_src_left_chroma,
-                                                                                 pu1_src_top_chroma,
-                                                                                 pu1_sao_src_top_left_chroma_curr_ctb,
-                                                                                 au1_src_top_right,
-                                                                                 au1_sao_src_top_left_chroma_bot_left,
-                                                                                 au1_avail_chroma,
-                                                                                 ai1_offset_cb,
-                                                                                 ai1_offset_cr,
-                                                                                 sao_wd_chroma,
-                                                                                 sao_ht_chroma);
+                                                                         chroma_strd,
+                                                                         pu1_src_left_chroma,
+                                                                         pu1_src_top_chroma,
+                                                                         pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                         au1_src_top_right,
+                                                                         au1_sao_src_top_left_chroma_bot_left,
+                                                                         au1_avail_chroma,
+                                                                         ai1_offset_cb,
+                                                                         ai1_offset_cr,
+                                                                         sao_wd_chroma,
+                                                                         sao_ht_chroma);
                         }
+                        pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                        pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+
+                        pu1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 2];
+                        pu1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 1];
                     }
+                    else
+                    {
+                        UWORD16 *pu2_src_chroma = (UWORD16 *)pu1_src_chroma;
 
+                        au2_src_top_right[0] = pu2_src_chroma[sao_wd_chroma - chroma_strd];
+                        au2_src_top_right[1] = pu2_src_chroma[sao_wd_chroma - chroma_strd + 1];
+
+                        au2_sao_src_top_left_chroma_bot_left[0] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 2];
+                        au2_sao_src_top_left_chroma_bot_left[1] = pu2_src_chroma[sao_ht_chroma * chroma_strd - 1];
+
+                        if(chroma_yuv420sp_vu)
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_sao_src_top_left_chroma_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cr,
+                                                                             ai1_offset_cb,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
+                        }
+                        else
+                        {
+                            ps_codec->apf_hbd_sao_chroma[ps_sao->b3_cb_type_idx - 2]((UWORD16 *)pu1_src_chroma,
+                                                                             chroma_strd,
+                                                                             (UWORD16 *)pu1_src_left_chroma,
+                                                                             (UWORD16 *)pu1_src_top_chroma,
+                                                                             (UWORD16 *)pu1_sao_src_top_left_chroma_curr_ctb,
+                                                                             au2_src_top_right,
+                                                                             au2_sao_src_top_left_chroma_bot_left,
+                                                                             au1_avail_chroma,
+                                                                             ai1_offset_cb,
+                                                                             ai1_offset_cr,
+                                                                             sao_wd_chroma,
+                                                                             sao_ht_chroma,
+                                                                             u4_bit_depth_chroma);
+                        }
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[0] = pu2_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[1] = pu2_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_bot_left)[0] = pu2_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 2];
+                        ((UWORD16 *)pu1_sao_src_top_left_chroma_bot_left)[1] = pu2_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 1];
+                    }
                 }
-                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
-                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
-
-                pu1_sao_src_top_left_chroma_bot_left[0] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 2];
-                pu1_sao_src_top_left_chroma_bot_left[1] = pu1_src_chroma[(sao_ht_chroma) * chroma_strd + sao_wd_chroma - 1];
             }
             else if((!ps_slice_hdr->i1_first_slice_in_pic_flag) || (ps_pps->i1_tiles_enabled_flag))
             {
-                for(row = 0; row < sao_ht_chroma; row++)
+                UPDATE_CHROMA_BUFFERS(pu1_src_chroma, chroma_strd, pu1_src_left_chroma, pu1_src_top_chroma, pu1_sao_src_top_left_chroma_curr_ctb, sao_wd_chroma, sao_ht_chroma, pixel_size_uv);
+                if(PIXEL_SIZE_1BYTE == pixel_size_uv)
                 {
-                    pu1_src_left_chroma[2 * row] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 2)];
-                    pu1_src_left_chroma[2 * row + 1] = pu1_src_chroma[row * chroma_strd + (sao_wd_chroma - 1)];
+                    pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                    pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
                 }
-                pu1_sao_src_top_left_chroma_curr_ctb[0] = pu1_src_top_chroma[sao_wd_chroma - 2];
-                pu1_sao_src_top_left_chroma_curr_ctb[1] = pu1_src_top_chroma[sao_wd_chroma - 1];
-
-                memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
-
-                pu1_sao_src_top_left_chroma_top_right[0] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
-                pu1_sao_src_top_left_chroma_top_right[1] = pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+                else
+                {
+                    ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[0] = ((UWORD16 *)pu1_src_chroma)[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma];
+                    ((UWORD16 *)pu1_sao_src_top_left_chroma_top_right)[1] = ((UWORD16 *)pu1_src_chroma)[(sao_ht_chroma - 1) * chroma_strd + sao_wd_chroma + 1];
+                }
             }
 
         }
