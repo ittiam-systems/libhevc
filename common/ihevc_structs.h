@@ -992,109 +992,6 @@ typedef struct
     /**
      * luma SaoOffsetVal[1]
      */
-    WORD32      b4_y_offset_1   : 4;
-
-    /**
-     * luma SaoOffsetVal[2]
-     */
-    WORD32      b4_y_offset_2   : 4;
-
-    /**
-     * luma SaoOffsetVal[3]
-     */
-    WORD32      b4_y_offset_3   : 4;
-
-    /**
-     * luma SaoOffsetVal[4]
-     */
-    WORD32      b4_y_offset_4   : 4;
-
-    /**
-     * luma sao_band_position
-     */
-    UWORD32      b5_y_band_pos   : 5;
-
-    WORD32                      : 0;
-
-    /**
-     * sao_type_idx_chroma
-     */
-    UWORD32      b3_cb_type_idx  : 3;
-
-    /**
-     * chroma SaoOffsetVal[1]
-     */
-    WORD32      b4_cb_offset_1  : 4;
-
-    /**
-     * chroma SaoOffsetVal[2]
-     */
-    WORD32      b4_cb_offset_2  : 4;
-
-    /**
-     * chroma SaoOffsetVal[3]
-     */
-    WORD32      b4_cb_offset_3  : 4;
-
-    /**
-     * chroma SaoOffsetVal[4]
-     */
-    WORD32      b4_cb_offset_4  : 4;
-
-    /**
-     * cb sao_band_position
-     */
-    UWORD32      b5_cb_band_pos  : 5;
-
-    WORD32                      : 0;
-
-    /**
-     * sao_type_idx_chroma
-     */
-    UWORD32      b3_cr_type_idx  : 3;
-
-    /**
-     * chroma SaoOffsetVal[1]
-     */
-    WORD32      b4_cr_offset_1  : 4;
-
-    /**
-     * chroma SaoOffsetVal[2]
-     */
-    WORD32      b4_cr_offset_2  : 4;
-
-    /**
-     * chroma SaoOffsetVal[3]
-     */
-    WORD32      b4_cr_offset_3  : 4;
-
-    /**
-     * chroma SaoOffsetVal[4]
-     */
-    WORD32      b4_cr_offset_4  : 4;
-
-    /**
-     * cr sao_band_position
-     */
-    UWORD32      b5_cr_band_pos  : 5;
-
-    WORD32                      : 0;
-
-}sao_t;
-
-/**
- * SAO
- */
-typedef struct
-{
-    /**
-     * sao_type_idx_luma
-     */
-    UWORD32      b3_y_type_idx   : 3;
-
-    /**
-     * luma SaoOffsetVal[1]
-     */
     WORD32      b8_y_offset_1   : 8;
 
     /**
@@ -1183,7 +1080,7 @@ typedef struct
 
     WORD32                      : 0;
 
-}sao_10bd_t;
+}sao_t;
 
 /**
  * Motion vector

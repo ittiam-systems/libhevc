@@ -2315,6 +2315,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
     slice_header_t *ps_slice_hdr;
     cab_ctxt_t *ps_cabac = &ps_codec->s_parse.s_cabac;
     WORD32 ctxt_idx;
+    WORD32 bit_depth = ps_codec->i4_bit_depth_luma;
 
     ps_slice_hdr = ps_codec->s_parse.ps_slice_hdr_base;
     ps_slice_hdr += (ps_codec->s_parse.i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
@@ -2417,7 +2418,7 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
                     WORD32 i;
                     WORD32 sao_offset[4];
                     WORD32 sao_band_position = 0;
-                    WORD32 c_max =  (1 << (MIN(BIT_DEPTH, 10) - 5)) - 1;
+                    WORD32 c_max =  (1 << (MIN(bit_depth, 10) - 5)) - 1;
                     for(i = 0; i < 4; i++)
                     {
                         sao_offset[i] = ihevcd_cabac_decode_bypass_bins_tunary(ps_cabac, ps_bitstrm, c_max);
@@ -2471,33 +2472,35 @@ IHEVCD_ERROR_T  ihevcd_parse_sao(codec_t *ps_codec)
 
                     if(0 == c_idx)
                     {
-                        ps_sao->b4_y_offset_1 = sao_offset[0];
-                        ps_sao->b4_y_offset_2 = sao_offset[1];
-                        ps_sao->b4_y_offset_3 = sao_offset[2];
-                        ps_sao->b4_y_offset_4 = sao_offset[3];
+                        ps_sao->b8_y_offset_1 = sao_offset[0];
+                        ps_sao->b8_y_offset_2 = sao_offset[1];
+                        ps_sao->b8_y_offset_3 = sao_offset[2];
+                        ps_sao->b8_y_offset_4 = sao_offset[3];
 
                         ps_sao->b5_y_band_pos = sao_band_position;
                     }
                     else if(1 == c_idx)
                     {
-                        ps_sao->b4_cb_offset_1 = sao_offset[0];
-                        ps_sao->b4_cb_offset_2 = sao_offset[1];
-                        ps_sao->b4_cb_offset_3 = sao_offset[2];
-                        ps_sao->b4_cb_offset_4 = sao_offset[3];
+                        ps_sao->b8_cb_offset_1 = sao_offset[0];
+                        ps_sao->b8_cb_offset_2 = sao_offset[1];
+                        ps_sao->b8_cb_offset_3 = sao_offset[2];
+                        ps_sao->b8_cb_offset_4 = sao_offset[3];
 
                         ps_sao->b5_cb_band_pos = sao_band_position;
                     }
                     else // 2 == c_idx
                     {
-                        ps_sao->b4_cr_offset_1 = sao_offset[0];
-                        ps_sao->b4_cr_offset_2 = sao_offset[1];
-                        ps_sao->b4_cr_offset_3 = sao_offset[2];
-                        ps_sao->b4_cr_offset_4 = sao_offset[3];
+                        ps_sao->b8_cr_offset_1 = sao_offset[0];
+                        ps_sao->b8_cr_offset_2 = sao_offset[1];
+                        ps_sao->b8_cr_offset_3 = sao_offset[2];
+                        ps_sao->b8_cr_offset_4 = sao_offset[3];
 
                         ps_sao->b5_cr_band_pos = sao_band_position;
                     }
                 }
             }
+
+            bit_depth = ps_codec->i4_bit_depth_chroma;
         }
     }
 
