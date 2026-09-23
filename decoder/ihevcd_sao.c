@@ -112,6 +112,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     UWORD8 *pu1_src_backup_chroma;
     WORD32 backup_strd;
     WORD32 loop_filter_strd;
+    UWORD32 u4_bit_depth_luma, u4_bit_depth_chroma;
+    WORD32 pixel_size_y, pixel_size_uv;
 
     WORD32 no_loop_filter_enabled_luma = 0;
     WORD32 no_loop_filter_enabled_chroma = 0;
@@ -147,27 +149,31 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
     ctb_size = (1 << log2_ctb_size);
     src_strd = ps_sao_ctxt->ps_codec->i4_strd;
     chroma_strd = src_strd * chroma_pixel_strd / h_samp_factor;
+    u4_bit_depth_luma = (UWORD32)ps_sao_ctxt->ps_codec->i4_bit_depth_luma;
+    u4_bit_depth_chroma = (UWORD32)ps_sao_ctxt->ps_codec->i4_bit_depth_chroma;
+    pixel_size_y = (u4_bit_depth_luma > 8) ? 2 : 1;
+    pixel_size_uv = (u4_bit_depth_chroma > 8) ? 2 : 1;
     ps_slice_hdr_base = ps_sao_ctxt->ps_codec->ps_slice_hdr_base;
     ps_slice_hdr = ps_slice_hdr_base + (ps_sao_ctxt->i4_cur_slice_idx & (MAX_SLICE_HDR_CNT - 1));
 
     pu1_slice_idx = ps_sao_ctxt->pu1_slice_idx;
     pu1_tile_idx = ps_sao_ctxt->pu1_tile_idx;
-    pu1_src_luma = ps_sao_ctxt->pu1_cur_pic_luma + ((ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd) << (log2_ctb_size));
+    pu1_src_luma = ps_sao_ctxt->pu1_cur_pic_luma + (((ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd) << (log2_ctb_size)) * pixel_size_y);
     pu1_src_chroma = ps_sao_ctxt->pu1_cur_pic_chroma
-                    + ((ps_sao_ctxt->i4_ctb_x * chroma_pixel_strd / h_samp_factor
-                    + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << (log2_ctb_size));
+                    + (((ps_sao_ctxt->i4_ctb_x * chroma_pixel_strd / h_samp_factor
+                    + ps_sao_ctxt->i4_ctb_y * ps_sao_ctxt->ps_codec->i4_strd * chroma_pixel_strd / (h_samp_factor * v_samp_factor)) << (log2_ctb_size)) * pixel_size_uv);
 
     /*Stores the left value for each row ctbs- Needed for column tiles*/
-    pu1_sao_src_top_left_luma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_luma_curr_ctb + ((ps_sao_ctxt->i4_ctb_y));
-    pu1_sao_src_top_left_chroma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_chroma_curr_ctb + (2 * (ps_sao_ctxt->i4_ctb_y));
-    pu1_sao_src_luma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_luma_top_left_ctb + ((ps_sao_ctxt->i4_ctb_y));
-    pu1_sao_src_chroma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_chroma_top_left_ctb + (2 * ps_sao_ctxt->i4_ctb_y);
+    pu1_sao_src_top_left_luma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_luma_curr_ctb + ((ps_sao_ctxt->i4_ctb_y) * pixel_size_y);
+    pu1_sao_src_top_left_chroma_curr_ctb = ps_sao_ctxt->pu1_sao_src_top_left_chroma_curr_ctb + (2 * (ps_sao_ctxt->i4_ctb_y) * pixel_size_uv);
+    pu1_sao_src_luma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_luma_top_left_ctb + ((ps_sao_ctxt->i4_ctb_y) * pixel_size_y);
+    pu1_sao_src_chroma_top_left_ctb = ps_sao_ctxt->pu1_sao_src_chroma_top_left_ctb + (2 * ps_sao_ctxt->i4_ctb_y * pixel_size_uv);
     u1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->u1_sao_src_top_left_luma_bot_left; // + ((ps_sao_ctxt->i4_ctb_y));
-    pu1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_luma_bot_left + ((ps_sao_ctxt->i4_ctb_y));
+    pu1_sao_src_top_left_luma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_luma_bot_left + ((ps_sao_ctxt->i4_ctb_y) * pixel_size_y);
     au1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->au1_sao_src_top_left_chroma_bot_left; // + (2 * ps_sao_ctxt->i4_ctb_y);
-    pu1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_chroma_bot_left + (2 * ps_sao_ctxt->i4_ctb_y);
-    pu1_sao_src_top_left_luma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_luma_top_right + ((ps_sao_ctxt->i4_ctb_x));
-    pu1_sao_src_top_left_chroma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_chroma_top_right + (2 * ps_sao_ctxt->i4_ctb_x);
+    pu1_sao_src_top_left_chroma_bot_left = ps_sao_ctxt->pu1_sao_src_top_left_chroma_bot_left + (2 * ps_sao_ctxt->i4_ctb_y * pixel_size_uv);
+    pu1_sao_src_top_left_luma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_luma_top_right + ((ps_sao_ctxt->i4_ctb_x) * pixel_size_y);
+    pu1_sao_src_top_left_chroma_top_right = ps_sao_ctxt->pu1_sao_src_top_left_chroma_top_right + (2 * ps_sao_ctxt->i4_ctb_x * pixel_size_uv);
 
     ps_sao = ps_sao_ctxt->ps_pic_sao + ps_sao_ctxt->i4_ctb_x + ps_sao_ctxt->i4_ctb_y * ps_sps->i2_pic_wd_in_ctb;
     loop_filter_strd =  (ps_sps->i2_pic_width_in_luma_samples + 63) >> 6;
@@ -199,8 +205,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             if(remaining_cols <= SAO_SHIFT_CTB)
                 sao_blk_wd += remaining_cols;
 
-            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB : 0;
-            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd : 0;
+            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * pixel_size_y : 0;
+            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd * pixel_size_y : 0;
 
             pu1_src_backup_luma = ps_sao_ctxt->pu1_tmp_buf_luma;
 
@@ -228,8 +234,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
+                            pu1_src_backup_luma += MIN((WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -237,24 +243,24 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu; row++)
                             {
-                                for(col = 0; col < MIN((WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN((WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y; col++)
                                 {
-                                    pu1_src_backup_luma[row * backup_strd + col] = pu1_src_tmp_luma[row * src_strd + col];
+                                    pu1_src_backup_luma[row * backup_strd * pixel_size_y + col] = pu1_src_tmp_luma[row * src_strd * pixel_size_y + col];
                                 }
                             }
-                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_luma -= sao_blk_wd;
-                    pu1_src_backup_luma -= sao_blk_wd;
+                    pu1_src_tmp_luma -= sao_blk_wd * pixel_size_y;
+                    pu1_src_backup_luma -= sao_blk_wd * pixel_size_y;
                 }
 
-                pu1_src_tmp_luma += (src_strd << log2_min_cu);
-                pu1_src_backup_luma += (backup_strd << log2_min_cu);
+                pu1_src_tmp_luma += ((src_strd << log2_min_cu) * pixel_size_y);
+                pu1_src_backup_luma += ((backup_strd << log2_min_cu) * pixel_size_y);
             }
         }
 
@@ -279,8 +285,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             if(remaining_cols <= 2 * SAO_SHIFT_CTB)
                 sao_blk_wd += remaining_cols;
 
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0;
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0;
+            pu1_src_tmp_chroma -= (ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0) * pixel_size_uv;
+            pu1_src_tmp_chroma -= (ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0) * pixel_size_uv;
 
             pu1_src_backup_chroma = ps_sao_ctxt->pu1_tmp_buf_chroma;
 
@@ -308,8 +314,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -317,25 +323,25 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu / v_samp_factor; row++)
                             {
-                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor; col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv; col++)
                                 {
-                                    pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) + col] = pu1_src_tmp_chroma[row * chroma_strd + col];
+                                    pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv + col] = pu1_src_tmp_chroma[row * chroma_strd * pixel_size_uv + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * chroma_pixel_strd / h_samp_factor;
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
-                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
+                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                 }
 
-                pu1_src_tmp_chroma += (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
-                pu1_src_backup_chroma += (((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
+                pu1_src_tmp_chroma += ((((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu) * pixel_size_uv);
+                pu1_src_backup_chroma += ((((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu) * pixel_size_uv);
             }
         }
     }
@@ -362,13 +368,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
         }
 
 
-        pu1_src_luma -= (sao_wd_luma + sao_ht_luma * src_strd);
-        pu1_src_chroma -= (sao_wd_chroma + sao_ht_chroma * chroma_strd);
+        pu1_src_luma -= (sao_wd_luma + sao_ht_luma * src_strd) * pixel_size_y;
+        pu1_src_chroma -= (sao_wd_chroma + sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao -= (1 + ps_sps->i2_pic_wd_in_ctb);
-        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma;
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma;
-        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_luma;
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma);
+        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma) * pixel_size_y;
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma) * pixel_size_uv;
+        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_luma) * pixel_size_y;
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma)) * pixel_size_uv;
 
         if(ps_slice_hdr_top_left->i1_slice_sao_luma_flag)
         {
@@ -1026,8 +1032,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             memcpy(pu1_src_top_chroma, &pu1_src_chroma[(sao_ht_chroma - 1) * chroma_strd], sao_wd_chroma);
         }
 
-        pu1_src_luma += sao_wd_luma + sao_ht_luma * src_strd;
-        pu1_src_chroma += sao_wd_chroma + sao_ht_chroma * chroma_strd;
+        pu1_src_luma += (sao_wd_luma + sao_ht_luma * src_strd) * pixel_size_y;
+        pu1_src_chroma += (sao_wd_chroma + sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao += (1 + ps_sps->i2_pic_wd_in_ctb);
     }
 
@@ -1064,13 +1070,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             sao_wd_chroma += remaining_cols;
         }
 
-        pu1_src_luma -= (sao_ht_luma * src_strd);
-        pu1_src_chroma -= (sao_ht_chroma * chroma_strd);
+        pu1_src_luma -= (sao_ht_luma * src_strd) * pixel_size_y;
+        pu1_src_chroma -= (sao_ht_chroma * chroma_strd) * pixel_size_uv;
         ps_sao -= (ps_sps->i2_pic_wd_in_ctb);
-        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor);
-        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_chroma;
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma);
+        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * pixel_size_y);
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv);
+        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) - sao_ht_chroma) * pixel_size_y);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) - (2 * sao_ht_chroma)) * pixel_size_uv);
 
         if(0 != sao_wd_luma)
         {
@@ -1635,8 +1641,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
         }
 
-        pu1_src_luma += sao_ht_luma * src_strd;
-        pu1_src_chroma += sao_ht_chroma * chroma_strd;
+        pu1_src_luma += sao_ht_luma * src_strd * pixel_size_y;
+        pu1_src_chroma += sao_ht_chroma * chroma_strd * pixel_size_uv;
         ps_sao += (ps_sps->i2_pic_wd_in_ctb);
     }
 
@@ -1671,13 +1677,13 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             sao_ht_chroma += remaining_rows;
         }
 
-        pu1_src_luma -= sao_wd_luma;
-        pu1_src_chroma -= sao_wd_chroma;
+        pu1_src_luma -= sao_wd_luma * pixel_size_y;
+        pu1_src_chroma -= sao_wd_chroma * pixel_size_uv;
         ps_sao -= 1;
-        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma;
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma;
-        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor);
+        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) - sao_wd_luma) * pixel_size_y;
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) - sao_wd_chroma) * pixel_size_uv;
+        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * pixel_size_y);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) * pixel_size_uv);
 
 
         if(0 != sao_ht_luma)
@@ -2241,8 +2247,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             }
 
         }
-        pu1_src_luma += sao_wd_luma;
-        pu1_src_chroma += sao_wd_chroma;
+        pu1_src_luma += sao_wd_luma * pixel_size_y;
+        pu1_src_chroma += sao_wd_chroma * pixel_size_uv;
         ps_sao += 1;
     }
 
@@ -2283,10 +2289,10 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             sao_ht_chroma += remaining_rows;
         }
 
-        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size);
-        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + (ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor);
-        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size);
-        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + (ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor);
+        pu1_src_top_luma = ps_sao_ctxt->pu1_sao_src_top_luma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * pixel_size_y);
+        pu1_src_top_chroma = ps_sao_ctxt->pu1_sao_src_top_chroma + ((ps_sao_ctxt->i4_ctb_x << log2_ctb_size) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv);
+        pu1_src_left_luma = ps_sao_ctxt->pu1_sao_src_left_luma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * pixel_size_y);
+        pu1_src_left_chroma = ps_sao_ctxt->pu1_sao_src_left_chroma + ((ps_sao_ctxt->i4_ctb_y << log2_ctb_size) * (chroma_pixel_strd / v_samp_factor) * pixel_size_uv);
 
         if((0 != sao_wd_luma) && (0 != sao_ht_luma))
         {
@@ -2940,8 +2946,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             if(remaining_cols <= SAO_SHIFT_CTB)
                 sao_blk_wd += remaining_cols;
 
-            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB : 0;
-            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd : 0;
+            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * pixel_size_y : 0;
+            pu1_src_tmp_luma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * src_strd * pixel_size_y : 0;
 
             pu1_src_backup_luma = ps_sao_ctxt->pu1_tmp_buf_luma;
 
@@ -2968,8 +2974,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -2977,24 +2983,24 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu; row++)
                             {
-                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y; col++)
                                 {
-                                    pu1_src_tmp_luma[row * src_strd + col] = pu1_src_backup_luma[row * backup_strd + col];
+                                    pu1_src_tmp_luma[row * src_strd * pixel_size_y + col] = pu1_src_backup_luma[row * backup_strd * pixel_size_y + col];
                                 }
                             }
-                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
-                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd);
+                            pu1_src_tmp_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
+                            pu1_src_backup_luma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * pixel_size_y;
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_luma -= sao_blk_wd;
-                    pu1_src_backup_luma -= sao_blk_wd;
+                    pu1_src_tmp_luma -= sao_blk_wd * pixel_size_y;
+                    pu1_src_backup_luma -= sao_blk_wd * pixel_size_y;
                 }
 
-                pu1_src_tmp_luma += (src_strd << log2_min_cu);
-                pu1_src_backup_luma += (backup_strd << log2_min_cu);
+                pu1_src_tmp_luma += ((src_strd << log2_min_cu) * pixel_size_y);
+                pu1_src_backup_luma += ((backup_strd << log2_min_cu) * pixel_size_y);
             }
         }
 
@@ -3018,8 +3024,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
             if(remaining_cols <= 2 * SAO_SHIFT_CTB)
                 sao_blk_wd += remaining_cols;
 
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0;
-            pu1_src_tmp_chroma -= ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0;
+            pu1_src_tmp_chroma -= (ps_sao_ctxt->i4_ctb_x ? SAO_SHIFT_CTB * 2 : 0) * pixel_size_uv;
+            pu1_src_tmp_chroma -= (ps_sao_ctxt->i4_ctb_y ? SAO_SHIFT_CTB * chroma_strd : 0) * pixel_size_uv;
 
             pu1_src_backup_chroma = ps_sao_ctxt->pu1_tmp_buf_chroma;
 
@@ -3046,8 +3052,8 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                     {
                         if(CTZ(u4_no_loop_filter_flag))
                         {
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                             tmp_wd -= (WORD32)(CTZ(u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(u4_no_loop_filter_flag));
                         }
@@ -3055,25 +3061,25 @@ void ihevcd_sao_shift_ctb(sao_ctxt_t *ps_sao_ctxt)
                         {
                             for(row = 0; row < min_cu / v_samp_factor; row++)
                             {
-                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor); col++)
+                                for(col = 0; col < MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv; col++)
                                 {
-                                    pu1_src_tmp_chroma[row * chroma_strd + col] = pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) + col];
+                                    pu1_src_tmp_chroma[row * chroma_strd * pixel_size_uv + col] = pu1_src_backup_chroma[row * backup_strd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv + col];
                                 }
                             }
 
-                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
-                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor);
+                            pu1_src_tmp_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                            pu1_src_backup_chroma += MIN(((WORD32)CTZ(~u4_no_loop_filter_flag) << log2_min_cu), tmp_wd) * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                             tmp_wd -= (WORD32)(CTZ(~u4_no_loop_filter_flag) << log2_min_cu);
                             u4_no_loop_filter_flag  >>= (CTZ(~u4_no_loop_filter_flag));
                         }
                     }
 
-                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
-                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor);
+                    pu1_src_tmp_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
+                    pu1_src_backup_chroma -= sao_blk_wd * (chroma_pixel_strd / h_samp_factor) * pixel_size_uv;
                 }
 
-                pu1_src_tmp_chroma += (((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
-                pu1_src_backup_chroma += (((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu);
+                pu1_src_tmp_chroma += ((((src_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu) * pixel_size_uv);
+                pu1_src_backup_chroma += ((((backup_strd * chroma_pixel_strd) / (h_samp_factor * v_samp_factor)) << log2_min_cu) * pixel_size_uv);
             }
         }
     }
