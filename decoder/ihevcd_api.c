@@ -2192,8 +2192,7 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
         ps_codec->as_process[i].pu1_tile_idx = (UWORD16 *)pv_buf + wd / MIN_CTB_SIZE /* Offset 1 row */;
     }
 
-    /* 4 bytes per color component per CTB */
-    size = 3 * 4;
+    size = sizeof(sao_t);
 
     /* MAX number of CTBs in a row */
     size *= wd / MIN_CTB_SIZE;
