@@ -662,7 +662,7 @@ typedef struct
     /**
      * Bottom-left luma pixel - used by SAO
      */
-    UWORD8 u1_sao_src_top_left_luma_bot_left;
+    UWORD16 u2_sao_src_top_left_luma_bot_left;
     /**
      *  Pointer to array that stores bottom left luma pixel per row(interleaved) - used by SAO
      */
@@ -671,7 +671,7 @@ typedef struct
     /**
      * Bottom left chroma pixel(interleaved) - used by SAO
      */
-    UWORD8 au1_sao_src_top_left_chroma_bot_left[2];
+    UWORD16 au2_sao_src_top_left_chroma_bot_left[2];
     /**
      *  Pointer to array that stores bottom left chroma pixel per row(interleaved) - used by SAO
      */
