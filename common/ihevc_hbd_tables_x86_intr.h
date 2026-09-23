@@ -51,11 +51,11 @@ extern const UWORD8 IHEVCE_SHUFFLEMASKY8_HBD[16] ;
 extern const UWORD8 IHEVCE_SHUFFLEMASKY9_HBD[16] ;
 
 // DEBLOCK TABLES
-extern const WORD16 coef_hbd_d[16] ;
-extern const WORD16 coef_hbd_de1_1[16] ;
-extern const WORD16 coef_hbd_de1_2[16] ;
-extern const WORD16 coef_hbd_dep1_1[16] ;
-extern const WORD16 coef_hbd_dep1_2[16] ;
+extern const WORD16 coef_hbd_d[8];
+extern const WORD16 coef_hbd_de1_1[8];
+extern const WORD16 coef_hbd_de1_2[8];
+extern const WORD16 coef_hbd_dep1_1[8];
+extern const WORD16 coef_hbd_dep1_2[8];
 extern const WORD32 shuffle_hbd_d[4] ;
 extern const WORD32 shuffle0_hbd[2] ;
 extern const WORD32 shuffle1_hbd[4] ;
