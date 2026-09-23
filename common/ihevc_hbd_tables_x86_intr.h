@@ -68,7 +68,7 @@ extern const WORD32 shuffle_uv_hbd[4];
 extern const WORD32 shuffle_uv_hbd1[4];
 extern const WORD32 shuffle_uv_hbd2[4];
 // SAO TABLES
-extern  const WORD8 gi1_table_edge_idx_hbd[5] ;
+extern const WORD8 gi1_table_edge_idx_hbd[8];
 extern  const WORD8 gi1_table_band_idx_hbd[44];
 extern  const WORD32 gi4_ihevc_hbd_table_edge_idx[5];
 

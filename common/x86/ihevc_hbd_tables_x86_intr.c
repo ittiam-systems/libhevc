@@ -60,3 +60,14 @@ const WORD16 delta1_hbd[8] = {4, -1, 4, -1, 4, -1, 4, -1};
 const WORD32 shuffle_uv_hbd[4] = {0x05040100, 0x07060302, 0x0d0c0908, 0x0f0e0b0a};
 const WORD32 shuffle_uv_hbd1[4] = {0x80808080, 0x03020100, 0x07060504, 0x80808080};
 const WORD32 shuffle_uv_hbd2[4] = {0x80808080, 0x0b0a0908, 0x0f0e0d0c, 0x80808080};
+
+// SAO TABLES
+const WORD8 gi1_table_edge_idx_hbd[8] = {1, 2, 0, 3, 4, 0, 0, 0};
+const WORD8 gi1_table_band_idx_hbd[44] =
+{
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 2, 3, 4,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+};
+const WORD32 gi4_ihevc_hbd_table_edge_idx[5] = {1, 2, 0, 3, 4};
