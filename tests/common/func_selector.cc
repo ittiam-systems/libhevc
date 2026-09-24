@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <gtest/gtest.h>
 #include <random>
 #include <sstream>
 #include <string>
@@ -35,7 +34,7 @@
 
 const ihevc_func_selector_t ref = []() {
   ihevc_func_selector_t ret = {};
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
   ihevc_init_function_ptr_generic(&ret);
 #elif defined(__aarch64__) || defined(__arm__)
@@ -44,7 +43,7 @@ const ihevc_func_selector_t ref = []() {
   return ret;
 }();
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
 const ihevc_func_selector_t test_ssse3 = []() {
   ihevc_func_selector_t ret = {};
@@ -87,28 +86,28 @@ const ihevc_func_selector_t test_arm32 = []() {
 }();
 #endif
 
-const ihevc_func_selector_t *get_ref_func_ptr() { return &ref; }
+const ihevc_func_selector_t* get_ref_func_ptr() { return &ref; }
 
-const ihevc_func_selector_t *get_tst_func_ptr(IV_ARCH_T arch) {
+const ihevc_func_selector_t* get_tst_func_ptr(IV_ARCH_T arch) {
   switch (arch) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
-  case ARCH_X86_SSSE3:
-    return &test_ssse3;
-  case ARCH_X86_SSE42:
-    return &test_sse42;
+    case ARCH_X86_SSSE3:
+      return &test_ssse3;
+    case ARCH_X86_SSE42:
+      return &test_sse42;
 #ifndef DISABLE_AVX2
-  case ARCH_X86_AVX2:
-    return &test_avx2;
+    case ARCH_X86_AVX2:
+      return &test_avx2;
 #endif
 #elif defined(__aarch64__)
-  case ARCH_ARMV8_GENERIC:
-    return &test_arm64;
+    case ARCH_ARMV8_GENERIC:
+      return &test_arm64;
 #elif defined(__arm__)
-  case ARCH_ARM_A9Q:
-    return &test_arm32;
+    case ARCH_ARM_A9Q:
+      return &test_arm32;
 #endif
-  default:
-    return nullptr;
+    default:
+      return nullptr;
   }
 }
