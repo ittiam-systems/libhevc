@@ -231,6 +231,9 @@ typedef struct
     /* Enable YUV formats  */
     UWORD32 u4_enable_yuv_formats;
 
+    /* Enable High Bit Depth (10-bit) */
+    UWORD32 u4_enable_hbd;
+
     /* Active threads present*/
     UWORD32 i4_active_threads;
 
@@ -286,6 +289,7 @@ typedef enum
     PICLEN_FILE,
 
     ENABLE_YUV_FORMAT,
+    ENABLE_HBD,
     KEEP_THREADS_ACTIVE,
 }ARGUMENT_T;
 
@@ -353,7 +357,9 @@ static const argument_t argument_mapping[] =
     { "--",  "--soc", SOC,
         "Set SOC. Supported values  GENERIC, HISI_37X \n" },
     { "--",  "--enable_yuv_format", ENABLE_YUV_FORMAT,
-        "Enable specific YUV formats" },
+        "Enable specific YUV formats\n" },
+    { "--",  "--enable_hbd", ENABLE_HBD,
+        "Enable High Bit Depth (10-bit) decoding\n" },
     {"--", "--keep_threads_active", KEEP_THREADS_ACTIVE,
         "Keep threads active"},
 };
@@ -1346,6 +1352,10 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
             sscanf(value, "%d", &ps_app_ctx->u4_enable_yuv_formats);
             break;
 
+        case ENABLE_HBD:
+            sscanf(value, "%d", &ps_app_ctx->u4_enable_hbd);
+            break;
+
         case KEEP_THREADS_ACTIVE:
             sscanf(value, "%d", &ps_app_ctx->i4_active_threads);
             break;
@@ -1895,6 +1905,7 @@ int main(WORD32 argc, CHAR *argv[])
     s_app_ctx.u4_piclen_flag = 0;
     s_app_ctx.u4_frame_info_enable = 0;
     s_app_ctx.i4_active_threads = 1;
+    s_app_ctx.u4_enable_hbd = 1;
     s_app_ctx.fps = DEFAULT_FPS;
     file_pos = 0;
     total_bytes_comsumed = 0;
@@ -2174,6 +2185,7 @@ int main(WORD32 argc, CHAR *argv[])
             s_create_op.s_ivd_create_op_t.u4_size = sizeof(ihevcd_cxa_create_op_t);
             s_create_ip.u4_enable_frame_info = s_app_ctx.u4_frame_info_enable;
             s_create_ip.u4_enable_yuv_formats = s_app_ctx.u4_enable_yuv_formats;
+            s_create_ip.u4_enable_hbd = s_app_ctx.u4_enable_hbd;
             s_create_ip.u4_keep_threads_active = s_app_ctx.i4_active_threads;
 
 

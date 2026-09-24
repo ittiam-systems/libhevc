@@ -2466,6 +2466,8 @@ WORD32 ihevcd_create(iv_obj_t *ps_codec_obj,
         ps_create_ip->u4_enable_yuv_formats = 1 << CHROMA_FMT_IDC_YUV420;
     }
     ps_codec->u4_enable_yuv_formats = ps_create_ip->u4_enable_yuv_formats;
+    ps_codec->u4_enable_hbd = ps_create_ip->u4_enable_hbd;
+
     ret = ihevcd_init(ps_codec);
 
     TRACE_INIT(NULL);
