@@ -29,19 +29,10 @@
 #include "ihevc_defs.h"
 #include "ihevc_typedefs.h"
 #include "TestCommon.h"
+#include "ihevc_deblk_utils.h"
 // clang-format on
 
 namespace {
-
-void compare_deblk_output(const UWORD8* ref, const UWORD8* tst, int stride,
-                          int wd, int ht) {
-  for (int r = 0; r < ht; r++) {
-    for (int c = 0; c < wd; c++) {
-      ASSERT_EQ(ref[r * stride + c], tst[r * stride + c])
-          << "Mismatch at row " << r << ", col " << c;
-    }
-  }
-}
 
 std::string format_int(int val) {
   if (val < 0) {
@@ -74,31 +65,32 @@ class DeblkLumaTest : public ::testing::TestWithParam<DeblkLumaParam> {
   void SetUp() override {
     std::tie(bs, qp_p, qp_q, beta_offset, tc_offset, filter_pair, arch) =
         GetParam();
-    stride = 32;
-    buf_size = stride * 32;
-    src_offset = 16 * stride + 16;  // Point to middle of buffer
-
-    src_ref.resize(buf_size);
-    src_tst.resize(buf_size);
+    src_ref.resize(kDeblkBufSize);
+    src_tst.resize(kDeblkBufSize);
 
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
-  void InitializeBuffers() {
-    std::mt19937 rng(42);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
-    for (int i = 0; i < buf_size; i++) {
-      uint8_t val = dist(rng);
-      src_ref[i] = val;
-      src_tst[i] = val;
-    }
+  void RunTest(bool is_vert) {
+    InitializeDeblkBuffer(src_ref.data(), kDeblkBufSize);
+    src_tst = src_ref;
+
+    DeblkLumaFn ref_fn = GetLumaTargetFn(ref, is_vert);
+    DeblkLumaFn tst_fn = GetLumaTargetFn(tst, is_vert);
+
+    ref_fn(src_ref.data() + kDeblkSrcOffset, kDeblkStride, bs, qp_p, qp_q,
+           beta_offset, tc_offset, filter_pair.first, filter_pair.second);
+    tst_fn(src_tst.data() + kDeblkSrcOffset, kDeblkStride, bs, qp_p, qp_q,
+           beta_offset, tc_offset, filter_pair.first, filter_pair.second);
+
+    compare_output(src_ref.data(), src_tst.data(), kDeblkStride,
+                   kDeblkBufHeight, kDeblkStride);
   }
 
   int bs, qp_p, qp_q, beta_offset, tc_offset;
   std::pair<int, int> filter_pair;
   IV_ARCH_T arch;
-  int stride, buf_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
 
@@ -106,33 +98,9 @@ class DeblkLumaTest : public ::testing::TestWithParam<DeblkLumaParam> {
   const ihevc_func_selector_t* tst;
 };
 
-TEST_P(DeblkLumaTest, LumaVert) {
-  InitializeBuffers();
+TEST_P(DeblkLumaTest, LumaVert) { RunTest(true); }
 
-  ref->ihevc_deblk_luma_vert_fptr(src_ref.data() + src_offset, stride, bs, qp_p,
-                                  qp_q, beta_offset, tc_offset,
-                                  filter_pair.first, filter_pair.second);
-
-  tst->ihevc_deblk_luma_vert_fptr(src_tst.data() + src_offset, stride, bs, qp_p,
-                                  qp_q, beta_offset, tc_offset,
-                                  filter_pair.first, filter_pair.second);
-
-  compare_deblk_output(src_ref.data(), src_tst.data(), stride, stride, 32);
-}
-
-TEST_P(DeblkLumaTest, LumaHorz) {
-  InitializeBuffers();
-
-  ref->ihevc_deblk_luma_horz_fptr(src_ref.data() + src_offset, stride, bs, qp_p,
-                                  qp_q, beta_offset, tc_offset,
-                                  filter_pair.first, filter_pair.second);
-
-  tst->ihevc_deblk_luma_horz_fptr(src_tst.data() + src_offset, stride, bs, qp_p,
-                                  qp_q, beta_offset, tc_offset,
-                                  filter_pair.first, filter_pair.second);
-
-  compare_deblk_output(src_ref.data(), src_tst.data(), stride, stride, 32);
-}
+TEST_P(DeblkLumaTest, LumaHorz) { RunTest(false); }
 
 // ---------------------------- Chroma Test ------------------------------------
 
@@ -161,31 +129,34 @@ class DeblkChromaTest : public ::testing::TestWithParam<DeblkChromaParam> {
   void SetUp() override {
     std::tie(qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, filter_pair,
              chroma_fmt_idc, arch) = GetParam();
-    stride = 32;
-    buf_size = stride * 32;
-    src_offset = 16 * stride + 16;  // Point to middle of buffer
-
-    src_ref.resize(buf_size);
-    src_tst.resize(buf_size);
+    src_ref.resize(kDeblkBufSize);
+    src_tst.resize(kDeblkBufSize);
 
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
-  void InitializeBuffers() {
-    std::mt19937 rng(42);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
-    for (int i = 0; i < buf_size; i++) {
-      uint8_t val = dist(rng);
-      src_ref[i] = val;
-      src_tst[i] = val;
-    }
+  void RunTest(bool is_vert) {
+    InitializeDeblkBuffer(src_ref.data(), kDeblkBufSize);
+    src_tst = src_ref;
+
+    DeblkChromaFn ref_fn = GetChromaTargetFn(ref, is_vert);
+    DeblkChromaFn tst_fn = GetChromaTargetFn(tst, is_vert);
+
+    ref_fn(src_ref.data() + kDeblkSrcOffset, kDeblkStride, qp_p, qp_q,
+           qp_offset_u, qp_offset_v, tc_offset, filter_pair.first,
+           filter_pair.second, chroma_fmt_idc);
+    tst_fn(src_tst.data() + kDeblkSrcOffset, kDeblkStride, qp_p, qp_q,
+           qp_offset_u, qp_offset_v, tc_offset, filter_pair.first,
+           filter_pair.second, chroma_fmt_idc);
+
+    compare_output(src_ref.data(), src_tst.data(), kDeblkStride,
+                   kDeblkBufHeight, kDeblkStride);
   }
 
   int qp_p, qp_q, qp_offset_u, qp_offset_v, tc_offset, chroma_fmt_idc;
   std::pair<int, int> filter_pair;
   IV_ARCH_T arch;
-  int stride, buf_size, src_offset;
   std::vector<UWORD8> src_ref;
   std::vector<UWORD8> src_tst;
 
@@ -193,33 +164,9 @@ class DeblkChromaTest : public ::testing::TestWithParam<DeblkChromaParam> {
   const ihevc_func_selector_t* tst;
 };
 
-TEST_P(DeblkChromaTest, ChromaVert) {
-  InitializeBuffers();
+TEST_P(DeblkChromaTest, ChromaVert) { RunTest(true); }
 
-  ref->ihevc_deblk_chroma_vert_fptr(
-      src_ref.data() + src_offset, stride, qp_p, qp_q, qp_offset_u, qp_offset_v,
-      tc_offset, filter_pair.first, filter_pair.second, chroma_fmt_idc);
-
-  tst->ihevc_deblk_chroma_vert_fptr(
-      src_tst.data() + src_offset, stride, qp_p, qp_q, qp_offset_u, qp_offset_v,
-      tc_offset, filter_pair.first, filter_pair.second, chroma_fmt_idc);
-
-  compare_deblk_output(src_ref.data(), src_tst.data(), stride, stride, 32);
-}
-
-TEST_P(DeblkChromaTest, ChromaHorz) {
-  InitializeBuffers();
-
-  ref->ihevc_deblk_chroma_horz_fptr(
-      src_ref.data() + src_offset, stride, qp_p, qp_q, qp_offset_u, qp_offset_v,
-      tc_offset, filter_pair.first, filter_pair.second, chroma_fmt_idc);
-
-  tst->ihevc_deblk_chroma_horz_fptr(
-      src_tst.data() + src_offset, stride, qp_p, qp_q, qp_offset_u, qp_offset_v,
-      tc_offset, filter_pair.first, filter_pair.second, chroma_fmt_idc);
-
-  compare_deblk_output(src_ref.data(), src_tst.data(), stride, stride, 32);
-}
+TEST_P(DeblkChromaTest, ChromaHorz) { RunTest(false); }
 
 // ---------------------------- Instantiation --------------------------------
 

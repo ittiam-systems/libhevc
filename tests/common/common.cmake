@@ -1,3 +1,19 @@
+add_library(libhevc_dsp_test_utils STATIC
+  ${HEVC_ROOT}/tests/common/func_selector.cc
+  ${HEVC_ROOT}/tests/common/TestCommon.cc
+  ${HEVC_ROOT}/tests/common/ihevc_deblk_utils.cc
+  ${HEVC_ROOT}/tests/common/ihevc_inter_pred_utils.cc
+  ${HEVC_ROOT}/tests/common/ihevc_intra_pred_utils.cc
+  ${HEVC_ROOT}/tests/common/ihevc_itrans_utils.cc
+  ${HEVC_ROOT}/tests/common/ihevc_sao_utils.cc
+)
+target_include_directories(libhevc_dsp_test_utils PUBLIC
+  ${HEVC_ROOT}/tests/common
+  ${HEVC_ROOT}/common
+)
+target_link_libraries(libhevc_dsp_test_utils PUBLIC libhevcdec)
+
+if(ENABLE_TESTS)
 enable_testing()
 libhevc_add_gtest_executable(
   ihevc_luma_inter_pred_test
@@ -93,4 +109,106 @@ FetchContent_MakeAvailable(hevc_test_data)
 
 include("${HEVC_ROOT}/tests/decoder/DecHelper.cmake")
 include("${HEVC_ROOT}/tests/encoder/EncHelper.cmake")
+endif()
 
+if(ENABLE_BENCHMARKS)
+  libhevc_add_benchmark_executable(
+    ihevc_itrans_recon_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_itrans_recon_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_itrans_res_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_itrans_res_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_deblk_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_deblk_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_deblk_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_deblk_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_itrans_recon_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_itrans_recon_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_sao_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_sao_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_sao_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_sao_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_luma_intra_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_luma_intra_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_luma_intra_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_luma_intra_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_chroma_intra_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_intra_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_chroma_intra_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_chroma_intra_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_luma_inter_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_luma_inter_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_chroma_inter_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_inter_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_luma_inter_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_luma_inter_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_hbd_chroma_inter_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_hbd_chroma_inter_pred_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_chroma_itrans_recon_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_itrans_recon_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_chroma_recon_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_recon_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_recon_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_recon_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_padding_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_padding_benchmark.cc
+  )
+
+  libhevc_add_benchmark_executable(
+    ihevc_weighted_pred_benchmark
+    SOURCES ${HEVC_ROOT}/tests/common/ihevc_weighted_pred_benchmark.cc
+  )
+endif()

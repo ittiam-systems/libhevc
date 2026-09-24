@@ -33,7 +33,7 @@ rm -rf ${build_dir}
 mkdir -p ${build_dir}
 
 pushd ${build_dir}
-cmake ${SRC}/libhevc -DENABLE_TESTS=0
+cmake ${SRC}/libhevc -DENABLE_TESTS=0 -DENABLE_BENCHMARKS=0
 make -j$(nproc) hevc_dec_fuzzer hevc_enc_fuzzer
 cp ${build_dir}/hevc_dec_fuzzer $OUT/
 cp ${build_dir}/hevc_enc_fuzzer $OUT/

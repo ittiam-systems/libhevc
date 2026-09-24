@@ -30,6 +30,7 @@
 #include "ihevc_typedefs.h"
 #include "TestCommon.h"
 #include "func_selector.h"
+#include "ihevc_itrans_utils.h"
 // clang-format on
 
 namespace {
@@ -58,53 +59,28 @@ class ChromaITransReconTest
     tst = get_tst_func_ptr(arch);
   }
 
-  template <typename FuncPtr>
-  void RunTest(FuncPtr func_ptr) {
-    std::mt19937 rng(0);
-    std::uniform_int_distribution<int16_t> coeff_dist_full(-32768, 32767);
-    std::uniform_int_distribution<uint8_t> pixel_dist(0, 255);
-
-    std::fill(pi2_src.begin(), pi2_src.end(), 0);
-    for (int i = 0; i < trans_size; i++) {
-      for (int j = 0; j < trans_size; j++) {
-        if (i < num_non_zero_rows && j < num_non_zero_cols) {
-          pi2_src[i * src_strd + j] = coeff_dist_full(rng);
-        }
-      }
-    }
-
-    for (auto& v : pu1_pred) {
-      v = pixel_dist(rng);
-    }
+  void RunTest() {
+    FillRandomSubBlock(pi2_src.data(), trans_size, src_strd, num_non_zero_rows,
+                       num_non_zero_cols, static_cast<WORD16>(-32768),
+                       static_cast<WORD16>(32767), 0);
+    FillRandom(pu1_pred, static_cast<UWORD8>(0), static_cast<UWORD8>(255), 1);
 
     std::fill(pu1_dst_ref.begin(), pu1_dst_ref.end(), 0xAA);
     std::fill(pu1_dst_tst.begin(), pu1_dst_tst.end(), 0xAA);
 
-    WORD32 non_zero_rows_mask = 0;
-    for (int i = 0; i < num_non_zero_rows && i < trans_size; i++) {
-      non_zero_rows_mask |= (1u << i);
-    }
+    WORD32 zero_cols = ComputeZeroMask(trans_size, num_non_zero_cols);
+    WORD32 zero_rows = ComputeZeroMask(trans_size, num_non_zero_rows);
 
-    WORD32 non_zero_cols_mask = 0;
-    for (int j = 0; j < num_non_zero_cols && j < trans_size; j++) {
-      non_zero_cols_mask |= (1u << j);
-    }
-
-    WORD32 mask = (trans_size == 32)
-                      ? 0xFFFFFFFFu
-                      : ((static_cast<WORD32>(1u) << trans_size) - 1u);
-    WORD32 zero_cols = (~non_zero_cols_mask) & mask;
-    WORD32 zero_rows = (~non_zero_rows_mask) & mask;
+    ChromaITransReconFn ref_fn = GetChromaITransReconFn(ref, trans_size);
+    ChromaITransReconFn tst_fn = GetChromaITransReconFn(tst, trans_size);
 
     // 1. Reference path (generic C)
-    (ref->*func_ptr)(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(),
-                     pu1_dst_ref.data(), src_strd, pred_strd, dst_strd,
-                     zero_cols, zero_rows);
+    ref_fn(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_ref.data(),
+           src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
 
     // 2. Test path (SIMD)
-    (tst->*func_ptr)(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(),
-                     pu1_dst_tst.data(), src_strd, pred_strd, dst_strd,
-                     zero_cols, zero_rows);
+    tst_fn(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_tst.data(),
+           src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<UWORD8>(
         pu1_dst_ref, pu1_dst_tst, 2 * trans_size, trans_size, dst_strd));
@@ -127,17 +103,7 @@ class ChromaITransReconTest
   std::vector<UWORD8> pu1_dst_tst;
 };
 
-TEST_P(ChromaITransReconTest, Run) {
-  if (trans_size == 4) {
-    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_4x4_fptr);
-  } else if (trans_size == 8) {
-    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_8x8_fptr);
-  } else if (trans_size == 16) {
-    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_16x16_fptr);
-  } else if (trans_size == 32) {
-    RunTest(&ihevc_func_selector_t::ihevc_chroma_itrans_recon_32x32_fptr);
-  }
-}
+TEST_P(ChromaITransReconTest, Run) { RunTest(); }
 
 std::string PrintChromaITransReconTestParam(
     const testing::TestParamInfo<ITransReconTestParam>& info) {

@@ -41,6 +41,11 @@ cc_library_static {
     srcs: [
         "TestCommon.cc",
         "func_selector.cc",
+        "ihevc_deblk_utils.cc",
+        "ihevc_inter_pred_utils.cc",
+        "ihevc_intra_pred_utils.cc",
+        "ihevc_itrans_utils.cc",
+        "ihevc_sao_utils.cc",
         "BitsBuf.cpp",
         "RawBuf.cpp",
         "Md5Wrapper.cpp",
@@ -54,6 +59,16 @@ cc_library_static {
     static_libs: [
         "libhevccommon",
         "libgtest",
+    ],
+}
+
+cc_defaults {
+    name: "libhevc_benchmarks_defaults",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["BenchmarkCommon.cc"],
+    static_libs: [
+        "libhevc_tests_common",
+        "libhevccommon",
     ],
 }
 
@@ -205,4 +220,124 @@ cc_test {
         "libhevc_tests_common",
         "libhevccommon",
     ],
+}
+
+cc_benchmark {
+    name: "ihevc_itrans_recon_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_itrans_recon_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_itrans_res_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_itrans_res_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_deblk_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_deblk_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_deblk_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_deblk_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_itrans_recon_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_itrans_recon_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_sao_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_sao_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_sao_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_sao_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_luma_intra_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_luma_intra_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_luma_intra_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_luma_intra_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_chroma_intra_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_chroma_intra_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_chroma_intra_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_chroma_intra_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_luma_inter_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_luma_inter_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_chroma_inter_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_chroma_inter_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_luma_inter_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_luma_inter_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_hbd_chroma_inter_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_hbd_chroma_inter_pred_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_chroma_itrans_recon_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_chroma_itrans_recon_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_chroma_recon_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_chroma_recon_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_recon_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_recon_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_padding_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_padding_benchmark.cc"],
+}
+
+cc_benchmark {
+    name: "ihevc_weighted_pred_benchmark",
+    defaults: ["libhevc_benchmarks_defaults"],
+    srcs: ["ihevc_weighted_pred_benchmark.cc"],
 }

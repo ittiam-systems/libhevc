@@ -61,9 +61,7 @@ const std::vector<std::pair<int, int>>& getChromaPUBlockSizes() {
 const std::vector<UWORD8>& getSrc8Buf() {
   static const std::vector<UWORD8> g_src8_buf = []() {
     std::vector<UWORD8> buf(kMaxSize * kMaxHeight * 4);
-    std::mt19937 rng(12345);
-    std::uniform_int_distribution<int> dist(0, 255);
-    for (auto& v : buf) v = static_cast<UWORD8>(dist(rng));
+    FillRandom(buf, static_cast<UWORD8>(0), static_cast<UWORD8>(255), 12345);
     return buf;
   }();
   return g_src8_buf;
@@ -72,6 +70,9 @@ const std::vector<UWORD8>& getSrc8Buf() {
 std::string get_arch_str(IV_ARCH_T arch) {
   std::string arch_str;
   switch (arch) {
+    case ARCH_NA:
+      arch_str = "C";
+      break;
     case ARCH_X86_GENERIC:
       arch_str = "GENERIC";
       break;

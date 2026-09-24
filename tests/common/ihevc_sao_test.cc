@@ -29,19 +29,10 @@
 #include "ihevc_typedefs.h"
 #include "func_selector.h"
 #include "TestCommon.h"
+#include "ihevc_sao_utils.h"
 // clang-format on
 
 namespace {
-
-void compare_sao_output(const UWORD8* ref, const UWORD8* tst, int stride,
-                        int wd, int ht) {
-  for (int r = 0; r < ht; r++) {
-    for (int c = 0; c < wd; c++) {
-      ASSERT_EQ(ref[r * stride + c], tst[r * stride + c])
-          << "Mismatch at row " << r << ", col " << c;
-    }
-  }
-}
 
 // ---------------------------- Test Param -----------------------------------
 
@@ -68,92 +59,50 @@ class SaoLumaTest : public ::testing::TestWithParam<SaoTestParam> {
     std::tie(block_size, offset_val, arch) = GetParam();
     std::tie(wd, ht) = block_size;
 
-    stride = wd + 32;
-    total_ht = ht + 32;
-    src_size = stride * total_ht;
-    src_offset = 16 * stride + 16;
-
-    src_ref.resize(src_size);
-    src_tst.resize(src_size);
-
-    src_left_ref.resize(ht + 8 + 1);
-    src_left_tst.resize(ht + 8 + 1);
-    src_top_ref.resize(wd + 8);
-    src_top_tst.resize(wd + 8);
-    src_top_left_ref.resize(8);
-    src_top_left_tst.resize(8);
-    src_top_right_ref.resize(8);
-    src_top_right_tst.resize(8);
-    src_bot_left_ref.resize(8);
-    src_bot_left_tst.resize(8);
-
-    avail.resize(8);
-
-    sao_offset.resize(8);
-    sao_offset[0] = 0;
-
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
   void InitializeBuffers() {
-    std::mt19937 rng(42);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
-    std::uniform_int_distribution<uint8_t> dist_avail(0, 1);
-    std::uniform_int_distribution<int8_t> dist_offset(-7, 7);
+    ref_buf = CreateSaoLumaBuffers<UWORD8>(wd, ht);
+    tst_buf = ref_buf;
+  }
 
-    for (int i = 0; i < src_size; i++) {
-      uint8_t val = dist(rng);
-      src_ref[i] = val;
-      src_tst[i] = val;
-    }
+  void VerifyBuffers() {
+    compare_output(ref_buf.src.data() + ref_buf.src_offset,
+                   tst_buf.src.data() + tst_buf.src_offset, wd, ht,
+                   ref_buf.stride);
+    ASSERT_EQ(ref_buf.src_left, tst_buf.src_left);
+    ASSERT_EQ(ref_buf.src_top, tst_buf.src_top);
+    ASSERT_EQ(ref_buf.src_top_left, tst_buf.src_top_left);
+  }
 
-    for (size_t i = 0; i < src_left_ref.size(); i++) {
-      uint8_t val = dist(rng);
-      src_left_ref[i] = val;
-      src_left_tst[i] = val;
-    }
+  void RunEdgeOffset(int edge_class) {
+    InitializeBuffers();
+    int left_offset = (edge_class == 2) ? 1 : 0;
 
-    for (size_t i = 0; i < src_top_ref.size(); i++) {
-      uint8_t val = dist(rng);
-      src_top_ref[i] = val;
-      src_top_tst[i] = val;
-    }
+    auto* ref_fn = GetSaoEdgeOffsetLumaFn(ref, edge_class);
+    auto* tst_fn = GetSaoEdgeOffsetLumaFn(tst, edge_class);
 
-    for (size_t i = 0; i < src_top_left_ref.size(); i++) {
-      src_top_left_ref[i] = src_top_left_tst[i] = dist(rng);
-      src_top_right_ref[i] = src_top_right_tst[i] = dist(rng);
-      src_bot_left_ref[i] = src_bot_left_tst[i] = dist(rng);
-    }
+    ref_fn(ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
+           ref_buf.src_left.data() + left_offset, ref_buf.src_top.data(),
+           ref_buf.src_top_left.data(), ref_buf.src_top_right.data(),
+           ref_buf.src_bot_left.data(), ref_buf.avail.data(),
+           ref_buf.sao_offset.data(), wd, ht);
 
-    src_left_ref[0] = src_left_tst[0] = src_top_left_ref[0];
+    tst_fn(tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
+           tst_buf.src_left.data() + left_offset, tst_buf.src_top.data(),
+           tst_buf.src_top_left.data(), tst_buf.src_top_right.data(),
+           tst_buf.src_bot_left.data(), tst_buf.avail.data(),
+           tst_buf.sao_offset.data(), wd, ht);
 
-    for (int i = 0; i < 8; i++) {
-      avail[i] = dist_avail(rng) ? 255 : 0;
-    }
-
-    for (int i = 1; i < 5; i++) {
-      sao_offset[i] = dist_offset(rng);
-    }
+    VerifyBuffers();
   }
 
   int wd, ht, offset_val;
   IV_ARCH_T arch;
-  int stride, total_ht, src_size, src_offset;
-  std::vector<UWORD8> src_ref;
-  std::vector<UWORD8> src_tst;
-  std::vector<UWORD8> src_left_ref;
-  std::vector<UWORD8> src_left_tst;
-  std::vector<UWORD8> src_top_ref;
-  std::vector<UWORD8> src_top_tst;
-  std::vector<UWORD8> src_top_left_ref;
-  std::vector<UWORD8> src_top_left_tst;
-  std::vector<UWORD8> src_top_right_ref;
-  std::vector<UWORD8> src_top_right_tst;
-  std::vector<UWORD8> src_bot_left_ref;
-  std::vector<UWORD8> src_bot_left_tst;
-  std::vector<UWORD8> avail;
-  std::vector<WORD8> sao_offset;
+  SaoLumaBuffers<UWORD8> ref_buf;
+  SaoLumaBuffers<UWORD8> tst_buf;
   const ihevc_func_selector_t* ref;
   const ihevc_func_selector_t* tst;
 };
@@ -168,96 +117,52 @@ class SaoChromaTest : public ::testing::TestWithParam<SaoTestParam> {
     std::tie(wd, ht) =
         block_size;  // wd is chroma component size, 2 * wd is bytes
 
-    stride = 2 * wd + 32;
-    total_ht = ht + 32;
-    src_size = stride * total_ht;
-    src_offset = 16 * stride + 16;
-
-    src_ref.resize(src_size);
-    src_tst.resize(src_size);
-
-    src_left_ref.resize(2 * ht + 8 + 2);
-    src_left_tst.resize(2 * ht + 8 + 2);
-    src_top_ref.resize(2 * wd + 8);
-    src_top_tst.resize(2 * wd + 8);
-    src_top_left_ref.resize(8);
-    src_top_left_tst.resize(8);
-    src_top_right_ref.resize(8);
-    src_top_right_tst.resize(8);
-    src_bot_left_ref.resize(8);
-    src_bot_left_tst.resize(8);
-
-    avail.resize(8);
-
-    sao_offset_u.resize(8);
-    sao_offset_v.resize(8);
-    sao_offset_u[0] = sao_offset_v[0] = 0;
-
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
   void InitializeBuffers() {
-    std::mt19937 rng(42);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
-    std::uniform_int_distribution<uint8_t> dist_avail(0, 1);
-    std::uniform_int_distribution<int8_t> dist_offset(-7, 7);
+    ref_buf = CreateSaoChromaBuffers<UWORD8>(wd, ht);
+    tst_buf = ref_buf;
+  }
 
-    for (int i = 0; i < src_size; i++) {
-      uint8_t val = dist(rng);
-      src_ref[i] = val;
-      src_tst[i] = val;
-    }
+  void VerifyBuffers() {
+    compare_output(ref_buf.src.data() + ref_buf.src_offset,
+                   tst_buf.src.data() + tst_buf.src_offset, 2 * wd, ht,
+                   ref_buf.stride);
+    ASSERT_EQ(ref_buf.src_left, tst_buf.src_left);
+    ASSERT_EQ(ref_buf.src_top, tst_buf.src_top);
+    ASSERT_EQ(ref_buf.src_top_left, tst_buf.src_top_left);
+  }
 
-    for (size_t i = 0; i < src_left_ref.size(); i++) {
-      uint8_t val = dist(rng);
-      src_left_ref[i] = val;
-      src_left_tst[i] = val;
-    }
+  void RunEdgeOffset(int edge_class) {
+    InitializeBuffers();
+    int left_offset = (edge_class == 2) ? 2 : 0;
 
-    for (size_t i = 0; i < src_top_ref.size(); i++) {
-      uint8_t val = dist(rng);
-      src_top_ref[i] = val;
-      src_top_tst[i] = val;
-    }
+    auto* ref_fn = GetSaoEdgeOffsetChromaFn(ref, edge_class);
+    auto* tst_fn = GetSaoEdgeOffsetChromaFn(tst, edge_class);
 
-    for (size_t i = 0; i < src_top_left_ref.size(); i++) {
-      src_top_left_ref[i] = src_top_left_tst[i] = dist(rng);
-      src_top_right_ref[i] = src_top_right_tst[i] = dist(rng);
-      src_bot_left_ref[i] = src_bot_left_tst[i] = dist(rng);
-    }
+    ref_fn(ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
+           ref_buf.src_left.data() + left_offset, ref_buf.src_top.data(),
+           ref_buf.src_top_left.data(), ref_buf.src_top_right.data(),
+           ref_buf.src_bot_left.data(), ref_buf.avail.data(),
+           ref_buf.sao_offset_u.data(), ref_buf.sao_offset_v.data(), 2 * wd,
+           ht);
 
-    src_left_ref[0] = src_left_tst[0] = src_top_left_ref[0];
-    src_left_ref[1] = src_left_tst[1] = src_top_left_ref[1];
+    tst_fn(tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
+           tst_buf.src_left.data() + left_offset, tst_buf.src_top.data(),
+           tst_buf.src_top_left.data(), tst_buf.src_top_right.data(),
+           tst_buf.src_bot_left.data(), tst_buf.avail.data(),
+           tst_buf.sao_offset_u.data(), tst_buf.sao_offset_v.data(), 2 * wd,
+           ht);
 
-    for (int i = 0; i < 8; i++) {
-      avail[i] = dist_avail(rng) ? 255 : 0;
-    }
-
-    for (int i = 1; i < 5; i++) {
-      sao_offset_u[i] = dist_offset(rng);
-      sao_offset_v[i] = dist_offset(rng);
-    }
+    VerifyBuffers();
   }
 
   int wd, ht, offset_val;
   IV_ARCH_T arch;
-  int stride, total_ht, src_size, src_offset;
-  std::vector<UWORD8> src_ref;
-  std::vector<UWORD8> src_tst;
-  std::vector<UWORD8> src_left_ref;
-  std::vector<UWORD8> src_left_tst;
-  std::vector<UWORD8> src_top_ref;
-  std::vector<UWORD8> src_top_tst;
-  std::vector<UWORD8> src_top_left_ref;
-  std::vector<UWORD8> src_top_left_tst;
-  std::vector<UWORD8> src_top_right_ref;
-  std::vector<UWORD8> src_top_right_tst;
-  std::vector<UWORD8> src_bot_left_ref;
-  std::vector<UWORD8> src_bot_left_tst;
-  std::vector<UWORD8> avail;
-  std::vector<WORD8> sao_offset_u;
-  std::vector<WORD8> sao_offset_v;
+  SaoChromaBuffers<UWORD8> ref_buf;
+  SaoChromaBuffers<UWORD8> tst_buf;
   const ihevc_func_selector_t* ref;
   const ihevc_func_selector_t* tst;
 };
@@ -268,21 +173,19 @@ class SaoBandOffsetLumaTest : public SaoLumaTest {};
 TEST_P(SaoBandOffsetLumaTest, Run) {
   InitializeBuffers();
 
-  ref->ihevc_sao_band_offset_luma_fptr(src_ref.data() + src_offset, stride,
-                                       src_left_ref.data(), src_top_ref.data(),
-                                       src_top_left_ref.data(), offset_val,
-                                       sao_offset.data(), wd, ht);
+  GetSaoBandOffsetLumaFn(ref)(
+      ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
+      ref_buf.src_left.data(), ref_buf.src_top.data(),
+      ref_buf.src_top_left.data(), offset_val, ref_buf.sao_offset.data(), wd,
+      ht);
 
-  tst->ihevc_sao_band_offset_luma_fptr(src_tst.data() + src_offset, stride,
-                                       src_left_tst.data(), src_top_tst.data(),
-                                       src_top_left_tst.data(), offset_val,
-                                       sao_offset.data(), wd, ht);
+  GetSaoBandOffsetLumaFn(tst)(
+      tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
+      tst_buf.src_left.data(), tst_buf.src_top.data(),
+      tst_buf.src_top_left.data(), offset_val, tst_buf.sao_offset.data(), wd,
+      ht);
 
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  VerifyBuffers();
 }
 
 class SaoBandOffsetChromaTest : public SaoChromaTest {};
@@ -292,115 +195,40 @@ TEST_P(SaoBandOffsetChromaTest, Run) {
   int offset_val_u = offset_val;
   int offset_val_v = (offset_val + 4) % 32;
 
-  ref->ihevc_sao_band_offset_chroma_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), offset_val_u, offset_val_v,
-      sao_offset_u.data(), sao_offset_v.data(), 2 * wd, ht);
+  GetSaoBandOffsetChromaFn(ref)(
+      ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
+      ref_buf.src_left.data(), ref_buf.src_top.data(),
+      ref_buf.src_top_left.data(), offset_val_u, offset_val_v,
+      ref_buf.sao_offset_u.data(), ref_buf.sao_offset_v.data(), 2 * wd, ht);
 
-  tst->ihevc_sao_band_offset_chroma_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), offset_val_u, offset_val_v,
-      sao_offset_u.data(), sao_offset_v.data(), 2 * wd, ht);
+  GetSaoBandOffsetChromaFn(tst)(
+      tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
+      tst_buf.src_left.data(), tst_buf.src_top.data(),
+      tst_buf.src_top_left.data(), offset_val_u, offset_val_v,
+      tst_buf.sao_offset_u.data(), tst_buf.sao_offset_v.data(), 2 * wd, ht);
 
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, 2 * wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  VerifyBuffers();
 }
 
 class SaoEdgeOffsetClass0Test : public SaoLumaTest {};
-TEST_P(SaoEdgeOffsetClass0Test, Run) {
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class0_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  tst->ihevc_sao_edge_offset_class0_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
-}
+TEST_P(SaoEdgeOffsetClass0Test, Run) { RunEdgeOffset(0); }
 
 class SaoEdgeOffsetClass0ChromaTest : public SaoChromaTest {};
 TEST_P(SaoEdgeOffsetClass0ChromaTest, Run) {
 #if defined(__arm__) || defined(__aarch64__) || defined(__arm64__)
   if (wd % 8 == 4) {
-    GTEST_SKIP() << "Skipping failing ARM Chroma SAO Class 0 tests for width % 8 == 4";
+    GTEST_SKIP()
+        << "Skipping failing ARM Chroma SAO Class 0 tests for width % 8 == 4";
   }
 #endif
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class0_chroma_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  tst->ihevc_sao_edge_offset_class0_chroma_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, 2 * wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  RunEdgeOffset(0);
 }
 
 class SaoEdgeOffsetClass1Test : public SaoLumaTest {};
-TEST_P(SaoEdgeOffsetClass1Test, Run) {
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class1_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  tst->ihevc_sao_edge_offset_class1_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
-}
+TEST_P(SaoEdgeOffsetClass1Test, Run) { RunEdgeOffset(1); }
 
 class SaoEdgeOffsetClass1ChromaTest : public SaoChromaTest {};
-TEST_P(SaoEdgeOffsetClass1ChromaTest, Run) {
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class1_chroma_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  tst->ihevc_sao_edge_offset_class1_chroma_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, 2 * wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
-}
+TEST_P(SaoEdgeOffsetClass1ChromaTest, Run) { RunEdgeOffset(1); }
 
 class SaoEdgeOffsetClass2Test : public SaoLumaTest {};
 TEST_P(SaoEdgeOffsetClass2Test, Run) {
@@ -411,23 +239,7 @@ TEST_P(SaoEdgeOffsetClass2Test, Run) {
     GTEST_SKIP() << "Skipping Class 2 tests for x86 SIMD";
   }
 #endif
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class2_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data() + 1,
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  tst->ihevc_sao_edge_offset_class2_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data() + 1,
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  RunEdgeOffset(2);
 }
 
 class SaoEdgeOffsetClass2ChromaTest : public SaoChromaTest {};
@@ -439,25 +251,7 @@ TEST_P(SaoEdgeOffsetClass2ChromaTest, Run) {
     GTEST_SKIP() << "Skipping Class 2 Chroma tests for x86 SIMD";
   }
 #endif
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class2_chroma_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data() + 2,
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  tst->ihevc_sao_edge_offset_class2_chroma_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data() + 2,
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, 2 * wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  RunEdgeOffset(2);
 }
 
 class SaoEdgeOffsetClass3Test : public SaoLumaTest {};
@@ -469,47 +263,11 @@ TEST_P(SaoEdgeOffsetClass3Test, Run) {
     GTEST_SKIP() << "Skipping Class 3 tests for x86 SIMD";
   }
 #endif
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class3_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  tst->ihevc_sao_edge_offset_class3_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset.data(), wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
+  RunEdgeOffset(3);
 }
 
 class SaoEdgeOffsetClass3ChromaTest : public SaoChromaTest {};
-TEST_P(SaoEdgeOffsetClass3ChromaTest, Run) {
-  InitializeBuffers();
-
-  ref->ihevc_sao_edge_offset_class3_chroma_fptr(
-      src_ref.data() + src_offset, stride, src_left_ref.data(),
-      src_top_ref.data(), src_top_left_ref.data(), src_top_right_ref.data(),
-      src_bot_left_ref.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  tst->ihevc_sao_edge_offset_class3_chroma_fptr(
-      src_tst.data() + src_offset, stride, src_left_tst.data(),
-      src_top_tst.data(), src_top_left_tst.data(), src_top_right_tst.data(),
-      src_bot_left_tst.data(), avail.data(), sao_offset_u.data(),
-      sao_offset_v.data(), 2 * wd, ht);
-
-  compare_sao_output(src_ref.data() + src_offset, src_tst.data() + src_offset,
-                     stride, 2 * wd, ht);
-  ASSERT_EQ(src_left_ref, src_left_tst);
-  ASSERT_EQ(src_top_ref, src_top_tst);
-  ASSERT_EQ(src_top_left_ref, src_top_left_tst);
-}
+TEST_P(SaoEdgeOffsetClass3ChromaTest, Run) { RunEdgeOffset(3); }
 
 // ---------------------------- Instantiation --------------------------------
 

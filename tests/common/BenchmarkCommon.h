@@ -15,30 +15,33 @@
  * limitations under the License.
  *
  ******************************************************************************/
-#ifndef __FUNC_SELECTOR_H__
-#define __FUNC_SELECTOR_H__
-#include <algorithm>
-#include <cstring>
-#include <random>
-#include <sstream>
+
+#pragma once
+
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 // clang-format off
 #include "ihevc_typedefs.h"
-extern "C" {
-#include "ihevc_function_selector.h"
 #include "iv.h"
-}
 // clang-format on
 
-const ihevc_func_selector_t* get_ref_func_ptr();
-const ihevc_func_selector_t* get_tst_func_ptr(IV_ARCH_T arch);
+#include "TestCommon.h"
 
-inline const ihevc_func_selector_t* get_func_ptr(IV_ARCH_T arch) {
-  return get_tst_func_ptr(arch);
-}
+// Returns human-readable architecture name ("C", "SSSE3", "SSE42", "ARMV8", etc.)
+inline std::string GetArchName(IV_ARCH_T arch) { return get_arch_str(arch); }
 
-#endif /* __FUNC_SELECTOR_H__ */
+// Returns the list of architectures to benchmark, starting with ARCH_NA
+// (generic C), followed by all supported target architectures returned by
+// getTstArch().
+const std::vector<IV_ARCH_T>& GetBenchmarkArchitectures();
+
+// Common representative PU block sizes for Luma benchmarks
+const std::vector<std::pair<int, int>>& GetBenchmarkLumaPUSizes();
+
+// Common representative PU block sizes for Chroma benchmarks
+const std::vector<std::pair<int, int>>& GetBenchmarkChromaPUSizes();
+
+// Implemented by each benchmark executable to register its benchmark suite
+void RegisterAllBenchmarks();

@@ -35,120 +35,56 @@
 #include "TestCommon.h"
 // clang-format on
 
+#include "ihevc_intra_pred_utils.h"
+
 // Test parameters: block_size, mode, dst_stride_mul, arch
 using LumaIntraPredTestParam = std::tuple<int, int, int, IV_ARCH_T>;
 
 class LumaIntraPredTest
     : public ::testing::TestWithParam<LumaIntraPredTestParam> {
-protected:
+ protected:
   void SetUp() override {
     std::tie(nt, mode, dst_strd_mul, arch) = GetParam();
-    src_strd = 1; // Intra pred reference is usually dense
-    dst_strd = nt * dst_strd_mul;
-
-    // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
-    // reads/writes in SIMD implementations.
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
-    defined(_M_IX86)
-    int pad_ref = 16;
-    int pad_dst = 16;
-#else
-    int pad_ref = 0;
-    int pad_dst = 0;
-#endif
-
-    // Reference buffer size: 4 * nt + 1
-    int ref_size = 4 * nt + 1;
-    ref_buf.resize(ref_size + pad_ref);
-
-    // Initialize reference buffer with random data
-    std::mt19937 rng(12345);
-    std::uniform_int_distribution<int> dist(0, 255);
-    for (auto &v : ref_buf) {
-      v = static_cast<UWORD8>(dist(rng));
-    }
-
-    // Use a pointer aligned or offset to ensure we have valid data
-    // The function expects pu1_ref to point to the start of the reference array
-    // Top-left is usually at index 2*nt.
-    // We just pass the data pointer.
-    pu1_ref = ref_buf.data();
-
-    dst_buf_ref.resize(dst_strd * nt + pad_dst);
-    dst_buf_tst.resize(dst_strd * nt + pad_dst);
-
-    // Initialize dst buffers with pattern to detect over/under writes
-    std::fill(dst_buf_ref.begin(), dst_buf_ref.end(), 0xCD);
-    std::fill(dst_buf_tst.begin(), dst_buf_tst.end(), 0xCD);
-
-    pu1_dst_ref = dst_buf_ref.data();
-    pu1_dst_tst = dst_buf_tst.data();
+    buf_ref = CreateIntraPredLumaBuffers<UWORD8>(nt, dst_strd_mul, 8, 12345);
+    buf_tst = buf_ref;
 
     tst = get_tst_func_ptr(arch);
     ref = get_ref_func_ptr();
   }
 
-  template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
-    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, mode);
-    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, mode);
-    ASSERT_NO_FATAL_FAILURE(
-        compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
-  }
+  void RunWithArg(int mode_or_flag) {
+    LumaIntraPredFn ref_fn = GetLumaIntraPredFn(ref, mode);
+    LumaIntraPredFn tst_fn = GetLumaIntraPredFn(tst, mode);
+    ASSERT_NE(ref_fn, nullptr);
+    ASSERT_NE(tst_fn, nullptr);
 
-  template <typename FuncPtrMember> void RunTestHorzVer(FuncPtrMember func_ptr) {
-    // Test with disable_boundary_filter = 0
-    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, 0);
-    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, 0);
-    ASSERT_NO_FATAL_FAILURE(
-        compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
-
-    // Test with disable_boundary_filter = 1
-    (ref->*func_ptr)(pu1_ref, src_strd, pu1_dst_ref, dst_strd, nt, 1);
-    (tst->*func_ptr)(pu1_ref, src_strd, pu1_dst_tst, dst_strd, nt, 1);
-    ASSERT_NO_FATAL_FAILURE(
-        compare_output<UWORD8>(dst_buf_ref, dst_buf_tst, nt, nt, dst_strd));
+    ref_fn(buf_ref.ref.data(), buf_ref.src_strd, buf_ref.dst.data(),
+           buf_ref.dst_strd, nt, mode_or_flag);
+    tst_fn(buf_tst.ref.data(), buf_tst.src_strd, buf_tst.dst.data(),
+           buf_tst.dst_strd, nt, mode_or_flag);
+    ASSERT_NO_FATAL_FAILURE(compare_output<UWORD8>(buf_ref.dst, buf_tst.dst, nt,
+                                                   nt, buf_ref.dst_strd));
   }
 
   int nt, mode, dst_strd_mul;
-  int src_strd, dst_strd;
-  std::vector<UWORD8> ref_buf;
-  std::vector<UWORD8> dst_buf_ref;
-  std::vector<UWORD8> dst_buf_tst;
-  UWORD8 *pu1_ref;
-  UWORD8 *pu1_dst_ref;
-  UWORD8 *pu1_dst_tst;
+  IntraPredLumaBuffers<UWORD8> buf_ref;
+  IntraPredLumaBuffers<UWORD8> buf_tst;
   IV_ARCH_T arch;
-  const ihevc_func_selector_t *tst;
-  const ihevc_func_selector_t *ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(LumaIntraPredTest, Run) {
-  if (mode == 0)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_planar_fptr);
-  else if (mode == 1)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_dc_fptr);
-  else if (mode == 2)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode2_fptr);
-  else if (mode >= 3 && mode <= 9)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_3_to_9_fptr);
-  else if (mode == 10) {
-    RunTestHorzVer(&ihevc_func_selector_t::ihevc_intra_pred_luma_horz_fptr);
-  } else if (mode >= 11 && mode <= 17)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_11_to_17_fptr);
-  else if (mode == 18 || mode == 34)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_18_34_fptr);
-  else if (mode >= 19 && mode <= 25)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_19_to_25_fptr);
-  else if (mode == 26) {
-    RunTestHorzVer(&ihevc_func_selector_t::ihevc_intra_pred_luma_ver_fptr);
-  } else if (mode >= 27 && mode <= 33)
-    RunTest(&ihevc_func_selector_t::ihevc_intra_pred_luma_mode_27_to_33_fptr);
-  else
-    FAIL() << "Invalid mode: " << mode;
+  if (mode == 10 || mode == 26) {
+    RunWithArg(0);
+    RunWithArg(1);
+  } else {
+    RunWithArg(mode);
+  }
 }
 
 std::string PrintLumaIntraPredTestParam(
-    const testing::TestParamInfo<LumaIntraPredTestParam> &info) {
+    const testing::TestParamInfo<LumaIntraPredTestParam>& info) {
   int nt, mode, dst_strd_mul;
   IV_ARCH_T arch;
   std::tie(nt, mode, dst_strd_mul, arch) = info.param;

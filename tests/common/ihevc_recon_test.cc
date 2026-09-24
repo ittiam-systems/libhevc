@@ -31,6 +31,7 @@
 #include "ihevc_platform_macros.h"
 #include "TestCommon.h"
 #include "func_selector.h"
+#include "ihevc_itrans_utils.h"
 // clang-format on
 
 namespace {
@@ -74,54 +75,33 @@ class ReconTest : public ::testing::TestWithParam<ReconTestParam> {
     }
   }
 
-  template <typename FuncPtr>
-  void RunTest(FuncPtr func_ptr) {
-    std::mt19937 rng(0);
+  void RunTest() {
     // Residuals are typically in the range of S16 after inverse transform
-    std::uniform_int_distribution<int16_t> coeff_dist(-512, 511);
-    std::uniform_int_distribution<uint8_t> pixel_dist(0, 255);
+    FillRandomSubBlock(pi2_src.data(), trans_size, src_strd, trans_size,
+                       num_non_zero_cols, static_cast<WORD16>(-512),
+                       static_cast<WORD16>(511), 0);
+    FillRandom(pu1_pred, static_cast<UWORD8>(0), static_cast<UWORD8>(255), 1);
 
-    // Populate pi2_src so that columns [0, num_non_zero_cols) are non-zero.
-    std::fill(pi2_src.begin(), pi2_src.end(), 0);
-    for (int i = 0; i < trans_size; i++) {
-      for (int j = 0; j < trans_size; j++) {
-        if (j < num_non_zero_cols) {
-          pi2_src[i * src_strd + j] = coeff_dist(rng);
-        }
-      }
-    }
-
-    for (auto& v : pu1_pred) {
-      v = pixel_dist(rng);
-    }
-
-    WORD32 non_zero_cols_mask = 0;
-    for (int j = 0; j < num_non_zero_cols && j < trans_size; j++) {
-      non_zero_cols_mask |= (1u << j);
-    }
-
-    WORD32 mask = (trans_size == 32)
-                      ? 0xFFFFFFFFu
-                      : ((static_cast<WORD32>(1u) << trans_size) - 1u);
-    WORD32 zero_cols = (~non_zero_cols_mask) & mask;
+    WORD32 zero_cols = ComputeZeroMask(trans_size, num_non_zero_cols);
 
     // 1. Reference path (manual C++)
     ReferenceRecon(pi2_src, pu1_pred, pu1_dst_ref, zero_cols);
 
     // 2. Test path from selector (generic C)
+    ReconFn ref_fn = GetReconFn(ref, trans_size, ttype);
     std::fill(pu1_dst_tst.begin(), pu1_dst_tst.end(), 0xAA);
-    (ref->*func_ptr)(pi2_src.data(), pu1_pred.data(), pu1_dst_tst.data(),
-                     src_strd, pred_strd, dst_strd, zero_cols);
+    ref_fn(pi2_src.data(), pu1_pred.data(), pu1_dst_tst.data(), src_strd,
+           pred_strd, dst_strd, zero_cols);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<UWORD8>(
         pu1_dst_ref, pu1_dst_tst, trans_size, trans_size, dst_strd));
 
     // 3. Test path from selector (SIMD, falls back to C on x86 since no
     // overrides)
-
+    ReconFn tst_fn = GetReconFn(tst, trans_size, ttype);
     std::fill(pu1_dst_tst.begin(), pu1_dst_tst.end(), 0xAA);
-    (tst->*func_ptr)(pi2_src.data(), pu1_pred.data(), pu1_dst_tst.data(),
-                     src_strd, pred_strd, dst_strd, zero_cols);
+    tst_fn(pi2_src.data(), pu1_pred.data(), pu1_dst_tst.data(), src_strd,
+           pred_strd, dst_strd, zero_cols);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<UWORD8>(
         pu1_dst_ref, pu1_dst_tst, trans_size, trans_size, dst_strd));
@@ -143,21 +123,7 @@ class ReconTest : public ::testing::TestWithParam<ReconTestParam> {
   std::vector<UWORD8> pu1_dst_tst;
 };
 
-TEST_P(ReconTest, Run) {
-  if (trans_size == 4) {
-    if (ttype == 1) {
-      RunTest(&ihevc_func_selector_t::ihevc_recon_4x4_ttype1_fptr);
-    } else {
-      RunTest(&ihevc_func_selector_t::ihevc_recon_4x4_fptr);
-    }
-  } else if (trans_size == 8) {
-    RunTest(&ihevc_func_selector_t::ihevc_recon_8x8_fptr);
-  } else if (trans_size == 16) {
-    RunTest(&ihevc_func_selector_t::ihevc_recon_16x16_fptr);
-  } else if (trans_size == 32) {
-    RunTest(&ihevc_func_selector_t::ihevc_recon_32x32_fptr);
-  }
-}
+TEST_P(ReconTest, Run) { RunTest(); }
 
 std::string PrintReconTestParam(
     const testing::TestParamInfo<ReconTestParam>& info) {

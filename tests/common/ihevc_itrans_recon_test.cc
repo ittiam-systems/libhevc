@@ -9,6 +9,7 @@
 #include "TestCommon.h"
 #include "func_selector.h"
 #include "ihevc_defs.h"
+#include "ihevc_itrans_utils.h"
 #include "ihevc_macros.h"
 #include "ihevc_structs.h"
 #include "ihevc_typedefs.h"
@@ -20,7 +21,7 @@ namespace {
 using ITransReconTestParam = std::tuple<int, int, IV_ARCH_T, int, int>;
 
 class ITransReconTest : public ::testing::TestWithParam<ITransReconTestParam> {
-protected:
+ protected:
   void SetUp() override {
     std::tie(trans_size, ttype, arch, num_non_zero_rows, num_non_zero_cols) =
         GetParam();
@@ -31,7 +32,7 @@ protected:
 
     // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
     // reads in SIMD implementations.
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
     int pad_pred = (trans_size == 4) ? 8 : 0;
     int pad_tmp = (trans_size == 32) ? 8 : 0;
@@ -44,12 +45,12 @@ protected:
     // pi2_tmp needs to be large enough to hold intermediate data of width *
     // height 16bits.
     pi2_tmp.resize(trans_size * trans_size + pad_tmp);
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
-  if (trans_size == 32) {
-    // SSE4.2 and SSSE3.1 require 3 times trans_size * trans_size for 32x32
-    pi2_tmp.resize(3 * trans_size * trans_size + pad_tmp);
-  }
+    if (trans_size == 32) {
+      // SSE4.2 and SSSE3.1 require 3 times trans_size * trans_size for 32x32
+      pi2_tmp.resize(3 * trans_size * trans_size + pad_tmp);
+    }
 #endif
     pu1_pred.resize(trans_size * trans_size + pad_pred);
     pu1_dst_ref.resize(trans_size * trans_size);
@@ -59,48 +60,24 @@ protected:
     tst_func_selector = get_tst_func_ptr(arch);
   }
 
-  template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
-    std::mt19937 rng(0);
-    std::uniform_int_distribution<int16_t> coeff_dist(-32768, 32767);
-    std::uniform_int_distribution<uint8_t> pixel_dist(0, 255);
+  void RunTest() {
+    FillRandomSubBlock(pi2_src.data(), trans_size, src_strd, num_non_zero_rows,
+                       num_non_zero_cols, static_cast<WORD16>(-32768),
+                       static_cast<WORD16>(32767), 0);
+    FillRandom(pu1_pred, static_cast<UWORD8>(0), static_cast<UWORD8>(255), 1);
 
-    // Populate pi2_src so that the requested number of rows and columns
-    // are potentially non-zero. Rows [0, non_zero_rows) and columns
-    // [0, non_zero_cols) form the non-zero region; everything else is zero.
-    std::fill(pi2_src.begin(), pi2_src.end(), 0);
-    for (int i = 0; i < trans_size; i++) {
-      for (int j = 0; j < trans_size; j++) {
-        if (i < num_non_zero_rows && j < num_non_zero_cols) {
-          pi2_src[i * src_strd + j] = coeff_dist(rng);
-        }
-      }
-    }
+    WORD32 zero_cols = ComputeZeroMask(trans_size, num_non_zero_cols);
+    WORD32 zero_rows = ComputeZeroMask(trans_size, num_non_zero_rows);
 
-    for (auto &v : pu1_pred)
-      v = pixel_dist(rng);
+    ITransReconFn ref_fn =
+        GetITransReconFn(ref_func_selector, trans_size, ttype);
+    ITransReconFn tst_fn =
+        GetITransReconFn(tst_func_selector, trans_size, ttype);
 
-    WORD32 non_zero_rows_mask = 0;
-    for (int i = 0; i < num_non_zero_rows && i < trans_size; i++) {
-      non_zero_rows_mask |= (1u << i);
-    }
-
-    WORD32 non_zero_cols_mask = 0;
-    for (int j = 0; j < num_non_zero_cols && j < trans_size; j++) {
-      non_zero_cols_mask |= (1u << j);
-    }
-
-    WORD32 mask = (trans_size == 32)
-                      ? 0xFFFFFFFFu
-                      : ((static_cast<WORD32>(1u) << trans_size) - 1u);
-    WORD32 zero_cols = (~non_zero_cols_mask) & mask;
-    WORD32 zero_rows = (~non_zero_rows_mask) & mask;
-
-    (ref_func_selector->*func_ptr)(
-        pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_ref.data(),
-        src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
-    (tst_func_selector->*func_ptr)(
-        pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_tst.data(),
-        src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
+    ref_fn(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_ref.data(),
+           src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
+    tst_fn(pi2_src.data(), pi2_tmp.data(), pu1_pred.data(), pu1_dst_tst.data(),
+           src_strd, pred_strd, dst_strd, zero_cols, zero_rows);
     ASSERT_NO_FATAL_FAILURE(compare_output<UWORD8>(
         pu1_dst_ref, pu1_dst_tst, trans_size, trans_size, dst_strd));
   }
@@ -108,8 +85,8 @@ protected:
   int trans_size;
   int ttype;
   IV_ARCH_T arch;
-  const ihevc_func_selector_t *ref_func_selector;
-  const ihevc_func_selector_t *tst_func_selector;
+  const ihevc_func_selector_t* ref_func_selector;
+  const ihevc_func_selector_t* tst_func_selector;
 
   WORD32 src_strd;
   WORD32 pred_strd;
@@ -123,21 +100,7 @@ protected:
   std::vector<UWORD8> pu1_dst_tst;
 };
 
-TEST_P(ITransReconTest, Run) {
-  if (trans_size == 4) {
-    if (ttype == 1) {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_4x4_ttype1_fptr);
-    } else {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_4x4_fptr);
-    }
-  } else if (trans_size == 8) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_8x8_fptr);
-  } else if (trans_size == 16) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_16x16_fptr);
-  } else if (trans_size == 32) {
-    RunTest(&ihevc_func_selector_t::ihevc_itrans_recon_32x32_fptr);
-  }
-}
+TEST_P(ITransReconTest, Run) { RunTest(); }
 
 std::string PrintITransReconTestParam(
     const testing::TestParamInfo<ITransReconTestParam> &info) {
