@@ -2083,6 +2083,11 @@ struct _codec_t
     UWORD32 u4_enable_yuv_formats;
 
     /**
+     * Controls whether the decoder is allowed to support 10-bit decoding
+     */
+    UWORD32 u4_enable_hbd;
+
+    /**
      * Pointer to hold TU data for a set of CTBs or a picture
      */
     void *pv_tu_data;

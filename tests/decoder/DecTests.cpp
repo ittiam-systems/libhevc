@@ -74,6 +74,30 @@ TEST_P(DecTestFixture, DecodeVerify) {
       << "Decoding failed for input: " << inputPath;
 }
 
+TEST(DecTest, Decode10bDisabledHbdError) {
+  const std::vector<std::pair<std::string, Format>> k10bStreams = {
+      {"bbb_10b_176x144_yuv400.hevc", Format::yuv400p},
+      {"bbb_10b_176x144_yuv420.hevc", Format::yuv420p},
+      {"bbb_10b_176x144_yuv422.hevc", Format::yuv422p},
+      {"bbb_10b_176x144_yuv444.hevc", Format::yuv444p},
+  };
+  for (const auto& [inputFile, format] : k10bStreams) {
+    std::string inputPath = getFullPath(inputFile);
+    auto builder = DecHelper::Builder()
+                       .setInputFilePath(inputPath)
+                       .setFormat(format)
+                       .setEnableHbd(false);
+
+    std::unique_ptr<DecHelper> helper = builder.build();
+    ASSERT_NE(helper, nullptr)
+        << "Failed to build DecHelper for input: " << inputPath;
+    EXPECT_FALSE(helper->decodeFile())
+        << "Decoder should return an error when decoding 10-bit clip with "
+           "u4_enable_hbd set to 0 for: "
+        << inputPath;
+  }
+}
+
 static const std::vector<DecodeStreamConfig> kDecodeStreams = {
     {"bbb_176x144_yuv400.hevc", Format::yuv400p, "bbb_176x144_yuv400_md5.txt"},
     {"bbb_176x144_yuv420.hevc", Format::yuv420p, "bbb_176x144_yuv420_md5.txt"},

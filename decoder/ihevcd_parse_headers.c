@@ -1709,6 +1709,11 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
 
 
     UEV_PARSE("bit_depth_luma_minus8", value, ps_bitstrm);
+    if ((0 == ps_codec->u4_enable_hbd) && (0 != value))
+    {
+        ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_BIT_DEPTH;
+        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
     // Limit the support to max bit depth of 10-bit
     if (value > 2)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
@@ -1722,6 +1727,11 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
     ps_sps->i1_bit_depth_luma_minus8 = value;
 
     UEV_PARSE("bit_depth_chroma_minus8", value, ps_bitstrm);
+    if ((0 == ps_codec->u4_enable_hbd) && (0 != value))
+    {
+        ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_BIT_DEPTH;
+        return IHEVCD_UNSUPPORTED_BIT_DEPTH;
+    }
     // Limit the support to max bit depth of 10-bit
     if (value > 2)
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
