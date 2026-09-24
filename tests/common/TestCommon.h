@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
-
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -49,6 +47,9 @@ const std::vector<std::pair<int, int>>& getChromaPUBlockSizes();
 const std::vector<UWORD8>& getSrc8Buf();
 const std::vector<IV_ARCH_T>& getTstArch();
 
+#if __has_include(<gtest/gtest.h>)
+#include <gtest/gtest.h>
+
 // Compare outputs
 template <typename T>
 static void compare_output(const std::vector<T>& ref,
@@ -62,5 +63,6 @@ static void compare_output(const std::vector<T>& ref,
                       << ht;
   }
 }
+#endif
 
 std::string get_arch_str(IV_ARCH_T arch);
