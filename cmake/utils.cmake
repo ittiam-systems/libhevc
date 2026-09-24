@@ -152,9 +152,39 @@ function(libhevc_add_gtest_executable NAME)
   cmake_parse_arguments(ARG "" "" "${multi_value_args}" ${ARGN})
 
   libhevc_add_executable(
-    ${NAME} libhevcdec
-    SOURCES ${HEVC_ROOT}/tests/common/func_selector.cc
-            ${HEVC_ROOT}/tests/common/TestCommon.cc ${ARG_SOURCES}
+    ${NAME} libhevc_dsp_test_utils
+    SOURCES ${ARG_SOURCES}
     LIBS GTest::gtest_main)
   add_test(NAME ${NAME} COMMAND ${NAME})
+endfunction()
+
+# Adds Google Benchmark dependency
+function(libhevc_add_benchmark)
+  include(FetchContent)
+  FetchContent_Declare(
+    benchmark
+    URL https://github.com/google/benchmark/archive/refs/tags/v1.8.3.zip
+  )
+  # Disable benchmark's internal test suite
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+  FetchContent_MakeAvailable(benchmark)
+endfunction()
+
+# cmake-format: off
+# Adds a target for a benchmark executable
+#
+# Arguments:
+# NAME: Name of the executable
+#
+# Optional Arguments:
+# SOURCES: Additional source files
+# cmake-format: on
+function(libhevc_add_benchmark_executable NAME)
+  set(multi_value_args SOURCES)
+  cmake_parse_arguments(ARG "" "" "${multi_value_args}" ${ARGN})
+
+  libhevc_add_executable(
+    ${NAME} libhevc_dsp_test_utils
+    SOURCES ${HEVC_ROOT}/tests/common/BenchmarkCommon.cc ${ARG_SOURCES}
+    LIBS benchmark::benchmark)
 endfunction()

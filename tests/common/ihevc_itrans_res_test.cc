@@ -33,13 +33,14 @@
 #include "iv.h"
 #include "func_selector.h"
 #include "TestCommon.h"
+#include "ihevc_itrans_utils.h"
 // clang-format on
 
 // Test parameters: trans_size, ttype (0: normal, 1: ttype1), arch
 using ITransResTestParam = std::tuple<int, int, IV_ARCH_T>;
 
 class ITransResTest : public ::testing::TestWithParam<ITransResTestParam> {
-protected:
+ protected:
   void SetUp() override {
     std::tie(trans_size, ttype, arch) = GetParam();
     src_strd = trans_size;
@@ -49,20 +50,14 @@ protected:
     src_buf.resize(trans_size * trans_size);
 
     // Temporary buffer (intermediate 16-bit data)
-    // Size needed: width * height * 16 bits = width * height * 2 bytes
-    // pi2_tmp is WORD16*, so we need width * height elements
     tmp_buf.resize(trans_size * trans_size);
 
     // Output buffers
     dst_buf_ref.resize(trans_size * trans_size);
     dst_buf_tst.resize(trans_size * trans_size);
 
-    std::mt19937 rng(12345);
-    std::uniform_int_distribution<int> dist(-32768, 32767);
-
-    for (auto &v : src_buf) {
-      v = static_cast<WORD16>(dist(rng));
-    }
+    FillRandom(src_buf, static_cast<WORD16>(-32768), static_cast<WORD16>(32767),
+               12345);
 
     // Fill dst buffers with pattern
     std::fill(dst_buf_ref.begin(), dst_buf_ref.end(), 0xCDCD);
@@ -72,11 +67,14 @@ protected:
     ref = get_ref_func_ptr();
   }
 
-  template <typename FuncPtr> void RunTest(FuncPtr func_ptr, UWORD8 bit_depth) {
-    (ref->*func_ptr)(src_buf.data(), tmp_buf.data(), dst_buf_ref.data(),
-                      src_strd, dst_strd, 0, 0, bit_depth);
-    (tst->*func_ptr)(src_buf.data(), tmp_buf.data(), dst_buf_tst.data(),
-                      src_strd, dst_strd, 0, 0, bit_depth);
+  void RunTest(UWORD8 bit_depth) {
+    ITransResFn ref_fn = GetITransResFn(ref, trans_size, ttype);
+    ITransResFn tst_fn = GetITransResFn(tst, trans_size, ttype);
+
+    ref_fn(src_buf.data(), tmp_buf.data(), dst_buf_ref.data(), src_strd,
+           dst_strd, 0, 0, bit_depth);
+    tst_fn(src_buf.data(), tmp_buf.data(), dst_buf_tst.data(), src_strd,
+           dst_strd, 0, 0, bit_depth);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<WORD16>(
         dst_buf_ref, dst_buf_tst, trans_size, trans_size, dst_strd));
@@ -90,25 +88,13 @@ protected:
   std::vector<WORD16> tmp_buf;
   std::vector<WORD16> dst_buf_ref;
   std::vector<WORD16> dst_buf_tst;
-  const ihevc_func_selector_t *tst;
-  const ihevc_func_selector_t *ref;
+  const ihevc_func_selector_t* tst;
+  const ihevc_func_selector_t* ref;
 };
 
 TEST_P(ITransResTest, Run) {
   for (UWORD8 bit_depth : {8, 10}) {
-    if (trans_size == 4) {
-      if (ttype == 1) {
-        RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_ttype1_fptr, bit_depth);
-      } else {
-        RunTest(&ihevc_func_selector_t::ihevc_itrans_res_4x4_fptr, bit_depth);
-      }
-    } else if (trans_size == 8) {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_8x8_fptr, bit_depth);
-    } else if (trans_size == 16) {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_16x16_fptr, bit_depth);
-    } else if (trans_size == 32) {
-      RunTest(&ihevc_func_selector_t::ihevc_itrans_res_32x32_fptr, bit_depth);
-    }
+    RunTest(bit_depth);
   }
 }
 

@@ -30,6 +30,7 @@
 #include "ihevc_macros.h"
 #include "ihevc_typedefs.h"
 #include "TestCommon.h"
+#include "ihevc_itrans_utils.h"
 // clang-format on
 
 namespace {
@@ -55,77 +56,19 @@ class ITransTest : public ::testing::TestWithParam<ITransTestParam> {
   }
 
   void RunTest() {
-    std::mt19937 rng(0);
-    std::uniform_int_distribution<int16_t> coeff_dist(-32768, 32767);
+    FillRandomSubBlock(pi2_src.data(), trans_size, src_strd, trans_size,
+                       num_non_zero_cols, static_cast<WORD16>(-32768),
+                       static_cast<WORD16>(32767), 0);
 
-    std::fill(pi2_src.begin(), pi2_src.end(), 0);
-    for (int i = 0; i < trans_size; i++) {
-      for (int j = 0; j < trans_size; j++) {
-        if (j < num_non_zero_cols) {
-          pi2_src[i * src_strd + j] = coeff_dist(rng);
-        }
-      }
-    }
+    WORD32 zero_cols = ComputeZeroMask(trans_size, num_non_zero_cols);
 
-    WORD32 non_zero_cols_mask = 0;
-    for (int j = 0; j < num_non_zero_cols; j++) {
-      non_zero_cols_mask |= (1u << j);
-    }
+    ITransFn ref_fn = GetITransFn(ref, trans_size, ttype);
+    ITransFn tst_fn = GetITransFn(tst, trans_size, ttype);
 
-    WORD32 mask = (trans_size == 32)
-                      ? 0xFFFFFFFFu
-                      : ((static_cast<WORD32>(1u) << trans_size) - 1u);
-    WORD32 zero_cols = (~non_zero_cols_mask) & mask;
-
-    // 1. Reference path from selector (generic C)
-    if (trans_size == 4) {
-      if (ttype == 1) {
-        (ref->*(&ihevc_func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
-            pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
-            zero_cols);
-      } else {
-        (ref->*(&ihevc_func_selector_t::ihevc_itrans_4x4_fptr))(
-            pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
-            zero_cols);
-      }
-    } else if (trans_size == 8) {
-      (ref->*(&ihevc_func_selector_t::ihevc_itrans_8x8_fptr))(
-          pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    } else if (trans_size == 16) {
-      (ref->*(&ihevc_func_selector_t::ihevc_itrans_16x16_fptr))(
-          pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    } else if (trans_size == 32) {
-      (ref->*(&ihevc_func_selector_t::ihevc_itrans_32x32_fptr))(
-          pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    }
-
-    // 2. Test path from selector (SIMD, which might fall back to C)
-    if (trans_size == 4) {
-      if (ttype == 1) {
-        (tst->*(&ihevc_func_selector_t::ihevc_itrans_4x4_ttype1_fptr))(
-            pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
-            zero_cols);
-      } else {
-        (tst->*(&ihevc_func_selector_t::ihevc_itrans_4x4_fptr))(
-            pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
-            zero_cols);
-      }
-    } else if (trans_size == 8) {
-      (tst->*(&ihevc_func_selector_t::ihevc_itrans_8x8_fptr))(
-          pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    } else if (trans_size == 16) {
-      (tst->*(&ihevc_func_selector_t::ihevc_itrans_16x16_fptr))(
-          pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    } else if (trans_size == 32) {
-      (tst->*(&ihevc_func_selector_t::ihevc_itrans_32x32_fptr))(
-          pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
-          zero_cols);
-    }
+    ref_fn(pi2_src.data(), pi2_dst_ref.data(), src_strd, dst_strd, shift,
+           zero_cols);
+    tst_fn(pi2_src.data(), pi2_dst_tst.data(), src_strd, dst_strd, shift,
+           zero_cols);
 
     ASSERT_NO_FATAL_FAILURE(compare_output<WORD16>(
         pi2_dst_ref, pi2_dst_tst, trans_size, trans_size, dst_strd));

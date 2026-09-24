@@ -48,16 +48,17 @@ std::string PrintPaddingTestParam(
          std::to_string(pad_size) + "_" + get_arch_str(arch);
 }
 
-// ---------------------------- Luma Base Class ------------------------------
+// ---------------------------- Base Class -----------------------------------
 
-class PaddingLumaTest : public ::testing::TestWithParam<PaddingTestParam> {
+template <int kComponents>
+class PaddingTestBase : public ::testing::TestWithParam<PaddingTestParam> {
  protected:
   void SetUp() override {
     std::pair<int, int> block_size;
     std::tie(block_size, pad_size, arch) = GetParam();
     std::tie(wd, ht) = block_size;
 
-    stride = wd + 2 * pad_size + 16;
+    stride = kComponents * wd + 2 * pad_size + 16;
     total_ht = ht + 2 * pad_size + 16;
 
     buf_size = stride * total_ht;
@@ -74,7 +75,7 @@ class PaddingLumaTest : public ::testing::TestWithParam<PaddingTestParam> {
     std::mt19937 rng(42);
     std::uniform_int_distribution<uint8_t> dist(0, 255);
     for (int r = 0; r < ht; r++) {
-      for (int c = 0; c < wd; c++) {
+      for (int c = 0; c < kComponents * wd; c++) {
         uint8_t val = dist(rng);
         buf_ref[src_offset + r * stride + c] = val;
         buf_tst[src_offset + r * stride + c] = val;
@@ -91,49 +92,8 @@ class PaddingLumaTest : public ::testing::TestWithParam<PaddingTestParam> {
   const ihevc_func_selector_t* tst;
 };
 
-// --------------------------- Chroma Base Class -----------------------------
-
-class PaddingChromaTest : public ::testing::TestWithParam<PaddingTestParam> {
- protected:
-  void SetUp() override {
-    std::pair<int, int> block_size;
-    std::tie(block_size, pad_size, arch) = GetParam();
-    std::tie(wd, ht) = block_size;
-
-    // For chroma, width of block is 2 * wd in bytes
-    stride = 2 * wd + 2 * pad_size + 16;
-    total_ht = ht + 2 * pad_size + 16;
-
-    buf_size = stride * total_ht;
-    buf_ref.resize(buf_size, 0xAA);
-    buf_tst.resize(buf_size, 0xAA);
-
-    src_offset = pad_size * stride + pad_size + 8;
-
-    ref = get_ref_func_ptr();
-    tst = get_tst_func_ptr(arch);
-  }
-
-  void InitializeBuffers() {
-    std::mt19937 rng(42);
-    std::uniform_int_distribution<uint8_t> dist(0, 255);
-    for (int r = 0; r < ht; r++) {
-      for (int c = 0; c < 2 * wd; c++) {
-        uint8_t val = dist(rng);
-        buf_ref[src_offset + r * stride + c] = val;
-        buf_tst[src_offset + r * stride + c] = val;
-      }
-    }
-  }
-
-  int wd, ht, pad_size;
-  IV_ARCH_T arch;
-  int stride, total_ht, buf_size, src_offset;
-  std::vector<UWORD8> buf_ref;
-  std::vector<UWORD8> buf_tst;
-  const ihevc_func_selector_t* ref;
-  const ihevc_func_selector_t* tst;
-};
+using PaddingLumaTest = PaddingTestBase<1>;
+using PaddingChromaTest = PaddingTestBase<2>;
 
 // ---------------------------- Test cases -----------------------------------
 
@@ -185,21 +145,22 @@ auto kLumaPaddingParams = ::testing::Combine(
     ::testing::ValuesIn(getLumaPUBlockSizes()), ::testing::Values(80),
     ::testing::ValuesIn(getTstArch()));
 
-const std::vector<std::pair<int, int>>& getChromaPUBlockSizes() {
-  static const std::vector<std::pair<int, int>> kChromaPUBlockSizes = []() {
-    std::vector<std::pair<int, int>> ret;
-    for (const auto& size : getLumaPUBlockSizes()) {
-      if ((size.second / 2) % 4 == 0) {
-        ret.push_back({size.first / 2, size.second / 2});
-      }
-    }
-    return ret;
-  }();
-  return kChromaPUBlockSizes;
+const std::vector<std::pair<int, int>>& getChromaPaddingBlockSizes() {
+  static const std::vector<std::pair<int, int>> kChromaPaddingBlockSizes =
+      []() {
+        std::vector<std::pair<int, int>> ret;
+        for (const auto& size : getChromaPUBlockSizes()) {
+          if (size.second % 4 == 0) {
+            ret.push_back(size);
+          }
+        }
+        return ret;
+      }();
+  return kChromaPaddingBlockSizes;
 }
 
 auto kChromaPaddingParams = ::testing::Combine(
-    ::testing::ValuesIn(getChromaPUBlockSizes()), ::testing::Values(80),
+    ::testing::ValuesIn(getChromaPaddingBlockSizes()), ::testing::Values(80),
     ::testing::ValuesIn(getTstArch()));
 
 INSTANTIATE_TEST_SUITE_P(Padding, PaddingLeftLumaTest, kLumaPaddingParams,

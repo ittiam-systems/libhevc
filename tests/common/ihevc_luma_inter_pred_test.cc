@@ -33,68 +33,13 @@
 #include "iv.h"
 #include "func_selector.h"
 #include "TestCommon.h"
+#include "ihevc_inter_pred_utils.h"
 // clang-format on
 
-// Test parameters: width, height, src_stride_mul, dst_stride_mul, coeff_idx,
-// arch
-using LumaInterPredTestParam =
-    std::tuple<std::pair<int, int>, int, int, int, IV_ARCH_T>;
+using LumaInterPredTestParam = InterPredTestParam;
+
 template <typename srcType, typename dstType>
-class LumaInterPredTest
-    : public ::testing::TestWithParam<LumaInterPredTestParam> {
-protected:
-  void SetUp() override {
-
-    std::pair<int, int> block_size;
-    std::tie(block_size, src_strd_mul, dst_strd_mul, coeff_idx, arch) =
-        GetParam();
-    std::tie(wd, ht) = block_size;
-    src_strd = wd * src_strd_mul;
-    dst_strd = wd * dst_strd_mul;
-
-    // TODO: Increase allocations for x86/x86_64 to avoid out-of-bounds
-    // reads/writes in SIMD implementations.
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
-    defined(_M_IX86)
-    int pad_dst = 16;
-#else
-    int pad_dst = 0;
-#endif
-
-    dst_buf_ref.resize(dst_strd * ht + pad_dst);
-    dst_buf_tst.resize(dst_strd * ht + pad_dst);
-
-    // Set pv_src to a valid position within src_buf to allow negative indexing
-    pv_src = (srcType*)getSrc8Buf().data() + kTapSize / 2 * src_strd;
-    pv_dst_ref = dst_buf_ref.data();
-    pv_dst_tst = dst_buf_tst.data();
-
-    pi1_coeffs = gai1_ihevc_luma_filter[coeff_idx];
-    tst = get_tst_func_ptr(arch);
-    ref = get_ref_func_ptr();
-  }
-
-  template <typename FuncPtr> void RunTest(FuncPtr func_ptr) {
-    (ref->*func_ptr)(pv_src, pv_dst_ref, src_strd, dst_strd, pi1_coeffs, ht,
-                     wd);
-    (tst->*func_ptr)(pv_src, pv_dst_tst, src_strd, dst_strd, pi1_coeffs, ht,
-                     wd);
-    ASSERT_NO_FATAL_FAILURE(
-        compare_output<dstType>(dst_buf_ref, dst_buf_tst, wd, ht, dst_strd));
-  }
-
-  int wd, ht, src_strd_mul, dst_strd_mul, coeff_idx;
-  int src_strd, dst_strd;
-  std::vector<dstType> dst_buf_ref;
-  std::vector<dstType> dst_buf_tst;
-  srcType *pv_src;
-  dstType *pv_dst_ref;
-  dstType *pv_dst_tst;
-  WORD8 *pi1_coeffs;
-  IV_ARCH_T arch;
-  const ihevc_func_selector_t *tst;
-  const ihevc_func_selector_t *ref;
-};
+using LumaInterPredTest = InterPredTestBase<srcType, dstType, 1>;
 
 class LumaInterPred_8_8_Test : public LumaInterPredTest<UWORD8, UWORD8> {};
 class LumaInterPred_8_16_Test : public LumaInterPredTest<UWORD8, WORD16> {};
@@ -130,7 +75,7 @@ TEST_P(LumaInterPred_16_8_Test, LumaVertTest) {
 }
 
 TEST_P(LumaInterPred_16_16_Test, LumaVertTest) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) ||               \
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
   // TODO: SSE4.2 and SSSE3 are not matching C implementation
   GTEST_SKIP() << "SSE4.2 and SSSE3 are not matching C implementation for "
@@ -147,41 +92,26 @@ auto kLumaInterPredTestParams =
                        ::testing::ValuesIn(getTstArch())  // arch
     );
 
-std::string PrintLumaInterPredTestParam(
-    const testing::TestParamInfo<LumaInterPredTestParam> &info) {
-  int wd, ht, src_strd_mul, dst_strd_mul, coeff_idx;
-  IV_ARCH_T arch;
-  std::pair<int, int> block_size;
-  std::tie(block_size, src_strd_mul, dst_strd_mul, coeff_idx, arch) =
-      info.param;
-  std::tie(wd, ht) = block_size;
-  std::stringstream ss;
-  ss << wd << "x" << ht << "_src_stride_" << src_strd_mul * wd << "_dst_stride_"
-     << dst_strd_mul * wd << "_coeff_" << coeff_idx << "_"
-     << get_arch_str(arch);
-  return ss.str();
-}
-
 INSTANTIATE_TEST_SUITE_P(LumaCopyTest, LumaInterPred_8_8_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaHorzTest, LumaInterPred_8_8_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaVertTest, LumaInterPred_8_8_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaCopyTest, LumaInterPred_8_16_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaHorzTest, LumaInterPred_8_16_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaVertTest, LumaInterPred_8_16_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaVertTest, LumaInterPred_16_8_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
 
 INSTANTIATE_TEST_SUITE_P(LumaVertTest, LumaInterPred_16_16_Test,
-                         kLumaInterPredTestParams, PrintLumaInterPredTestParam);
+                         kLumaInterPredTestParams, PrintInterPredTestParam<1>);
