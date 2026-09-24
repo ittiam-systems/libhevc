@@ -136,6 +136,7 @@ std::unique_ptr<DecHelper> DecHelper::Builder::build() {
   helper->mInputFilePath = mInputFilePath;
   helper->mOutputFilePath = mOutputFilePath;
   helper->mRefMd5Path = mRefMd5Path;
+  helper->mEnableHbd = mEnableHbd;
 
   // Load and parse expected reference MD5s if the path is provided
   if (mRefMd5Path.has_value()) {
@@ -214,6 +215,7 @@ bool DecHelper::initDecoder() {
 
   createIp.u4_enable_frame_info = 0;
   createIp.u4_enable_yuv_formats = 15;  // Supports all chroma formats
+  createIp.u4_enable_hbd = mEnableHbd;
   createIp.u4_keep_threads_active = 1;
 
   IV_API_CALL_STATUS_T ret =

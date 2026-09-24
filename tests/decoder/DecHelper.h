@@ -62,6 +62,10 @@ class DecHelper {
       mRefMd5Path = path;
       return *this;
     }
+    Builder& setEnableHbd(bool enableHbd) {
+      mEnableHbd = enableHbd;
+      return *this;
+    }
 
     // Validates parameters and returns an initialized DecHelper instance
     std::unique_ptr<DecHelper> build();
@@ -73,6 +77,7 @@ class DecHelper {
     std::optional<std::string> mInputFilePath;
     std::optional<std::string> mOutputFilePath;
     std::optional<std::string> mRefMd5Path;
+    bool mEnableHbd = true;
     friend class DecHelper;
   };
 
@@ -116,6 +121,7 @@ class DecHelper {
   std::optional<std::string> mOutputFilePath;
   std::optional<std::string> mRefMd5Path;
   std::vector<std::string> mRefMd5s;
+  bool mEnableHbd = true;
 
   BitsFile mBitsFile;
   RawFile mOutFile;
