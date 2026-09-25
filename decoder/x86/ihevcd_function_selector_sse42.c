@@ -105,11 +105,6 @@ void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_intra_pred_luma_mode_3_to_9_fptr            =  &ihevc_intra_pred_luma_mode_3_to_9_sse42;
     ps_func_selector->ihevc_intra_pred_luma_planar_fptr                 =  &ihevc_intra_pred_luma_planar_ssse3;
     ps_func_selector->ihevc_intra_pred_luma_ver_fptr                    =  &ihevc_intra_pred_luma_ver_sse42;
-    ps_func_selector->ihevc_itrans_4x4_ttype1_fptr                      =  &ihevc_itrans_4x4_ttype1;
-    ps_func_selector->ihevc_itrans_4x4_fptr                             =  &ihevc_itrans_4x4;
-    ps_func_selector->ihevc_itrans_8x8_fptr                             =  &ihevc_itrans_8x8;
-    ps_func_selector->ihevc_itrans_16x16_fptr                           =  &ihevc_itrans_16x16;
-    ps_func_selector->ihevc_itrans_32x32_fptr                           =  &ihevc_itrans_32x32;
     ps_func_selector->ihevc_itrans_res_4x4_ttype1_fptr                  =  &ihevc_itrans_res_4x4_ttype1;
     ps_func_selector->ihevc_itrans_res_4x4_fptr                         =  &ihevc_itrans_res_4x4;
     ps_func_selector->ihevc_itrans_res_8x8_fptr                         =  &ihevc_itrans_res_8x8;
@@ -134,7 +129,6 @@ void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_chroma_recon_8x8_fptr                       =  &ihevc_chroma_recon_8x8;
     ps_func_selector->ihevc_chroma_recon_16x16_fptr                     =  &ihevc_chroma_recon_16x16;
     ps_func_selector->ihevc_chroma_recon_32x32_fptr                     =  &ihevc_chroma_recon_32x32;
-    ps_func_selector->ihevc_memset_16bit_mul_8_fptr                     =  &ihevc_memset_16bit_mul_8;
     ps_func_selector->ihevc_memset_16bit_fptr                           =  &ihevc_memset_16bit;
     ps_func_selector->ihevc_pad_left_luma_fptr                          =  &ihevc_pad_left_luma;
     ps_func_selector->ihevc_pad_left_chroma_fptr                        =  &ihevc_pad_left_chroma;
@@ -144,7 +138,6 @@ void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_weighted_pred_bi_default_fptr               =  &ihevc_weighted_pred_bi_default_sse42;
     ps_func_selector->ihevc_weighted_pred_uni_fptr                      =  &ihevc_weighted_pred_uni_sse42;
     ps_func_selector->ihevc_weighted_pred_chroma_bi_fptr                =  &ihevc_weighted_pred_chroma_bi_sse42;
-    ps_func_selector->ihevc_weighted_pred_chroma_bi_default_fptr        =  &ihevc_weighted_pred_chroma_bi_default_ssse3;
     ps_func_selector->ihevc_weighted_pred_chroma_uni_fptr               =  &ihevc_weighted_pred_chroma_uni_sse42;
     ps_func_selector->ihevc_sao_band_offset_luma_fptr                   =  &ihevc_sao_band_offset_luma_ssse3;
     ps_func_selector->ihevc_sao_band_offset_chroma_fptr                 =  &ihevc_sao_band_offset_chroma_ssse3;

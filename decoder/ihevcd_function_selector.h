@@ -123,11 +123,6 @@ typedef struct
     ihevc_intra_pred_luma_mode_3_to_9_ft *ihevc_intra_pred_luma_mode_3_to_9_fptr;
     ihevc_intra_pred_luma_planar_ft *ihevc_intra_pred_luma_planar_fptr;
     ihevc_intra_pred_luma_ver_ft *ihevc_intra_pred_luma_ver_fptr;
-    ihevc_itrans_4x4_ttype1_ft *ihevc_itrans_4x4_ttype1_fptr;
-    ihevc_itrans_4x4_ft *ihevc_itrans_4x4_fptr;
-    ihevc_itrans_8x8_ft *ihevc_itrans_8x8_fptr;
-    ihevc_itrans_16x16_ft *ihevc_itrans_16x16_fptr;
-    ihevc_itrans_32x32_ft *ihevc_itrans_32x32_fptr;
     ihevc_itrans_res_4x4_ttype1_ft *ihevc_itrans_res_4x4_ttype1_fptr;
     ihevc_itrans_res_4x4_ft *ihevc_itrans_res_4x4_fptr;
     ihevc_itrans_res_8x8_ft *ihevc_itrans_res_8x8_fptr;
@@ -152,7 +147,6 @@ typedef struct
     ihevc_chroma_recon_8x8_ft *ihevc_chroma_recon_8x8_fptr;
     ihevc_chroma_recon_16x16_ft *ihevc_chroma_recon_16x16_fptr;
     ihevc_chroma_recon_32x32_ft *ihevc_chroma_recon_32x32_fptr;
-    ihevc_memset_16bit_mul_8_ft *ihevc_memset_16bit_mul_8_fptr;
     ihevc_memset_16bit_ft *ihevc_memset_16bit_fptr;
     ihevc_pad_left_luma_ft *ihevc_pad_left_luma_fptr;
     ihevc_pad_left_chroma_ft *ihevc_pad_left_chroma_fptr;
@@ -162,7 +156,6 @@ typedef struct
     ihevc_weighted_pred_bi_default_ft *ihevc_weighted_pred_bi_default_fptr;
     ihevc_weighted_pred_uni_ft *ihevc_weighted_pred_uni_fptr;
     ihevc_weighted_pred_chroma_bi_ft *ihevc_weighted_pred_chroma_bi_fptr;
-    ihevc_weighted_pred_chroma_bi_default_ft *ihevc_weighted_pred_chroma_bi_default_fptr;
     ihevc_weighted_pred_chroma_uni_ft *ihevc_weighted_pred_chroma_uni_fptr;
     ihevc_sao_band_offset_luma_ft *ihevc_sao_band_offset_luma_fptr;
     ihevc_sao_band_offset_chroma_ft *ihevc_sao_band_offset_chroma_fptr;
@@ -256,7 +249,6 @@ typedef struct
     ihevc_hbd_weighted_pred_bi_default_ft           *ihevc_hbd_weighted_pred_bi_default_fptr;
     ihevc_hbd_weighted_pred_chroma_uni_ft           *ihevc_hbd_weighted_pred_chroma_uni_fptr;
     ihevc_hbd_weighted_pred_chroma_bi_ft            *ihevc_hbd_weighted_pred_chroma_bi_fptr;
-    ihevc_hbd_weighted_pred_chroma_bi_default_ft    *ihevc_hbd_weighted_pred_chroma_bi_default_fptr;
 
     /* HBD functions for deblocking */
     ihevc_hbd_deblk_luma_vert_ft            *ihevc_hbd_deblk_luma_vert_fptr;
