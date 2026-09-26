@@ -201,6 +201,18 @@ typedef struct {
      * NOTE: If this field is set to 0, YUV 4:2:0 will be enabled by default.
      */
     UWORD32                                 u4_enable_yuv_formats;
+
+    /**
+     * Flag specifying whether the decoder is allowed to support 10-bit decoding.
+     *
+     * Values and corresponding behavior:
+     * 0: Disable 10-bit decoding (only 8-bit decoding is supported)
+     * 1: Enable 10-bit decoding
+     *
+     * NOTE: When this field is set to 0, an error will be returned if
+     * bit_depth_luma_minus8 or bit_depth_chroma_minus8 are non-zero in SPS.
+     */
+    UWORD32                                 u4_enable_hbd;
 }ihevcd_cxa_create_ip_t;
 
 
