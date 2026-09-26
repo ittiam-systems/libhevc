@@ -1035,7 +1035,10 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         }
         else
         {
-            ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_luma, (1 << (ps_codec->i4_bit_depth_luma - 1)), luma_samples);
+            ps_codec->s_func_selector.ihevc_memset_16bit_fptr(
+                (UWORD16 *)ps_cur_pic->pu1_luma,
+                (1 << (ps_codec->i4_bit_depth_luma - 1)),
+                luma_samples);
         }
 
         if(ps_sps->i1_chroma_format_idc != CHROMA_FMT_IDC_MONOCHROME)
@@ -1048,7 +1051,9 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
             }
             else
             {
-                ihevc_memset_16bit((UWORD16 *)ps_cur_pic->pu1_chroma, (1 << (ps_codec->i4_bit_depth_chroma - 1)),
+                ps_codec->s_func_selector.ihevc_memset_16bit_fptr(
+                    (UWORD16 *)ps_cur_pic->pu1_chroma,
+                    (1 << (ps_codec->i4_bit_depth_chroma - 1)),
                     chroma_samples);
             }
         }
