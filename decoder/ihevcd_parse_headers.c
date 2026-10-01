@@ -1714,8 +1714,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_BIT_DEPTH;
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
     }
-    // Limit the support to max bit depth of 10-bit
-    if (value > 2)
+    // Limit the support to 8-bit and 10-bit
+    if ((0 != value) && (2 != value))
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
     if (((1 == i4_profile_idc) && (0 != value)) ||
@@ -1732,8 +1732,8 @@ IHEVCD_ERROR_T ihevcd_parse_sps(codec_t *ps_codec)
         ps_codec->s_parse.i4_error_code = IHEVCD_UNSUPPORTED_BIT_DEPTH;
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
     }
-    // Limit the support to max bit depth of 10-bit
-    if (value > 2)
+    // Limit the support to 8-bit and 10-bit
+    if ((0 != value) && (2 != value))
         return IHEVCD_UNSUPPORTED_BIT_DEPTH;
 
     if (((1 == i4_profile_idc) && (0 != value)) ||
