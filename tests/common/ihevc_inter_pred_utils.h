@@ -37,6 +37,7 @@ extern "C" {
 
 #include "BenchmarkCommon.h"
 #include "TestCommon.h"
+#include "func_selector.h"
 
 enum class InterPredOp {
   kCopy,
