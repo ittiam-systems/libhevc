@@ -382,13 +382,14 @@ bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
       sizeof(ihevcd_cxa_video_decode_op_t);
 
   // Map destination output buffers for reconstruction
+  size_t pixelSize = (mOutputBuf.bitDepth() + 7) / 8;
   decodeIp.s_ivd_video_decode_ip_t.s_out_buffer.u4_num_bufs =
       mOutputBuf.numPlanes();
   for (size_t i = 0; i < mOutputBuf.numPlanes(); ++i) {
     decodeIp.s_ivd_video_decode_ip_t.s_out_buffer.pu1_bufs[i] =
         mOutputBuf.planeData(i);
     decodeIp.s_ivd_video_decode_ip_t.s_out_buffer.u4_min_out_buf_size[i] =
-        mOutputBuf.stride(i) * mOutputBuf.planeHeight(i);
+        mOutputBuf.stride(i) * mOutputBuf.planeHeight(i) * pixelSize;
   }
 
   IV_API_CALL_STATUS_T ret = ihevcd_cxa_api_function(
