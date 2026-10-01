@@ -51,6 +51,7 @@ cc_library_static {
         "ihevc_padding.c",
         "ihevc_quant_tables.c",
         "ihevc_recon.c",
+        "ihevc_resi_trans.c",
         "ihevc_sao.c",
         "ihevc_trans_tables.c",
         "ihevc_weighted_pred.c",

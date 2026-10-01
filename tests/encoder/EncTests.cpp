@@ -66,8 +66,8 @@ TEST_P(EncTestFixture, EncodeVerify) {
   auto [config, cores] = GetParam();
 
   std::string inputPath = getFullPath(config.filename);
-  std::string outBitstreamPath = "temp_output.hevc";
-  std::string reconMd5Path = "temp_recon_md5.txt";
+  std::string outBitstreamPath = ::testing::TempDir() + "temp_output.hevc";
+  std::string reconMd5Path = ::testing::TempDir() + "temp_recon_md5.txt";
 
   // Check if input YUV file exists. If not, generate synthetic YUV file!
   std::ifstream f(inputPath);
