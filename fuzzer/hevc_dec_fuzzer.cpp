@@ -340,9 +340,11 @@ IV_API_CALL_STATUS_T Codec::decodeFrame(const uint8_t *data, size_t size,
   if (!*bytesConsumed) *bytesConsumed = 4;
 
   if (dec_op.u4_pic_wd && dec_op.u4_pic_ht &&
-      (mWidth != dec_op.u4_pic_wd || mHeight != dec_op.u4_pic_ht)) {
+      (mWidth != dec_op.u4_pic_wd || mHeight != dec_op.u4_pic_ht ||
+       (dec_op.u4_bit_depth && mBitDepth != dec_op.u4_bit_depth))) {
     mWidth = std::min(dec_op.u4_pic_wd, (UWORD32)10240);
     mHeight = std::min(dec_op.u4_pic_ht, (UWORD32)10240);
+    if (dec_op.u4_bit_depth) mBitDepth = dec_op.u4_bit_depth;
     allocFrame();
   }
 
