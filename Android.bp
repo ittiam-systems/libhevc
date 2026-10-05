@@ -158,6 +158,14 @@ cc_library_static {
             ],
 
             srcs: [
+                "common/arm/ihevc_hbd_itrans_recon_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_8x8_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_16x16_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_32x32_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_8x8_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_16x16_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_32x32_neon_intr.c",
                 "common/arm/ihevc_intra_pred_filters_neon_intr.c",
                 "common/arm/ihevc_hbd_deblk_neon_intr.c",
                 "common/arm/ihevc_weighted_pred_neon_intr.c",
@@ -227,6 +235,7 @@ cc_library_static {
                 "decoder/arm64/ihevcd_function_selector_av8.c",
                 "decoder/arm64/ihevcd_itrans_recon_dc_chroma.s",
                 "decoder/arm64/ihevcd_itrans_recon_dc_luma.s",
+                "decoder/arm/ihevcd_hbd_itrans_recon_dc_neon_intr.c",
             ],
         },
 
@@ -238,6 +247,14 @@ cc_library_static {
 
             srcs: [
                 "decoder/arm/ihevcd_function_selector.c",
+                "common/arm/ihevc_hbd_itrans_recon_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_8x8_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_16x16_neon_intr.c",
+                "common/arm/ihevc_hbd_itrans_recon_32x32_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_8x8_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_16x16_neon_intr.c",
+                "common/arm/ihevc_hbd_chroma_itrans_recon_32x32_neon_intr.c",
                 "common/arm/ihevc_deblk_chroma_horz.s",
                 "common/arm/ihevc_deblk_chroma_vert.s",
                 "common/arm/ihevc_deblk_luma_horz.s",
@@ -306,6 +323,7 @@ cc_library_static {
                 "decoder/arm/ihevcd_function_selector_a9q.c",
                 "decoder/arm/ihevcd_itrans_recon_dc_chroma.s",
                 "decoder/arm/ihevcd_itrans_recon_dc_luma.s",
+                "decoder/arm/ihevcd_hbd_itrans_recon_dc_neon_intr.c",
             ],
 
             cflags: [
