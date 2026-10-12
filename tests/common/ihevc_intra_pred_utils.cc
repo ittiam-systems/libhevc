@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "ihevc_intra_pred_utils.h"
+#include "func_selector.h"
 
 LumaIntraPredFn GetLumaIntraPredFn(const ihevc_func_selector_t* selector,
                                    int mode) {
@@ -62,44 +63,84 @@ ChromaIntraPredFn GetChromaIntraPredFn(const ihevc_func_selector_t* selector,
   return nullptr;
 }
 
-HbdLumaIntraPredFn GetHbdLumaIntraPredFn(IV_ARCH_T arch, int mode) {
-  if (arch == ARCH_NA) {
-    if (mode == 0) return ihevc_hbd_intra_pred_luma_planar;
-    if (mode == 1) return ihevc_hbd_intra_pred_luma_dc;
-    if (mode == 2) return ihevc_hbd_intra_pred_luma_mode2;
-    if (mode >= 3 && mode <= 9) return ihevc_hbd_intra_pred_luma_mode_3_to_9;
-    if (mode == 10) return (HbdLumaIntraPredFn)ihevc_hbd_intra_pred_luma_horz;
-    if (mode >= 11 && mode <= 17)
-      return ihevc_hbd_intra_pred_luma_mode_11_to_17;
-    if (mode == 18 || mode == 34) return ihevc_hbd_intra_pred_luma_mode_18_34;
-    if (mode >= 19 && mode <= 25)
-      return ihevc_hbd_intra_pred_luma_mode_19_to_25;
-    if (mode == 26) return (HbdLumaIntraPredFn)ihevc_hbd_intra_pred_luma_ver;
-    if (mode >= 27 && mode <= 33)
-      return ihevc_hbd_intra_pred_luma_mode_27_to_33;
-  }
-  // Future SIMD implementations can be added here
+LumaIntraPredRefSubstFn GetLumaIntraPredRefSubstFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_intra_pred_luma_ref_substitution_fptr;
+}
+
+ChromaIntraPredRefSubstFn GetChromaIntraPredRefSubstFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_intra_pred_chroma_ref_substitution_fptr;
+}
+
+IntraPredRefFilterFn GetIntraPredRefFilterFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_intra_pred_ref_filtering_fptr;
+}
+
+ChromaIntraPredRefFilterFn GetChromaIntraPredRefFilterFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_intra_pred_chroma_ref_filtering_fptr;
+}
+
+HbdLumaIntraPredFn GetHbdLumaIntraPredFn(const ihevc_func_selector_t* selector, int mode) {
+  if (!selector) return nullptr;
+  if (mode == 0) return selector->ihevc_hbd_intra_pred_luma_planar_fptr;
+  if (mode == 1) return selector->ihevc_hbd_intra_pred_luma_dc_fptr;
+  if (mode == 2) return selector->ihevc_hbd_intra_pred_luma_mode2_fptr;
+  if (mode >= 3 && mode <= 9) return selector->ihevc_hbd_intra_pred_luma_mode_3_to_9_fptr;
+  if (mode == 10) return (HbdLumaIntraPredFn)selector->ihevc_hbd_intra_pred_luma_horz_fptr;
+  if (mode >= 11 && mode <= 17) return selector->ihevc_hbd_intra_pred_luma_mode_11_to_17_fptr;
+  if (mode == 18 || mode == 34) return selector->ihevc_hbd_intra_pred_luma_mode_18_34_fptr;
+  if (mode >= 19 && mode <= 25) return selector->ihevc_hbd_intra_pred_luma_mode_19_to_25_fptr;
+  if (mode == 26) return (HbdLumaIntraPredFn)selector->ihevc_hbd_intra_pred_luma_ver_fptr;
+  if (mode >= 27 && mode <= 33) return selector->ihevc_hbd_intra_pred_luma_mode_27_to_33_fptr;
   return nullptr;
 }
 
-HbdChromaIntraPredFn GetHbdChromaIntraPredFn(IV_ARCH_T arch, int mode) {
-  if (arch == ARCH_NA) {
-    if (mode == 0) return ihevc_hbd_intra_pred_chroma_planar;
-    if (mode == 1) return ihevc_hbd_intra_pred_chroma_dc;
-    if (mode == 2) return ihevc_hbd_intra_pred_chroma_mode2;
-    if (mode >= 3 && mode <= 9) return ihevc_hbd_intra_pred_chroma_mode_3_to_9;
-    if (mode == 10) return ihevc_hbd_intra_pred_chroma_horz;
-    if (mode >= 11 && mode <= 17)
-      return ihevc_hbd_intra_pred_chroma_mode_11_to_17;
-    if (mode == 18 || mode == 34) return ihevc_hbd_intra_pred_chroma_mode_18_34;
-    if (mode >= 19 && mode <= 25)
-      return ihevc_hbd_intra_pred_chroma_mode_19_to_25;
-    if (mode == 26) return ihevc_hbd_intra_pred_chroma_ver;
-    if (mode >= 27 && mode <= 33)
-      return ihevc_hbd_intra_pred_chroma_mode_27_to_33;
-  }
-  // Future SIMD implementations can be added here
+HbdChromaIntraPredFn GetHbdChromaIntraPredFn(const ihevc_func_selector_t* selector, int mode) {
+  if (!selector) return nullptr;
+  if (mode == 0) return selector->ihevc_hbd_intra_pred_chroma_planar_fptr;
+  if (mode == 1) return selector->ihevc_hbd_intra_pred_chroma_dc_fptr;
+  if (mode == 2) return selector->ihevc_hbd_intra_pred_chroma_mode2_fptr;
+  if (mode >= 3 && mode <= 9) return selector->ihevc_hbd_intra_pred_chroma_mode_3_to_9_fptr;
+  if (mode == 10) return selector->ihevc_hbd_intra_pred_chroma_horz_fptr;
+  if (mode >= 11 && mode <= 17) return selector->ihevc_hbd_intra_pred_chroma_mode_11_to_17_fptr;
+  if (mode == 18 || mode == 34) return selector->ihevc_hbd_intra_pred_chroma_mode_18_34_fptr;
+  if (mode >= 19 && mode <= 25) return selector->ihevc_hbd_intra_pred_chroma_mode_19_to_25_fptr;
+  if (mode == 26) return selector->ihevc_hbd_intra_pred_chroma_ver_fptr;
+  if (mode >= 27 && mode <= 33) return selector->ihevc_hbd_intra_pred_chroma_mode_27_to_33_fptr;
   return nullptr;
+}
+
+HbdLumaIntraPredRefSubstFn GetHbdLumaIntraPredRefSubstFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_hbd_intra_pred_luma_ref_substitution_fptr;
+}
+
+HbdChromaIntraPredRefSubstFn GetHbdChromaIntraPredRefSubstFn(
+    const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_hbd_intra_pred_chroma_ref_substitution_fptr;
+}
+
+HbdIntraPredRefFilterFn GetHbdIntraPredRefFilterFn(const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_hbd_intra_pred_ref_filtering_fptr;
+}
+
+HbdChromaIntraPredRefFilterFn GetHbdChromaIntraPredRefFilterFn(
+    const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_hbd_intra_pred_chroma_ref_filtering_fptr;
+}
+
+HbdLumaIntraPredFn GetHbdLumaIntraPredFn(IV_ARCH_T arch, int mode) {
+  return GetHbdLumaIntraPredFn(get_func_ptr(arch), mode);
+}
+
+HbdChromaIntraPredFn GetHbdChromaIntraPredFn(IV_ARCH_T arch, int mode) {
+  return GetHbdChromaIntraPredFn(get_func_ptr(arch), mode);
 }
 
 const std::vector<IntraPredModeInfo>& GetIntraPredBenchmarkModes() {
