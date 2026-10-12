@@ -2758,6 +2758,7 @@ void ihevc_sao_edge_offset_class2_ssse3(UWORD8 *pu1_src,
                 //separating +ve and and -ve values.
                 cmp_gt0_16x8b = _mm_subs_epu8(src_temp0_16x8b, src_bottom_16x8b);
                 cmp_lt0_16x8b = _mm_subs_epu8(src_bottom_16x8b, src_temp0_16x8b);
+                src_bottom_16x8b = _mm_loadu_si128((__m128i *)(pu1_src_cpy + src_strd));
                 //creating mask 00 for +ve and -ve values and FF for zero.
                 cmp_gt0_16x8b = _mm_cmpeq_epi8(cmp_gt0_16x8b, const0_16x8b);
                 cmp_lt0_16x8b = _mm_cmpeq_epi8(cmp_lt0_16x8b, const0_16x8b);
@@ -3568,6 +3569,7 @@ void ihevc_sao_edge_offset_class2_chroma_ssse3(UWORD8 *pu1_src,
                 //separating +ve and and -ve values.
                 cmp_gt0_16x8b = _mm_subs_epu8(src_temp0_16x8b, src_bottom_16x8b);
                 cmp_lt0_16x8b = _mm_subs_epu8(src_bottom_16x8b, src_temp0_16x8b);
+                src_bottom_16x8b = _mm_loadu_si128((__m128i *)(pu1_src_cpy + src_strd));
                 //creating mask 00 for +ve and -ve values and FF for zero.
                 cmp_gt0_16x8b = _mm_cmpeq_epi8(cmp_gt0_16x8b, const0_16x8b);
                 cmp_lt0_16x8b = _mm_cmpeq_epi8(cmp_lt0_16x8b, const0_16x8b);
