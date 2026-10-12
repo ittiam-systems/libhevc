@@ -26,13 +26,8 @@ libhevc_add_gtest_executable(
 )
 
 libhevc_add_gtest_executable(
-  ihevc_luma_intra_pred_test
-  SOURCES ${HEVC_ROOT}/tests/common/ihevc_luma_intra_pred_test.cc
-)
-
-libhevc_add_gtest_executable(
-  ihevc_chroma_intra_pred_test
-  SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_intra_pred_test.cc
+  ihevc_intra_pred_test
+  SOURCES ${HEVC_ROOT}/tests/common/ihevc_intra_pred_test.cc
 )
 
 libhevc_add_gtest_executable(
