@@ -39,39 +39,14 @@ extern "C" {
 #include "BenchmarkCommon.h"
 #include "TestCommon.h"
 
-using ITransFn = void (*)(WORD16* pi2_src, WORD16* pi2_dst, WORD32 src_strd,
-                          WORD32 dst_strd, WORD32 shift, WORD32 zero_cols);
-
-using ITransResFn = void (*)(WORD16* pi2_src, WORD16* pi2_tmp, WORD16* pi2_dst,
-                             WORD32 src_strd, WORD32 dst_strd, WORD32 zero_cols,
-                             WORD32 zero_rows, UWORD8 bit_depth);
-
-using ITransReconFn = void (*)(WORD16* pi2_src, WORD16* pi2_tmp,
-                               UWORD8* pu1_pred, UWORD8* pu1_dst,
-                               WORD32 src_strd, WORD32 pred_strd,
-                               WORD32 dst_strd, WORD32 zero_cols,
-                               WORD32 zero_rows);
-
-using ChromaITransReconFn = void (*)(WORD16* pi2_src, WORD16* pi2_tmp,
-                                     UWORD8* pu1_pred, UWORD8* pu1_dst,
-                                     WORD32 src_strd, WORD32 pred_strd,
-                                     WORD32 dst_strd, WORD32 zero_cols,
-                                     WORD32 zero_rows);
-
-using HbdITransReconFn = void (*)(WORD16* pi2_src, WORD16* pi2_tmp,
-                                  UWORD16* pu2_pred, UWORD16* pu2_dst,
-                                  WORD32 src_strd, WORD32 pred_strd,
-                                  WORD32 dst_strd, WORD32 zero_cols,
-                                  WORD32 zero_rows, UWORD8 bit_depth);
-
-using ReconFn = void (*)(WORD16* pi2_src, UWORD8* pu1_pred, UWORD8* pu1_dst,
-                         WORD32 src_strd, WORD32 pred_strd, WORD32 dst_strd,
-                         WORD32 zero_cols);
-
-using ChromaReconFn = void (*)(WORD16* pi2_src, UWORD8* pu1_pred,
-                               UWORD8* pu1_dst, WORD32 src_strd,
-                               WORD32 pred_strd, WORD32 dst_strd,
-                               WORD32 zero_cols);
+using ITransFn = ihevc_itrans_4x4_ft*;
+using ITransResFn = ihevc_itrans_res_4x4_ft*;
+using ITransReconFn = ihevc_itrans_recon_4x4_ft*;
+using ChromaITransReconFn = ihevc_chroma_itrans_recon_4x4_ft*;
+using HbdITransReconFn = ihevc_hbd_itrans_recon_4x4_ft*;
+using HbdChromaITransReconFn = ihevc_hbd_chroma_itrans_recon_4x4_ft*;
+using ReconFn = ihevc_recon_4x4_ft*;
+using ChromaReconFn = ihevc_chroma_recon_4x4_ft*;
 
 ITransFn GetITransFn(const ihevc_func_selector_t* selector, int trans_size,
                      int ttype);
@@ -79,13 +54,53 @@ ITransResFn GetITransResFn(const ihevc_func_selector_t* selector,
                            int trans_size, int ttype);
 ITransReconFn GetITransReconFn(const ihevc_func_selector_t* selector,
                                int trans_size, int ttype);
+ITransReconFn GetITransReconFn(IV_ARCH_T arch, int trans_size, int ttype);
 ChromaITransReconFn GetChromaITransReconFn(
     const ihevc_func_selector_t* selector, int trans_size);
+ChromaITransReconFn GetChromaITransReconFn(IV_ARCH_T arch, int trans_size);
+HbdITransReconFn GetHbdITransReconFn(const ihevc_func_selector_t* selector, int trans_size,
+                                     int ttype);
 HbdITransReconFn GetHbdITransReconFn(IV_ARCH_T arch, int trans_size, int ttype);
+HbdChromaITransReconFn GetHbdChromaITransReconFn(const ihevc_func_selector_t* selector,
+                                                 int trans_size);
+HbdChromaITransReconFn GetHbdChromaITransReconFn(IV_ARCH_T arch, int trans_size);
 ReconFn GetReconFn(const ihevc_func_selector_t* selector, int trans_size,
                    int ttype);
 ChromaReconFn GetChromaReconFn(const ihevc_func_selector_t* selector,
                                int trans_size);
+
+// Configuration for ITrans Recon buffers
+struct ITransReconConfig {
+  int trans_size;
+  int nz_rows;     // coefficients lie in the top-left nz_rows x nz_cols region
+  int nz_cols;
+  int bit_depth;
+  bool is_chroma;  // chroma: U and V interleaved, so a row holds 2 samples per pixel
+  int plane;       // chroma only: 0 for U, 1 for V
+  bool sparse;     // scattered coefficients, giving zero masks with holes
+  bool full_range; // coefficients over the whole WORD16 range (saturation paths)
+};
+
+// Buffers structure for ITrans Recon operations.
+template <typename T>
+struct ITransReconBuffers {
+  std::vector<WORD16> src;
+  std::vector<WORD16> tmp;
+  std::vector<T> dst;  // holds pred on input, recon on output
+  WORD32 src_strd;
+  WORD32 pred_strd;
+  WORD32 dst_strd;
+  WORD32 zero_cols;
+  WORD32 zero_rows;
+  int offset;
+
+  T* pred_ptr() { return dst.data() + offset; }
+  T* dst_ptr() { return dst.data() + offset; }
+};
+
+// Creates ITrans Recon buffers.
+template <typename T>
+ITransReconBuffers<T> CreateITransReconBuffers(const ITransReconConfig& cfg);
 
 // Non-zero transform coefficient region dimensions
 struct NonZeroRegion {

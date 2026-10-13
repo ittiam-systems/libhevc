@@ -133,16 +133,6 @@ cc_test {
 }
 
 cc_test {
-    name: "ihevc_chroma_itrans_recon_test",
-    defaults: ["libhevc_tests_defaults"],
-    srcs: ["ihevc_chroma_itrans_recon_test.cc"],
-    static_libs: [
-        "libhevc_tests_common",
-        "libhevccommon",
-    ],
-}
-
-cc_test {
     name: "ihevc_chroma_recon_test",
     defaults: ["libhevc_tests_defaults"],
     srcs: ["ihevc_chroma_recon_test.cc"],

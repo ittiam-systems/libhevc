@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+#include "func_selector.h"
+
 extern "C" {
 #include "ihevc_defs.h"
 #include "ihevc_resi_trans.h"
@@ -124,6 +126,10 @@ ITransReconFn GetITransReconFn(const ihevc_func_selector_t* selector,
   return nullptr;
 }
 
+ITransReconFn GetITransReconFn(IV_ARCH_T arch, int trans_size, int ttype) {
+  return GetITransReconFn(get_func_ptr(arch), trans_size, ttype);
+}
+
 ChromaITransReconFn GetChromaITransReconFn(
     const ihevc_func_selector_t* selector, int trans_size) {
   if (!selector) return nullptr;
@@ -139,21 +145,47 @@ ChromaITransReconFn GetChromaITransReconFn(
   return nullptr;
 }
 
-HbdITransReconFn GetHbdITransReconFn(IV_ARCH_T arch, int trans_size,
+ChromaITransReconFn GetChromaITransReconFn(IV_ARCH_T arch, int trans_size) {
+  return GetChromaITransReconFn(get_func_ptr(arch), trans_size);
+}
+
+HbdITransReconFn GetHbdITransReconFn(const ihevc_func_selector_t* selector, int trans_size,
                                      int ttype) {
-  if (arch == ARCH_NA) {
-    if (trans_size == 4) {
-      return (ttype == 1) ? ihevc_hbd_itrans_recon_4x4_ttype1
-                          : ihevc_hbd_itrans_recon_4x4;
-    } else if (trans_size == 8) {
-      return ihevc_hbd_itrans_recon_8x8;
-    } else if (trans_size == 16) {
-      return ihevc_hbd_itrans_recon_16x16;
-    } else if (trans_size == 32) {
-      return ihevc_hbd_itrans_recon_32x32;
-    }
+  if (!selector) return nullptr;
+  if (trans_size == 4) {
+    return (ttype == 1) ? selector->ihevc_hbd_itrans_recon_4x4_ttype1_fptr
+                        : selector->ihevc_hbd_itrans_recon_4x4_fptr;
+  } else if (trans_size == 8) {
+    return selector->ihevc_hbd_itrans_recon_8x8_fptr;
+  } else if (trans_size == 16) {
+    return selector->ihevc_hbd_itrans_recon_16x16_fptr;
+  } else if (trans_size == 32) {
+    return selector->ihevc_hbd_itrans_recon_32x32_fptr;
   }
   return nullptr;
+}
+
+HbdITransReconFn GetHbdITransReconFn(IV_ARCH_T arch, int trans_size, int ttype) {
+  return GetHbdITransReconFn(get_func_ptr(arch), trans_size, ttype);
+}
+
+HbdChromaITransReconFn GetHbdChromaITransReconFn(const ihevc_func_selector_t* selector,
+                                                 int trans_size) {
+  if (!selector) return nullptr;
+  if (trans_size == 4) {
+    return selector->ihevc_hbd_chroma_itrans_recon_4x4_fptr;
+  } else if (trans_size == 8) {
+    return selector->ihevc_hbd_chroma_itrans_recon_8x8_fptr;
+  } else if (trans_size == 16) {
+    return selector->ihevc_hbd_chroma_itrans_recon_16x16_fptr;
+  } else if (trans_size == 32) {
+    return selector->ihevc_hbd_chroma_itrans_recon_32x32_fptr;
+  }
+  return nullptr;
+}
+
+HbdChromaITransReconFn GetHbdChromaITransReconFn(IV_ARCH_T arch, int trans_size) {
+  return GetHbdChromaITransReconFn(get_func_ptr(arch), trans_size);
 }
 
 ReconFn GetReconFn(const ihevc_func_selector_t* selector, int trans_size,
@@ -247,3 +279,70 @@ const std::vector<ITransTestCase>& GetITransTestCases() {
   };
   return kTestCases;
 }
+
+template <typename T>
+ITransReconBuffers<T> CreateITransReconBuffers(const ITransReconConfig& cfg) {
+  const int trans_size = cfg.trans_size;
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+  // x86 32x32 uses 3 * 32 * 32 of scratch, and stage 2 reads 4 past the end
+  const int x86_tmp_overread = 4;
+  int tmp_size = (trans_size == 32) ? 3 * trans_size * trans_size + x86_tmp_overread
+                                    : trans_size * trans_size;
+#else
+  int tmp_size = trans_size * trans_size;
+#endif
+  // Row padding catches wrong row stepping and writes past the row
+  const int stride_pad = 16;
+  const T max_val = static_cast<T>((1 << cfg.bit_depth) - 1);
+  // Small coefficients keep most outputs unclipped; full range exercises saturation
+  const int coeff_min = cfg.full_range ? -32768 : -512;
+  const int coeff_max = cfg.full_range ? 32767 : 512;
+
+  ITransReconBuffers<T> b;
+  b.src_strd = trans_size;
+  b.pred_strd = (cfg.is_chroma ? 2 : 1) * trans_size + stride_pad;
+  b.dst_strd = b.pred_strd;
+  b.offset = cfg.plane;
+
+  // Guard row below the block catches writes and covers SIMD over-reads
+  b.src.resize(trans_size * trans_size);
+  b.tmp.resize(tmp_size);
+  b.dst.resize(b.dst_strd * (trans_size + 1));
+
+  std::mt19937 rng(0);
+  std::uniform_int_distribution<int> coeff(coeff_min, coeff_max);
+  std::uniform_int_distribution<int> keep(0, 3);
+  for (int r = 0; r < cfg.nz_rows; ++r) {
+    for (int c = 0; c < cfg.nz_cols; ++c) {
+      // Sparse: keep 1 in 4, always the corner so the region size stays the same
+      bool corner = (r == cfg.nz_rows - 1) && (c == cfg.nz_cols - 1);
+      if (cfg.sparse && !corner && keep(rng) != 0) continue;
+      WORD16 val = static_cast<WORD16>(coeff(rng));
+      // A zero corner would shrink the region, so redraw until it is non-zero
+      while (corner && val == 0) val = static_cast<WORD16>(coeff(rng));
+      b.src[r * b.src_strd + c] = val;
+    }
+  }
+
+  // Bits above trans_size stay set
+  b.zero_cols = static_cast<WORD32>(0xFFFFFFFFu);
+  b.zero_rows = static_cast<WORD32>(0xFFFFFFFFu);
+  for (int r = 0; r < trans_size; ++r) {
+    for (int c = 0; c < trans_size; ++c) {
+      if (b.src[r * b.src_strd + c] != 0) {
+        b.zero_cols &= ~static_cast<WORD32>(1u << c);
+        b.zero_rows &= ~static_cast<WORD32>(1u << r);
+      }
+    }
+  }
+
+  // Random pred (in dst) and stale tmp, so stray writes and reads are caught
+  FillRandom(b.dst, static_cast<T>(0), max_val, 42);
+  FillRandom(b.tmp, static_cast<WORD16>(-32768), static_cast<WORD16>(32767), 1337);
+  return b;
+}
+
+// Explicit instantiations for 8-bit and HBD
+template ITransReconBuffers<UWORD8> CreateITransReconBuffers<UWORD8>(const ITransReconConfig& cfg);
+template ITransReconBuffers<UWORD16> CreateITransReconBuffers<UWORD16>(
+    const ITransReconConfig& cfg);

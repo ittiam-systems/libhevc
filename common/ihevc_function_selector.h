@@ -171,6 +171,15 @@ typedef struct
     ihevc_hbd_deblk_chroma_horz_ft *ihevc_hbd_deblk_chroma_horz_fptr;
     ihevc_hbd_deblk_chroma_vert_ft *ihevc_hbd_deblk_422chroma_vert_fptr;
     ihevc_hbd_deblk_chroma_horz_ft *ihevc_hbd_deblk_422chroma_horz_fptr;
+    ihevc_hbd_itrans_recon_4x4_ttype1_ft *ihevc_hbd_itrans_recon_4x4_ttype1_fptr;
+    ihevc_hbd_itrans_recon_4x4_ft *ihevc_hbd_itrans_recon_4x4_fptr;
+    ihevc_hbd_itrans_recon_8x8_ft *ihevc_hbd_itrans_recon_8x8_fptr;
+    ihevc_hbd_itrans_recon_16x16_ft *ihevc_hbd_itrans_recon_16x16_fptr;
+    ihevc_hbd_itrans_recon_32x32_ft *ihevc_hbd_itrans_recon_32x32_fptr;
+    ihevc_hbd_chroma_itrans_recon_4x4_ft *ihevc_hbd_chroma_itrans_recon_4x4_fptr;
+    ihevc_hbd_chroma_itrans_recon_8x8_ft *ihevc_hbd_chroma_itrans_recon_8x8_fptr;
+    ihevc_hbd_chroma_itrans_recon_16x16_ft *ihevc_hbd_chroma_itrans_recon_16x16_fptr;
+    ihevc_hbd_chroma_itrans_recon_32x32_ft *ihevc_hbd_chroma_itrans_recon_32x32_fptr;
 }ihevc_func_selector_t;
 
 
