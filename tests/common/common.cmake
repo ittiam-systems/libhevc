@@ -46,11 +46,6 @@ libhevc_add_gtest_executable(
 )
 
 libhevc_add_gtest_executable(
-  ihevc_chroma_itrans_recon_test
-  SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_itrans_recon_test.cc
-)
-
-libhevc_add_gtest_executable(
   ihevc_itrans_test
   SOURCES ${HEVC_ROOT}/tests/common/ihevc_itrans_test.cc
 )

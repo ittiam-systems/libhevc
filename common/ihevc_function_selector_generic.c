@@ -18,7 +18,7 @@
 /**
 *******************************************************************************
 * @file
-*  ihevc_function_selector.c
+*  ihevc_function_selector_generic.c
 *
 * @brief
 *  Contains functions to initialize function pointers used in hevc
@@ -153,4 +153,13 @@ void ihevc_init_function_ptr_generic(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_deblk_chroma_horz_fptr                  =  &ihevc_hbd_deblk_chroma_horz;
     ps_func_selector->ihevc_hbd_deblk_422chroma_vert_fptr               =  &ihevc_hbd_deblk_422chroma_vert;
     ps_func_selector->ihevc_hbd_deblk_422chroma_horz_fptr               =  &ihevc_hbd_deblk_422chroma_horz;
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_ttype1_fptr            =  &ihevc_hbd_itrans_recon_4x4_ttype1;
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_fptr                   =  &ihevc_hbd_itrans_recon_4x4;
+    ps_func_selector->ihevc_hbd_itrans_recon_8x8_fptr                   =  &ihevc_hbd_itrans_recon_8x8;
+    ps_func_selector->ihevc_hbd_itrans_recon_16x16_fptr                 =  &ihevc_hbd_itrans_recon_16x16;
+    ps_func_selector->ihevc_hbd_itrans_recon_32x32_fptr                 =  &ihevc_hbd_itrans_recon_32x32;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_4x4_fptr            =  &ihevc_hbd_chroma_itrans_recon_4x4;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_8x8_fptr            =  &ihevc_hbd_chroma_itrans_recon_8x8;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_16x16_fptr          =  &ihevc_hbd_chroma_itrans_recon_16x16;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_32x32_fptr          =  &ihevc_hbd_chroma_itrans_recon_32x32;
 }

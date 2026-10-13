@@ -114,6 +114,7 @@ typedef void ihevc_hbd_chroma_itrans_recon_32x32_ft(WORD16 *pi2_src,
                                                     WORD32 zero_rows,
                                                     UWORD8 bit_depth);
 
+/* C function declarations */
 ihevc_chroma_itrans_recon_4x4_ft ihevc_chroma_itrans_recon_4x4;
 ihevc_hbd_chroma_itrans_recon_4x4_ft ihevc_hbd_chroma_itrans_recon_4x4;
 ihevc_chroma_itrans_recon_8x8_ft ihevc_chroma_itrans_recon_8x8;
@@ -128,6 +129,13 @@ ihevc_chroma_itrans_recon_4x4_ft ihevc_chroma_itrans_recon_4x4_a9q;
 ihevc_chroma_itrans_recon_8x8_ft ihevc_chroma_itrans_recon_8x8_a9q;
 ihevc_chroma_itrans_recon_16x16_ft ihevc_chroma_itrans_recon_16x16_a9q;
 
+/* NEONINTR function declarations */
+ihevc_hbd_chroma_itrans_recon_4x4_ft ihevc_hbd_chroma_itrans_recon_4x4_neonintr;
+ihevc_hbd_chroma_itrans_recon_8x8_ft ihevc_hbd_chroma_itrans_recon_8x8_neonintr;
+ihevc_hbd_chroma_itrans_recon_16x16_ft ihevc_hbd_chroma_itrans_recon_16x16_neonintr;
+ihevc_hbd_chroma_itrans_recon_32x32_ft ihevc_hbd_chroma_itrans_recon_32x32_neonintr;
+
+/* SSE42 function declarations */
 ihevc_hbd_chroma_itrans_recon_4x4_ft ihevc_hbd_chroma_itrans_recon_4x4_sse42;
 ihevc_hbd_chroma_itrans_recon_8x8_ft ihevc_hbd_chroma_itrans_recon_8x8_sse42;
 ihevc_hbd_chroma_itrans_recon_16x16_ft ihevc_hbd_chroma_itrans_recon_16x16_sse42;
