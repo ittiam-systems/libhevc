@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <random>
 #include <string>
@@ -98,15 +99,15 @@ SaoLumaBuffers<T> CreateSaoLumaBuffers(int wd, int ht, int bit_depth = 8) {
   b.total_ht = ht + 32;
   b.src_size = b.stride * b.total_ht;
   b.src_offset = 16 * b.stride + 16;
-
+  // Auxiliary buffers are sized to at least 16 to avoid SIMD over-reads.
   b.src.resize(b.src_size);
-  b.src_left.resize(ht + 8 + 1);
-  b.src_top.resize(wd + 8);
-  b.src_top_left.resize(8);
-  b.src_top_right.resize(8);
-  b.src_bot_left.resize(8);
-  b.avail.resize(8);
-  b.sao_offset.resize(8, 0);
+  b.src_left.resize(ht + 16);
+  b.src_top.resize(wd + 16);
+  b.src_top_left.resize(16);
+  b.src_top_right.resize(16);
+  b.src_bot_left.resize(16);
+  b.avail.resize(16);
+  b.sao_offset.resize(16, 0);
 
   const T max_val = static_cast<T>((1 << bit_depth) - 1);
   FillRandom(b.src, static_cast<T>(0), max_val, 42);
@@ -117,15 +118,16 @@ SaoLumaBuffers<T> CreateSaoLumaBuffers(int wd, int ht, int bit_depth = 8) {
   FillRandom(b.src_bot_left, static_cast<T>(0), max_val, 47);
 
   std::mt19937 rng(48);
-  std::uniform_int_distribution<uint8_t> dist_avail(0, 1);
-  std::uniform_int_distribution<int8_t> dist_offset(-7, 7);
+  std::uniform_int_distribution<int> dist_avail(0, 1);
+  const int max_offset = (1 << (std::min(bit_depth, 10) - 5)) - 1;
+  std::uniform_int_distribution<int> dist_offset(-max_offset, max_offset);
   for (size_t i = 0; i < 8; ++i) {
     b.avail[i] = dist_avail(rng) ? 255 : 0;
   }
   b.src_left[0] = b.src_top_left[0];
 
   for (int i = 1; i < 5; ++i) {
-    b.sao_offset[i] = dist_offset(rng);
+    b.sao_offset[i] = static_cast<WORD8>(dist_offset(rng));
   }
   return b;
 }
@@ -138,16 +140,16 @@ SaoChromaBuffers<T> CreateSaoChromaBuffers(int wd, int ht, int bit_depth = 8) {
   b.total_ht = ht + 32;
   b.src_size = b.stride * b.total_ht;
   b.src_offset = 16 * b.stride + 16;
-
+  // Auxiliary buffers are sized to at least 16 to avoid SIMD over-reads.
   b.src.resize(b.src_size);
-  b.src_left.resize(2 * ht + 8 + 2);
-  b.src_top.resize(2 * wd + 8);
-  b.src_top_left.resize(8);
-  b.src_top_right.resize(8);
-  b.src_bot_left.resize(8);
-  b.avail.resize(8);
-  b.sao_offset_u.resize(8, 0);
-  b.sao_offset_v.resize(8, 0);
+  b.src_left.resize(2 * ht + 16);
+  b.src_top.resize(2 * wd + 16);
+  b.src_top_left.resize(16);
+  b.src_top_right.resize(16);
+  b.src_bot_left.resize(16);
+  b.avail.resize(16);
+  b.sao_offset_u.resize(16, 0);
+  b.sao_offset_v.resize(16, 0);
 
   const T max_val = static_cast<T>((1 << bit_depth) - 1);
   FillRandom(b.src, static_cast<T>(0), max_val, 42);
@@ -158,8 +160,9 @@ SaoChromaBuffers<T> CreateSaoChromaBuffers(int wd, int ht, int bit_depth = 8) {
   FillRandom(b.src_bot_left, static_cast<T>(0), max_val, 47);
 
   std::mt19937 rng(48);
-  std::uniform_int_distribution<uint8_t> dist_avail(0, 1);
-  std::uniform_int_distribution<int8_t> dist_offset(-7, 7);
+  std::uniform_int_distribution<int> dist_avail(0, 1);
+  const int max_offset = (1 << (std::min(bit_depth, 10) - 5)) - 1;
+  std::uniform_int_distribution<int> dist_offset(-max_offset, max_offset);
   for (size_t i = 0; i < 8; ++i) {
     b.avail[i] = dist_avail(rng) ? 255 : 0;
   }
@@ -167,36 +170,44 @@ SaoChromaBuffers<T> CreateSaoChromaBuffers(int wd, int ht, int bit_depth = 8) {
   b.src_left[1] = b.src_top_left[1];
 
   for (int i = 1; i < 5; ++i) {
-    b.sao_offset_u[i] = dist_offset(rng);
-    b.sao_offset_v[i] = dist_offset(rng);
+    b.sao_offset_u[i] = static_cast<WORD8>(dist_offset(rng));
+    b.sao_offset_v[i] = static_cast<WORD8>(dist_offset(rng));
   }
   return b;
 }
 
 // 8-bit SAO function getters
-ihevc_sao_band_offset_luma_ft* GetSaoBandOffsetLumaFn(
-    const ihevc_func_selector_t* selector);
+ihevc_sao_band_offset_luma_ft* GetSaoBandOffsetLumaFn(const ihevc_func_selector_t* selector);
 
-ihevc_sao_band_offset_chroma_ft* GetSaoBandOffsetChromaFn(
-    const ihevc_func_selector_t* selector);
+ihevc_sao_band_offset_chroma_ft* GetSaoBandOffsetChromaFn(const ihevc_func_selector_t* selector);
 
-ihevc_sao_edge_offset_class0_ft* GetSaoEdgeOffsetLumaFn(
-    const ihevc_func_selector_t* selector, int edge_class);
+ihevc_sao_edge_offset_class0_ft* GetSaoEdgeOffsetLumaFn(const ihevc_func_selector_t* selector,
+                                                        int edge_class);
 
 ihevc_sao_edge_offset_class0_chroma_ft* GetSaoEdgeOffsetChromaFn(
     const ihevc_func_selector_t* selector, int edge_class);
 
 // HBD SAO function getters
-ihevc_hbd_sao_band_offset_luma_ft* GetHbdSaoBandOffsetLumaFn(IV_ARCH_T arch);
+ihevc_hbd_sao_band_offset_luma_ft* GetHbdSaoBandOffsetLumaFn(
+    const ihevc_func_selector_t* selector);
 
 ihevc_hbd_sao_band_offset_chroma_ft* GetHbdSaoBandOffsetChromaFn(
-    IV_ARCH_T arch);
+    const ihevc_func_selector_t* selector);
 
-ihevc_hbd_sao_edge_offset_class0_ft* GetHbdSaoEdgeOffsetLumaFn(IV_ARCH_T arch,
-                                                               int edge_class);
+ihevc_hbd_sao_edge_offset_class0_ft* GetHbdSaoEdgeOffsetLumaFn(
+    const ihevc_func_selector_t* selector, int edge_class);
 
 ihevc_hbd_sao_edge_offset_class0_chroma_ft* GetHbdSaoEdgeOffsetChromaFn(
-    IV_ARCH_T arch, int edge_class);
+    const ihevc_func_selector_t* selector, int edge_class);
+
+ihevc_hbd_sao_band_offset_luma_ft* GetHbdSaoBandOffsetLumaFn(IV_ARCH_T arch);
+
+ihevc_hbd_sao_band_offset_chroma_ft* GetHbdSaoBandOffsetChromaFn(IV_ARCH_T arch);
+
+ihevc_hbd_sao_edge_offset_class0_ft* GetHbdSaoEdgeOffsetLumaFn(IV_ARCH_T arch, int edge_class);
+
+ihevc_hbd_sao_edge_offset_class0_chroma_ft* GetHbdSaoEdgeOffsetChromaFn(IV_ARCH_T arch,
+                                                                        int edge_class);
 
 // Benchmark representative block sizes
 inline const std::vector<std::pair<int, int>>& GetSaoLumaBenchmarkSizes() {

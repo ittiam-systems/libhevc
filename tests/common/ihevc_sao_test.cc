@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <set>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -34,20 +35,34 @@
 
 namespace {
 
+template <typename Buffers>
+void VerifySaoBuffers(const Buffers& ref, const Buffers& tst) {
+  ASSERT_EQ(ref.src, tst.src);
+  ASSERT_EQ(ref.src_left, tst.src_left);
+  ASSERT_EQ(ref.src_top, tst.src_top);
+  ASSERT_EQ(ref.src_top_left, tst.src_top_left);
+}
+
+// Bit i of mask sets avail[i]: left, right, top, bottom, top-left, top-right,
+// bottom-left, bottom-right.
+void SetAvail(std::vector<UWORD8>& avail, int mask) {
+  for (int i = 0; i < 8; ++i) avail[i] = ((mask >> i) & 1) ? 255 : 0;
+}
+
 // ---------------------------- Test Param -----------------------------------
 
-// Param: block size, sao_band_pos/edge_class (value), arch
-using SaoTestParam = std::tuple<std::pair<int, int>, int, IV_ARCH_T>;
+// Param: block size, band position (band tests only), bit_depth, arch
+using SaoTestParam = std::tuple<std::pair<int, int>, int, int, IV_ARCH_T>;
 
 std::string PrintSaoTestParam(
     const testing::TestParamInfo<SaoTestParam>& info) {
-  int wd, ht, val;
+  int wd, ht, val, bit_depth;
   IV_ARCH_T arch;
   std::pair<int, int> block_size;
-  std::tie(block_size, val, arch) = info.param;
+  std::tie(block_size, val, bit_depth, arch) = info.param;
   std::tie(wd, ht) = block_size;
-  return std::to_string(wd) + "x" + std::to_string(ht) + "_val_" +
-         std::to_string(val) + "_" + get_arch_str(arch);
+  return std::to_string(wd) + "x" + std::to_string(ht) + "_val_" + std::to_string(val) + "_bd_" +
+         std::to_string(bit_depth) + "_" + get_arch_str(arch);
 }
 
 // ---------------------------- Luma Base Class ------------------------------
@@ -56,53 +71,100 @@ class SaoLumaTest : public ::testing::TestWithParam<SaoTestParam> {
  protected:
   void SetUp() override {
     std::pair<int, int> block_size;
-    std::tie(block_size, offset_val, arch) = GetParam();
+    std::tie(block_size, offset_val, bit_depth, arch) = GetParam();
     std::tie(wd, ht) = block_size;
 
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
-  void InitializeBuffers() {
-    ref_buf = CreateSaoLumaBuffers<UWORD8>(wd, ht);
-    tst_buf = ref_buf;
+  // ------------------------ Overloads for Band Offset ------------------------
+
+  void InvokeBandOffset(ihevc_sao_band_offset_luma_ft* fn, SaoLumaBuffers<UWORD8>& buf) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data(), buf.src_top.data(),
+       buf.src_top_left.data(), offset_val, buf.sao_offset.data(), wd, ht);
   }
 
-  void VerifyBuffers() {
-    compare_output(ref_buf.src.data() + ref_buf.src_offset,
-                   tst_buf.src.data() + tst_buf.src_offset, wd, ht,
-                   ref_buf.stride);
-    ASSERT_EQ(ref_buf.src_left, tst_buf.src_left);
-    ASSERT_EQ(ref_buf.src_top, tst_buf.src_top);
-    ASSERT_EQ(ref_buf.src_top_left, tst_buf.src_top_left);
+  void InvokeBandOffset(ihevc_hbd_sao_band_offset_luma_ft* fn, SaoLumaBuffers<UWORD16>& buf) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data(), buf.src_top.data(),
+       buf.src_top_left.data(), offset_val, buf.sao_offset.data(), wd, ht, bit_depth);
+  }
+
+  // Unified runner for Luma Band Offset
+  template <typename PixelType, typename FuncPtr>
+  void RunBandOffsetImpl(FuncPtr ref_fn, FuncPtr tst_fn) {
+    if (tst_fn == nullptr || tst_fn == ref_fn) {
+      GTEST_SKIP() << "Architecture does not implement this function";
+    }
+
+    SaoLumaBuffers<PixelType> ref_buf = CreateSaoLumaBuffers<PixelType>(wd, ht, bit_depth);
+    SaoLumaBuffers<PixelType> tst_buf = ref_buf;
+
+    InvokeBandOffset(ref_fn, ref_buf);
+    InvokeBandOffset(tst_fn, tst_buf);
+
+    ASSERT_NO_FATAL_FAILURE(VerifySaoBuffers(ref_buf, tst_buf));
+  }
+
+  // ------------------------ Overloads for Edge Offset --------------------------
+
+  void InvokeEdgeOffset(ihevc_sao_edge_offset_class0_ft* fn, SaoLumaBuffers<UWORD8>& buf,
+                        int left_offset) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data() + left_offset,
+       buf.src_top.data(), buf.src_top_left.data(), buf.src_top_right.data(),
+       buf.src_bot_left.data(), buf.avail.data(), buf.sao_offset.data(), wd, ht);
+  }
+
+  void InvokeEdgeOffset(ihevc_hbd_sao_edge_offset_class0_ft* fn, SaoLumaBuffers<UWORD16>& buf,
+                        int left_offset) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data() + left_offset,
+       buf.src_top.data(), buf.src_top_left.data(), buf.src_top_right.data(),
+       buf.src_bot_left.data(), buf.avail.data(), buf.sao_offset.data(), wd, ht, bit_depth);
+  }
+
+  // Unified runner for Luma Edge Offset
+  template <typename PixelType, typename FuncPtr>
+  void RunEdgeOffsetImpl(FuncPtr ref_fn, FuncPtr tst_fn, int edge_class) {
+    if (tst_fn == nullptr || tst_fn == ref_fn) {
+      GTEST_SKIP() << "Architecture does not implement this function";
+    }
+
+    int left_offset = (edge_class == 2) ? 1 : 0;
+    SaoLumaBuffers<PixelType> buf = CreateSaoLumaBuffers<PixelType>(wd, ht, bit_depth);
+
+    for (int mask = 0; mask < 256; ++mask) {
+      SCOPED_TRACE("avail mask " + std::to_string(mask));
+      SetAvail(buf.avail, mask);
+      SaoLumaBuffers<PixelType> ref_buf = buf;
+      SaoLumaBuffers<PixelType> tst_buf = buf;
+
+      InvokeEdgeOffset(ref_fn, ref_buf, left_offset);
+      InvokeEdgeOffset(tst_fn, tst_buf, left_offset);
+
+      ASSERT_NO_FATAL_FAILURE(VerifySaoBuffers(ref_buf, tst_buf));
+    }
+  }
+
+  void RunBandOffset() {
+    if (bit_depth == 8) {
+      RunBandOffsetImpl<UWORD8>(GetSaoBandOffsetLumaFn(ref), GetSaoBandOffsetLumaFn(tst));
+    } else {
+      RunBandOffsetImpl<UWORD16>(GetHbdSaoBandOffsetLumaFn(ref), GetHbdSaoBandOffsetLumaFn(tst));
+    }
   }
 
   void RunEdgeOffset(int edge_class) {
-    InitializeBuffers();
-    int left_offset = (edge_class == 2) ? 1 : 0;
-
-    auto* ref_fn = GetSaoEdgeOffsetLumaFn(ref, edge_class);
-    auto* tst_fn = GetSaoEdgeOffsetLumaFn(tst, edge_class);
-
-    ref_fn(ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
-           ref_buf.src_left.data() + left_offset, ref_buf.src_top.data(),
-           ref_buf.src_top_left.data(), ref_buf.src_top_right.data(),
-           ref_buf.src_bot_left.data(), ref_buf.avail.data(),
-           ref_buf.sao_offset.data(), wd, ht);
-
-    tst_fn(tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
-           tst_buf.src_left.data() + left_offset, tst_buf.src_top.data(),
-           tst_buf.src_top_left.data(), tst_buf.src_top_right.data(),
-           tst_buf.src_bot_left.data(), tst_buf.avail.data(),
-           tst_buf.sao_offset.data(), wd, ht);
-
-    VerifyBuffers();
+    if (bit_depth == 8) {
+      RunEdgeOffsetImpl<UWORD8>(GetSaoEdgeOffsetLumaFn(ref, edge_class),
+                                GetSaoEdgeOffsetLumaFn(tst, edge_class), edge_class);
+    } else {
+      RunEdgeOffsetImpl<UWORD16>(GetHbdSaoEdgeOffsetLumaFn(ref, edge_class),
+                                 GetHbdSaoEdgeOffsetLumaFn(tst, edge_class), edge_class);
+    }
   }
 
-  int wd, ht, offset_val;
+  int wd, ht, offset_val, bit_depth;
   IV_ARCH_T arch;
-  SaoLumaBuffers<UWORD8> ref_buf;
-  SaoLumaBuffers<UWORD8> tst_buf;
   const ihevc_func_selector_t* ref;
   const ihevc_func_selector_t* tst;
 };
@@ -113,56 +175,110 @@ class SaoChromaTest : public ::testing::TestWithParam<SaoTestParam> {
  protected:
   void SetUp() override {
     std::pair<int, int> block_size;
-    std::tie(block_size, offset_val, arch) = GetParam();
+    std::tie(block_size, offset_val, bit_depth, arch) = GetParam();
     std::tie(wd, ht) =
-        block_size;  // wd is chroma component size, 2 * wd is bytes
+        block_size;  // wd is chroma component size, 2 * wd is bytes/samples
 
     ref = get_ref_func_ptr();
     tst = get_tst_func_ptr(arch);
   }
 
-  void InitializeBuffers() {
-    ref_buf = CreateSaoChromaBuffers<UWORD8>(wd, ht);
-    tst_buf = ref_buf;
+  // ------------------------ Overloads for Band Offset --------------------------
+
+  void InvokeBandOffset(ihevc_sao_band_offset_chroma_ft* fn, SaoChromaBuffers<UWORD8>& buf,
+                        int offset_val_u, int offset_val_v) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data(), buf.src_top.data(),
+       buf.src_top_left.data(), offset_val_u, offset_val_v, buf.sao_offset_u.data(),
+       buf.sao_offset_v.data(), 2 * wd, ht);
   }
 
-  void VerifyBuffers() {
-    compare_output(ref_buf.src.data() + ref_buf.src_offset,
-                   tst_buf.src.data() + tst_buf.src_offset, 2 * wd, ht,
-                   ref_buf.stride);
-    ASSERT_EQ(ref_buf.src_left, tst_buf.src_left);
-    ASSERT_EQ(ref_buf.src_top, tst_buf.src_top);
-    ASSERT_EQ(ref_buf.src_top_left, tst_buf.src_top_left);
+  void InvokeBandOffset(ihevc_hbd_sao_band_offset_chroma_ft* fn, SaoChromaBuffers<UWORD16>& buf,
+                        int offset_val_u, int offset_val_v) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data(), buf.src_top.data(),
+       buf.src_top_left.data(), offset_val_u, offset_val_v, buf.sao_offset_u.data(),
+       buf.sao_offset_v.data(), 2 * wd, ht, bit_depth);
+  }
+
+  // Unified runner for Chroma Band Offset
+  template <typename PixelType, typename FuncPtr>
+  void RunBandOffsetImpl(FuncPtr ref_fn, FuncPtr tst_fn) {
+    if (tst_fn == nullptr || tst_fn == ref_fn) {
+      GTEST_SKIP() << "Architecture does not implement this function";
+    }
+
+    int offset_val_u = offset_val;
+    int offset_val_v = (offset_val + 4) % 32;
+
+    SaoChromaBuffers<PixelType> ref_buf = CreateSaoChromaBuffers<PixelType>(wd, ht, bit_depth);
+    SaoChromaBuffers<PixelType> tst_buf = ref_buf;
+
+    InvokeBandOffset(ref_fn, ref_buf, offset_val_u, offset_val_v);
+    InvokeBandOffset(tst_fn, tst_buf, offset_val_u, offset_val_v);
+
+    ASSERT_NO_FATAL_FAILURE(VerifySaoBuffers(ref_buf, tst_buf));
+  }
+
+  // ------------------------ Overloads for Edge Offset -----------------------------
+
+  void InvokeEdgeOffset(ihevc_sao_edge_offset_class0_chroma_ft* fn,
+                        SaoChromaBuffers<UWORD8>& buf, int left_offset) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data() + left_offset,
+       buf.src_top.data(), buf.src_top_left.data(), buf.src_top_right.data(),
+       buf.src_bot_left.data(), buf.avail.data(), buf.sao_offset_u.data(), buf.sao_offset_v.data(),
+       2 * wd, ht);
+  }
+
+  void InvokeEdgeOffset(ihevc_hbd_sao_edge_offset_class0_chroma_ft* fn,
+                        SaoChromaBuffers<UWORD16>& buf, int left_offset) {
+    fn(buf.src.data() + buf.src_offset, buf.stride, buf.src_left.data() + left_offset,
+       buf.src_top.data(), buf.src_top_left.data(), buf.src_top_right.data(),
+       buf.src_bot_left.data(), buf.avail.data(), buf.sao_offset_u.data(), buf.sao_offset_v.data(),
+       2 * wd, ht, bit_depth);
+  }
+
+  // Unified runner for Chroma Edge Offset
+  template <typename PixelType, typename FuncPtr>
+  void RunEdgeOffsetImpl(FuncPtr ref_fn, FuncPtr tst_fn, int edge_class) {
+    if (tst_fn == nullptr || tst_fn == ref_fn) {
+      GTEST_SKIP() << "Architecture does not implement this function";
+    }
+
+    int left_offset = (edge_class == 2) ? 2 : 0;
+    SaoChromaBuffers<PixelType> buf = CreateSaoChromaBuffers<PixelType>(wd, ht, bit_depth);
+
+    for (int mask = 0; mask < 256; ++mask) {
+      SCOPED_TRACE("avail mask " + std::to_string(mask));
+      SetAvail(buf.avail, mask);
+      SaoChromaBuffers<PixelType> ref_buf = buf;
+      SaoChromaBuffers<PixelType> tst_buf = buf;
+
+      InvokeEdgeOffset(ref_fn, ref_buf, left_offset);
+      InvokeEdgeOffset(tst_fn, tst_buf, left_offset);
+
+      ASSERT_NO_FATAL_FAILURE(VerifySaoBuffers(ref_buf, tst_buf));
+    }
+  }
+
+  void RunBandOffset() {
+    if (bit_depth == 8) {
+      RunBandOffsetImpl<UWORD8>(GetSaoBandOffsetChromaFn(ref), GetSaoBandOffsetChromaFn(tst));
+    } else {
+      RunBandOffsetImpl<UWORD16>(GetHbdSaoBandOffsetChromaFn(ref), GetHbdSaoBandOffsetChromaFn(tst));
+    }
   }
 
   void RunEdgeOffset(int edge_class) {
-    InitializeBuffers();
-    int left_offset = (edge_class == 2) ? 2 : 0;
-
-    auto* ref_fn = GetSaoEdgeOffsetChromaFn(ref, edge_class);
-    auto* tst_fn = GetSaoEdgeOffsetChromaFn(tst, edge_class);
-
-    ref_fn(ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
-           ref_buf.src_left.data() + left_offset, ref_buf.src_top.data(),
-           ref_buf.src_top_left.data(), ref_buf.src_top_right.data(),
-           ref_buf.src_bot_left.data(), ref_buf.avail.data(),
-           ref_buf.sao_offset_u.data(), ref_buf.sao_offset_v.data(), 2 * wd,
-           ht);
-
-    tst_fn(tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
-           tst_buf.src_left.data() + left_offset, tst_buf.src_top.data(),
-           tst_buf.src_top_left.data(), tst_buf.src_top_right.data(),
-           tst_buf.src_bot_left.data(), tst_buf.avail.data(),
-           tst_buf.sao_offset_u.data(), tst_buf.sao_offset_v.data(), 2 * wd,
-           ht);
-
-    VerifyBuffers();
+    if (bit_depth == 8) {
+      RunEdgeOffsetImpl<UWORD8>(GetSaoEdgeOffsetChromaFn(ref, edge_class),
+                                GetSaoEdgeOffsetChromaFn(tst, edge_class), edge_class);
+    } else {
+      RunEdgeOffsetImpl<UWORD16>(GetHbdSaoEdgeOffsetChromaFn(ref, edge_class),
+                                 GetHbdSaoEdgeOffsetChromaFn(tst, edge_class), edge_class);
+    }
   }
 
-  int wd, ht, offset_val;
+  int wd, ht, offset_val, bit_depth;
   IV_ARCH_T arch;
-  SaoChromaBuffers<UWORD8> ref_buf;
-  SaoChromaBuffers<UWORD8> tst_buf;
   const ihevc_func_selector_t* ref;
   const ihevc_func_selector_t* tst;
 };
@@ -170,59 +286,16 @@ class SaoChromaTest : public ::testing::TestWithParam<SaoTestParam> {
 // ---------------------------- Test cases -----------------------------------
 
 class SaoBandOffsetLumaTest : public SaoLumaTest {};
-TEST_P(SaoBandOffsetLumaTest, Run) {
-  InitializeBuffers();
-
-  GetSaoBandOffsetLumaFn(ref)(
-      ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
-      ref_buf.src_left.data(), ref_buf.src_top.data(),
-      ref_buf.src_top_left.data(), offset_val, ref_buf.sao_offset.data(), wd,
-      ht);
-
-  GetSaoBandOffsetLumaFn(tst)(
-      tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
-      tst_buf.src_left.data(), tst_buf.src_top.data(),
-      tst_buf.src_top_left.data(), offset_val, tst_buf.sao_offset.data(), wd,
-      ht);
-
-  VerifyBuffers();
-}
+TEST_P(SaoBandOffsetLumaTest, Run) { RunBandOffset(); }
 
 class SaoBandOffsetChromaTest : public SaoChromaTest {};
-TEST_P(SaoBandOffsetChromaTest, Run) {
-  InitializeBuffers();
-
-  int offset_val_u = offset_val;
-  int offset_val_v = (offset_val + 4) % 32;
-
-  GetSaoBandOffsetChromaFn(ref)(
-      ref_buf.src.data() + ref_buf.src_offset, ref_buf.stride,
-      ref_buf.src_left.data(), ref_buf.src_top.data(),
-      ref_buf.src_top_left.data(), offset_val_u, offset_val_v,
-      ref_buf.sao_offset_u.data(), ref_buf.sao_offset_v.data(), 2 * wd, ht);
-
-  GetSaoBandOffsetChromaFn(tst)(
-      tst_buf.src.data() + tst_buf.src_offset, tst_buf.stride,
-      tst_buf.src_left.data(), tst_buf.src_top.data(),
-      tst_buf.src_top_left.data(), offset_val_u, offset_val_v,
-      tst_buf.sao_offset_u.data(), tst_buf.sao_offset_v.data(), 2 * wd, ht);
-
-  VerifyBuffers();
-}
+TEST_P(SaoBandOffsetChromaTest, Run) { RunBandOffset(); }
 
 class SaoEdgeOffsetClass0Test : public SaoLumaTest {};
 TEST_P(SaoEdgeOffsetClass0Test, Run) { RunEdgeOffset(0); }
 
 class SaoEdgeOffsetClass0ChromaTest : public SaoChromaTest {};
-TEST_P(SaoEdgeOffsetClass0ChromaTest, Run) {
-#if defined(__arm__) || defined(__aarch64__) || defined(__arm64__)
-  if (wd % 8 == 4) {
-    GTEST_SKIP()
-        << "Skipping failing ARM Chroma SAO Class 0 tests for width % 8 == 4";
-  }
-#endif
-  RunEdgeOffset(0);
-}
+TEST_P(SaoEdgeOffsetClass0ChromaTest, Run) { RunEdgeOffset(0); }
 
 class SaoEdgeOffsetClass1Test : public SaoLumaTest {};
 TEST_P(SaoEdgeOffsetClass1Test, Run) { RunEdgeOffset(1); }
@@ -231,40 +304,13 @@ class SaoEdgeOffsetClass1ChromaTest : public SaoChromaTest {};
 TEST_P(SaoEdgeOffsetClass1ChromaTest, Run) { RunEdgeOffset(1); }
 
 class SaoEdgeOffsetClass2Test : public SaoLumaTest {};
-TEST_P(SaoEdgeOffsetClass2Test, Run) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-    defined(_M_IX86)
-  if (arch == ARCH_X86_SSSE3 || arch == ARCH_X86_SSE42 ||
-      arch == ARCH_X86_AVX2) {
-    GTEST_SKIP() << "Skipping Class 2 tests for x86 SIMD";
-  }
-#endif
-  RunEdgeOffset(2);
-}
+TEST_P(SaoEdgeOffsetClass2Test, Run) { RunEdgeOffset(2); }
 
 class SaoEdgeOffsetClass2ChromaTest : public SaoChromaTest {};
-TEST_P(SaoEdgeOffsetClass2ChromaTest, Run) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-    defined(_M_IX86)
-  if (arch == ARCH_X86_SSSE3 || arch == ARCH_X86_SSE42 ||
-      arch == ARCH_X86_AVX2) {
-    GTEST_SKIP() << "Skipping Class 2 Chroma tests for x86 SIMD";
-  }
-#endif
-  RunEdgeOffset(2);
-}
+TEST_P(SaoEdgeOffsetClass2ChromaTest, Run) { RunEdgeOffset(2); }
 
 class SaoEdgeOffsetClass3Test : public SaoLumaTest {};
-TEST_P(SaoEdgeOffsetClass3Test, Run) {
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-    defined(_M_IX86)
-  if (arch == ARCH_X86_SSSE3 || arch == ARCH_X86_SSE42 ||
-      arch == ARCH_X86_AVX2) {
-    GTEST_SKIP() << "Skipping Class 3 tests for x86 SIMD";
-  }
-#endif
-  RunEdgeOffset(3);
-}
+TEST_P(SaoEdgeOffsetClass3Test, Run) { RunEdgeOffset(3); }
 
 class SaoEdgeOffsetClass3ChromaTest : public SaoChromaTest {};
 TEST_P(SaoEdgeOffsetClass3ChromaTest, Run) { RunEdgeOffset(3); }
@@ -274,55 +320,69 @@ TEST_P(SaoEdgeOffsetClass3ChromaTest, Run) { RunEdgeOffset(3); }
 std::vector<std::pair<int, int>> GetSaoLumaBlockSizes() {
   std::vector<std::pair<int, int>> sizes;
   for (const auto& size : getLumaPUBlockSizes()) {
-    if (size.first >= 8 && size.first % 8 == 0 && size.second >= 4 &&
-        size.second % 4 == 0) {
+    if (size.first >= 8 && size.first % 8 == 0 && size.second >= 4 && size.second % 4 == 0) {
       sizes.push_back(size);
     }
   }
   return sizes;
 }
 
-std::vector<std::pair<int, int>> GetSaoChromaBlockSizes() {
-  std::vector<std::pair<int, int>> sizes;
+// Chroma component sizes for 4:2:0, 4:2:2 and 4:4:4.
+std::set<std::pair<int, int>> GetSaoChromaBlockSizes() {
+  std::set<std::pair<int, int>> sizes;
   for (const auto& size : getLumaPUBlockSizes()) {
-    int wd_comp = size.first / 2;
-    int ht_comp = size.second / 2;
-    if (wd_comp >= 4 && wd_comp % 4 == 0 && ht_comp >= 4 && ht_comp % 4 == 0) {
-      sizes.push_back({wd_comp, ht_comp});
+    const std::pair<int, int> comps[] = {
+        {size.first / 2, size.second / 2},  // 4:2:0
+        {size.first / 2, size.second},      // 4:2:2
+         size};                             // 4:4:4
+    for (const auto& comp : comps) {
+      if (comp.first >= 4 && comp.first % 4 == 0 && comp.second >= 4 && comp.second % 4 == 0) {
+          sizes.insert(comp);
+      }
     }
   }
   return sizes;
 }
 
-// Luma Params: block sizes, band_pos/class, arch
+// Luma Params: block sizes, band position, bit_depth, arch
 auto kSaoLumaParams = ::testing::Combine(
     ::testing::ValuesIn(GetSaoLumaBlockSizes()),
-    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(getTstArch()));
+    ::testing::Values(0, 7, 15, 23, 28, 31),
+    ::testing::Values(8, 10),
+    ::testing::ValuesIn(getTstArch()));
 
-// Chroma Params: block sizes, band_pos/class, arch
+// Chroma Params: block sizes, band position, bit_depth, arch
 auto kSaoChromaParams = ::testing::Combine(
     ::testing::ValuesIn(GetSaoChromaBlockSizes()),
-    ::testing::Values(0, 7, 15, 23, 28), ::testing::ValuesIn(getTstArch()));
+    ::testing::Values(0, 7, 15, 23, 28, 31),
+    ::testing::Values(8, 10),
+    ::testing::ValuesIn(getTstArch()));
 
-INSTANTIATE_TEST_SUITE_P(Sao, SaoBandOffsetLumaTest, kSaoLumaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoBandOffsetChromaTest, kSaoChromaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass0Test, kSaoLumaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass0ChromaTest, kSaoChromaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass1Test, kSaoLumaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass1ChromaTest, kSaoChromaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass2Test, kSaoLumaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass2ChromaTest, kSaoChromaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass3Test, kSaoLumaParams,
-                         PrintSaoTestParam);
-INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass3ChromaTest, kSaoChromaParams,
-                         PrintSaoTestParam);
+// Edge tests don't use the band position; run each size once.
+auto kSaoLumaEdgeParams = ::testing::Combine(
+    ::testing::ValuesIn(GetSaoLumaBlockSizes()),
+    ::testing::Values(0),
+    ::testing::Values(8, 10),
+    ::testing::ValuesIn(getTstArch()));
 
+auto kSaoChromaEdgeParams = ::testing::Combine(
+    ::testing::ValuesIn(GetSaoChromaBlockSizes()),
+    ::testing::Values(0),
+    ::testing::Values(8, 10),
+    ::testing::ValuesIn(getTstArch()));
+
+INSTANTIATE_TEST_SUITE_P(Sao, SaoBandOffsetLumaTest, kSaoLumaParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoBandOffsetChromaTest, kSaoChromaParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass0Test, kSaoLumaEdgeParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass0ChromaTest,kSaoChromaEdgeParams,
+                         PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass1Test, kSaoLumaEdgeParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass1ChromaTest, kSaoChromaEdgeParams,
+                         PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass2Test, kSaoLumaEdgeParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass2ChromaTest, kSaoChromaEdgeParams,
+                         PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass3Test, kSaoLumaEdgeParams, PrintSaoTestParam);
+INSTANTIATE_TEST_SUITE_P(Sao, SaoEdgeOffsetClass3ChromaTest, kSaoChromaEdgeParams,
+                         PrintSaoTestParam);
 }  // namespace
