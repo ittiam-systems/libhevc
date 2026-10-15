@@ -155,6 +155,16 @@ typedef struct
     ihevc_sao_edge_offset_class2_chroma_ft *ihevc_sao_edge_offset_class2_chroma_fptr;
     ihevc_sao_edge_offset_class3_ft *ihevc_sao_edge_offset_class3_fptr;
     ihevc_sao_edge_offset_class3_chroma_ft *ihevc_sao_edge_offset_class3_chroma_fptr;
+    ihevc_hbd_sao_band_offset_luma_ft *ihevc_hbd_sao_band_offset_luma_fptr;
+    ihevc_hbd_sao_band_offset_chroma_ft *ihevc_hbd_sao_band_offset_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class0_ft *ihevc_hbd_sao_edge_offset_class0_fptr;
+    ihevc_hbd_sao_edge_offset_class0_chroma_ft *ihevc_hbd_sao_edge_offset_class0_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class1_ft *ihevc_hbd_sao_edge_offset_class1_fptr;
+    ihevc_hbd_sao_edge_offset_class1_chroma_ft *ihevc_hbd_sao_edge_offset_class1_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class2_ft *ihevc_hbd_sao_edge_offset_class2_fptr;
+    ihevc_hbd_sao_edge_offset_class2_chroma_ft *ihevc_hbd_sao_edge_offset_class2_chroma_fptr;
+    ihevc_hbd_sao_edge_offset_class3_ft *ihevc_hbd_sao_edge_offset_class3_fptr;
+    ihevc_hbd_sao_edge_offset_class3_chroma_ft *ihevc_hbd_sao_edge_offset_class3_chroma_fptr;
 }ihevc_func_selector_t;
 
 

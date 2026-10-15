@@ -135,4 +135,14 @@ void ihevc_init_function_ptr_a9q(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_sao_edge_offset_class2_chroma_fptr          =  &ihevc_sao_edge_offset_class2_chroma_a9q;
     ps_func_selector->ihevc_sao_edge_offset_class3_fptr                 =  &ihevc_sao_edge_offset_class3_a9q;
     ps_func_selector->ihevc_sao_edge_offset_class3_chroma_fptr          =  &ihevc_sao_edge_offset_class3_chroma_a9q;
+    ps_func_selector->ihevc_hbd_sao_band_offset_luma_fptr               =  &ihevc_hbd_sao_band_offset_luma_neonintr;
+    ps_func_selector->ihevc_hbd_sao_band_offset_chroma_fptr             =  &ihevc_hbd_sao_band_offset_chroma_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_fptr             =  &ihevc_hbd_sao_edge_offset_class0_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class0_chroma_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_fptr             =  &ihevc_hbd_sao_edge_offset_class1_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class1_chroma_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_fptr             =  &ihevc_hbd_sao_edge_offset_class2_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class2_chroma_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_fptr             =  &ihevc_hbd_sao_edge_offset_class3_neonintr;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class3_chroma_neonintr;
 }

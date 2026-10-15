@@ -90,6 +90,7 @@ cc_library_static {
             ],
 
             srcs: [
+                "arm/ihevc_hbd_sao_neon_intr.c",
                 "arm/ihevc_intra_pred_filters_neon_intr.c",
                 "arm/ihevc_weighted_pred_neon_intr.c",
                 "arm64/ihevc_deblk_chroma_horz.s",
@@ -167,6 +168,7 @@ cc_library_static {
                 "arm/ihevc_deblk_luma_horz.s",
                 "arm/ihevc_deblk_luma_vert.s",
                 "arm/ihevc_function_selector_a9q.c",
+                "arm/ihevc_hbd_sao_neon_intr.c",
                 "arm/ihevc_inter_pred_chroma_copy.s",
                 "arm/ihevc_inter_pred_chroma_copy_w16out.s",
                 "arm/ihevc_inter_pred_chroma_horz.s",
@@ -259,6 +261,8 @@ cc_library_static {
                 "x86/ihevc_chroma_intra_pred_filters_sse42_intr.c",
                 "x86/ihevc_chroma_intra_pred_filters_ssse3_intr.c",
                 "x86/ihevc_deblk_ssse3_intr.c",
+                "x86/ihevc_hbd_sao_sse42_intr.c",
+                "x86/ihevc_hbd_tables_x86_intr.c",
                 "x86/ihevc_inter_pred_filters_sse42_intr.c",
                 "x86/ihevc_inter_pred_filters_ssse3_intr.c",
                 "x86/ihevc_intra_pred_filters_sse42_intr.c",
@@ -297,6 +301,8 @@ cc_library_static {
                 "x86/ihevc_chroma_intra_pred_filters_sse42_intr.c",
                 "x86/ihevc_chroma_intra_pred_filters_ssse3_intr.c",
                 "x86/ihevc_deblk_ssse3_intr.c",
+                "x86/ihevc_hbd_sao_sse42_intr.c",
+                "x86/ihevc_hbd_tables_x86_intr.c",
                 "x86/ihevc_inter_pred_filters_sse42_intr.c",
                 "x86/ihevc_inter_pred_filters_ssse3_intr.c",
                 "x86/ihevc_intra_pred_filters_sse42_intr.c",
