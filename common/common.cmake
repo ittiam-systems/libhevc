@@ -93,6 +93,7 @@ if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "a
   list(
     APPEND
     LIBHEVC_COMMON_ASMS
+    "${HEVC_ROOT}/common/arm/ihevc_hbd_deblk_neon_intr.c"
     "${HEVC_ROOT}/common/arm/ihevc_hbd_sao_neon_intr.c"
     "${HEVC_ROOT}/common/arm/ihevc_intra_pred_filters_neon_intr.c"
     "${HEVC_ROOT}/common/arm/ihevc_quant_iquant_ssd_neon_intr.c"
@@ -170,6 +171,7 @@ elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     APPEND
     LIBHEVC_COMMON_ASMS
     "${HEVC_ROOT}/common/arm/ihevc_cmn_utils_neon.h"
+    "${HEVC_ROOT}/common/arm/ihevc_hbd_deblk_neon_intr.c"
     "${HEVC_ROOT}/common/arm/ihevc_deblk_chroma_horz.s"
     "${HEVC_ROOT}/common/arm/ihevc_deblk_chroma_vert.s"
     "${HEVC_ROOT}/common/arm/ihevc_deblk_luma_horz.s"
@@ -246,6 +248,9 @@ else()
   list(
     APPEND
     LIBHEVC_COMMON_SRCS
+    "${HEVC_ROOT}/common/x86/ihevc_hbd_deblk_ssse3_intr.c"
+    "${HEVC_ROOT}/common/x86/ihevc_hbd_deblk_sse42_intr.c"
+    "${HEVC_ROOT}/common/x86/ihevc_hbd_tables_x86_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_inter_pred_filters_ssse3_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_weighted_pred_ssse3_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_intra_pred_filters_ssse3_intr.c"

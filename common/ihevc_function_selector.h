@@ -165,6 +165,12 @@ typedef struct
     ihevc_hbd_sao_edge_offset_class2_chroma_ft *ihevc_hbd_sao_edge_offset_class2_chroma_fptr;
     ihevc_hbd_sao_edge_offset_class3_ft *ihevc_hbd_sao_edge_offset_class3_fptr;
     ihevc_hbd_sao_edge_offset_class3_chroma_ft *ihevc_hbd_sao_edge_offset_class3_chroma_fptr;
+    ihevc_hbd_deblk_luma_vert_ft *ihevc_hbd_deblk_luma_vert_fptr;
+    ihevc_hbd_deblk_luma_horz_ft *ihevc_hbd_deblk_luma_horz_fptr;
+    ihevc_hbd_deblk_chroma_vert_ft *ihevc_hbd_deblk_chroma_vert_fptr;
+    ihevc_hbd_deblk_chroma_horz_ft *ihevc_hbd_deblk_chroma_horz_fptr;
+    ihevc_hbd_deblk_chroma_vert_ft *ihevc_hbd_deblk_422chroma_vert_fptr;
+    ihevc_hbd_deblk_chroma_horz_ft *ihevc_hbd_deblk_422chroma_horz_fptr;
 }ihevc_func_selector_t;
 
 
