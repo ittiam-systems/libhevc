@@ -147,4 +147,10 @@ void ihevc_init_function_ptr_generic(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_sao_edge_offset_class2_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class2_chroma;
     ps_func_selector->ihevc_hbd_sao_edge_offset_class3_fptr             =  &ihevc_hbd_sao_edge_offset_class3;
     ps_func_selector->ihevc_hbd_sao_edge_offset_class3_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class3_chroma;
+    ps_func_selector->ihevc_hbd_deblk_luma_vert_fptr                    =  &ihevc_hbd_deblk_luma_vert;
+    ps_func_selector->ihevc_hbd_deblk_luma_horz_fptr                    =  &ihevc_hbd_deblk_luma_horz;
+    ps_func_selector->ihevc_hbd_deblk_chroma_vert_fptr                  =  &ihevc_hbd_deblk_chroma_vert;
+    ps_func_selector->ihevc_hbd_deblk_chroma_horz_fptr                  =  &ihevc_hbd_deblk_chroma_horz;
+    ps_func_selector->ihevc_hbd_deblk_422chroma_vert_fptr               =  &ihevc_hbd_deblk_422chroma_vert;
+    ps_func_selector->ihevc_hbd_deblk_422chroma_horz_fptr               =  &ihevc_hbd_deblk_422chroma_horz;
 }
