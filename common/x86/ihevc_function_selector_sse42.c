@@ -41,6 +41,8 @@ void ihevc_init_function_ptr_sse42(ihevc_func_selector_t *ps_func_selector)
 {
     ps_func_selector->ihevc_deblk_chroma_horz_fptr                      =  &ihevc_deblk_chroma_horz_ssse3;
     ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert_ssse3;
+    ps_func_selector->ihevc_deblk_422chroma_horz_fptr                   =  &ihevc_deblk_chroma_horz_ssse3;
+    ps_func_selector->ihevc_deblk_422chroma_vert_fptr                   =  &ihevc_deblk_chroma_vert_ssse3;
     ps_func_selector->ihevc_deblk_luma_vert_fptr                        =  &ihevc_deblk_luma_vert_ssse3;
     ps_func_selector->ihevc_deblk_luma_horz_fptr                        =  &ihevc_deblk_luma_horz_ssse3;
     ps_func_selector->ihevc_inter_pred_chroma_copy_fptr                 =  &ihevc_inter_pred_chroma_copy_sse42;
@@ -145,4 +147,10 @@ void ihevc_init_function_ptr_sse42(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_sao_edge_offset_class2_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class2_chroma_sse42;
     ps_func_selector->ihevc_hbd_sao_edge_offset_class3_fptr             =  &ihevc_hbd_sao_edge_offset_class3_sse42;
     ps_func_selector->ihevc_hbd_sao_edge_offset_class3_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class3_chroma_sse42;
+    ps_func_selector->ihevc_hbd_deblk_luma_vert_fptr                    =  &ihevc_hbd_deblk_luma_vert_sse42;
+    ps_func_selector->ihevc_hbd_deblk_luma_horz_fptr                    =  &ihevc_hbd_deblk_luma_horz_sse42;
+    ps_func_selector->ihevc_hbd_deblk_chroma_vert_fptr                  =  &ihevc_hbd_deblk_chroma_vert_sse42;
+    ps_func_selector->ihevc_hbd_deblk_chroma_horz_fptr                  =  &ihevc_hbd_deblk_chroma_horz_sse42;
+    ps_func_selector->ihevc_hbd_deblk_422chroma_vert_fptr               =  &ihevc_hbd_deblk_chroma_vert_sse42;
+    ps_func_selector->ihevc_hbd_deblk_422chroma_horz_fptr               =  &ihevc_hbd_deblk_chroma_horz_sse42;
 }
