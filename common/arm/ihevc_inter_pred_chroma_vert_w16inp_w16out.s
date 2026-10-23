@@ -156,8 +156,8 @@ inner_loop_ht_2:
     vmlal.s16   q4,d6,d14
     vmlal.s16   q0,d6,d15
     vmlal.s16   q4,d2,d15
-    vqshrn.s32  d0,q0,#6                    @right shift
-    vqshrn.s32  d30,q4,#6                   @right shift
+    vshrn.i32   d0,q0,#6                    @right shift
+    vshrn.i32   d30,q4,#6                   @right shift
     vst1.32     {d0},[r1]!                  @stores the loaded value
     vst1.32     {d30},[r7]                  @stores the loaded value
     bgt         inner_loop_ht_2             @inner loop -again
@@ -205,7 +205,7 @@ prolog:
     vld1.s16    {d5},[r0],r2
     vmlal.s16   q14,d4,d15
 
-    vqshrn.s32  d30,q15,#6                  @right shift
+    vshrn.i32   d30,q15,#6                  @right shift
 
     vld1.s16    {d6},[r0],r2
     vmull.s16   q13,d2,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -215,7 +215,7 @@ prolog:
     vld1.16     {d0},[r4]!                  @loads pu1_src
     vmlal.s16   q13,d5,d15
 
-    vqshrn.s32  d28,q14,#6                  @right shift
+    vshrn.i32   d28,q14,#6                  @right shift
 
     vld1.16     {d1},[r0],r2                @loads pi2_src
     vmull.s16   q12,d3,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -227,7 +227,7 @@ prolog:
     vmlal.s16   q12,d6,d15
     addle       r1,r1,lr,lsl #1
 
-    vqshrn.s32  d26,q13,#6                  @right shift
+    vshrn.i32   d26,q13,#6                  @right shift
     subs        r12,r12,#4
 
     beq         epilog                      @jumps to epilog
@@ -240,7 +240,7 @@ kernel_4:
     vmlal.s16   q15,d2,d14
     vmlal.s16   q15,d3,d15
 
-    vqshrn.s32  d24,q12,#6                  @right shift
+    vshrn.i32   d24,q12,#6                  @right shift
 
     vld1.16     {d4},[r0],r2
     vmull.s16   q14,d1,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -251,7 +251,7 @@ kernel_4:
     addle       r4,r4,r8
     movle       r11,r6,lsl #1
 
-    vqshrn.s32  d30,q15,#6                  @right shift
+    vshrn.i32   d30,q15,#6                  @right shift
 
     vld1.s16    {d5},[r0],r2
     vmull.s16   q13,d2,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -263,7 +263,7 @@ kernel_4:
     vld1.16     {d0},[r4]!                  @loads pu1_src
     vmlal.s16   q13,d5,d15
 
-    vqshrn.s32  d28,q14,#6                  @right shift
+    vshrn.i32   d28,q14,#6                  @right shift
 
     vld1.16     {d1},[r0],r2                @loads pi2_src
     vmull.s16   q12,d3,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -276,7 +276,7 @@ kernel_4:
     vst1.32     {d30},[r1]!                 @stores the loaded value
     vmlal.s16   q12,d6,d15
 
-    vqshrn.s32  d26,q13,#6                  @right shift
+    vshrn.i32   d26,q13,#6                  @right shift
     addle       r1,r1,lr,lsl #1
 
     subs        r12,r12,#4
@@ -290,7 +290,7 @@ epilog:
     vmlal.s16   q15,d2,d14
     vmlal.s16   q15,d3,d15
 
-    vqshrn.s32  d24,q12,#6                  @right shift
+    vshrn.i32   d24,q12,#6                  @right shift
 
     vmull.s16   q14,d1,d12                  @vmull_s16(src_tmp2, coeff_0)
     vld1.16     {d4},[r0],r2
@@ -299,7 +299,7 @@ epilog:
     vmlal.s16   q14,d3,d14
     vmlal.s16   q14,d4,d15
 
-    vqshrn.s32  d30,q15,#6                  @right shift
+    vshrn.i32   d30,q15,#6                  @right shift
 
     vmull.s16   q13,d2,d12                  @vmull_s16(src_tmp2, coeff_0)
     vld1.s16    {d5},[r0],r2
@@ -307,7 +307,7 @@ epilog:
     vmlal.s16   q13,d4,d14
     vmlal.s16   q13,d5,d15
 
-    vqshrn.s32  d28,q14,#6                  @right shift
+    vshrn.i32   d28,q14,#6                  @right shift
 
     vst1.32     {d24},[r9]                  @stores the loaded value
     vmull.s16   q12,d3,d12                  @vmull_s16(src_tmp2, coeff_0)
@@ -318,11 +318,11 @@ epilog:
     vmlal.s16   q12,d6,d15
     vst1.32     {d30},[r1]!                 @stores the loaded value
 
-    vqshrn.s32  d26,q13,#6                  @right shift
+    vshrn.i32   d26,q13,#6                  @right shift
 
     vst1.32     {d28},[r9],r3               @stores the loaded value
 
-    vqshrn.s32  d24,q12,#6                  @right shift
+    vshrn.i32   d24,q12,#6                  @right shift
     vst1.32     {d26},[r9],r3               @stores the loaded value
 
     vst1.32     {d24},[r9]                  @stores the loaded value

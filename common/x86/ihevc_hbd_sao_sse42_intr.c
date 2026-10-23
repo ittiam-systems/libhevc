@@ -888,8 +888,8 @@ void ihevc_hbd_sao_edge_offset_class0_chroma_sse42(UWORD16 *pu2_src,
         _mm_storeu_si128((__m128i *)(au1_mask+col), au1_mask8x16b);
 
     edge_idx_8x16b   = _mm_loadl_epi64((__m128i *)gi1_table_edge_idx_hbd);
-    sao_offset_u_8x16b = _mm_loadu_si128((__m128i *)pi1_sao_offset_u);
-    sao_offset_v_8x16b = _mm_loadu_si128((__m128i *)pi1_sao_offset_v);
+    sao_offset_u_8x16b = _mm_loadl_epi64((__m128i *)pi1_sao_offset_u);
+    sao_offset_v_8x16b = _mm_loadl_epi64((__m128i *)pi1_sao_offset_v);
     sao_offset_8x16b = _mm_unpacklo_epi64(sao_offset_u_8x16b, sao_offset_v_8x16b);
     chroma_offset_8x16b = _mm_set1_epi16(0x0800);
 
@@ -1559,7 +1559,7 @@ void ihevc_hbd_sao_edge_offset_class2_sse42(UWORD16 *pu2_src,
             src_temp0_16x8b =_mm_loadu_si128((__m128i *)(pu2_src_cpy));
             src_top_16x8b = _mm_alignr_epi8(src_top_16x8b, left_store_16x8b, 14);
             // loading the mask
-            au1_mask8x16b = _mm_loadu_si128((__m128i *)au1_mask_cpy);
+            au1_mask8x16b = _mm_loadl_epi64((__m128i *)au1_mask_cpy);
             // separating +ve and and -ve values.
             cmp_gt0_u_16x8b = _mm_subs_epu16(src_temp0_16x8b, src_top_16x8b);
             cmp_lt0_u_16x8b = _mm_subs_epu16(src_top_16x8b, src_temp0_16x8b);
@@ -1946,7 +1946,7 @@ void ihevc_hbd_sao_edge_offset_class2_sse42(UWORD16 *pu2_src,
             }
             if(0 == pu1_avail[3])
             {
-                src_top_16x8b = src_bottom_16x8b;
+                src_top_16x8b = _mm_loadu_si128((__m128i *)pu2_src_cpy);
                 au2_src_left_tmp[ht_tmp-1] = pu2_src_cpy[7];
             }
             if(0 == pu1_avail[2])
@@ -2173,7 +2173,7 @@ void ihevc_hbd_sao_edge_offset_class2_chroma_sse42(UWORD16 *pu2_src,
             src_temp0_16x8b =_mm_loadu_si128((__m128i *)(pu2_src_cpy));
             src_top_16x8b = _mm_alignr_epi8(src_top_16x8b, left_store_16x8b, 12);
             // loading the mask
-            au1_mask8x16b = _mm_loadu_si128((__m128i *)au1_mask_cpy);
+            au1_mask8x16b = _mm_loadl_epi64((__m128i *)au1_mask_cpy);
             // separating +ve and and -ve values.
             cmp_gt0_u_16x8b = _mm_subs_epu16(src_temp0_16x8b, src_top_16x8b);
             cmp_lt0_u_16x8b = _mm_subs_epu16(src_top_16x8b, src_temp0_16x8b);
@@ -2344,7 +2344,7 @@ void ihevc_hbd_sao_edge_offset_class2_chroma_sse42(UWORD16 *pu2_src,
             }
             if(0 == pu1_avail[3])
             {
-                src_top_16x8b = src_bottom_16x8b;
+                src_top_16x8b = _mm_loadu_si128((__m128i *)pu2_src_cpy);
                 au2_src_left_tmp[2*ht_tmp - 1]=pu2_src_cpy[7];
                 au2_src_left_tmp[2*ht_tmp - 2]=pu2_src_cpy[6];
             }
@@ -2521,7 +2521,7 @@ void ihevc_hbd_sao_edge_offset_class3_sse42(UWORD16 *pu2_src,
             src_temp0_16x8b =_mm_loadu_si128((__m128i *)(pu2_src_cpy));
 
             // loading the mask
-            au1_mask8x16b = _mm_loadu_si128((__m128i *)au1_mask_cpy);
+            au1_mask8x16b = _mm_loadl_epi64((__m128i *)au1_mask_cpy);
             // separating +ve and and -ve values.
             cmp_gt0_u_16x8b = _mm_subs_epu16(src_temp0_16x8b, src_top_16x8b);
             cmp_lt0_u_16x8b = _mm_subs_epu16(src_top_16x8b, src_temp0_16x8b);
@@ -3115,7 +3115,7 @@ void ihevc_hbd_sao_edge_offset_class3_chroma_sse42(UWORD16 *pu2_src,
             src_temp0_16x8b =_mm_loadu_si128((__m128i *)(pu2_src_cpy));
 
             // loading the mask
-            au1_mask8x16b = _mm_loadu_si128((__m128i *)au1_mask_cpy);
+            au1_mask8x16b = _mm_loadl_epi64((__m128i *)au1_mask_cpy);
             // separating +ve and and -ve values.
             cmp_gt0_u_16x8b = _mm_subs_epu16(src_temp0_16x8b, src_top_16x8b);
             cmp_lt0_u_16x8b = _mm_subs_epu16(src_top_16x8b, src_temp0_16x8b);
