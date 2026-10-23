@@ -165,6 +165,8 @@ outer_loop_16:
     and         x0, x12, #31
     sub         x20,x5,x3,lsl #1
     neg         x8, x20
+    sub         x20,x5,x2,lsl #1
+    neg         x15, x20
     add         x20,x12, x2 , lsl #1
     prfm        PLDL1KEEP,[x20]
 
@@ -239,7 +241,7 @@ inner_loop_16:
     umull       v22.8h, v10.8b, v25.8b      //mul_res = vmull_u8(src[0_3], coeffabs_3)//
 
 
-    add         x20,x12,x8
+    add         x20,x12,x15
     csel        x12, x20, x12,eq
     add         x20,x12,x2
     csel        x4, x20, x4,eq
@@ -358,7 +360,7 @@ epilog:
     umlsl       v22.8h, v29.8b, v24.8b      //mul_res = vmlsl_u8(src[0_2], coeffabs_2)//
     subs        x10,x10,#16                 //decrement the wd loop
     umlal       v22.8h, v12.8b, v26.8b      //mul_res = vmlsl_u8(src[0_0], coeffabs_0)//
-    add         x20,x12,x8
+    add         x20,x12,x15
     csel        x12, x20, x12,eq
     umlsl       v22.8h, v14.8b, v27.8b      //mul_res = vmlal_u8(src[0_1], coeffabs_1)//
     csel        x10, x5, x10,eq             //2wd

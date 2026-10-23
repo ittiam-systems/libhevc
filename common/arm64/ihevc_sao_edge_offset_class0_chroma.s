@@ -352,7 +352,6 @@ PU1_SRC_LOOP_RESIDUE:
 
     SUB         x14,x10,x4                  //(ht - row)
     mov         v21.h[7], w11               //vsetq_lane_u8(pu1_src_left[ht - row], pu1_cur_row_tmp, 15)
-    LSL         x14,x14,#1                  //(ht - row) * 2
 
     LD1         {v30.16b},[x12]             //II pu1_cur_row = vld1q_u8(pu1_src_cpy)
     //LD1 {v31.8b},[x12]                    //II pu1_cur_row = vld1q_u8(pu1_src_cpy)
@@ -362,21 +361,21 @@ PU1_SRC_LOOP_RESIDUE:
 
     LDRH        w11,[x2,#2]                 //II load pu1_src_left
     cmhi        v16.16b,  v19.16b ,  v21.16b //vcgtq_u8(pu1_cur_row, pu1_cur_row_tmp)
-    mul         x14, x14, x1                //(ht - row) * 2 * src_strd
+    mul         x14, x14, x1                //(ht - row) * src_strd
 
     cmhi        v18.16b,  v21.16b ,  v19.16b //vcltq_u8(pu1_cur_row, pu1_cur_row_tmp)
     mov         v28.h[7], w11               //II vsetq_lane_u8(pu1_src_left[ht - row], pu1_cur_row_tmp, 15)
 
     LDRB        w11,[x12,#16]               //pu1_src_cpy[16]
     SUB         v20.16b,  v18.16b ,  v16.16b //sign_left = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
-    ADD         x5,x14,x5                   //(ht - row) * 2 * src_strd + (wd - 2)
+    ADD         x5,x14,x5                   //(ht - row) * src_strd + (wd - 2)
 
     mov         v21.b[0], w11               //pu1_cur_row_tmp = vsetq_lane_u8(pu1_src_cpy[16], pu1_cur_row_tmp, 0)
     EXT         v28.16b,  v28.16b ,  v30.16b,#14 //II pu1_cur_row_tmp = vextq_u8(pu1_cur_row_tmp, pu1_cur_row, 15)
 
     LDRB        w11,[x12,#17]               //pu1_src_cpy[17]
     cmhi        v26.16b,  v30.16b ,  v28.16b //II vcgtq_u8(pu1_cur_row, pu1_cur_row_tmp)
-    LDRH        w14,[x6, x5]                //pu1_src_org[(ht - row)  * 2* src_strd + (wd - 2)]
+    LDRH        w14,[x6, x5]                //pu1_src_org[(ht - row) * src_strd + (wd - 2)]
 
     mov         v21.b[1], w11               //pu1_cur_row_tmp = vsetq_lane_u8(pu1_src_cpy[17], pu1_cur_row_tmp, 1)
     cmhi        v24.16b,  v28.16b ,  v30.16b //II vcltq_u8(pu1_cur_row, pu1_cur_row_tmp)
@@ -443,13 +442,12 @@ PU1_SRC_LOOP_RESIDUE:
     mov         v28.8b, v1.8b
     SUB         x14,x10,x4                  //II (ht - row)
 
-    LSL         x14,x14,#1                  //II (ht - row) * 2
     TBL         v26.8b, {v7.16b},v28.8b     //II offset = vtbl1_s8(offset_tbl_u, vget_low_s8(edge_idx))
-    mul         x14, x14, x1                //II (ht - row) * 2 * src_strd
+    mul         x14, x14, x1                //II (ht - row) * src_strd
 
-    ADD         x5,x14,x5                   //II (ht - row) * 2 * src_strd + (wd - 2)
+    ADD         x5,x14,x5                   //II (ht - row) * src_strd + (wd - 2)
     TBL         v27.8b, {v0.16b},v29.8b     //II
-    LDRH        w14,[x6, x5]                //II pu1_src_org[(ht - row)  * 2* src_strd + (wd - 2)]
+    LDRH        w14,[x6, x5]                //II pu1_src_org[(ht - row) * src_strd + (wd - 2)]
 
     ZIP1        v1.8b, v26.8b, v27.8b
     ZIP2        v27.8b, v26.8b, v27.8b      //II

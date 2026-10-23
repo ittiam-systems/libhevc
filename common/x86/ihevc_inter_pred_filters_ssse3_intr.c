@@ -1528,7 +1528,7 @@ void ihevc_inter_pred_luma_copy_w16out_ssse3(UWORD8 *pu1_src,
                 s3 = _mm_slli_epi16(s3,  SHIFT_14_MINUS_BIT_DEPTH); /* (pu1_src[col] << SHIFT_14_MINUS_BIT_DEPTH */
 
                 /* pi2_dst[col] = (pu1_src[col] << SHIFT_14_MINUS_BIT_DEPTH); */
-                _mm_store_si128((__m128i *)(pi2_dst + offset), s3);
+                _mm_storeu_si128((__m128i *)(pi2_dst + offset), s3);
 
 /* row =1 */
                 /*load 16 pixel values from 271:256 pos. relative to cur. pos.*/
@@ -1538,7 +1538,7 @@ void ihevc_inter_pred_luma_copy_w16out_ssse3(UWORD8 *pu1_src,
                 s3 = _mm_slli_epi16(s3,  SHIFT_14_MINUS_BIT_DEPTH); /* (pu1_src[col] << SHIFT_14_MINUS_BIT_DEPTH */
 
                 /* pi2_dst[col] = (pu1_src[col] << SHIFT_14_MINUS_BIT_DEPTH); */
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd + offset), s3);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd + offset), s3);
 
                 offset += 8; /* To pointer update */
             } /* inner for loop ends here(8-output values in single iteration) */
@@ -1743,8 +1743,8 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
                     res_temp15_8x16b = _mm_add_epi16(res_temp15_8x16b, res_temp16_8x16b);
 
                     /* to store the 1st 4 pixels res. */
-                    _mm_store_si128((__m128i *)(pi2_dst + offset), res_temp5_8x16b);
-                    _mm_store_si128((__m128i *)(pi2_dst + dst_strd + offset), res_temp15_8x16b);
+                    _mm_storeu_si128((__m128i *)(pi2_dst + offset), res_temp5_8x16b);
+                    _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd + offset), res_temp15_8x16b);
 
                     offset += 8; /* To pointer updates*/
                 }
@@ -1877,7 +1877,7 @@ void ihevc_inter_pred_luma_horz_w16out_ssse3(UWORD8 *pu1_src,
                     res_temp5_8x16b = _mm_add_epi16(res_temp5_8x16b, res_temp6_8x16b);
 
                     /* to store the 1st 4 pixels res. */
-                    _mm_store_si128((__m128i *)(pi2_dst + offset), res_temp5_8x16b);
+                    _mm_storeu_si128((__m128i *)(pi2_dst + offset), res_temp5_8x16b);
 
                     offset += 8; /* To pointer updates*/
                 }
@@ -2151,7 +2151,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 0*/
-            _mm_store_si128((__m128i *)(pi2_dst), s6_8x16b);
+            _mm_storeu_si128((__m128i *)(pi2_dst), s6_8x16b);
 
             /* ROW 2*/
             s20_8x16b = _mm_maddubs_epi16(s3_1_16x8b, coeff0_1_8x16b);
@@ -2174,7 +2174,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 2*/
-            _mm_store_si128((__m128i *)(pi2_dst + (2 * dst_strd)), s26_8x16b);
+            _mm_storeu_si128((__m128i *)(pi2_dst + (2 * dst_strd)), s26_8x16b);
 
 
             /*ROW 1*/
@@ -2201,7 +2201,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 1*/
-            _mm_store_si128((__m128i *)(pi2_dst + (dst_strd)), s16_8x16b);
+            _mm_storeu_si128((__m128i *)(pi2_dst + (dst_strd)), s16_8x16b);
 
 
             /* ROW 3*/
@@ -2223,7 +2223,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
             /* store 8 8-bit output values  */
             /* Store the output pixels of row 2*/
-            _mm_store_si128((__m128i *)(pi2_dst + (3 * dst_strd)), s36_8x16b);
+            _mm_storeu_si128((__m128i *)(pi2_dst + (3 * dst_strd)), s36_8x16b);
 
             pu1_src += (8 * src_strd);
             pi2_dst += (4 * dst_strd);
@@ -2260,7 +2260,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 /* store 8 8-bit output values  */
                 /* Store the output pixels of row 4*/
-                _mm_store_si128((__m128i *)(pi2_dst), s6_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst), s6_8x16b);
 
                 /* row + 2*/
                 s20_8x16b = _mm_maddubs_epi16(s3_1_16x8b, coeff0_1_8x16b);
@@ -2284,7 +2284,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 /* store 8 8-bit output values  */
                 /* Store the output pixels of (cur_row+2)*/
-                _mm_store_si128((__m128i *)(pi2_dst + (2 * dst_strd)), s26_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + (2 * dst_strd)), s26_8x16b);
 
 
                 /*row + 1*/
@@ -2303,7 +2303,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 /* store 8 8-bit output values  */
                 /* Store the output pixels of (cur_row + 1)*/
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd), s16_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd), s16_8x16b);
 
 
                 /* row + 3*/
@@ -2325,7 +2325,7 @@ void ihevc_inter_pred_luma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 /* store 8 8-bit output values  */
                 /* Store the output pixels of (cur_row+3)*/
-                _mm_store_si128((__m128i *)(pi2_dst + (3 * dst_strd)), s36_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + (3 * dst_strd)), s36_8x16b);
 
                 s2_10_16x8b = s2_3_16x8b;
 
@@ -4354,7 +4354,7 @@ void ihevc_inter_pred_chroma_copy_w16out_ssse3(UWORD8 *pu1_src,
                 s3 = _mm_unpacklo_epi8(s3, zero_8x16b);
 
                 s3 = _mm_slli_epi16(s3,  SHIFT_14_MINUS_BIT_DEPTH); /* (pu1_src[col] << SHIFT_14_MINUS_BIT_DEPTH) */
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd + offset), s3);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd + offset), s3);
 
                 offset += 8; /* To pointer update*/
             } /*  inner for loop ends here(8-output values in single iteration) */
@@ -4831,9 +4831,9 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
 /* store 8 8-bit output values  */
                 /* pi2_dst[col] = (UWORD8)i2_tmp; */
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd), s8_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd), s8_8x16b);
 
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd + 8), s35_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd + 8), s35_8x16b);
 
 
                 pu1_src += 2 * src_strd;
@@ -4895,7 +4895,7 @@ void ihevc_inter_pred_chroma_vert_w16out_ssse3(UWORD8 *pu1_src,
 
                 s8_8x16b = _mm_add_epi16(s15_8x16b, s16_8x16b); /* (i2_tmp + OFFSET_14_MINUS_BIT_DEPTH) */
 
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd), s8_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd), s8_8x16b);
 
                 pu1_src += 8;    /* To pointer update */
                 pi2_dst += 8;
@@ -5065,17 +5065,17 @@ void ihevc_inter_pred_chroma_vert_w16inp_ssse3(WORD16 *pi2_src,
             {
 
                 /*load 16 pixel values */
-                s21_8x16b  = _mm_load_si128((__m128i *)(pi2_src + (-1 * src_strd)));
+                s21_8x16b  = _mm_loadu_si128((__m128i *)(pi2_src + (-1 * src_strd)));
 
                 /*load 16 pixel values */
-                s22_8x16b = _mm_load_si128((__m128i *)(pi2_src + (0 * src_strd)));
+                s22_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (0 * src_strd)));
 
 
                 /*load 16 pixel values */
-                s23_8x16b = _mm_load_si128((__m128i *)(pi2_src + (1 * src_strd)));
+                s23_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (1 * src_strd)));
 
                 /*load 16 pixel values */
-                s24_8x16b = _mm_load_si128((__m128i *)(pi2_src + (2 * src_strd)));
+                s24_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (2 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi16(s21_8x16b, s22_8x16b);
 
@@ -5131,7 +5131,7 @@ void ihevc_inter_pred_chroma_vert_w16inp_ssse3(WORD16 *pi2_src,
                 _mm_storel_epi64((__m128i *)(pu1_dst), s7_8x16b);
 
 
-                s25_8x16b = _mm_load_si128((__m128i *)(pi2_src + (3 * src_strd)));
+                s25_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (3 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi16(s22_8x16b, s23_8x16b);
 
@@ -5386,17 +5386,17 @@ void ihevc_inter_pred_chroma_vert_w16inp_w16out_ssse3(WORD16 *pi2_src,
             {
 
                 /*load 16 pixel values */
-                s21_8x16b  = _mm_load_si128((__m128i *)(pi2_src + (-1 * src_strd)));
+                s21_8x16b  = _mm_loadu_si128((__m128i *)(pi2_src + (-1 * src_strd)));
 
                 /*load 16 pixel values */
-                s22_8x16b = _mm_load_si128((__m128i *)(pi2_src + (0 * src_strd)));
+                s22_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (0 * src_strd)));
 
 
                 /*load 16 pixel values */
-                s23_8x16b = _mm_load_si128((__m128i *)(pi2_src + (1 * src_strd)));
+                s23_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (1 * src_strd)));
 
                 /*load 16 pixel values */
-                s24_8x16b = _mm_load_si128((__m128i *)(pi2_src + (2 * src_strd)));
+                s24_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (2 * src_strd)));
 
                 s5_8x16b = _mm_unpacklo_epi16(s21_8x16b, s22_8x16b);
 
@@ -5430,7 +5430,7 @@ void ihevc_inter_pred_chroma_vert_w16inp_w16out_ssse3(WORD16 *pi2_src,
                 s7_8x16b = _mm_unpacklo_epi64(s9_8x16b, s35_8x16b);
 /* store 8 8-bit output values  */
                 /* pi2_dst[col] = (UWORD8)i2_tmp; */
-                _mm_store_si128((__m128i *)(pi2_dst), s7_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst), s7_8x16b);
 
 
                 s25_8x16b = _mm_loadu_si128((__m128i *)(pi2_src + (3 * src_strd)));
@@ -5467,7 +5467,7 @@ void ihevc_inter_pred_chroma_vert_w16inp_w16out_ssse3(WORD16 *pi2_src,
                 s7_8x16b = _mm_unpacklo_epi64(s9_8x16b, s35_8x16b);
 /* store 8 8-bit output values  */
                 /* pi2_dst[col] = (UWORD8)i2_tmp; */
-                _mm_store_si128((__m128i *)(pi2_dst + dst_strd), s7_8x16b);
+                _mm_storeu_si128((__m128i *)(pi2_dst + dst_strd), s7_8x16b);
 
                 pi2_src += 2 * src_strd;
                 pi2_dst += 2 * dst_strd;

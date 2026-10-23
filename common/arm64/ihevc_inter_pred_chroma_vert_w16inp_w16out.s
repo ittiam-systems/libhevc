@@ -154,8 +154,8 @@ inner_loop_ht_2:
     smlal       v7.4s, v6.4h, v18.4h
     smlal       v0.4s, v6.4h, v19.4h
     smlal       v7.4s, v2.4h, v19.4h
-    sqshrn      v0.4h, v0.4s,#6             //right shift
-    sqshrn      v30.4h, v7.4s,#6            //right shift
+    shrn        v0.4h, v0.4s,#6             //right shift
+    shrn        v30.4h, v7.4s,#6            //right shift
     st1         {v0.2s},[x1],#8             //stores the loaded value
     st1         {v30.2s},[x7]               //stores the loaded value
     bgt         inner_loop_ht_2             //inner loop -again
@@ -205,7 +205,7 @@ prolog:
     ld1         {v5.4h},[x0],x2
     smlal       v28.4s, v4.4h, v19.4h
 
-    sqshrn      v30.4h, v30.4s,#6           //right shift
+    shrn        v30.4h, v30.4s,#6           //right shift
 
     ld1         {v6.4h},[x0],x2
     smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -215,7 +215,7 @@ prolog:
     ld1         {v0.4h},[x4],#8             //loads pu1_src
     smlal       v26.4s, v5.4h, v19.4h
 
-    sqshrn      v28.4h, v28.4s,#6           //right shift
+    shrn        v28.4h, v28.4s,#6           //right shift
 
     ld1         {v1.4h},[x0],x2             //loads pi2_src
     smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -228,7 +228,7 @@ prolog:
     add         x20,x1,x14,lsl #1
     csel        x1, x20, x1,le
 
-    sqshrn      v26.4h, v26.4s,#6           //right shift
+    shrn        v26.4h, v26.4s,#6           //right shift
     subs        x12,x12,#4
 
     beq         epilog                      //jumps to epilog
@@ -241,7 +241,7 @@ kernel_4:
     smlal       v30.4s, v2.4h, v18.4h
     smlal       v30.4s, v3.4h, v19.4h
 
-    sqshrn      v24.4h, v24.4s,#6           //right shift
+    shrn        v24.4h, v24.4s,#6           //right shift
 
     ld1         {v4.4h},[x0],x2
     smull       v28.4s, v1.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -254,7 +254,7 @@ kernel_4:
     lsl         x20,x6,#1
     csel        x11, x20, x11,le
 
-    sqshrn      v30.4h, v30.4s,#6           //right shift
+    shrn        v30.4h, v30.4s,#6           //right shift
 
     ld1         {v5.4h},[x0],x2
     smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -266,7 +266,7 @@ kernel_4:
     ld1         {v0.4h},[x4],#8             //loads pu1_src
     smlal       v26.4s, v5.4h, v19.4h
 
-    sqshrn      v28.4h, v28.4s,#6           //right shift
+    shrn        v28.4h, v28.4s,#6           //right shift
 
     ld1         {v1.4h},[x0],x2             //loads pi2_src
     smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -279,7 +279,7 @@ kernel_4:
     st1         {v30.2s},[x1],#8            //stores the loaded value
     smlal       v24.4s, v6.4h, v19.4h
 
-    sqshrn      v26.4h, v26.4s,#6           //right shift
+    shrn        v26.4h, v26.4s,#6           //right shift
     add         x20,x1,x14,lsl #1
     csel        x1, x20, x1,le
 
@@ -294,7 +294,7 @@ epilog:
     smlal       v30.4s, v2.4h, v18.4h
     smlal       v30.4s, v3.4h, v19.4h
 
-    sqshrn      v24.4h, v24.4s,#6           //right shift
+    shrn        v24.4h, v24.4s,#6           //right shift
 
     smull       v28.4s, v1.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     ld1         {v4.4h},[x0],x2
@@ -303,7 +303,7 @@ epilog:
     smlal       v28.4s, v3.4h, v18.4h
     smlal       v28.4s, v4.4h, v19.4h
 
-    sqshrn      v30.4h, v30.4s,#6           //right shift
+    shrn        v30.4h, v30.4s,#6           //right shift
 
     smull       v26.4s, v2.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
     ld1         {v5.4h},[x0],x2
@@ -311,7 +311,7 @@ epilog:
     smlal       v26.4s, v4.4h, v18.4h
     smlal       v26.4s, v5.4h, v19.4h
 
-    sqshrn      v28.4h, v28.4s,#6           //right shift
+    shrn        v28.4h, v28.4s,#6           //right shift
 
     st1         {v24.2s},[x9]               //stores the loaded value
     smull       v24.4s, v3.4h, v16.4h       //vmull_s16(src_tmp2, coeff_0)
@@ -322,11 +322,11 @@ epilog:
     smlal       v24.4s, v6.4h, v19.4h
     st1         {v30.2s},[x1],#8            //stores the loaded value
 
-    sqshrn      v26.4h, v26.4s,#6           //right shift
+    shrn        v26.4h, v26.4s,#6           //right shift
 
     st1         {v28.2s},[x9],x3            //stores the loaded value
 
-    sqshrn      v24.4h, v24.4s,#6           //right shift
+    shrn        v24.4h, v24.4s,#6           //right shift
     st1         {v26.2s},[x9],x3            //stores the loaded value
 
     st1         {v24.2s},[x9]               //stores the loaded value

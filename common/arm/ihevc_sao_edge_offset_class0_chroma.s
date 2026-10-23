@@ -325,7 +325,6 @@ PU1_SRC_LOOP_RESIDUE:
 
     SUB         r14,r10,r4                  @(ht - row)
     VMOV.16     D15[3],r11                  @vsetq_lane_u8(pu1_src_left[ht - row], pu1_cur_row_tmp, 15)
-    LSL         r14,r14,#1                  @(ht - row) * 2
 
     VLD1.8      D30,[r12]!                  @II pu1_cur_row = vld1q_u8(pu1_src_cpy)
     VLD1.8      D31,[r12]                   @II pu1_cur_row = vld1q_u8(pu1_src_cpy)
@@ -335,21 +334,21 @@ PU1_SRC_LOOP_RESIDUE:
 
     LDRH        r11,[r2,#2]                 @II load pu1_src_left
     VCGT.U8     Q8,Q6,Q7                    @vcgtq_u8(pu1_cur_row, pu1_cur_row_tmp)
-    MUL         r14,r14,r1                  @(ht - row) * 2 * src_strd
+    MUL         r14,r14,r1                  @(ht - row) * src_strd
 
     VCLT.U8     Q9,Q6,Q7                    @vcltq_u8(pu1_cur_row, pu1_cur_row_tmp)
     VMOV.16     D29[3],r11                  @II vsetq_lane_u8(pu1_src_left[ht - row], pu1_cur_row_tmp, 15)
 
     LDRB        r11,[r12,#16]               @pu1_src_cpy[16]
     VSUB.U8     Q10,Q9,Q8                   @sign_left = vreinterpretq_s8_u8(vsubq_u8(cmp_lt, cmp_gt))
-    ADD         r5,r14,r5                   @(ht - row) * 2 * src_strd + (wd - 2)
+    ADD         r5,r14,r5                   @(ht - row) * src_strd + (wd - 2)
 
     VMOV.8      D14[0],r11                  @pu1_cur_row_tmp = vsetq_lane_u8(pu1_src_cpy[16], pu1_cur_row_tmp, 0)
     VEXT.8      Q14,Q14,Q15,#14             @II pu1_cur_row_tmp = vextq_u8(pu1_cur_row_tmp, pu1_cur_row, 15)
 
     LDRB        r11,[r12,#17]               @pu1_src_cpy[17]
     VCGT.U8     Q13,Q15,Q14                 @II vcgtq_u8(pu1_cur_row, pu1_cur_row_tmp)
-    LDRH        r14,[r6, r5]                @pu1_src_org[(ht - row)  * 2* src_strd + (wd - 2)]
+    LDRH        r14,[r6, r5]                @pu1_src_org[(ht - row) * src_strd + (wd - 2)]
 
     VMOV.8      D14[1],r11                  @pu1_cur_row_tmp = vsetq_lane_u8(pu1_src_cpy[17], pu1_cur_row_tmp, 1)
     VCLT.U8     Q12,Q15,Q14                 @II vcltq_u8(pu1_cur_row, pu1_cur_row_tmp)
@@ -409,13 +408,12 @@ PU1_SRC_LOOP_RESIDUE:
     VUZP.8      D28,D29                     @II
     SUB         r14,r10,r4                  @II (ht - row)
 
-    LSL         r14,r14,#1                  @II (ht - row) * 2
     VTBL.8      D26,{D11},D28               @II offset = vtbl1_s8(offset_tbl_u, vget_low_s8(edge_idx))
-    MUL         r14,r14,r1                  @II (ht - row) * 2 * src_strd
+    MUL         r14,r14,r1                  @II (ht - row) * src_strd
 
-    ADD         r5,r14,r5                   @II (ht - row) * 2 * src_strd + (wd - 2)
+    ADD         r5,r14,r5                   @II (ht - row) * src_strd + (wd - 2)
     VTBL.8      D27,{D0},D29                @II
-    LDRH        r14,[r6, r5]                @II pu1_src_org[(ht - row)  * 2* src_strd + (wd - 2)]
+    LDRH        r14,[r6, r5]                @II pu1_src_org[(ht - row) * src_strd + (wd - 2)]
 
     VZIP.S8     D26,D27                     @II
     VST1.8      {D18},[r12],r1              @vst1q_u8(pu1_src_cpy, pu1_cur_row)

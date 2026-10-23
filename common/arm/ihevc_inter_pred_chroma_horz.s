@@ -158,6 +158,7 @@ outer_loop_16:
     mov         r9,#10
     and         r0, r12, #31
     rsb         r8,r5,r3,lsl #1
+    rsb         r7,r5,r2,lsl #1
     pld         [r12, r2, lsl #1]
 
 
@@ -212,7 +213,7 @@ inner_loop_16:
     vmull.u8    q11,d10,d25                 @mul_res = vmull_u8(src[0_3], coeffabs_3)@
 
 
-    addeq       r12,r12,r8
+    addeq       r12,r12,r7
     addeq       r4,r12,r2
     vmlsl.u8    q11,d8,d24                  @mul_res = vmlsl_u8(src[0_2], coeffabs_2)@
 
@@ -302,7 +303,7 @@ epilog:
     vmlsl.u8    q11,d8,d24                  @mul_res = vmlsl_u8(src[0_2], coeffabs_2)@
     subs        r10,r10,#16                 @decrement the wd loop
     vmlal.u8    q11,d12,d26                 @mul_res = vmlsl_u8(src[0_0], coeffabs_0)@
-    addeq       r12,r12,r8
+    addeq       r12,r12,r7
     vmlsl.u8    q11,d14,d27                 @mul_res = vmlal_u8(src[0_1], coeffabs_1)@
     moveq       r10,r5                      @2wd
 
