@@ -922,11 +922,11 @@ WORD32 ihevcd_set_default_params(codec_t *ps_codec)
 
     WORD32 ret = IV_SUCCESS;
 
-    ps_codec->e_pic_skip_mode = IVD_SKIP_NONE;
+    ps_codec->e_pic_skip_mode = ps_codec->u4_thumbnail_mode ? IVD_SKIP_PB : IVD_SKIP_NONE;
     ps_codec->i4_strd = 0;
     ps_codec->i4_disp_strd = 0;
     ps_codec->i4_header_mode = 0;
-    ps_codec->e_pic_out_order = IVD_DISPLAY_FRAME_OUT;
+    ps_codec->e_frm_out_mode = ps_codec->u4_thumbnail_mode ? IVD_DECODE_FRAME_OUT : IVD_DISPLAY_FRAME_OUT;
     return ret;
 }
 
@@ -2278,7 +2278,8 @@ WORD32 ihevcd_allocate_dynamic_bufs(codec_t *ps_codec)
          * In case of asynchronous parsing and processing, number of buffers should increase here
          * based on when parsing and processing threads are synchronized
          */
-        max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
+        max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+                        ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
         /* Size for holding mv_buf_t for each MV Bank
          * One extra MV Bank is needed to hold current pics MV bank.
          */
@@ -2467,6 +2468,7 @@ WORD32 ihevcd_create(iv_obj_t *ps_codec_obj,
     }
     ps_codec->u4_enable_yuv_formats = ps_create_ip->u4_enable_yuv_formats;
     ps_codec->u4_enable_hbd = ps_create_ip->u4_enable_hbd;
+    ps_codec->u4_thumbnail_mode = ps_create_ip->u4_thumbnail_mode;
 
     ret = ihevcd_init(ps_codec);
 
@@ -3181,6 +3183,12 @@ WORD32 ihevcd_set_params(iv_obj_t *ps_codec_obj,
         ret = IV_FAIL;
     }
     ps_codec->e_frm_out_mode = s_ctl_dynparams_ip->e_frm_out_mode;
+
+    if(ps_codec->u4_thumbnail_mode)
+    {
+        ps_codec->e_pic_skip_mode = IVD_SKIP_PB;
+        ps_codec->e_frm_out_mode = IVD_DECODE_FRAME_OUT;
+    }
 
     return ret;
 

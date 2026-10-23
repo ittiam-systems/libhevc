@@ -137,6 +137,7 @@ std::unique_ptr<DecHelper> DecHelper::Builder::build() {
   helper->mOutputFilePath = mOutputFilePath;
   helper->mRefMd5Path = mRefMd5Path;
   helper->mEnableHbd = mEnableHbd;
+  helper->mThumbnailMode = mThumbnailMode;
 
   // Load and parse expected reference MD5s if the path is provided
   if (mRefMd5Path.has_value()) {
@@ -216,6 +217,7 @@ bool DecHelper::initDecoder() {
   createIp.u4_enable_frame_info = 0;
   createIp.u4_enable_yuv_formats = 15;  // Supports all chroma formats
   createIp.u4_enable_hbd = mEnableHbd;
+  createIp.u4_thumbnail_mode = mThumbnailMode;
   createIp.u4_keep_threads_active = 1;
 
   IV_API_CALL_STATUS_T ret =
@@ -407,6 +409,12 @@ bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
 
     frameReady = true;
 
+    if (mThumbnailMode &&
+        decodeOp.s_ivd_video_decode_op_t.e_pic_type != IV_I_FRAME &&
+        decodeOp.s_ivd_video_decode_op_t.e_pic_type != IV_IDR_FRAME) {
+      return false;
+    }
+
     // Process the decoded frame directly inside decodeFrame
     processDecodedFrame(mOutputBuf, frameIndex);
   }
@@ -441,6 +449,9 @@ bool DecHelper::flushDecoder(size_t& frameIndex) {
     size_t consumed = 0;
     bool frameReady = false;
     if (!decodeFrame(consumed, frameReady, frameIndex, true)) {
+      if (frameReady) {
+        return false;
+      }
       // Decoder returns an error once all the frames are flushed
       // which is expected. So return true here.
       return true;
@@ -509,6 +520,9 @@ bool DecHelper::decodeFile() {
 
       if (!decodeFrame(consumed, frameReady, frameIndex)) {
         return false;
+      }
+      if (mThumbnailMode && frameReady) {
+        return true;
       }
       if (consumed == 0 && !frameReady) {
         break;
