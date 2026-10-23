@@ -203,9 +203,10 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
     sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
 
     /* Get maximum number of buffers for the current picture size */
-    max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
+    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+                    ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
-    if(ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT)
+    if(!ps_codec->u4_thumbnail_mode && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
         max_dpb_size += ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1];
 
     max_dpb_size++;
@@ -514,9 +515,10 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     /* Compute the number of Pic buffers needed */
-    max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
+    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+                    ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
-    if(ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT)
+    if(!ps_codec->u4_thumbnail_mode && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
         max_dpb_size += ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1];
 
     /* Allocate one extra picture to handle current frame
@@ -699,7 +701,8 @@ IHEVCD_ERROR_T ihevcd_mv_buf_mgr_add_bufs(codec_t *ps_codec)
 
 
     /* Compute the number of MV Bank buffers needed */
-    max_dpb_size = ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
+    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+                    ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
     /* Allocate one extra MV Bank to handle current frame
      * In case of asynchronous parsing and processing, number of buffers should increase here
@@ -998,6 +1001,27 @@ IHEVCD_ERROR_T ihevcd_parse_pic_init(codec_t *ps_codec)
         ps_cur_pic->u4_ts = ps_codec->u4_ts;
         ps_cur_pic->i4_abs_poc = ps_slice_hdr->i4_abs_pic_order_cnt;
         ps_cur_pic->i4_poc_lsb = ps_slice_hdr->i4_pic_order_cnt_lsb;
+        if((NAL_IDR_W_LP == ps_slice_hdr->i1_nal_unit_type) ||
+                        (NAL_IDR_N_LP == ps_slice_hdr->i1_nal_unit_type))
+        {
+            ps_codec->e_dec_pic_type = IV_IDR_FRAME;
+        }
+        else if(ISLICE == ps_slice_hdr->i1_slice_type)
+        {
+            ps_codec->e_dec_pic_type = IV_I_FRAME;
+        }
+        else if(PSLICE == ps_slice_hdr->i1_slice_type)
+        {
+            ps_codec->e_dec_pic_type = IV_P_FRAME;
+        }
+        else if(BSLICE == ps_slice_hdr->i1_slice_type)
+        {
+            ps_codec->e_dec_pic_type = IV_B_FRAME;
+        }
+        else
+        {
+            ps_codec->e_dec_pic_type = IV_NA_FRAME;
+        }
         pu1_buf = ps_cur_pic->pu1_luma;
         pu1_cur_pic_luma = pu1_buf;
 
