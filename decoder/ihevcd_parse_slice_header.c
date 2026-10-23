@@ -1139,6 +1139,11 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
         {
             return IHEVCD_IGNORE_SLICE;
         }
+
+        if(ps_codec->u4_thumbnail_mode && (ps_codec->u4_pic_cnt >= 1))
+        {
+            return IHEVCD_IGNORE_SLICE;
+        }
     }
 
     if(prev_slice_incomplete_flag)

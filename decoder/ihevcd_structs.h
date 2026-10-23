@@ -1889,11 +1889,6 @@ struct _codec_t
     IVD_FRAME_SKIP_MODE_T e_pic_skip_mode;
 
     /**
-     * Display or decode order dump of output
-     */
-    IVD_DISPLAY_FRAME_OUT_MODE_T e_pic_out_order;
-
-    /**
      * Coding type of the picture that is decoded
      */
     IV_PICTURE_CODING_TYPE_T e_dec_pic_type;
@@ -2086,6 +2081,11 @@ struct _codec_t
      * Controls whether the decoder is allowed to support 10-bit decoding
      */
     UWORD32 u4_enable_hbd;
+
+    /**
+     * Controls whether the decoder operates in thumbnail mode
+     */
+    UWORD32 u4_thumbnail_mode;
 
     /**
      * Pointer to hold TU data for a set of CTBs or a picture

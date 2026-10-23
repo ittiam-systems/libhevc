@@ -66,6 +66,10 @@ class DecHelper {
       mEnableHbd = enableHbd;
       return *this;
     }
+    Builder& setThumbnailMode(bool thumbnailMode) {
+      mThumbnailMode = thumbnailMode;
+      return *this;
+    }
 
     // Validates parameters and returns an initialized DecHelper instance
     std::unique_ptr<DecHelper> build();
@@ -78,6 +82,7 @@ class DecHelper {
     std::optional<std::string> mOutputFilePath;
     std::optional<std::string> mRefMd5Path;
     bool mEnableHbd = true;
+    bool mThumbnailMode = false;
     friend class DecHelper;
   };
 
@@ -122,6 +127,7 @@ class DecHelper {
   std::optional<std::string> mRefMd5Path;
   std::vector<std::string> mRefMd5s;
   bool mEnableHbd = true;
+  bool mThumbnailMode = false;
 
   BitsFile mBitsFile;
   RawFile mOutFile;

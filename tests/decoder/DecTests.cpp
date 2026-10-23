@@ -113,6 +113,25 @@ static const std::vector<DecodeStreamConfig> kDecodeStreams = {
       "bbb_10b_176x144_yuv444_md5.txt"},
 };
 
+TEST(DecTest, DecodeThumbnailMode) {
+  for (const auto& config : kDecodeStreams) {
+    std::string inputPath = getFullPath(config.inputFile);
+    std::string refMd5Path = getFullPath(config.refMd5File);
+
+    auto builder = DecHelper::Builder()
+                       .setInputFilePath(inputPath)
+                       .setRefMd5Path(refMd5Path)
+                       .setFormat(config.format)
+                       .setThumbnailMode(true);
+
+    std::unique_ptr<DecHelper> helper = builder.build();
+    ASSERT_NE(helper, nullptr)
+        << "Failed to build DecHelper for input: " << inputPath;
+    EXPECT_TRUE(helper->decodeFile())
+        << "Decoding failed in thumbnail mode for input: " << inputPath;
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(DecoderRegression, DecTestFixture,
                          ::testing::Combine(::testing::ValuesIn(kDecodeStreams),
                                             ::testing::Values(1, 2, 3, 4)));

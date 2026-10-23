@@ -693,6 +693,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
     ps_codec->i4_pic_present = 0;
     ps_codec->i4_slice_error = 0;
     ps_codec->ps_disp_buf = NULL;
+    ps_codec->e_dec_pic_type = IV_NA_FRAME;
 
     if(ps_codec->i4_num_cores > 1)
     {
@@ -788,6 +789,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             ps_codec->pu1_inp_bitsbuf += (nal_ofst + nal_len);
             ps_codec->i4_bytes_remaining -= (nal_ofst + nal_len);
 
+            ret = IHEVCD_SUCCESS;
             continue;
         }
 

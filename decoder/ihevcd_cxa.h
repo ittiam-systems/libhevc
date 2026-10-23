@@ -213,6 +213,16 @@ typedef struct {
      * bit_depth_luma_minus8 or bit_depth_chroma_minus8 are non-zero in SPS.
      */
     UWORD32                                 u4_enable_hbd;
+
+    /**
+     * Flag specifying whether the decoder operates in thumbnail mode.
+     *
+     * Values and corresponding behavior:
+     * 0: Normal decoding mode
+     * 1: Thumbnail mode (decodes only the first I/IDR frame and outputs
+     *    immediately without reorder delay)
+     */
+    UWORD32                                 u4_thumbnail_mode;
 }ihevcd_cxa_create_ip_t;
 
 
