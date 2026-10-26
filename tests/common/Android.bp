@@ -9,7 +9,7 @@ package {
 
 cc_defaults {
     name: "libhevc_tests_defaults",
-    host_supported: true,
+    host_supported: false,
     arch: {
         arm: {
             cflags: [
