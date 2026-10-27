@@ -799,7 +799,7 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                 int16x8_t r4 = vcombine_s16(vreinterpret_s16_s32(w0.val[0]), vreinterpret_s16_s32(w2.val[0]));
                 int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s16_s32(w3.val[0]));
                 int16x8_t r6 = vcombine_s16(vreinterpret_s16_s32(w0.val[1]), vreinterpret_s16_s32(w2.val[1]));
-                int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s32_s16(w3.val[1]));
+                int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s16_s32(w3.val[1]));
                 vst1q_s16(pi2_tmp + (cb + 0) * 16 + 8, r4);
                 vst1q_s16(pi2_tmp + (cb + 1) * 16 + 8, r5);
                 vst1q_s16(pi2_tmp + (cb + 2) * 16 + 8, r6);
@@ -981,7 +981,7 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int16x8_t r0 = vcombine_s16(vreinterpret_s16_s32(u0.val[0]), vreinterpret_s16_s32(u2.val[0]));
                     int16x8_t r1 = vcombine_s16(vreinterpret_s16_s32(u1.val[0]), vreinterpret_s16_s32(u3.val[0]));
                     int16x8_t r2 = vcombine_s16(vreinterpret_s16_s32(u0.val[1]), vreinterpret_s16_s32(u2.val[1]));
-                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s32_s16(u3.val[1]));
+                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s16_s32(u3.val[1]));
 
                     /* Transpose s1[k] (8 vectors of 4 elements) to 4 vectors of 8 elements: cols 8..15 */
                     int16x4x2_t v0 = vtrn_s16(s1[k][0], s1[k][1]);
@@ -993,9 +993,9 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int32x2x2_t w2 = vtrn_s32(vreinterpret_s32_s16(v2.val[0]), vreinterpret_s32_s16(v3.val[0]));
                     int32x2x2_t w3 = vtrn_s32(vreinterpret_s32_s16(v2.val[1]), vreinterpret_s32_s16(v3.val[1]));
                     int16x8_t r4 = vcombine_s16(vreinterpret_s16_s32(w0.val[0]), vreinterpret_s16_s32(w2.val[0]));
-                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s32_s16(w3.val[0]));
+                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s16_s32(w3.val[0]));
                     int16x8_t r6 = vcombine_s16(vreinterpret_s16_s32(w0.val[1]), vreinterpret_s16_s32(w2.val[1]));
-                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s32_s16(w3.val[1]));
+                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s16_s32(w3.val[1]));
 
                     /* Row 0 */
                     int16x8_t pred0 = vreinterpretq_s16_u16(vld1q_u16(pu2_pred + (row_out + 0) * pred_strd + 0));
@@ -1249,7 +1249,7 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int16x8_t r0 = vcombine_s16(vreinterpret_s16_s32(u0.val[0]), vreinterpret_s16_s32(u2.val[0]));
                     int16x8_t r1 = vcombine_s16(vreinterpret_s16_s32(u1.val[0]), vreinterpret_s16_s32(u3.val[0]));
                     int16x8_t r2 = vcombine_s16(vreinterpret_s16_s32(u0.val[1]), vreinterpret_s16_s32(u2.val[1]));
-                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s32_s16(u3.val[1]));
+                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s16_s32(u3.val[1]));
 
                     /* Transpose s1[k] (8 vectors of 4 elements) to 4 vectors of 8 elements: cols 8..15 */
                     int16x4x2_t v0 = vtrn_s16(s1[k][0], s1[k][1]);
@@ -1261,9 +1261,9 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int32x2x2_t w2 = vtrn_s32(vreinterpret_s32_s16(v2.val[0]), vreinterpret_s32_s16(v3.val[0]));
                     int32x2x2_t w3 = vtrn_s32(vreinterpret_s32_s16(v2.val[1]), vreinterpret_s32_s16(v3.val[1]));
                     int16x8_t r4 = vcombine_s16(vreinterpret_s16_s32(w0.val[0]), vreinterpret_s16_s32(w2.val[0]));
-                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s32_s16(w3.val[0]));
+                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s16_s32(w3.val[0]));
                     int16x8_t r6 = vcombine_s16(vreinterpret_s16_s32(w0.val[1]), vreinterpret_s16_s32(w2.val[1]));
-                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s32_s16(w3.val[1]));
+                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s16_s32(w3.val[1]));
 
                     /* Row 0 */
                     int16x8_t pred0 = vreinterpretq_s16_u16(vld1q_u16(pu2_pred + (row_out + 0) * pred_strd + 0));
@@ -1604,7 +1604,7 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int16x8_t r0 = vcombine_s16(vreinterpret_s16_s32(u0.val[0]), vreinterpret_s16_s32(u2.val[0]));
                     int16x8_t r1 = vcombine_s16(vreinterpret_s16_s32(u1.val[0]), vreinterpret_s16_s32(u3.val[0]));
                     int16x8_t r2 = vcombine_s16(vreinterpret_s16_s32(u0.val[1]), vreinterpret_s16_s32(u2.val[1]));
-                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s32_s16(u3.val[1]));
+                    int16x8_t r3 = vcombine_s16(vreinterpret_s16_s32(u1.val[1]), vreinterpret_s16_s32(u3.val[1]));
 
                     /* Transpose s1[k] (8 vectors of 4 elements) to 4 vectors of 8 elements: cols 8..15 */
                     int16x4x2_t v0 = vtrn_s16(s1[k][0], s1[k][1]);
@@ -1616,9 +1616,9 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
                     int32x2x2_t w2 = vtrn_s32(vreinterpret_s32_s16(v2.val[0]), vreinterpret_s32_s16(v3.val[0]));
                     int32x2x2_t w3 = vtrn_s32(vreinterpret_s32_s16(v2.val[1]), vreinterpret_s32_s16(v3.val[1]));
                     int16x8_t r4 = vcombine_s16(vreinterpret_s16_s32(w0.val[0]), vreinterpret_s16_s32(w2.val[0]));
-                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s32_s16(w3.val[0]));
+                    int16x8_t r5 = vcombine_s16(vreinterpret_s16_s32(w1.val[0]), vreinterpret_s16_s32(w3.val[0]));
                     int16x8_t r6 = vcombine_s16(vreinterpret_s16_s32(w0.val[1]), vreinterpret_s16_s32(w2.val[1]));
-                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s32_s16(w3.val[1]));
+                    int16x8_t r7 = vcombine_s16(vreinterpret_s16_s32(w1.val[1]), vreinterpret_s16_s32(w3.val[1]));
 
                     /* Row 0 */
                     int16x8_t pred0 = vreinterpretq_s16_u16(vld1q_u16(pu2_pred + (row_out + 0) * pred_strd + 0));
