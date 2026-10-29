@@ -16,13 +16,8 @@ target_link_libraries(libhevc_dsp_test_utils PUBLIC libhevcdec)
 if(ENABLE_TESTS)
 enable_testing()
 libhevc_add_gtest_executable(
-  ihevc_luma_inter_pred_test
-  SOURCES ${HEVC_ROOT}/tests/common/ihevc_luma_inter_pred_test.cc
-)
-
-libhevc_add_gtest_executable(
-  ihevc_chroma_inter_pred_test
-  SOURCES ${HEVC_ROOT}/tests/common/ihevc_chroma_inter_pred_test.cc
+  ihevc_inter_pred_test
+  SOURCES ${HEVC_ROOT}/tests/common/ihevc_inter_pred_test.cc
 )
 
 libhevc_add_gtest_executable(

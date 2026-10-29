@@ -46,7 +46,9 @@ static constexpr int kTapSize = 8;
 static constexpr int kMaxHeight = kMaxSize + kTapSize;
 
 const std::vector<std::pair<int, int>>& getLumaPUBlockSizes();
-const std::vector<std::pair<int, int>>& getChromaPUBlockSizes();
+const std::vector<std::pair<int, int>>& getChromaPUBlockSizes();  // 4:2:0 only
+// Chroma block sizes for 4:2:0, 4:2:2 and 4:4:4
+const std::vector<std::pair<int, int>>& getChromaAllFmtBlockSizes();
 const std::vector<UWORD8>& getSrc8Buf();
 const std::vector<IV_ARCH_T>& getTstArch();
 std::string get_arch_str(IV_ARCH_T arch);

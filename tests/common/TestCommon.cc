@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -56,6 +57,19 @@ const std::vector<std::pair<int, int>>& getChromaPUBlockSizes() {
     return ret;
   }();
   return kChromaPUBlockSizes;
+}
+
+const std::vector<std::pair<int, int>>& getChromaAllFmtBlockSizes() {
+  static const std::vector<std::pair<int, int>> kChromaAllFmtBlockSizes = []() {
+    std::set<std::pair<int, int>> sizes;
+    for (const auto& size : getLumaPUBlockSizes()) {
+      sizes.insert({size.first / 2, size.second / 2});  // 4:2:0
+      sizes.insert({size.first / 2, size.second});      // 4:2:2
+      sizes.insert(size);                               // 4:4:4
+    }
+    return std::vector<std::pair<int, int>>(sizes.begin(), sizes.end());
+  }();
+  return kChromaAllFmtBlockSizes;
 }
 
 const std::vector<UWORD8>& getSrc8Buf() {

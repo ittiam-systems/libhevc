@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <string>
 #include <utility>
@@ -78,7 +79,7 @@ struct InterPredConfig {
   int coeff_idx = 1;
 };
 
-// Buffers structure for inter prediction
+// Buffers structure for inter prediction benchmarks
 template <typename SrcT, typename DstT>
 struct InterPredBuffers {
   int src_strd;
@@ -87,6 +88,41 @@ struct InterPredBuffers {
   std::vector<SrcT> src;
   std::vector<DstT> dst;
 };
+
+// Buffers structure for inter prediction unit tests
+template <typename SrcT, typename DstT>
+struct InterPredTestBuffers {
+  std::vector<SrcT> src;
+  std::vector<DstT> dst_ref;
+  std::vector<DstT> dst_tst;
+  int src_offset = 0;
+
+  SrcT* src_ptr() { return src.data() + src_offset; }
+};
+
+// Creates and initializes inter prediction buffers for unit tests
+template <typename SrcT, typename DstT>
+InterPredTestBuffers<SrcT, DstT> CreateInterPredTestBuffers(int ht, int src_strd, int dst_strd,
+                                                            SrcT src_min, SrcT src_max, int top,
+                                                            int bot, int pad_dst = 0) {
+// Largest SIMD reads outside the block: 3 before (luma filter), and 12 after (16-byte load on a
+// 4-sample row)
+const int pad_before = 3;
+const int pad_after = 12;
+
+InterPredTestBuffers<SrcT, DstT> b;
+b.src_offset = top * src_strd + pad_before;
+b.src.resize(src_strd * (top + ht + bot) + pad_before + pad_after);
+
+  FillRandom(b.src, src_min, src_max, 42);
+
+  // Random dst, so any write outside the block changes a value
+  b.dst_ref.resize(dst_strd * ht + pad_dst);
+  FillRandom(b.dst_ref, std::numeric_limits<DstT>::min(), std::numeric_limits<DstT>::max(), 1337);
+  b.dst_tst = b.dst_ref;
+
+  return b;
+}
 
 // Creates and initializes inter prediction buffers for Luma (components=1) or
 // Chroma (components=2)
@@ -145,6 +181,24 @@ ihevc_inter_pred_w16inp_w16out_ft* GetChromaInterPredW16inpW16outFn(
     const ihevc_func_selector_t* selector, InterPredOp op);
 
 // Function getters for HBD Luma and Chroma
+ihevc_hbd_inter_pred_ft* GetHbdLumaInterPredFn(const ihevc_func_selector_t* selector,
+                                               InterPredOp op);
+ihevc_hbd_inter_pred_w16out_ft* GetHbdLumaInterPredW16outFn(const ihevc_func_selector_t* selector,
+                                                            InterPredOp op);
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdLumaInterPredW16inpFn(const ihevc_func_selector_t* selector,
+                                                            InterPredOp op);
+ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdLumaInterPredW16inpW16outFn(
+    const ihevc_func_selector_t* selector, InterPredOp op);
+
+ihevc_hbd_inter_pred_ft* GetHbdChromaInterPredFn(const ihevc_func_selector_t* selector,
+                                                 InterPredOp op);
+ihevc_hbd_inter_pred_w16out_ft* GetHbdChromaInterPredW16outFn(
+    const ihevc_func_selector_t* selector, InterPredOp op);
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdChromaInterPredW16inpFn(
+    const ihevc_func_selector_t* selector, InterPredOp op);
+ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdChromaInterPredW16inpW16outFn(
+    const ihevc_func_selector_t* selector, InterPredOp op);
+
 ihevc_hbd_inter_pred_ft* GetHbdLumaInterPredFn(IV_ARCH_T arch, InterPredOp op);
 ihevc_hbd_inter_pred_w16out_ft* GetHbdLumaInterPredW16outFn(IV_ARCH_T arch,
                                                             InterPredOp op);
@@ -165,88 +219,6 @@ ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdChromaInterPredW16inpW16outFn(
 // Benchmark sizes
 const std::vector<std::pair<int, int>>& GetInterPredLumaBenchmarkSizes();
 const std::vector<std::pair<int, int>>& GetInterPredChromaBenchmarkSizes();
-
-#if defined(GTEST_TEST) || defined(GOOGLETEST_INCLUDE_GTEST_GTEST_H_) || \
-    defined(GTEST_INCLUDE_GTEST_GTEST_H_)
-// Test parameters: width, height, src_stride_mul, dst_stride_mul, coeff_idx,
-// arch
-using InterPredTestParam =
-    std::tuple<std::pair<int, int>, int, int, int, IV_ARCH_T>;
-
-template <int kComponents>
-std::string PrintInterPredTestParam(
-    const testing::TestParamInfo<InterPredTestParam>& info) {
-  int wd, ht, src_strd_mul, dst_strd_mul, coeff_idx;
-  IV_ARCH_T arch;
-  std::pair<int, int> block_size;
-  std::tie(block_size, src_strd_mul, dst_strd_mul, coeff_idx, arch) =
-      info.param;
-  std::tie(wd, ht) = block_size;
-  return std::to_string(wd) + "x" + std::to_string(ht) + "_src_stride_" +
-         std::to_string(src_strd_mul * kComponents * wd) + "_dst_stride_" +
-         std::to_string(dst_strd_mul * kComponents * wd) + "_coeff_" +
-         std::to_string(coeff_idx) + "_" + get_arch_str(arch);
-}
-
-template <typename SrcT, typename DstT, int kComponents>
-class InterPredTestBase : public ::testing::TestWithParam<InterPredTestParam> {
- protected:
-  void SetUp() override {
-    std::pair<int, int> block_size;
-    std::tie(block_size, src_strd_mul, dst_strd_mul, coeff_idx, arch) =
-        GetParam();
-    std::tie(wd, ht) = block_size;
-    src_strd = kComponents * wd * src_strd_mul;
-    dst_strd = kComponents * wd * dst_strd_mul;
-
-    // Increase allocations for x86/x86_64 to avoid out-of-bounds reads/writes
-    // in SIMD implementations.
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-    defined(_M_IX86)
-    int pad_dst = 16;
-#else
-    int pad_dst = 0;
-#endif
-
-    dst_buf_ref.resize(dst_strd * ht + pad_dst);
-    dst_buf_tst.resize(dst_strd * ht + pad_dst);
-
-    // Set pv_src to a valid position within src_buf to allow negative indexing
-    pv_src = reinterpret_cast<SrcT*>(const_cast<UWORD8*>(getSrc8Buf().data())) +
-             (kTapSize / 2) * src_strd;
-    pv_dst_ref = dst_buf_ref.data();
-    pv_dst_tst = dst_buf_tst.data();
-
-    pi1_coeffs = (kComponents == 1) ? gai1_ihevc_luma_filter[coeff_idx]
-                                    : gai1_ihevc_chroma_filter[coeff_idx];
-    tst = get_tst_func_ptr(arch);
-    ref = get_ref_func_ptr();
-  }
-
-  template <typename FuncPtr>
-  void RunTest(FuncPtr func_ptr) {
-    (ref->*func_ptr)(pv_src, pv_dst_ref, src_strd, dst_strd, pi1_coeffs, ht,
-                     wd);
-    (tst->*func_ptr)(pv_src, pv_dst_tst, src_strd, dst_strd, pi1_coeffs, ht,
-                     wd);
-    ASSERT_NO_FATAL_FAILURE(compare_output<DstT>(dst_buf_ref, dst_buf_tst,
-                                                 kComponents * wd, ht,
-                                                 dst_strd));
-  }
-
-  int wd, ht, src_strd_mul, dst_strd_mul, coeff_idx;
-  int src_strd, dst_strd;
-  std::vector<DstT> dst_buf_ref;
-  std::vector<DstT> dst_buf_tst;
-  SrcT* pv_src;
-  DstT* pv_dst_ref;
-  DstT* pv_dst_tst;
-  WORD8* pi1_coeffs;
-  IV_ARCH_T arch;
-  const ihevc_func_selector_t* tst;
-  const ihevc_func_selector_t* ref;
-};
-#endif
 
 #ifdef BENCHMARK_BENCHMARK_H_
 template <typename SrcT, typename DstT, int kComponents, typename FnT>

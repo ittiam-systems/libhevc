@@ -128,111 +128,134 @@ ihevc_inter_pred_w16inp_w16out_ft* GetChromaInterPredW16inpW16outFn(
   return nullptr;
 }
 
-ihevc_hbd_inter_pred_ft* GetHbdLumaInterPredFn(IV_ARCH_T arch, InterPredOp op) {
-  if (arch == ARCH_NA) {
-    switch (op) {
-      case InterPredOp::kCopy:
-        return ihevc_hbd_inter_pred_luma_copy;
-      case InterPredOp::kHorz:
-        return ihevc_hbd_inter_pred_luma_horz;
-      case InterPredOp::kVert:
-        return ihevc_hbd_inter_pred_luma_vert;
-      default:
-        return nullptr;
-    }
+ihevc_hbd_inter_pred_ft* GetHbdLumaInterPredFn(const ihevc_func_selector_t* selector,
+                                               InterPredOp op) {
+  if (!selector) return nullptr;
+  switch (op) {
+    case InterPredOp::kCopy:
+      return selector->ihevc_hbd_inter_pred_luma_copy_fptr;
+    case InterPredOp::kHorz:
+      return selector->ihevc_hbd_inter_pred_luma_horz_fptr;
+    case InterPredOp::kVert:
+      return selector->ihevc_hbd_inter_pred_luma_vert_fptr;
+    default:
+      return nullptr;
   }
-  return nullptr;
 }
 
-ihevc_hbd_inter_pred_w16out_ft* GetHbdLumaInterPredW16outFn(IV_ARCH_T arch,
+ihevc_hbd_inter_pred_w16out_ft* GetHbdLumaInterPredW16outFn(const ihevc_func_selector_t* selector,
                                                             InterPredOp op) {
-  if (arch == ARCH_NA) {
-    switch (op) {
-      case InterPredOp::kCopyW16out:
-        return ihevc_hbd_inter_pred_luma_copy_w16out;
-      case InterPredOp::kHorzW16out:
-        return ihevc_hbd_inter_pred_luma_horz_w16out;
-      case InterPredOp::kVertW16out:
-        return ihevc_hbd_inter_pred_luma_vert_w16out;
-      default:
-        return nullptr;
-    }
+  if (!selector) return nullptr;
+  switch (op) {
+    case InterPredOp::kCopyW16out:
+      return selector->ihevc_hbd_inter_pred_luma_copy_w16out_fptr;
+    case InterPredOp::kHorzW16out:
+      return selector->ihevc_hbd_inter_pred_luma_horz_w16out_fptr;
+    case InterPredOp::kVertW16out:
+      return selector->ihevc_hbd_inter_pred_luma_vert_w16out_fptr;
+    default:
+      return nullptr;
   }
-  return nullptr;
 }
 
-ihevc_hbd_inter_pred_w16inp_ft* GetHbdLumaInterPredW16inpFn(IV_ARCH_T arch,
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdLumaInterPredW16inpFn(const ihevc_func_selector_t* selector,
                                                             InterPredOp op) {
-  if (arch == ARCH_NA) {
-    if (op == InterPredOp::kVertW16inp) {
-      return ihevc_hbd_inter_pred_luma_vert_w16inp;
-    }
+  if (!selector) return nullptr;
+  if (op == InterPredOp::kVertW16inp) {
+    return selector->ihevc_hbd_inter_pred_luma_vert_w16inp_fptr;
   }
   return nullptr;
 }
 
 ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdLumaInterPredW16inpW16outFn(
-    IV_ARCH_T arch, InterPredOp op) {
-  if (arch == ARCH_NA) {
-    if (op == InterPredOp::kVertW16inpW16out) {
-      return ihevc_hbd_inter_pred_luma_vert_w16inp_w16out;
-    }
+    const ihevc_func_selector_t* selector, InterPredOp op) {
+  if (!selector) return nullptr;
+  if (op == InterPredOp::kVertW16inpW16out) {
+    return selector->ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_fptr;
   }
   return nullptr;
 }
 
-ihevc_hbd_inter_pred_ft* GetHbdChromaInterPredFn(IV_ARCH_T arch,
+ihevc_hbd_inter_pred_ft* GetHbdChromaInterPredFn(const ihevc_func_selector_t* selector,
                                                  InterPredOp op) {
-  if (arch == ARCH_NA) {
-    switch (op) {
-      case InterPredOp::kCopy:
-        return ihevc_hbd_inter_pred_chroma_copy;
-      case InterPredOp::kHorz:
-        return ihevc_hbd_inter_pred_chroma_horz;
-      case InterPredOp::kVert:
-        return ihevc_hbd_inter_pred_chroma_vert;
-      default:
-        return nullptr;
-    }
+  if (!selector) return nullptr;
+  switch (op) {
+    case InterPredOp::kCopy:
+      return selector->ihevc_hbd_inter_pred_chroma_copy_fptr;
+    case InterPredOp::kHorz:
+      return selector->ihevc_hbd_inter_pred_chroma_horz_fptr;
+    case InterPredOp::kVert:
+      return selector->ihevc_hbd_inter_pred_chroma_vert_fptr;
+    default:
+      return nullptr;
   }
-  return nullptr;
 }
 
-ihevc_hbd_inter_pred_w16out_ft* GetHbdChromaInterPredW16outFn(IV_ARCH_T arch,
-                                                              InterPredOp op) {
-  if (arch == ARCH_NA) {
-    switch (op) {
-      case InterPredOp::kCopyW16out:
-        return ihevc_hbd_inter_pred_chroma_copy_w16out;
-      case InterPredOp::kHorzW16out:
-        return ihevc_hbd_inter_pred_chroma_horz_w16out;
-      case InterPredOp::kVertW16out:
-        return ihevc_hbd_inter_pred_chroma_vert_w16out;
-      default:
-        return nullptr;
-    }
+ihevc_hbd_inter_pred_w16out_ft* GetHbdChromaInterPredW16outFn(
+    const ihevc_func_selector_t* selector, InterPredOp op) {
+  if (!selector) return nullptr;
+  switch (op) {
+    case InterPredOp::kCopyW16out:
+      return selector->ihevc_hbd_inter_pred_chroma_copy_w16out_fptr;
+    case InterPredOp::kHorzW16out:
+      return selector->ihevc_hbd_inter_pred_chroma_horz_w16out_fptr;
+    case InterPredOp::kVertW16out:
+      return selector->ihevc_hbd_inter_pred_chroma_vert_w16out_fptr;
+    default:
+      return nullptr;
   }
-  return nullptr;
 }
 
-ihevc_hbd_inter_pred_w16inp_ft* GetHbdChromaInterPredW16inpFn(IV_ARCH_T arch,
-                                                              InterPredOp op) {
-  if (arch == ARCH_NA) {
-    if (op == InterPredOp::kVertW16inp) {
-      return ihevc_hbd_inter_pred_chroma_vert_w16inp;
-    }
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdChromaInterPredW16inpFn(
+    const ihevc_func_selector_t* selector, InterPredOp op) {
+  if (!selector) return nullptr;
+  if (op == InterPredOp::kVertW16inp) {
+    return selector->ihevc_hbd_inter_pred_chroma_vert_w16inp_fptr;
   }
   return nullptr;
 }
 
 ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdChromaInterPredW16inpW16outFn(
-    IV_ARCH_T arch, InterPredOp op) {
-  if (arch == ARCH_NA) {
-    if (op == InterPredOp::kVertW16inpW16out) {
-      return ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out;
-    }
+    const ihevc_func_selector_t* selector, InterPredOp op) {
+  if (!selector) return nullptr;
+  if (op == InterPredOp::kVertW16inpW16out) {
+    return selector->ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out_fptr;
   }
   return nullptr;
+}
+
+ihevc_hbd_inter_pred_ft* GetHbdLumaInterPredFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdLumaInterPredFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16out_ft* GetHbdLumaInterPredW16outFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdLumaInterPredW16outFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdLumaInterPredW16inpFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdLumaInterPredW16inpFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdLumaInterPredW16inpW16outFn(IV_ARCH_T arch,
+                                                                         InterPredOp op) {
+  return GetHbdLumaInterPredW16inpW16outFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_ft* GetHbdChromaInterPredFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdChromaInterPredFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16out_ft* GetHbdChromaInterPredW16outFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdChromaInterPredW16outFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16inp_ft* GetHbdChromaInterPredW16inpFn(IV_ARCH_T arch, InterPredOp op) {
+  return GetHbdChromaInterPredW16inpFn(get_func_ptr(arch), op);
+}
+
+ihevc_hbd_inter_pred_w16inp_w16out_ft* GetHbdChromaInterPredW16inpW16outFn(IV_ARCH_T arch,
+                                                                           InterPredOp op) {
+  return GetHbdChromaInterPredW16inpW16outFn(get_func_ptr(arch), op);
 }
 
 const std::vector<std::pair<int, int>>& GetInterPredLumaBenchmarkSizes() {
