@@ -84,3 +84,29 @@ cc_test {
         //cfi: true,
     },
 }
+
+// Decoder function tables for decoder unit tests
+cc_library_static {
+    name: "libhevc_tests_decoder",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: [
+        "decoder/dec_func_selector.cc",
+    ],
+    export_include_dirs: ["decoder"],
+    static_libs: [
+        "libhevc_tests_utils",
+        "libhevcdec",
+        "libgtest",
+    ],
+}
+
+cc_test {
+    name: "ihevcd_itrans_recon_dc_test",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["decoder/ihevcd_itrans_recon_dc_test.cc"],
+    static_libs: [
+        "libhevc_tests_decoder",
+        "libhevc_tests_utils",
+        "libhevcdec",
+    ],
+}
