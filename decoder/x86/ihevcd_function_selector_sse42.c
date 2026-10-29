@@ -154,4 +154,31 @@ void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector)
     ps_func_selector->ihevcd_fmt_conv_444sp_to_444p_fptr                =  &ihevcd_fmt_conv_444sp_to_444p;
     ps_func_selector->ihevcd_itrans_recon_dc_luma_fptr                  =  &ihevcd_itrans_recon_dc_luma_sse42;
     ps_func_selector->ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma_sse42;
+
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_ttype1_fptr            =  &ihevc_hbd_itrans_recon_4x4_ttype1_sse42;
+    ps_func_selector->ihevc_hbd_itrans_recon_4x4_fptr                   =  &ihevc_hbd_itrans_recon_4x4_sse42;
+    ps_func_selector->ihevc_hbd_itrans_recon_8x8_fptr                   =  &ihevc_hbd_itrans_recon_8x8_sse42;
+    ps_func_selector->ihevc_hbd_itrans_recon_16x16_fptr                 =  &ihevc_hbd_itrans_recon_16x16_sse42;
+    ps_func_selector->ihevc_hbd_itrans_recon_32x32_fptr                 =  &ihevc_hbd_itrans_recon_32x32_sse42;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_4x4_fptr            =  &ihevc_hbd_chroma_itrans_recon_4x4_sse42;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_8x8_fptr            =  &ihevc_hbd_chroma_itrans_recon_8x8_sse42;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_16x16_fptr          =  &ihevc_hbd_chroma_itrans_recon_16x16_sse42;
+    ps_func_selector->ihevc_hbd_chroma_itrans_recon_32x32_fptr          =  &ihevc_hbd_chroma_itrans_recon_32x32;
+
+    ps_func_selector->ihevc_hbd_deblk_luma_vert_fptr                    =  &ihevc_hbd_deblk_luma_vert_sse42;
+    ps_func_selector->ihevc_hbd_deblk_luma_horz_fptr                    =  &ihevc_hbd_deblk_luma_horz_sse42;
+    ps_func_selector->ihevc_hbd_deblk_chroma_vert_fptr                  =  &ihevc_hbd_deblk_chroma_vert_sse42;
+    ps_func_selector->ihevc_hbd_deblk_chroma_horz_fptr                  =  &ihevc_hbd_deblk_chroma_horz_sse42;
+    ps_func_selector->ihevc_hbd_sao_band_offset_luma_fptr               =  &ihevc_hbd_sao_band_offset_luma_sse42;
+    ps_func_selector->ihevc_hbd_sao_band_offset_chroma_fptr             =  &ihevc_hbd_sao_band_offset_chroma_sse42;
+
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_fptr             =  &ihevc_hbd_sao_edge_offset_class0_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_fptr             =  &ihevc_hbd_sao_edge_offset_class1_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_fptr             =  &ihevc_hbd_sao_edge_offset_class2_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_fptr             =  &ihevc_hbd_sao_edge_offset_class3_sse42;
+
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class0_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class0_chroma_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class1_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class1_chroma_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class2_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class2_chroma_sse42;
+    ps_func_selector->ihevc_hbd_sao_edge_offset_class3_chroma_fptr      =  &ihevc_hbd_sao_edge_offset_class3_chroma_sse42;
 }

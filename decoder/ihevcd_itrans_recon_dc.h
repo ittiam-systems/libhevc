@@ -91,4 +91,8 @@ ihevcd_itrans_recon_dc_chroma_ft ihevcd_itrans_recon_dc_chroma_sse42;
 ihevcd_itrans_recon_dc_luma_ft ihevcd_itrans_recon_dc_luma_av8;
 ihevcd_itrans_recon_dc_chroma_ft ihevcd_itrans_recon_dc_chroma_av8;
 
+/* NEONINTR function declarations */
+ihevcd_hbd_itrans_recon_dc_luma_ft ihevcd_hbd_itrans_recon_dc_luma_neonintr;
+ihevcd_hbd_itrans_recon_dc_chroma_ft ihevcd_hbd_itrans_recon_dc_chroma_neonintr;
+
 #endif /* _IHEVCD_ITRANS_RECON_DC_H_ */
