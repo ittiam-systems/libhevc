@@ -57,26 +57,12 @@ void ihevc_hbd_itrans_recon_16x16_neonintr(WORD16 *pi2_src,
     /* Fast Zero-block bypass: both zero_cols and zero_rows checked */
     if(((UWORD32)(zero_cols & 0xFFFF) == 0xFFFFU) || ((UWORD32)(zero_rows & 0xFFFF) == 0xFFFFU))
     {
-        if(pred_strd == 16 && dst_strd == 16)
+        for(WORD32 i = 0; i < 16; i++)
         {
-            /* Contiguous 16x16 UWORD16 block = 512 bytes */
-            const UWORD8 *p_src = (const UWORD8 *)pu2_pred;
-            UWORD8 *p_dst = (UWORD8 *)pu2_dst;
-            for(WORD32 i = 0; i < 8; i++)
-            {
-                uint16x8x4_t v = vld1q_u16_x4((const UWORD16 *)(p_src + i * 64));
-                vst1q_u16_x4((UWORD16 *)(p_dst + i * 64), v);
-            }
-        }
-        else
-        {
-            for(WORD32 i = 0; i < 16; i++)
-            {
-                vst1q_u16(pu2_dst + 0, vld1q_u16(pu2_pred + 0));
-                vst1q_u16(pu2_dst + 8, vld1q_u16(pu2_pred + 8));
-                pu2_pred += pred_strd;
-                pu2_dst += dst_strd;
-            }
+            vst1q_u16(pu2_dst + 0, vld1q_u16(pu2_pred + 0));
+            vst1q_u16(pu2_dst + 8, vld1q_u16(pu2_pred + 8));
+            pu2_pred += pred_strd;
+            pu2_dst += dst_strd;
         }
         return;
     }
