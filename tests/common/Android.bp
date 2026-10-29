@@ -62,6 +62,16 @@ cc_library_static {
     ],
 }
 
+// TestCommon only, for tests that link libhevcdec: it needs no libhevccommon or libcrypto
+cc_library_static {
+    name: "libhevc_tests_utils",
+    defaults: ["libhevc_tests_defaults"],
+    srcs: ["TestCommon.cc"],
+    export_include_dirs: ["."],
+    header_libs: ["libhevcdec_headers"],
+    static_libs: ["libgtest"],
+}
+
 cc_defaults {
     name: "libhevc_benchmarks_defaults",
     defaults: ["libhevc_tests_defaults"],
