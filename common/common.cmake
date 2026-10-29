@@ -257,6 +257,7 @@ else()
     "${HEVC_ROOT}/common/x86/ihevc_hbd_chroma_itrans_recon_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_hbd_deblk_ssse3_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_hbd_deblk_sse42_intr.c"
+    "${HEVC_ROOT}/common/x86/ihevc_hbd_inter_pred_filters_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_hbd_itrans_recon_sse42_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_hbd_tables_x86_intr.c"
     "${HEVC_ROOT}/common/x86/ihevc_inter_pred_filters_ssse3_intr.c"

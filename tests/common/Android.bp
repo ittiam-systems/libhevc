@@ -83,9 +83,9 @@ cc_defaults {
 }
 
 cc_test {
-    name: "ihevc_luma_inter_pred_test",
+    name: "ihevc_inter_pred_test",
     defaults: ["libhevc_tests_defaults"],
-    srcs: ["ihevc_luma_inter_pred_test.cc"],
+    srcs: ["ihevc_inter_pred_test.cc"],
     static_libs: [
         "libhevc_tests_common",
         "libhevccommon",
@@ -116,16 +116,6 @@ cc_test {
     name: "ihevc_itrans_recon_test",
     defaults: ["libhevc_tests_defaults"],
     srcs: ["ihevc_itrans_recon_test.cc"],
-    static_libs: [
-        "libhevc_tests_common",
-        "libhevccommon",
-    ],
-}
-
-cc_test {
-    name: "ihevc_chroma_inter_pred_test",
-    defaults: ["libhevc_tests_defaults"],
-    srcs: ["ihevc_chroma_inter_pred_test.cc"],
     static_libs: [
         "libhevc_tests_common",
         "libhevccommon",

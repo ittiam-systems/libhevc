@@ -205,6 +205,22 @@ typedef struct
     ihevc_hbd_chroma_itrans_recon_8x8_ft *ihevc_hbd_chroma_itrans_recon_8x8_fptr;
     ihevc_hbd_chroma_itrans_recon_16x16_ft *ihevc_hbd_chroma_itrans_recon_16x16_fptr;
     ihevc_hbd_chroma_itrans_recon_32x32_ft *ihevc_hbd_chroma_itrans_recon_32x32_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_copy_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_copy_w16out_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_horz_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_horz_w16out_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_chroma_vert_fptr;
+    ihevc_hbd_inter_pred_w16inp_ft *ihevc_hbd_inter_pred_chroma_vert_w16inp_fptr;
+    ihevc_hbd_inter_pred_w16inp_w16out_ft *ihevc_hbd_inter_pred_chroma_vert_w16inp_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_chroma_vert_w16out_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_horz_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_vert_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_vert_w16out_fptr;
+    ihevc_hbd_inter_pred_w16inp_ft *ihevc_hbd_inter_pred_luma_vert_w16inp_fptr;
+    ihevc_hbd_inter_pred_ft *ihevc_hbd_inter_pred_luma_copy_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_copy_w16out_fptr;
+    ihevc_hbd_inter_pred_w16out_ft *ihevc_hbd_inter_pred_luma_horz_w16out_fptr;
+    ihevc_hbd_inter_pred_w16inp_w16out_ft *ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_fptr;
 }ihevc_func_selector_t;
 
 
