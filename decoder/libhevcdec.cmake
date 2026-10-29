@@ -41,6 +41,7 @@ if("${SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${SYSTEM_PROCESSOR}" STREQUAL "a
     "${HEVC_ROOT}/decoder/arm64/ihevcd_fmt_conv_420sp_to_420sp.s"
     "${HEVC_ROOT}/decoder/arm/ihevcd_function_selector.c"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_function_selector_av8.c"
+    "${HEVC_ROOT}/decoder/arm/ihevcd_hbd_itrans_recon_dc_neon_intr.c"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_chroma.s"
     "${HEVC_ROOT}/decoder/arm64/ihevcd_itrans_recon_dc_luma.s")
 
@@ -53,6 +54,7 @@ elseif("${SYSTEM_PROCESSOR}" STREQUAL "aarch32")
     "${HEVC_ROOT}/decoder/arm/ihevcd_fmt_conv_420sp_to_420sp.s"
     "${HEVC_ROOT}/decoder/arm/ihevcd_function_selector_a9q.c"
     "${HEVC_ROOT}/decoder/arm/ihevcd_function_selector.c"
+    "${HEVC_ROOT}/decoder/arm/ihevcd_hbd_itrans_recon_dc_neon_intr.c"
     "${HEVC_ROOT}/decoder/arm/ihevcd_itrans_recon_dc_chroma.s"
     "${HEVC_ROOT}/decoder/arm/ihevcd_itrans_recon_dc_luma.s")
 
