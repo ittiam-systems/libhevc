@@ -386,28 +386,28 @@ void ihevc_hbd_inter_pred_luma_horz_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -420,25 +420,25 @@ void ihevc_hbd_inter_pred_luma_horz_sse42(UWORD16 *pu2_src,
                     res_temp6_8x16b = _mm_srai_epi32(res_temp6_8x16b, FILTER_PREC);          /* row = 0 */
                     res_temp5_8x16b = _mm_packus_epi32(res_temp6_8x16b, res_temp6_8x16b);       /* row = 0 */
 
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row =1 */
                     src_temp13_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp11_8x16b = _mm_madd_epi16(src_temp13_16x8b, coeff0_1_8x16b);    /* row = 1 */
                     /* row =1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp14_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp12_8x16b = _mm_madd_epi16(src_temp14_16x8b, coeff2_3_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp15_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp13_8x16b = _mm_madd_epi16(src_temp15_16x8b, coeff4_5_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp16_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp14_8x16b = _mm_madd_epi16(src_temp16_16x8b, coeff6_7_8x16b);    /* row = 1 */
@@ -558,28 +558,28 @@ void ihevc_hbd_inter_pred_luma_horz_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -592,25 +592,25 @@ void ihevc_hbd_inter_pred_luma_horz_sse42(UWORD16 *pu2_src,
                     res_temp6_8x16b = _mm_srai_epi32(res_temp6_8x16b, FILTER_PREC);          /* row = 0 */
                     res_temp5_8x16b = _mm_packus_epi32(res_temp6_8x16b, res_temp6_8x16b);       /* row = 0 */
 
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row =1 */
                     src_temp13_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp11_8x16b = _mm_madd_epi16(src_temp13_16x8b, coeff0_1_8x16b);    /* row = 1 */
                     /* row =1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp14_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp12_8x16b = _mm_madd_epi16(src_temp14_16x8b, coeff2_3_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp15_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp13_8x16b = _mm_madd_epi16(src_temp15_16x8b, coeff4_5_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp16_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp14_8x16b = _mm_madd_epi16(src_temp16_16x8b, coeff6_7_8x16b);    /* row = 1 */
@@ -645,27 +645,27 @@ void ihevc_hbd_inter_pred_luma_horz_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -1151,37 +1151,37 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
             PREFETCH((char const*)(pu2_src+(11 * src_strd)), _MM_HINT_T0);
 
             /* load 8 pixel values */
-            s2_0_16x8b  = _mm_loadu_si128((__m128i *)(pu2_src+(-3 * src_strd)));
+            s2_0_16x8b  = _mm_loadl_epi64((__m128i *)(pu2_src+(-3 * src_strd)));
 
             /* load 8 pixel values */
-            s2_1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(-2 * src_strd)));
+            s2_1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(-2 * src_strd)));
 
             s3_0_16x8b = _mm_unpacklo_epi16(s2_0_16x8b, s2_1_16x8b);
 
             s0_8x16b = _mm_madd_epi16(s3_0_16x8b, coeff0_1_8x16b );
             /* load 8 pixel values */
-            s2_2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(-1 * src_strd)));
+            s2_2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(-1 * src_strd)));
 
             /* load 8 pixel values */
-            s2_3_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(0 * src_strd)));
+            s2_3_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(0 * src_strd)));
 
             s3_1_16x8b = _mm_unpacklo_epi16(s2_2_16x8b, s2_3_16x8b);
 
             s1_8x16b = _mm_madd_epi16(s3_1_16x8b, coeff2_3_8x16b );
             /* load 8 pixel values */
-            s2_4_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(1 * src_strd)));
+            s2_4_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(1 * src_strd)));
 
             /* load 8 pixel values */
-            s2_5_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(2 * src_strd)));
+            s2_5_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(2 * src_strd)));
 
             s3_2_16x8b = _mm_unpacklo_epi16(s2_4_16x8b, s2_5_16x8b);
 
             s2_8x16b = _mm_madd_epi16(s3_2_16x8b, coeff4_5_8x16b );
             /* load 8 pixel values */
-            s2_6_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(3 * src_strd)));
+            s2_6_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(3 * src_strd)));
 
             /* load 8 pixel values */
-            s2_7_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(4 * src_strd)));
+            s2_7_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(4 * src_strd)));
 
             s3_3_16x8b = _mm_unpacklo_epi16(s2_6_16x8b, s2_7_16x8b);
 
@@ -1208,10 +1208,10 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
             s22_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff4_5_8x16b );
 
             /* load 8 pixel values */
-            s2_8_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(5 * src_strd)));
+            s2_8_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(5 * src_strd)));
 
             /* load 8 pixel values */
-            s2_9_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(6 * src_strd)));
+            s2_9_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(6 * src_strd)));
 
             s3_4_16x8b = _mm_unpacklo_epi16(s2_8_16x8b, s2_9_16x8b);
 
@@ -1272,7 +1272,7 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
             s32_8x16b = _mm_madd_epi16(s4_3_16x8b, coeff4_5_8x16b );
 
             /* load 8 pixel values */
-            s2_10_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(7 * src_strd)));
+            s2_10_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(7 * src_strd)));
 
             s4_4_16x8b = _mm_unpacklo_epi16(s2_9_16x8b, s2_10_16x8b);
 
@@ -1319,7 +1319,7 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
                 s2_8x16b = _mm_madd_epi16(s3_2_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 4)th row */
-                s2_0_16x8b = _mm_loadu_si128((__m128i *)(pu2_src));
+                s2_0_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src));
 
                 s3_3_16x8b = _mm_unpacklo_epi16(s2_10_16x8b, s2_0_16x8b);
                 s3_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff6_7_8x16b );
@@ -1352,10 +1352,10 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
                 s22_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 5)th row */
-                s2_1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + src_strd));
+                s2_1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + src_strd));
 
                 /* load 16 pixel values from (cur_row + 6)th row */
-                s2_2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + (2 * src_strd)));
+                s2_2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + (2 * src_strd)));
 
                 /* unpacking (cur_row + 5)th row and (cur_row + 6)th row */
                 s3_4_16x8b = _mm_unpacklo_epi16(s2_1_16x8b, s2_2_16x8b);
@@ -1410,7 +1410,7 @@ void ihevc_hbd_inter_pred_luma_vert_sse42(UWORD16 *pu2_src,
                 s32_8x16b = _mm_madd_epi16(s4_3_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 7)th row */
-                s2_3_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + (3 * src_strd)));
+                s2_3_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + (3 * src_strd)));
 
                 /* unpacking (cur_row + 6)th row and (cur_row + 7)th row */
                 s4_4_16x8b = _mm_unpacklo_epi16(s2_2_16x8b, s2_3_16x8b);
@@ -1546,9 +1546,6 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                     /* load 8 pixel values from row 0 */
                     src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));   /* row = 0 */
 
-                    /* load 8 pixel values from row 1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
-
                     src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
@@ -1613,28 +1610,28 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -1646,25 +1643,25 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                     res_temp6_8x16b = _mm_srai_epi32(res_temp5_8x16b, (FILTER_PREC-14+bit_depth));          /* row = 0 */
                     res_temp5_8x16b = _mm_packs_epi32(res_temp6_8x16b, res_temp6_8x16b);       /* row = 0 */
 
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row =1 */
                     src_temp13_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp11_8x16b = _mm_madd_epi16(src_temp13_16x8b, coeff0_1_8x16b);    /* row = 1 */
                     /* row =1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp14_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp12_8x16b = _mm_madd_epi16(src_temp14_16x8b, coeff2_3_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp15_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp13_8x16b = _mm_madd_epi16(src_temp15_16x8b, coeff4_5_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp16_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp14_8x16b = _mm_madd_epi16(src_temp16_16x8b, coeff6_7_8x16b);    /* row = 1 */
@@ -1702,9 +1699,6 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                 {
                     /* load 8 pixel values from row 0 */
                     src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));   /* row = 0 */
-
-                    /* load 8 pixel values from row 1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
 
                     src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
@@ -1769,28 +1763,28 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset)); /* row = 1 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -1802,25 +1796,25 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                     res_temp6_8x16b = _mm_srai_epi32(res_temp5_8x16b, (FILTER_PREC-14+bit_depth));          /* row = 0 */
                     res_temp5_8x16b = _mm_packs_epi32(res_temp6_8x16b, res_temp6_8x16b);       /* row = 0 */
 
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+1));                 /* row =1 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row =1 */
                     src_temp13_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp11_8x16b = _mm_madd_epi16(src_temp13_16x8b, coeff0_1_8x16b);    /* row = 1 */
                     /* row =1 */
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+2));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+3));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp14_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp12_8x16b = _mm_madd_epi16(src_temp14_16x8b, coeff2_3_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+4));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+5));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp15_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp13_8x16b = _mm_madd_epi16(src_temp15_16x8b, coeff4_5_8x16b);    /* row = 1 */
 
-                    src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
-                    src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
+                    src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+6));                 /* row = 1 */
+                    src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+src_strd - 3+ offset+7));                /* row = 1 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row =1 */
                     src_temp16_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b); /* row = 1 */
                     res_temp14_8x16b = _mm_madd_epi16(src_temp16_16x8b, coeff6_7_8x16b);    /* row = 1 */
@@ -1847,27 +1841,27 @@ void ihevc_hbd_inter_pred_luma_horz_w16out_sse42(UWORD16 *pu2_src,
                 for(col = 0; col < wd; col += 4)
                 {
                     /* load 16 pixel values from 12:-3 pos. relative to cur. pos. */
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset));         /* row = 0 */
 
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+1));                 /* row = 0 */
                     /* pix. |5:-2|4:-3| to do two dot-products at same time */              /* row = 0 */
                     src_temp3_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp1_8x16b = _mm_madd_epi16(src_temp3_16x8b, coeff0_1_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+2));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+3));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp4_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp2_8x16b = _mm_madd_epi16(src_temp4_16x8b, coeff2_3_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+4));                /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+5));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp3_8x16b = _mm_madd_epi16(src_temp5_16x8b, coeff4_5_8x16b);    /* row = 0 */
 
-                    src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
-                    src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
+                    src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+6));                 /* row = 0 */
+                    src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src - 3+ offset+7));                  /* row = 0 */
                     /* pix. |7:0|6:-1| to do two dot-products at same time */               /* row = 0 */
                     src_temp6_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b); /* row = 0 */
                     res_temp4_8x16b = _mm_madd_epi16(src_temp6_16x8b, coeff6_7_8x16b);    /* row = 0 */
@@ -2351,37 +2345,37 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
             PREFETCH((char const*)(pu2_src+(11 * src_strd)), _MM_HINT_T0);
 
             /* load 8 pixel values */
-            s2_0_16x8b  = _mm_loadu_si128((__m128i *)(pu2_src+(-3 * src_strd)));
+            s2_0_16x8b  = _mm_loadl_epi64((__m128i *)(pu2_src+(-3 * src_strd)));
 
             /* load 8 pixel values */
-            s2_1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(-2 * src_strd)));
+            s2_1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(-2 * src_strd)));
 
             s3_0_16x8b = _mm_unpacklo_epi16(s2_0_16x8b, s2_1_16x8b);
 
             s0_8x16b = _mm_madd_epi16(s3_0_16x8b, coeff0_1_8x16b );
             /* load 8 pixel values */
-            s2_2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(-1 * src_strd)));
+            s2_2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(-1 * src_strd)));
 
             /* load 8 pixel values */
-            s2_3_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(0 * src_strd)));
+            s2_3_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(0 * src_strd)));
 
             s3_1_16x8b = _mm_unpacklo_epi16(s2_2_16x8b, s2_3_16x8b);
 
             s1_8x16b = _mm_madd_epi16(s3_1_16x8b, coeff2_3_8x16b );
             /* load 8 pixel values */
-            s2_4_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(1 * src_strd)));
+            s2_4_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(1 * src_strd)));
 
             /* load 8 pixel values */
-            s2_5_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(2 * src_strd)));
+            s2_5_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(2 * src_strd)));
 
             s3_2_16x8b = _mm_unpacklo_epi16(s2_4_16x8b, s2_5_16x8b);
 
             s2_8x16b = _mm_madd_epi16(s3_2_16x8b, coeff4_5_8x16b );
             /* load 8 pixel values */
-            s2_6_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(3 * src_strd)));
+            s2_6_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(3 * src_strd)));
 
             /* load 8 pixel values */
-            s2_7_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(4 * src_strd)));
+            s2_7_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(4 * src_strd)));
 
             s3_3_16x8b = _mm_unpacklo_epi16(s2_6_16x8b, s2_7_16x8b);
 
@@ -2404,10 +2398,10 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
             s22_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff4_5_8x16b );
 
             /* load 8 pixel values */
-            s2_8_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(5 * src_strd)));
+            s2_8_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(5 * src_strd)));
 
             /* load 8 pixel values */
-            s2_9_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(6 * src_strd)));
+            s2_9_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(6 * src_strd)));
 
             s3_4_16x8b = _mm_unpacklo_epi16(s2_8_16x8b, s2_9_16x8b);
 
@@ -2458,7 +2452,7 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
             s32_8x16b = _mm_madd_epi16(s4_3_16x8b, coeff4_5_8x16b );
 
             /* load 8 pixel values */
-            s2_10_16x8b = _mm_loadu_si128((__m128i *)(pu2_src+(7 * src_strd)));
+            s2_10_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src+(7 * src_strd)));
 
             s4_4_16x8b = _mm_unpacklo_epi16(s2_9_16x8b, s2_10_16x8b);
 
@@ -2499,7 +2493,7 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
                 s2_8x16b = _mm_madd_epi16(s3_2_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 4)th row */
-                s2_0_16x8b = _mm_loadu_si128((__m128i *)(pu2_src));
+                s2_0_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src));
 
                 s3_3_16x8b = _mm_unpacklo_epi16(s2_10_16x8b, s2_0_16x8b);
                 s3_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff6_7_8x16b );
@@ -2524,10 +2518,10 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
                 s22_8x16b = _mm_madd_epi16(s3_3_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 5)th row */
-                s2_1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + src_strd));
+                s2_1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + src_strd));
 
                 /* load 16 pixel values from (cur_row + 6)th row */
-                s2_2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + (2 * src_strd)));
+                s2_2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + (2 * src_strd)));
 
                 /* unpacking (cur_row + 5)th row and (cur_row + 6)th row */
                 s3_4_16x8b = _mm_unpacklo_epi16(s2_1_16x8b, s2_2_16x8b);
@@ -2571,7 +2565,7 @@ void ihevc_hbd_inter_pred_luma_vert_w16out_sse42(UWORD16 *pu2_src,
                 s32_8x16b = _mm_madd_epi16(s4_3_16x8b, coeff4_5_8x16b );
 
                 /* load 16 pixel values from (cur_row + 7)th row */
-                s2_3_16x8b = _mm_loadu_si128((__m128i *)(pu2_src + (3 * src_strd)));
+                s2_3_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src + (3 * src_strd)));
 
                 /* unpacking (cur_row + 6)th row and (cur_row + 7)th row */
                 s4_4_16x8b = _mm_unpacklo_epi16(s2_2_16x8b, s2_3_16x8b);
@@ -3643,33 +3637,33 @@ void ihevc_hbd_inter_pred_chroma_horz_sse42(UWORD16 *pu2_src,
             for(col = 0; col < 2*wd; col += 4)
             {
                 /* load 16 pixel values from row 0 */
-                src_temp1_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset)); /* pu1_src[col + (i-1) * 2] */
+                src_temp1_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset)); /* pu1_src[col + (i-1) * 2] */
 
                 /* load 16 pixel values from row 1 */
-                src_temp11_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + src_strd + offset)); /* pu1_src[col + (i-1) * 2] */
+                src_temp11_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + src_strd + offset)); /* pu1_src[col + (i-1) * 2] */
 
                 /* Derive the source pixels for processing the 2nd pixel */
-                src_temp2_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset+2));
+                src_temp2_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset+2));
 
                 src_temp5_16x8b= _mm_unpacklo_epi16(src_temp1_16x8b, src_temp2_16x8b);
 
                 /* Derive the source pixels for processing the 3rd pixel */
-                src_temp3_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset+4));
+                src_temp3_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset+4));
 
                 /* Derive the source pixels for processing the 4th pixel */
-                src_temp4_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset+6));
+                src_temp4_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset+6));
 
                 src_temp6_16x8b= _mm_unpacklo_epi16(src_temp3_16x8b, src_temp4_16x8b);
 
                 /* Derive the source pixels for processing the 2nd pixel */
-                src_temp12_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + src_strd + offset+2));
+                src_temp12_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + src_strd + offset+2));
 
                 src_temp15_16x8b= _mm_unpacklo_epi16(src_temp11_16x8b, src_temp12_16x8b);
 
                 /* Derive the source pixels for processing the 3rd pixel */
-                src_temp13_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + src_strd + offset+4));
+                src_temp13_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + src_strd + offset+4));
                 /* Derive the source pixels for processing the 4th pixel */
-                src_temp14_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + src_strd + offset+6));
+                src_temp14_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + src_strd + offset+6));
 
                 src_temp16_16x8b= _mm_unpacklo_epi16(src_temp13_16x8b, src_temp14_16x8b);
 
@@ -4299,7 +4293,7 @@ void ihevc_hbd_inter_pred_chroma_horz_w16out_sse42(UWORD16 *pu2_src,
                 src_temp3_16x8b = _mm_srli_si128(src_temp1_16x8b, 8);
 
                 /* Derive the source pixels for processing the 4th pixel of row 0 */
-                src_temp4_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset+6));
+                src_temp4_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset+6));
 
                 src_temp6_16x8b= _mm_unpacklo_epi16(src_temp3_16x8b, src_temp4_16x8b);
 
@@ -4312,7 +4306,7 @@ void ihevc_hbd_inter_pred_chroma_horz_w16out_sse42(UWORD16 *pu2_src,
                 src_temp13_16x8b = _mm_srli_si128(src_temp11_16x8b, 8);
 
                 /* Derive the source pixels for processing the 4th pixel of row 1 */
-                src_temp14_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + src_strd + offset+6));
+                src_temp14_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + src_strd + offset+6));
 
                 src_temp16_16x8b= _mm_unpacklo_epi16(src_temp13_16x8b, src_temp14_16x8b);
 
@@ -4362,7 +4356,7 @@ void ihevc_hbd_inter_pred_chroma_horz_w16out_sse42(UWORD16 *pu2_src,
                 src_temp3_16x8b = _mm_srli_si128(src_temp1_16x8b, 8);
 
                 /* Derive the source pixels for processing the 4th pixel of row 0 */
-                src_temp4_16x8b = _mm_loadu_si128((__m128i *)(pu2_src -2 + offset+6));
+                src_temp4_16x8b = _mm_loadl_epi64((__m128i *)(pu2_src -2 + offset+6));
 
                 src_temp6_16x8b= _mm_unpacklo_epi16(src_temp3_16x8b, src_temp4_16x8b);
 
