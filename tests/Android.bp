@@ -7,7 +7,7 @@ package {
 // Decoder Test Helper Library
 cc_library_static {
     name: "libhevc_dec_helper",
-    host_supported: true,
+    host_supported: false,
     srcs: [
         "decoder/DecHelper.cpp",
     ],
@@ -30,7 +30,7 @@ cc_library_static {
 // Encoder Test Helper Library
 cc_library_static {
     name: "libhevc_enc_helper",
-    host_supported: true,
+    host_supported: false,
     srcs: [
         "encoder/EncHelper.cpp",
     ],
