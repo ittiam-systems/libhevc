@@ -2045,6 +2045,8 @@ WORD32 ihevce_t_q_iq_ssd_scan_fxn(
 
     *pi4_tu_bits = 0;
     *pi4_coeff_off = 0;
+    *pi4_zero_col = 0;
+    *pi4_zero_row = 0;
     pu1_is_recon_available[0] = 0;
 
     if((PRED_MODE_SKIP == packed_pred_mode) || (0 == early_cbf))
