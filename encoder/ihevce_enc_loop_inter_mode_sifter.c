@@ -2024,7 +2024,7 @@ static UWORD8 ihevce_compute_pred_and_populate_modes(
     merge_cand_list_t as_merge_cand[MAX_NUM_MERGE_CAND];
 
     UWORD8 i, j;
-    UWORD32 au4_cost[4][NUM_INTER_PU_PARTS];
+    UWORD32 au4_cost[4][NUM_INTER_PU_PARTS] = { 0 };
     UWORD8 au1_final_pred_buf_id[4][NUM_INTER_PU_PARTS];
     UWORD8 au1_merge_pred_buf_idx_array[3];
     UWORD8 au1_is_top_used[MAX_NUM_MERGE_CAND];
