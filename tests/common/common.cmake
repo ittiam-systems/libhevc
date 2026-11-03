@@ -6,6 +6,7 @@ add_library(libhevc_dsp_test_utils STATIC
   ${HEVC_ROOT}/tests/common/ihevc_intra_pred_utils.cc
   ${HEVC_ROOT}/tests/common/ihevc_itrans_utils.cc
   ${HEVC_ROOT}/tests/common/ihevc_sao_utils.cc
+  ${HEVC_ROOT}/tests/common/ihevc_weighted_pred_utils.cc
 )
 target_include_directories(libhevc_dsp_test_utils PUBLIC
   ${HEVC_ROOT}/tests/common

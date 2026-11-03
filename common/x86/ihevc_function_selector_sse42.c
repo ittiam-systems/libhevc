@@ -202,4 +202,10 @@ void ihevc_init_function_ptr_sse42(ihevc_func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_inter_pred_luma_copy_w16out_fptr        =  &ihevc_hbd_inter_pred_luma_copy_w16out_sse42;
     ps_func_selector->ihevc_hbd_inter_pred_luma_horz_w16out_fptr        =  &ihevc_hbd_inter_pred_luma_horz_w16out_sse42;
     ps_func_selector->ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_fptr =  &ihevc_hbd_inter_pred_luma_vert_w16inp_w16out_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_uni_fptr                  =  &ihevc_hbd_weighted_pred_uni_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_bi_fptr                   =  &ihevc_hbd_weighted_pred_bi_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_bi_default_fptr           =  &ihevc_hbd_weighted_pred_bi_default_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_uni_fptr           =  &ihevc_hbd_weighted_pred_chroma_uni_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_bi_fptr            =  &ihevc_hbd_weighted_pred_chroma_bi_sse42;
+    ps_func_selector->ihevc_hbd_weighted_pred_chroma_bi_default_fptr    =  &ihevc_hbd_weighted_pred_chroma_bi_default_sse42;
 }

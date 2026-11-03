@@ -46,6 +46,7 @@ cc_library_static {
         "ihevc_intra_pred_utils.cc",
         "ihevc_itrans_utils.cc",
         "ihevc_sao_utils.cc",
+        "ihevc_weighted_pred_utils.cc",
         "BitsBuf.cpp",
         "RawBuf.cpp",
         "Md5Wrapper.cpp",
