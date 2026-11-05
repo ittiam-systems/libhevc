@@ -111,7 +111,7 @@ IntraPredChromaBuffers<T> CreateIntraPredChromaBuffers(int nt,
 }
 
 // Intra stages
-enum class IntraPredOp { kRefSubst, kRefFilter, kPred };
+enum class IntraPredOp { kRefSubst, kRefSubstAllAvail, kRefFilter, kPred };
 
 enum class IntraRefFill {
   kRandom,
@@ -218,6 +218,7 @@ IntraPredTestBuffers<T> CreateIntraPredTestBuffers(const IntraPredTestConfig& cf
 
   switch (cfg.op) {
     case IntraPredOp::kRefSubst:
+    case IntraPredOp::kRefSubstAllAvail:
       // Row 0 holds the top-left, top and top-right neighbours. The left and bottom-left
       // neighbours are one position before the block in the next 2 * nt rows.
       b.pic_strd = pad + components * 2 * cfg.nt + pad;
@@ -236,7 +237,7 @@ IntraPredTestBuffers<T> CreateIntraPredTestBuffers(const IntraPredTestConfig& cf
   }
   FillRandom(b.pic, static_cast<T>(0), max_val, seed + 1);
 
-  if (cfg.op != IntraPredOp::kRefSubst) {
+  if (cfg.op == IntraPredOp::kRefFilter || cfg.op == IntraPredOp::kPred) {
     std::mt19937 rng(seed + 2);
     for (int c = 0; c < components; c++) {
       FillIntraRefSamples(b.ref_ptr() + c, components, cfg.nt, cfg.fill, cfg.bit_depth, rng);
@@ -264,6 +265,7 @@ typedef void (*HbdChromaIntraPredFn)(UWORD16* pu2_ref, WORD32 src_strd,
 
 // Function pointer signatures for reference substitution and filtering
 typedef ihevc_intra_pred_luma_ref_substitution_ft* LumaIntraPredRefSubstFn;
+typedef ihevc_intra_pred_luma_ref_subst_all_avlble_ft* LumaIntraPredRefSubstAllAvailFn;
 typedef ihevc_hbd_intra_pred_luma_ref_substitution_ft* HbdLumaIntraPredRefSubstFn;
 
 typedef ihevc_intra_pred_chroma_ref_substitution_ft* ChromaIntraPredRefSubstFn;
@@ -281,6 +283,8 @@ LumaIntraPredFn GetLumaIntraPredFn(const ihevc_func_selector_t* selector,
 ChromaIntraPredFn GetChromaIntraPredFn(const ihevc_func_selector_t* selector,
                                        int mode);
 LumaIntraPredRefSubstFn GetLumaIntraPredRefSubstFn(const ihevc_func_selector_t* selector);
+LumaIntraPredRefSubstAllAvailFn GetLumaIntraPredRefSubstAllAvailFn(
+    const ihevc_func_selector_t* selector);
 ChromaIntraPredRefSubstFn GetChromaIntraPredRefSubstFn(const ihevc_func_selector_t* selector);
 IntraPredRefFilterFn GetIntraPredRefFilterFn(const ihevc_func_selector_t* selector);
 ChromaIntraPredRefFilterFn GetChromaIntraPredRefFilterFn(const ihevc_func_selector_t* selector);
