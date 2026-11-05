@@ -39,6 +39,7 @@ namespace {
 const char* GetOpStr(IntraPredOp op) {
   switch (op) {
     case IntraPredOp::kRefSubst: return "subst";
+    case IntraPredOp::kRefSubstAllAvail: return "subst_all_avail";
     case IntraPredOp::kRefFilter: return "filter";
     case IntraPredOp::kPred: return "pred";
     default: return "unknown";
@@ -81,6 +82,8 @@ std::string PrintIntraPredTestParam(const testing::TestParamInfo<IntraPredTestPa
   switch (op) {
     case IntraPredOp::kRefSubst:
       if (chroma_format_idc) name += std::string("_") + GetChromaFormatStr(chroma_format_idc);
+      break;
+    case IntraPredOp::kRefSubstAllAvail:
       break;
     case IntraPredOp::kRefFilter:
       name += "_mode_" + std::to_string(mode) + "_flags_" + std::to_string(flag) + "_" +
@@ -210,9 +213,12 @@ class IntraPredTestBase : public ::testing::TestWithParam<IntraPredTestParam> {
     IntraPredTestBuffers<PixelType> tst_buf = ref_buf;
     const std::vector<PixelType> init_ref = ref_buf.ref;
 
-    // Substitution runs every neighbour availability, the other stages run once
+    // Substitution runs every neighbour availability, the all available version runs only the
+    // flags the decoder calls it with, and the other stages run once
     const std::vector<int> nbr_flags_list =
-        (cfg.op == IntraPredOp::kRefSubst) ? GetNbrFlagsList(cfg) : std::vector<int>{0};
+        (cfg.op == IntraPredOp::kRefSubst)           ? GetNbrFlagsList(cfg)
+        : (cfg.op == IntraPredOp::kRefSubstAllAvail) ? std::vector<int>{0x1ffff}
+                                                     : std::vector<int>{0};
     for (int nbr_flags : nbr_flags_list) {
       cfg.nbr_flags = nbr_flags;
       ref_buf.ref = init_ref;
@@ -250,6 +256,10 @@ class IntraPredLumaTest : public IntraPredTestBase {
           RunImpl<UWORD16>(GetHbdLumaIntraPredRefSubstFn(ref), GetHbdLumaIntraPredRefSubstFn(tst));
         }
         break;
+      case IntraPredOp::kRefSubstAllAvail:
+        RunImpl<UWORD8>(GetLumaIntraPredRefSubstAllAvailFn(ref),
+                        GetLumaIntraPredRefSubstAllAvailFn(tst));
+        break;
       case IntraPredOp::kRefFilter:
         if (cfg.bit_depth == 8) {
           RunImpl<UWORD8>(GetIntraPredRefFilterFn(ref), GetIntraPredRefFilterFn(tst));
@@ -284,6 +294,8 @@ class IntraPredChromaTest : public IntraPredTestBase {
           RunImpl<UWORD16>(GetHbdChromaIntraPredRefSubstFn(ref),
                            GetHbdChromaIntraPredRefSubstFn(tst));
         }
+        break;
+      case IntraPredOp::kRefSubstAllAvail:  // luma only
         break;
       case IntraPredOp::kRefFilter:
         if (cfg.bit_depth == 8) {
@@ -344,6 +356,14 @@ std::vector<IntraPredTestParam> GenerateIntraPredTestParams(bool is_chroma) {
       for (const auto& fs : GetFormatSizes(is_chroma)) {
         params.emplace_back(IntraPredOp::kRefSubst, fs.second, 0, 0, unused_fill, fs.first,
                             bit_depth, arch);
+      }
+
+      // Substitution with all neighbours available: the decoder has only an 8-bit luma version
+      if (!is_chroma && bit_depth == 8) {
+        for (int nt : sizes) {
+          params.emplace_back(IntraPredOp::kRefSubstAllAvail, nt, 0, 0, unused_fill, 0, bit_depth,
+                              arch);
+        }
       }
 
       // Filtering: the decoder filters chroma only in 4:4:4

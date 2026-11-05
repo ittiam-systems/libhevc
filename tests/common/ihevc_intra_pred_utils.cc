@@ -68,6 +68,12 @@ LumaIntraPredRefSubstFn GetLumaIntraPredRefSubstFn(const ihevc_func_selector_t* 
   return selector->ihevc_intra_pred_luma_ref_substitution_fptr;
 }
 
+LumaIntraPredRefSubstAllAvailFn GetLumaIntraPredRefSubstAllAvailFn(
+    const ihevc_func_selector_t* selector) {
+  if (!selector) return nullptr;
+  return selector->ihevc_intra_pred_luma_ref_subst_all_avlble_fptr;
+}
+
 ChromaIntraPredRefSubstFn GetChromaIntraPredRefSubstFn(const ihevc_func_selector_t* selector) {
   if (!selector) return nullptr;
   return selector->ihevc_intra_pred_chroma_ref_substitution_fptr;
