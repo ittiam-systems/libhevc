@@ -1285,7 +1285,7 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             }
                             else
                             {
-                                ihevc_hbd_pad_right_chroma(
+                                ps_codec->s_func_selector.ihevc_hbd_pad_right_chroma_fptr(
                                                 (UWORD16 *)ps_proc->pu1_cur_ctb_chroma + (cols_remaining * chroma_pixel_strd / h_samp_factor) - (8 * v_samp_factor) * chroma_row_strd,
                                                 chroma_row_strd, pad_ht_chroma,
                                                 PAD_RIGHT * chroma_pixel_strd / h_samp_factor);
