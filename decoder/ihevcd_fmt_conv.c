@@ -1620,16 +1620,17 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
                 }
                 else
                 {
-                    ihevcd_hbd_fmt_conv_444sp_to_420p((UWORD16 *)pu1_y_src,
-                                                      (UWORD16 *)pu1_uv_src,
-                                                      (UWORD16 *)pu1_y_dst_tmp,
-                                                      (UWORD16 *)pu1_u_dst_tmp,
-                                                      (UWORD16 *)pu1_v_dst_tmp,
-                                                      ps_codec->i4_disp_wd, num_rows,
-                                                      ps_codec->i4_strd, src_chroma_row_stride,
-                                                      ps_codec->i4_disp_strd,
-                                                      ((ps_codec->i4_disp_strd + 1) / 2),
-                                                      is_u_first, disable_luma_copy);
+                    ps_codec->s_func_selector.ihevcd_hbd_fmt_conv_444sp_to_420p_fptr(
+                                    (UWORD16 *)pu1_y_src,
+                                    (UWORD16 *)pu1_uv_src,
+                                    (UWORD16 *)pu1_y_dst_tmp,
+                                    (UWORD16 *)pu1_u_dst_tmp,
+                                    (UWORD16 *)pu1_v_dst_tmp,
+                                    ps_codec->i4_disp_wd, num_rows,
+                                    ps_codec->i4_strd, src_chroma_row_stride,
+                                    ps_codec->i4_disp_strd,
+                                    ((ps_codec->i4_disp_strd + 1) / 2),
+                                    is_u_first, disable_luma_copy);
                 }
             }
             else if(ps_sps->i1_chroma_format_idc == CHROMA_FMT_IDC_YUV422)

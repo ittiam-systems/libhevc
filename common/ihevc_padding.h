@@ -189,6 +189,12 @@ ihevc_pad_horz_chroma_ft ihevc_pad_horz_chroma_neonintr;
 ihevc_pad_vert_ft ihevc_pad_vert_neonintr;
 ihevc_pad_top_ft ihevc_pad_top_neonintr;
 ihevc_pad_bottom_ft ihevc_pad_bottom_neonintr;
+
+ihevc_hbd_pad_left_luma_ft ihevc_hbd_pad_left_luma_neonintr;
+ihevc_hbd_pad_left_chroma_ft ihevc_hbd_pad_left_chroma_neonintr;
+ihevc_hbd_pad_right_luma_ft ihevc_hbd_pad_right_luma_neonintr;
+ihevc_hbd_pad_right_chroma_ft ihevc_hbd_pad_right_chroma_neonintr;
+
 /*SSSE3 functions declarations */
 ihevc_pad_left_luma_ft ihevc_pad_left_luma_ssse3;
 ihevc_pad_left_chroma_ft ihevc_pad_left_chroma_ssse3;
