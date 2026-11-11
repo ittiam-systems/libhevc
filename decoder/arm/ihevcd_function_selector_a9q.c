@@ -62,8 +62,8 @@ void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_deblk_chroma_vert_fptr                      =  &ihevc_deblk_chroma_vert_a9q;
     ps_func_selector->ihevc_deblk_luma_vert_fptr                        =  &ihevc_deblk_luma_vert_a9q;
     ps_func_selector->ihevc_deblk_luma_horz_fptr                        =  &ihevc_deblk_luma_horz_a9q;
-    ps_func_selector->ihevc_deblk_422chroma_horz_fptr                   =  &ihevc_deblk_422chroma_horz;
-    ps_func_selector->ihevc_deblk_422chroma_vert_fptr                   =  &ihevc_deblk_422chroma_vert;
+    ps_func_selector->ihevc_deblk_422chroma_horz_fptr                   =  &ihevc_deblk_chroma_horz_a9q;
+    ps_func_selector->ihevc_deblk_422chroma_vert_fptr                   =  &ihevc_deblk_chroma_vert_a9q;
     ps_func_selector->ihevc_inter_pred_chroma_copy_fptr                 =  &ihevc_inter_pred_chroma_copy_a9q;
     ps_func_selector->ihevc_inter_pred_chroma_copy_w16out_fptr          =  &ihevc_inter_pred_chroma_copy_w16out_a9q;
     ps_func_selector->ihevc_inter_pred_chroma_horz_fptr                 =  &ihevc_inter_pred_chroma_horz_a9q;
@@ -116,10 +116,10 @@ void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_itrans_recon_8x8_fptr                       =  &ihevc_itrans_recon_8x8_a9q;
     ps_func_selector->ihevc_itrans_recon_16x16_fptr                     =  &ihevc_itrans_recon_16x16_a9q;
     ps_func_selector->ihevc_itrans_recon_32x32_fptr                     =  &ihevc_itrans_recon_32x32_a9q;
-    ps_func_selector->ihevc_chroma_itrans_recon_4x4_fptr                =  &ihevc_chroma_itrans_recon_4x4;
-    ps_func_selector->ihevc_chroma_itrans_recon_8x8_fptr                =  &ihevc_chroma_itrans_recon_8x8;
-    ps_func_selector->ihevc_chroma_itrans_recon_16x16_fptr              =  &ihevc_chroma_itrans_recon_16x16;
-    ps_func_selector->ihevc_chroma_itrans_recon_32x32_fptr              =  &ihevc_chroma_itrans_recon_32x32;
+    ps_func_selector->ihevc_chroma_itrans_recon_4x4_fptr                =  &ihevc_chroma_itrans_recon_4x4_neonintr;
+    ps_func_selector->ihevc_chroma_itrans_recon_8x8_fptr                =  &ihevc_chroma_itrans_recon_8x8_neonintr;
+    ps_func_selector->ihevc_chroma_itrans_recon_16x16_fptr              =  &ihevc_chroma_itrans_recon_16x16_neonintr;
+    ps_func_selector->ihevc_chroma_itrans_recon_32x32_fptr              =  &ihevc_chroma_itrans_recon_32x32_neonintr;
     ps_func_selector->ihevc_recon_4x4_ttype1_fptr                       =  &ihevc_recon_4x4_ttype1;
     ps_func_selector->ihevc_recon_4x4_fptr                              =  &ihevc_recon_4x4;
     ps_func_selector->ihevc_recon_8x8_fptr                              =  &ihevc_recon_8x8;
@@ -152,6 +152,7 @@ void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector)
     ps_func_selector->ihevcd_fmt_conv_420sp_to_420sp_fptr               =  &ihevcd_fmt_conv_420sp_to_420sp;
     ps_func_selector->ihevcd_fmt_conv_420sp_to_420p_fptr                =  &ihevcd_fmt_conv_420sp_to_420p_a9q;
     ps_func_selector->ihevcd_fmt_conv_444sp_to_444p_fptr                =  &ihevcd_fmt_conv_444sp_to_444p;
+    ps_func_selector->ihevcd_fmt_conv_444sp_to_420p_fptr                =  &ihevcd_fmt_conv_444sp_to_420p_neonintr;
     ps_func_selector->ihevcd_itrans_recon_dc_luma_fptr                  =  &ihevcd_itrans_recon_dc_luma_a9q;
     ps_func_selector->ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma_a9q;
 

@@ -152,6 +152,7 @@ void ihevcd_init_function_ptr_generic(func_selector_t *ps_func_selector)
     ps_func_selector->ihevcd_fmt_conv_420sp_to_420sp_fptr               =  &ihevcd_fmt_conv_420sp_to_420sp;
     ps_func_selector->ihevcd_fmt_conv_420sp_to_420p_fptr                =  &ihevcd_fmt_conv_420sp_to_420p;
     ps_func_selector->ihevcd_fmt_conv_444sp_to_444p_fptr                =  &ihevcd_fmt_conv_444sp_to_444p;
+    ps_func_selector->ihevcd_fmt_conv_444sp_to_420p_fptr                =  &ihevcd_fmt_conv_444sp_to_420p;
     ps_func_selector->ihevcd_itrans_recon_dc_luma_fptr                  =  &ihevcd_itrans_recon_dc_luma;
     ps_func_selector->ihevcd_itrans_recon_dc_chroma_fptr                =  &ihevcd_itrans_recon_dc_chroma;
 

@@ -1611,12 +1611,13 @@ IHEVCD_ERROR_T ihevcd_fmt_conv(codec_t *ps_codec,
             {
                 if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                 {
-                    ihevcd_fmt_conv_444sp_to_420p(pu1_y_src, pu1_uv_src,
-                                                  pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
-                                                  ps_codec->i4_disp_wd, num_rows,
-                                                  ps_codec->i4_strd, src_chroma_row_stride,
-                                                  ps_codec->i4_disp_strd,
-                                                  ((ps_codec->i4_disp_strd + 1) / 2));
+                    ps_codec->s_func_selector.ihevcd_fmt_conv_444sp_to_420p_fptr(
+                                    pu1_y_src, pu1_uv_src,
+                                    pu1_y_dst_tmp, pu1_u_dst_tmp, pu1_v_dst_tmp,
+                                    ps_codec->i4_disp_wd, num_rows,
+                                    ps_codec->i4_strd, src_chroma_row_stride,
+                                    ps_codec->i4_disp_strd,
+                                    ((ps_codec->i4_disp_strd + 1) / 2));
                 }
                 else
                 {
