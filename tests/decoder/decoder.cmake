@@ -1,7 +1,7 @@
 enable_testing()
 include(GoogleTest)
 
-function(libhevc_add_decoder_gtest_executable NAME)
+function(libhevcd_add_gtest_executable NAME)
   set(multi_value_args SOURCES)
   cmake_parse_arguments(ARG "" "" "${multi_value_args}" ${ARGN})
 
@@ -14,10 +14,10 @@ function(libhevc_add_decoder_gtest_executable NAME)
     ${HEVC_ROOT}/tests/decoder
     ${HEVC_ROOT}/tests/common
   )
-  gtest_discover_tests(${NAME} ${HEVC_GTEST_DISCOVERY_MODE})
+  add_test(NAME ${NAME} COMMAND ${NAME})
 endfunction()
 
-libhevc_add_decoder_gtest_executable(
+libhevcd_add_gtest_executable(
   ihevcd_itrans_recon_dc_test
   SOURCES ${HEVC_ROOT}/tests/decoder/ihevcd_itrans_recon_dc_test.cc
 )
