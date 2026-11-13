@@ -760,12 +760,12 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
                                         bytes_remaining,
                                         &nal_len, &bits_len);
 
-            /* Decoder may read upto 8 extra bytes at the end of frame */
-            /* These are not used, but still set them to zero to avoid uninitialized reads */
-            if(bits_len < (WORD32)(ps_codec->u4_bitsbuf_size - 8))
-            {
-                memset(ps_codec->pu1_bitsbuf + bits_len, 0, 2 * sizeof(UWORD32));
-            }
+            /* The bitstream reader may read upto 8 extra bytes at the end of
+             * the NAL and takes everything after them as zero. Set these 8
+             * bytes to zero as well, so that no data of an earlier NAL is
+             * read. The buffer is allocated with 16 extra bytes, so they are
+             * always inside it */
+            memset(ps_codec->pu1_bitsbuf + bits_len, 0, 2 * sizeof(UWORD32));
         }
         /* This may be used to update the offsets for tiles and entropy sync row offsets */
         ps_codec->i4_num_emln_bytes = nal_len - bits_len;
