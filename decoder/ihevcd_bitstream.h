@@ -119,26 +119,46 @@
 
 /**
 ******************************************************************************
+*  @brief  Read the next word of the bitstream into m_u4_word and move the
+* buffer pointer to the word after it.
+* A word that does not lie completely below m_pu1_buf_max is not read from
+* the buffer, it is taken as zero. The pointer still moves, so that the
+* checks comparing it with pu1_buf_max detect an exhausted bitstream.
+******************************************************************************
+*/
+#define BITS_NXT_WORD(m_u4_word, m_pu4_buf, m_pu1_buf_max)      \
+{                                                               \
+    if((UWORD8 *)(m_pu4_buf + 1) <= m_pu1_buf_max)              \
+    {                                                           \
+        UWORD32 u4_word_tmp = *m_pu4_buf;                       \
+        /* Swapping little endian to big endian conversion*/    \
+        m_u4_word = ITT_BIG_ENDIAN(u4_word_tmp);                \
+    }                                                           \
+    else                                                        \
+    {                                                           \
+        m_u4_word = 0;                                          \
+    }                                                           \
+    m_pu4_buf++;                                                \
+}
+
+/**
+******************************************************************************
 *  @brief  Flush m_u4_bits and updated the buffer pointer.
 * Data is consumed
 ******************************************************************************
 */
-#define BITS_FLUSH(m_pu4_buf, m_u4_bit_ofst, m_u4_cur_word, \
-                    m_u4_nxt_word, m_cnt)                   \
-{                                                           \
-    UWORD32 temp;                                           \
-                                                            \
-    m_u4_bit_ofst += m_cnt;                                 \
-    if( m_u4_bit_ofst >=   WORD_SIZE )                      \
-    {                                                       \
-        m_u4_cur_word  = m_u4_nxt_word;                     \
-        /* Getting the next word */                         \
-        temp = *(m_pu4_buf++);                              \
-                                                            \
-        m_u4_bit_ofst -= WORD_SIZE;                         \
-        /* Swapping little endian to big endian conversion*/\
-        m_u4_nxt_word = ITT_BIG_ENDIAN(temp);                   \
-    }                                                       \
+#define BITS_FLUSH(m_pu4_buf, m_pu1_buf_max, m_u4_bit_ofst,     \
+                    m_u4_cur_word, m_u4_nxt_word, m_cnt)        \
+{                                                               \
+    m_u4_bit_ofst += m_cnt;                                     \
+    if( m_u4_bit_ofst >=   WORD_SIZE )                          \
+    {                                                           \
+        m_u4_cur_word  = m_u4_nxt_word;                         \
+        /* Getting the next word */                             \
+        BITS_NXT_WORD(m_u4_nxt_word, m_pu4_buf, m_pu1_buf_max); \
+                                                                \
+        m_u4_bit_ofst -= WORD_SIZE;                             \
+    }                                                           \
 }
 /**
 ******************************************************************************
@@ -146,8 +166,9 @@
 * Data is consumed
 ******************************************************************************
 */
-#define BITS_GET(m_u4_bits, m_pu4_buf, m_u4_bit_ofst,           \
-                          m_u4_cur_word,m_u4_nxt_word, m_cnt)   \
+#define BITS_GET(m_u4_bits, m_pu4_buf, m_pu1_buf_max,           \
+                 m_u4_bit_ofst, m_u4_cur_word, m_u4_nxt_word,   \
+                 m_cnt)                                         \
 {                                                               \
     m_u4_bits = (m_u4_cur_word << m_u4_bit_ofst)                \
                              >> (WORD_SIZE - m_cnt);            \
@@ -160,14 +181,11 @@
                                                                 \
     if( m_u4_bit_ofst >=   WORD_SIZE )                          \
     {                                                           \
-        UWORD32 pu4_word_tmp;                                   \
         m_u4_cur_word  = m_u4_nxt_word;                         \
         /* Getting the next word */                             \
-        pu4_word_tmp = *(m_pu4_buf++);                          \
+        BITS_NXT_WORD(m_u4_nxt_word, m_pu4_buf, m_pu1_buf_max); \
                                                                 \
         m_u4_bit_ofst -= WORD_SIZE;                             \
-        /* Swapping little endian to big endian conversion*/    \
-        m_u4_nxt_word  = ITT_BIG_ENDIAN(pu4_word_tmp);              \
     }                                                           \
 }
 
@@ -178,8 +196,8 @@
 ******************************************************************************
 */
 
-#define BIT_GET(m_u4_bits,m_pu4_buf,m_u4_bit_ofst,              \
-                          m_u4_cur_word,m_u4_nxt_word)          \
+#define BIT_GET(m_u4_bits, m_pu4_buf, m_pu1_buf_max,            \
+                m_u4_bit_ofst, m_u4_cur_word, m_u4_nxt_word)    \
 {                                                               \
     m_u4_bits = (m_u4_cur_word << m_u4_bit_ofst)                \
                              >> (WORD_SIZE_MINUS1);             \
@@ -187,14 +205,11 @@
                                                                 \
     if(m_u4_bit_ofst ==  WORD_SIZE)                             \
     {                                                           \
-        UWORD32 pu4_word_tmp;                                   \
         m_u4_cur_word  = m_u4_nxt_word;                         \
         /* Getting the next word */                             \
-        pu4_word_tmp = *m_pu4_buf++;                            \
+        BITS_NXT_WORD(m_u4_nxt_word, m_pu4_buf, m_pu1_buf_max); \
                                                                 \
         m_u4_bit_ofst = 0;                                      \
-        /* Swapping little endian to big endian conversion*/    \
-        m_u4_nxt_word  = ITT_BIG_ENDIAN(pu4_word_tmp);              \
     }                                                           \
 }
 

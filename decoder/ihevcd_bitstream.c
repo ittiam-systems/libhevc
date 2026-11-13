@@ -99,6 +99,8 @@
 * accesses will be unaligned and hence  costlier. Since this is codec memory
 * that holds emulation prevented data, assumption of aligned to 4 bytes is
 * valid
+*  pu1_buf has to hold u4_numbytes + 8 bytes. Nothing beyond that is read,
+* bits after it are taken as zero (see BITS_NXT_WORD)
 *
 *******************************************************************************
 */
@@ -156,6 +158,7 @@ void ihevcd_bits_flush(bitstrm_t *ps_bitstrm, UWORD32 u4_numbits)
 {
 
     BITS_FLUSH(ps_bitstrm->pu4_buf,
+               ps_bitstrm->pu1_buf_max,
                ps_bitstrm->u4_bit_ofst,
                ps_bitstrm->u4_cur_word,
                ps_bitstrm->u4_nxt_word,
@@ -192,6 +195,7 @@ void ihevcd_bits_flush_to_byte_boundary(bitstrm_t *ps_bitstrm)
     u4_numbits = 8 - u4_numbits;
 
     BITS_FLUSH(ps_bitstrm->pu4_buf,
+               ps_bitstrm->pu1_buf_max,
                ps_bitstrm->u4_bit_ofst,
                ps_bitstrm->u4_cur_word,
                ps_bitstrm->u4_nxt_word,
@@ -227,6 +231,7 @@ void ihevcd_bits_flush_to_byte_boundary(bitstrm_t *ps_bitstrm)
 void ihevcd_bits_seek(bitstrm_t *ps_bitstrm, WORD32 numbits)
 {
     UWORD32 val;
+    UWORD32 *pu4_buf;
     ASSERT(numbits >= -32);
     ASSERT(numbits <= 32);
     /* Check if Seeking backwards*/
@@ -251,7 +256,16 @@ void ihevcd_bits_seek(bitstrm_t *ps_bitstrm, WORD32 numbits)
             ps_bitstrm->u4_bit_ofst -= abs_numbits;
             ps_bitstrm->pu4_buf--;
 
-            val = *(ps_bitstrm->pu4_buf - 2);
+            /* The word to load again is two words behind. As in
+             * BITS_NXT_WORD, it is read only if it lies in the buffer
+             */
+            pu4_buf = ps_bitstrm->pu4_buf - 2;
+            val = 0;
+            if(((UWORD8 *)pu4_buf >= ps_bitstrm->pu1_buf_base) &&
+                            ((UWORD8 *)(pu4_buf + 1) <= ps_bitstrm->pu1_buf_max))
+            {
+                val = *pu4_buf;
+            }
             ps_bitstrm->u4_nxt_word = ps_bitstrm->u4_cur_word;
             ps_bitstrm->u4_cur_word = ITT_BIG_ENDIAN(val);
             return;
@@ -262,6 +276,7 @@ void ihevcd_bits_seek(bitstrm_t *ps_bitstrm, WORD32 numbits)
         /* Not supported/tested currently */
         ASSERT(1);
         BITS_FLUSH(ps_bitstrm->pu4_buf,
+                   ps_bitstrm->pu1_buf_max,
                    ps_bitstrm->u4_bit_ofst,
                    ps_bitstrm->u4_cur_word,
                    ps_bitstrm->u4_nxt_word,
@@ -373,6 +388,7 @@ UWORD32 ihevcd_bits_get(bitstrm_t *ps_bitstrm, UWORD32 u4_numbits)
 
     BITS_GET(u4_bits_read,
              ps_bitstrm->pu4_buf,
+             ps_bitstrm->pu1_buf_max,
              ps_bitstrm->u4_bit_ofst,
              ps_bitstrm->u4_cur_word,
              ps_bitstrm->u4_nxt_word,
@@ -499,6 +515,7 @@ UWORD32 ihevcd_uev(bitstrm_t *ps_bitstrm)
     u4_clz = CLZ(u4_bits_read);
 
     BITS_FLUSH(ps_bitstrm->pu4_buf,
+               ps_bitstrm->pu1_buf_max,
                ps_bitstrm->u4_bit_ofst,
                ps_bitstrm->u4_cur_word,
                ps_bitstrm->u4_nxt_word,
@@ -509,6 +526,7 @@ UWORD32 ihevcd_uev(bitstrm_t *ps_bitstrm)
     {
         BITS_GET(u4_bits_read,
                  ps_bitstrm->pu4_buf,
+                 ps_bitstrm->pu1_buf_max,
                  ps_bitstrm->u4_bit_ofst,
                  ps_bitstrm->u4_cur_word,
                  ps_bitstrm->u4_nxt_word,
@@ -559,6 +577,7 @@ WORD32 ihevcd_sev(bitstrm_t *ps_bitstrm)
     u4_clz = CLZ(u4_bits_read);
 
     BITS_FLUSH(ps_bitstrm->pu4_buf,
+               ps_bitstrm->pu1_buf_max,
                ps_bitstrm->u4_bit_ofst,
                ps_bitstrm->u4_cur_word,
                ps_bitstrm->u4_nxt_word,
@@ -569,6 +588,7 @@ WORD32 ihevcd_sev(bitstrm_t *ps_bitstrm)
     {
         BITS_GET(u4_bits_read,
                  ps_bitstrm->pu4_buf,
+                 ps_bitstrm->pu1_buf_max,
                  ps_bitstrm->u4_bit_ofst,
                  ps_bitstrm->u4_cur_word,
                  ps_bitstrm->u4_nxt_word,
