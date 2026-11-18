@@ -383,8 +383,14 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
     else if(ps_codec->i4_flush_mode)
     {
         ps_dec_op->u4_error_code = IHEVCD_END_OF_SEQUENCE;
-        /* Come out of flush mode */
+        /* Come out of flush mode and reset parser POC state so a post-flush
+         * IDR/CRA frame is not ignored as a duplicate slice. */
         ps_codec->i4_flush_mode = 0;
+        ps_codec->i4_prev_poc_msb = 0;
+        ps_codec->i4_prev_poc_lsb = -1;
+        ps_codec->i4_max_prev_poc_lsb = -1;
+        ps_codec->s_parse.i4_abs_pic_order_cnt = -1;
+        ps_codec->i4_slice_error = 0;
     }
 
     if(ps_codec->u1_enable_cu_info && ps_dec_op->u4_output_present)
