@@ -3685,7 +3685,7 @@ WORD32 ihevcd_calc_poc(codec_t *ps_codec, nal_header_t *ps_nal, WORD8 i1_log2_ma
     WORD8 i1_nal_unit_type = ps_nal->i1_nal_unit_type;
     max_poc_lsb = (1 << i1_log2_max_poc_lsb);
 
-    if((!ps_codec->i4_first_pic_done) && (!ps_codec->i4_pic_present))
+    if((!ps_codec->u4_pic_cnt) && (!ps_codec->i4_pic_present))
         ps_codec->i4_prev_poc_msb = -2 * max_poc_lsb;
 
     if(NAL_IDR_N_LP == i1_nal_unit_type
@@ -3693,7 +3693,7 @@ WORD32 ihevcd_calc_poc(codec_t *ps_codec, nal_header_t *ps_nal, WORD8 i1_log2_ma
                     || NAL_BLA_N_LP == i1_nal_unit_type
                     || NAL_BLA_W_DLP == i1_nal_unit_type
                     || NAL_BLA_W_LP == i1_nal_unit_type
-                    || (NAL_CRA == i1_nal_unit_type && !ps_codec->i4_first_pic_done))
+                    || (NAL_CRA == i1_nal_unit_type && !ps_codec->u4_pic_cnt))
     {
         i4_poc_msb = ps_codec->i4_prev_poc_msb + 2 * max_poc_lsb;
         ps_codec->i4_prev_poc_lsb = 0;
