@@ -152,6 +152,8 @@ typedef struct
     ihevc_pad_left_chroma_ft *ihevc_pad_left_chroma_fptr;
     ihevc_pad_right_luma_ft *ihevc_pad_right_luma_fptr;
     ihevc_pad_right_chroma_ft *ihevc_pad_right_chroma_fptr;
+    ihevc_pad_top_ft *ihevc_pad_top_fptr;
+    ihevc_pad_bottom_ft *ihevc_pad_bottom_fptr;
     ihevc_weighted_pred_bi_ft *ihevc_weighted_pred_bi_fptr;
     ihevc_weighted_pred_bi_default_ft *ihevc_weighted_pred_bi_default_fptr;
     ihevc_weighted_pred_uni_ft *ihevc_weighted_pred_uni_fptr;
@@ -276,6 +278,8 @@ typedef struct
     ihevc_hbd_pad_right_luma_ft *ihevc_hbd_pad_right_luma_fptr;
     ihevc_hbd_pad_left_chroma_ft *ihevc_hbd_pad_left_chroma_fptr;
     ihevc_hbd_pad_right_chroma_ft *ihevc_hbd_pad_right_chroma_fptr;
+    ihevc_hbd_pad_top_ft *ihevc_hbd_pad_top_fptr;
+    ihevc_hbd_pad_bottom_ft *ihevc_hbd_pad_bottom_fptr;
 
 }func_selector_t;
 

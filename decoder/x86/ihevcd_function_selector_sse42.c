@@ -134,6 +134,8 @@ void ihevcd_init_function_ptr_sse42(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_pad_left_chroma_fptr                        =  &ihevc_pad_left_chroma;
     ps_func_selector->ihevc_pad_right_luma_fptr                         =  &ihevc_pad_right_luma;
     ps_func_selector->ihevc_pad_right_chroma_fptr                       =  &ihevc_pad_right_chroma;
+    ps_func_selector->ihevc_pad_top_fptr                                =  &ihevc_pad_top;
+    ps_func_selector->ihevc_pad_bottom_fptr                             =  &ihevc_pad_bottom;
     ps_func_selector->ihevc_weighted_pred_bi_fptr                       =  &ihevc_weighted_pred_bi_sse42;
     ps_func_selector->ihevc_weighted_pred_bi_default_fptr               =  &ihevc_weighted_pred_bi_default_sse42;
     ps_func_selector->ihevc_weighted_pred_uni_fptr                      =  &ihevc_weighted_pred_uni_sse42;

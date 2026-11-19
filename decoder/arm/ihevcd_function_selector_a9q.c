@@ -134,6 +134,8 @@ void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_pad_left_chroma_fptr                        =  &ihevc_pad_left_chroma_a9q;
     ps_func_selector->ihevc_pad_right_luma_fptr                         =  &ihevc_pad_right_luma_a9q;
     ps_func_selector->ihevc_pad_right_chroma_fptr                       =  &ihevc_pad_right_chroma_a9q;
+    ps_func_selector->ihevc_pad_top_fptr                                =  &ihevc_pad_top_neonintr;
+    ps_func_selector->ihevc_pad_bottom_fptr                             =  &ihevc_pad_bottom_neonintr;
     ps_func_selector->ihevc_weighted_pred_bi_fptr                       =  &ihevc_weighted_pred_bi_a9q;
     ps_func_selector->ihevc_weighted_pred_bi_default_fptr               =  &ihevc_weighted_pred_bi_default_a9q;
     ps_func_selector->ihevc_weighted_pred_uni_fptr                      =  &ihevc_weighted_pred_uni_a9q;
@@ -240,6 +242,8 @@ void ihevcd_init_function_ptr_a9q(func_selector_t *ps_func_selector)
     ps_func_selector->ihevc_hbd_pad_right_luma_fptr                     =  &ihevc_hbd_pad_right_luma_neonintr;
     ps_func_selector->ihevc_hbd_pad_left_chroma_fptr                    =  &ihevc_hbd_pad_left_chroma_neonintr;
     ps_func_selector->ihevc_hbd_pad_right_chroma_fptr                   =  &ihevc_hbd_pad_right_chroma_neonintr;
+    ps_func_selector->ihevc_hbd_pad_top_fptr                            =  &ihevc_hbd_pad_top_neonintr;
+    ps_func_selector->ihevc_hbd_pad_bottom_fptr                         =  &ihevc_hbd_pad_bottom_neonintr;
 
     ps_func_selector->ihevcd_hbd_fmt_conv_444sp_to_420p_fptr            =  &ihevcd_hbd_fmt_conv_444sp_to_420p_neonintr;
 }
