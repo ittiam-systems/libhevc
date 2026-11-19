@@ -1300,26 +1300,26 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                             /* Pad top after padding left and right for current rows after processing 1st CTB row */
                             if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                             {
-                                ihevc_pad_top(ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd,
+                                ps_codec->s_func_selector.ihevc_pad_top_fptr(ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd,
                                     ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP);
                             }
                             else
                             {
-                                ihevc_hbd_pad_top((UWORD16 *)ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd,
+                                ps_codec->s_func_selector.ihevc_hbd_pad_top_fptr((UWORD16 *)ps_proc->pu1_cur_pic_luma - PAD_LEFT, ps_codec->i4_strd,
                                     ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_TOP);
                             }
                             if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
                             {
                                 if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                                 {
-                                     ihevc_pad_top(ps_proc->pu1_cur_pic_chroma - PAD_LEFT * (chroma_pixel_strd / h_samp_factor),
+                                     ps_codec->s_func_selector.ihevc_pad_top_fptr(ps_proc->pu1_cur_pic_chroma - PAD_LEFT * (chroma_pixel_strd / h_samp_factor),
                                                   chroma_row_strd,
                                                   (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor),
                                                   PAD_TOP / v_samp_factor);
                                 }
                                 else
                                 {
-                                    ihevc_hbd_pad_top((UWORD16 *)ps_proc->pu1_cur_pic_chroma - PAD_LEFT * (chroma_pixel_strd / h_samp_factor),
+                                    ps_codec->s_func_selector.ihevc_hbd_pad_top_fptr((UWORD16 *)ps_proc->pu1_cur_pic_chroma - PAD_LEFT * (chroma_pixel_strd / h_samp_factor),
                                                       chroma_row_strd,
                                                       (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor),
                                                       PAD_TOP / v_samp_factor);
@@ -1331,12 +1331,12 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                 (ps_codec->i4_strd * ps_sps->i2_pic_height_in_luma_samples - PAD_LEFT) * ps_codec->i4_pixel_size_y;
                             if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_y)
                             {
-                                ihevc_pad_bottom(pu1_buf, ps_codec->i4_strd,
+                                ps_codec->s_func_selector.ihevc_pad_bottom_fptr(pu1_buf, ps_codec->i4_strd,
                                                  ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
                             }
                             else
                             {
-                                ihevc_hbd_pad_bottom((UWORD16 *)pu1_buf, ps_codec->i4_strd,
+                                ps_codec->s_func_selector.ihevc_hbd_pad_bottom_fptr((UWORD16 *)pu1_buf, ps_codec->i4_strd,
                                                      ps_sps->i2_pic_width_in_luma_samples + PAD_WD, PAD_BOT);
                             }
                             if(CHROMA_FMT_IDC_MONOCHROME != ps_sps->i1_chroma_format_idc)
@@ -1346,14 +1346,14 @@ IHEVCD_ERROR_T ihevcd_process(process_ctxt_t *ps_proc)
                                                 - (PAD_LEFT * chroma_pixel_strd / h_samp_factor)) * ps_codec->i4_pixel_size_uv;
                                 if(PIXEL_SIZE_1BYTE == ps_codec->i4_pixel_size_uv)
                                 {
-                                     ihevc_pad_bottom(pu1_buf,
+                                     ps_codec->s_func_selector.ihevc_pad_bottom_fptr(pu1_buf,
                                                      chroma_row_strd,
                                                      (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor),
                                                      PAD_BOT / v_samp_factor);
                                 }
                                 else
                                 {
-                                    ihevc_hbd_pad_bottom((UWORD16 *)pu1_buf,
+                                    ps_codec->s_func_selector.ihevc_hbd_pad_bottom_fptr((UWORD16 *)pu1_buf,
                                                          chroma_row_strd,
                                                          (ps_sps->i2_pic_width_in_luma_samples + PAD_WD) * (chroma_pixel_strd / h_samp_factor),
                                                          PAD_BOT / v_samp_factor);
