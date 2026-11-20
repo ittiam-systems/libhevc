@@ -1137,6 +1137,11 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     /* Free any dynamic buffers that are allocated */
     ihevcd_free_dynamic_bufs(ps_codec);
 
+    if(ps_codec->pu1_bitsbuf_static)
+    {
+        memset(ps_codec->pu1_bitsbuf_static, 0, ps_codec->u4_bitsbuf_size_static + 16);
+    }
+
     ps_codec->u4_allocate_dynamic_done = 0;
     ps_codec->i4_num_disp_bufs = 1;
     ps_codec->i4_flush_mode = 0;
