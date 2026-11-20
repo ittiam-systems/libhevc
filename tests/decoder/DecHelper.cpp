@@ -218,7 +218,7 @@ bool DecHelper::initDecoder() {
   createIp.u4_enable_frame_info = 0;
   createIp.u4_enable_yuv_formats = 15;  // Supports all chroma formats
   createIp.u4_enable_hbd = mEnableHbd;
-  createIp.u4_thumbnail_mode = mThumbnailMode;
+  createIp.u4_disable_ref_retention = mThumbnailMode;
   createIp.u4_keep_threads_active = 1;
 
   IV_API_CALL_STATUS_T ret =

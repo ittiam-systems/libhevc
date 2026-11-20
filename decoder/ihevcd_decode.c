@@ -231,7 +231,7 @@ static void ihevcd_fill_outargs(codec_t *ps_codec,
         {
             ps_dec_op->u4_progressive_frame_flag = 0;
         }
-        ps_dec_op->i4_reorder_depth =
+        ps_dec_op->i4_reorder_depth = ps_codec->u4_disable_ref_retention ? 0 :
                         ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1];
     }
 
@@ -1000,30 +1000,61 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         DEBUG_DUMP_MV_MAP(ps_codec);
 
-        /* Mark MV Buf as needed for reference */
-        ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_mv_buf_mgr,
-                                 ps_codec->as_process[proc_idx].i4_cur_mv_bank_buf_id,
-                                 BUF_MGR_REF);
+        if(ps_codec->u4_disable_ref_retention)
+        {
+            /* Do not retain current picture or MV bank as reference */
+            ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_mv_buf_mgr,
+                                  ps_codec->as_process[proc_idx].i4_cur_mv_bank_buf_id,
+                                  BUF_MGR_REF);
 
-        /* Mark pic buf as needed for reference */
-        ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
-                                 ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
-                                 BUF_MGR_REF);
+            /* Mark pic buf as needed for display */
+            ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
+                                     ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
+                                     BUF_MGR_DISP);
+        }
+        else
+        {
+            /* Mark MV Buf as needed for reference */
+            ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_mv_buf_mgr,
+                                     ps_codec->as_process[proc_idx].i4_cur_mv_bank_buf_id,
+                                     BUF_MGR_REF);
 
-        /* Mark pic buf as needed for display */
-        ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
-                                 ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
-                                 BUF_MGR_DISP);
+            /* Mark pic buf as needed for reference */
+            ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
+                                     ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
+                                     BUF_MGR_REF);
 
-        /* Insert the current picture as short term reference */
-        ihevc_dpb_mgr_insert_ref((dpb_mgr_t *)ps_codec->pv_dpb_mgr,
-                                 ps_codec->as_process[proc_idx].ps_cur_pic,
-                                 ps_codec->as_process[proc_idx].i4_cur_pic_buf_id);
+            /* Mark pic buf as needed for display */
+            ihevc_buf_mgr_set_status((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
+                                     ps_codec->as_process[proc_idx].i4_cur_pic_buf_id,
+                                     BUF_MGR_DISP);
+
+            /* Insert the current picture as short term reference */
+            ihevc_dpb_mgr_insert_ref((dpb_mgr_t *)ps_codec->pv_dpb_mgr,
+                                     ps_codec->as_process[proc_idx].ps_cur_pic,
+                                     ps_codec->as_process[proc_idx].i4_cur_pic_buf_id);
+        }
 
         /* If a frame was displayed (in non-shared mode), then release it from display manager */
         if((0 == ps_codec->i4_share_disp_buf) && (ps_codec->ps_disp_buf))
             ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
                                   ps_codec->i4_disp_buf_id, BUF_MGR_DISP);
+        else if((0 == ps_codec->i4_share_disp_buf) && ps_codec->u4_disable_ref_retention)
+        {
+            /* In disable_ref_retention mode, ihevc_disp_mgr_get() normally pops the
+             * current picture immediately (IVD_DECODE_FRAME_OUT). If it was not popped
+             * (e.g. abs_poc == DEFAULT_POC), clear the display manager slot as well as
+             * BUF_MGR_DISP so future ihevc_disp_mgr_add() calls do not stall. */
+            WORD32 cur_buf_id = ps_codec->as_process[proc_idx].i4_cur_pic_buf_id;
+            disp_mgr_t *ps_disp_mgr = (disp_mgr_t *)ps_codec->pv_disp_buf_mgr;
+            if(cur_buf_id >= 0 && cur_buf_id < DISP_MGR_MAX_CNT)
+            {
+                ps_disp_mgr->apv_ptr[cur_buf_id] = NULL;
+                ps_disp_mgr->ai4_abs_poc[cur_buf_id] = DEFAULT_POC;
+            }
+            ihevc_buf_mgr_release((buf_mgr_t *)ps_codec->pv_pic_buf_mgr,
+                                  cur_buf_id, BUF_MGR_DISP);
+        }
 
         /* Wait for threads */
         for(i = 0; i < (ps_codec->i4_num_cores - 1); i++)
@@ -1061,6 +1092,14 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
         /* Increment the number of pictures decoded */
         ps_codec->u4_pic_cnt++;
+        if(ps_codec->u4_disable_ref_retention)
+        {
+            /* Reset parser POC state after each decoded picture so consecutive
+             * POC=0 intra frames/tiles are not ignored as duplicate slices; use
+             * DEFAULT_POC rather than -1 to avoid colliding with valid POC == -1
+             * open-GOP leading pictures. */
+            ps_codec->s_parse.i4_abs_pic_order_cnt = DEFAULT_POC;
+        }
     }
     ihevcd_fill_outargs(ps_codec, ps_hevcd_dec_ip, ps_hevcd_dec_op);
 

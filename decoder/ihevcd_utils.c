@@ -203,10 +203,10 @@ WORD32 ihevcd_get_total_pic_buf_size(codec_t *ps_codec,
     sps_t *ps_sps = (ps_codec->s_parse.ps_sps_base + ps_codec->i4_sps_id);
 
     /* Get maximum number of buffers for the current picture size */
-    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+    max_dpb_size = ps_codec->u4_disable_ref_retention ? 0 :
                     ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
-    if(!ps_codec->u4_thumbnail_mode && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
+    if(!ps_codec->u4_disable_ref_retention && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
         max_dpb_size += ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1];
 
     max_dpb_size++;
@@ -515,10 +515,10 @@ IHEVCD_ERROR_T ihevcd_pic_buf_mgr_add_bufs(codec_t *ps_codec)
     v_samp_factor = (CHROMA_FMT_IDC_YUV420 == ps_sps->i1_chroma_format_idc) ? 2 : 1;
 
     /* Compute the number of Pic buffers needed */
-    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+    max_dpb_size = ps_codec->u4_disable_ref_retention ? 0 :
                     ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
-    if(!ps_codec->u4_thumbnail_mode && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
+    if(!ps_codec->u4_disable_ref_retention && (ps_codec->e_frm_out_mode != IVD_DECODE_FRAME_OUT))
         max_dpb_size += ps_sps->ai1_sps_max_num_reorder_pics[ps_sps->i1_sps_max_sub_layers - 1];
 
     /* Allocate one extra picture to handle current frame
@@ -701,7 +701,7 @@ IHEVCD_ERROR_T ihevcd_mv_buf_mgr_add_bufs(codec_t *ps_codec)
 
 
     /* Compute the number of MV Bank buffers needed */
-    max_dpb_size = ps_codec->u4_thumbnail_mode ? 0 :
+    max_dpb_size = ps_codec->u4_disable_ref_retention ? 0 :
                     ps_sps->ai1_sps_max_dec_pic_buffering[ps_sps->i1_sps_max_sub_layers - 1];
 
     /* Allocate one extra MV Bank to handle current frame
