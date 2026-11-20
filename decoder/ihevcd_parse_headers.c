@@ -3407,6 +3407,7 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
                 break;
 
             case SEI_MASTERING_DISPLAY_COLOUR_VOLUME:
+                ps_parse->s_sei_params.i1_sei_parameters_present_flag = 1;
                 ps_parse->s_sei_params.i4_sei_mastering_disp_colour_vol_params_present_flags = 1;
                 ihevcd_parse_mastering_disp_params_sei(ps_codec);
                 break;
