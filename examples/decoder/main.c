@@ -234,8 +234,8 @@ typedef struct
     /* Enable High Bit Depth (10-bit) */
     UWORD32 u4_enable_hbd;
 
-    /* Enable Thumbnail mode */
-    UWORD32 u4_thumbnail_mode;
+    /* Disable reference retention */
+    UWORD32 u4_disable_ref_retention;
 
     /* Active threads present*/
     UWORD32 i4_active_threads;
@@ -295,7 +295,7 @@ typedef enum
 
     ENABLE_YUV_FORMAT,
     ENABLE_HBD,
-    THUMBNAIL_MODE,
+    DISABLE_REF_RETENTION,
     KEEP_THREADS_ACTIVE,
 }ARGUMENT_T;
 
@@ -366,8 +366,8 @@ static const argument_t argument_mapping[] =
         "Enable specific YUV formats\n" },
     { "--",  "--enable_hbd", ENABLE_HBD,
         "Enable High Bit Depth (10-bit) decoding\n" },
-    { "--",  "--thumbnail_mode", THUMBNAIL_MODE,
-        "Enable thumbnail mode\n" },
+    { "--",  "--disable_ref_retention", DISABLE_REF_RETENTION,
+        "Disable reference retention\n" },
     {"--", "--keep_threads_active", KEEP_THREADS_ACTIVE,
         "Keep threads active"},
 };
@@ -1368,8 +1368,8 @@ void parse_argument(vid_dec_ctx_t *ps_app_ctx, CHAR *argument, CHAR *value)
             sscanf(value, "%d", &ps_app_ctx->u4_enable_hbd);
             break;
 
-        case THUMBNAIL_MODE:
-            sscanf(value, "%d", &ps_app_ctx->u4_thumbnail_mode);
+        case DISABLE_REF_RETENTION:
+            sscanf(value, "%d", &ps_app_ctx->u4_disable_ref_retention);
             break;
 
         case KEEP_THREADS_ACTIVE:
@@ -1922,7 +1922,7 @@ int main(WORD32 argc, CHAR *argv[])
     s_app_ctx.u4_frame_info_enable = 0;
     s_app_ctx.i4_active_threads = 1;
     s_app_ctx.u4_enable_hbd = 1;
-    s_app_ctx.u4_thumbnail_mode = 0;
+    s_app_ctx.u4_disable_ref_retention = 0;
     s_app_ctx.u4_total_bytes_allocated = 0;
     s_app_ctx.fps = DEFAULT_FPS;
     file_pos = 0;
@@ -2204,7 +2204,7 @@ int main(WORD32 argc, CHAR *argv[])
             s_create_ip.u4_enable_frame_info = s_app_ctx.u4_frame_info_enable;
             s_create_ip.u4_enable_yuv_formats = s_app_ctx.u4_enable_yuv_formats;
             s_create_ip.u4_enable_hbd = s_app_ctx.u4_enable_hbd;
-            s_create_ip.u4_thumbnail_mode = s_app_ctx.u4_thumbnail_mode;
+            s_create_ip.u4_disable_ref_retention = s_app_ctx.u4_disable_ref_retention;
             s_create_ip.u4_keep_threads_active = s_app_ctx.i4_active_threads;
 
 

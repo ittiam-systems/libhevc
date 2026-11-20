@@ -2083,9 +2083,9 @@ struct _codec_t
     UWORD32 u4_enable_hbd;
 
     /**
-     * Controls whether the decoder operates in thumbnail mode
+     * Controls whether reference retention is disabled
      */
-    UWORD32 u4_thumbnail_mode;
+    UWORD32 u4_disable_ref_retention;
 
     /**
      * Pointer to hold TU data for a set of CTBs or a picture

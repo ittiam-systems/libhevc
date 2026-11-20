@@ -405,6 +405,10 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
                         (ps_slice_hdr->i1_slice_type > 2))
             return IHEVCD_IGNORE_SLICE;
 
+        if(ps_codec->u4_disable_ref_retention &&
+           (ISLICE != ps_slice_hdr->i1_slice_type))
+            return IHEVCD_IGNORE_SLICE;
+
 
         if(ps_pps->i1_output_flag_present_flag)
         {
@@ -1136,11 +1140,6 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
          * decode only I slices */
         if((IVD_SKIP_PB == ps_codec->e_pic_skip_mode) &&
                         (ISLICE != ps_slice_hdr->i1_slice_type))
-        {
-            return IHEVCD_IGNORE_SLICE;
-        }
-
-        if(ps_codec->u4_thumbnail_mode && (ps_codec->u4_pic_cnt >= 1))
         {
             return IHEVCD_IGNORE_SLICE;
         }
