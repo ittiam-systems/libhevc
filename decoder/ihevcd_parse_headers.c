@@ -3370,6 +3370,7 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
     bitstrm_t *ps_bitstrm = &ps_parse->s_bitstrm;
     WORD32 payload_bits_remaining = 0;
     sps_t *ps_sps = NULL;
+    UWORD32 u4_payload_start = ihevcd_bits_num_bits_consumed(ps_bitstrm);
 
     UWORD32 i;
 
@@ -3476,8 +3477,11 @@ void ihevcd_parse_sei_payload(codec_t *ps_codec,
      * If there are fewer than 9 bits available, extract them.
      */
 
-    payload_bits_remaining = ihevcd_bits_num_bits_remaining(ps_bitstrm);
-    if(payload_bits_remaining) /* more_data_in_payload() */
+    payload_bits_remaining = u4_payload_size * 8
+                    - (ihevcd_bits_num_bits_consumed(ps_bitstrm) - u4_payload_start);
+    if((WORD32)ihevcd_bits_num_bits_remaining(ps_bitstrm) < payload_bits_remaining)
+        payload_bits_remaining = ihevcd_bits_num_bits_remaining(ps_bitstrm);
+    if(payload_bits_remaining > 0) /* more_data_in_payload() */
     {
         WORD32 final_bits;
         WORD32 final_payload_bits = 0;
@@ -3576,6 +3580,8 @@ IHEVCD_ERROR_T ihevcd_parse_sei(codec_t *ps_codec, nal_header_t *ps_nal)
 
     while(u4_bits_left > 8)
     {
+        u4_payload_type = 0;
+        u4_payload_size = 0;
         while(ihevcd_bits_nxt(ps_bitstrm, 8) == 0xFF)
         {
             ihevcd_bits_flush(ps_bitstrm, 8); /* equal to 0xFF */
