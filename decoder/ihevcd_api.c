@@ -2876,7 +2876,7 @@ WORD32 ihevcd_get_status(iv_obj_t *ps_codec_obj,
     {
         ihevcd_cxa_ctl_getstatus_op_t *ps_ext_ctl_op = (ihevcd_cxa_ctl_getstatus_op_t *)ps_ctl_op;
         ps_ext_ctl_op->u4_coded_pic_wd = ps_codec->i4_wd;
-        ps_ext_ctl_op->u4_coded_pic_wd = ps_codec->i4_ht;
+        ps_ext_ctl_op->u4_coded_pic_ht = ps_codec->i4_ht;
     }
     return IV_SUCCESS;
 }
