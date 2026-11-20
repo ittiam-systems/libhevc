@@ -1167,6 +1167,10 @@ WORD32 ihevcd_init(codec_t *ps_codec)
     ps_codec->i4_max_prev_poc_lsb = -1;
     ps_codec->s_parse.i4_abs_pic_order_cnt = -1;
 
+#ifndef DISABLE_SEI
+    memset(&ps_codec->s_parse.s_sei_params, 0, sizeof(sei_params_t));
+#endif
+
     ps_codec->i4_chroma_format_idc = CHROMA_FMT_IDC_YUV420;
     ps_codec->i4_pixel_size_y = PIXEL_SIZE_1BYTE;
     ps_codec->i4_pixel_size_uv = PIXEL_SIZE_1BYTE;
