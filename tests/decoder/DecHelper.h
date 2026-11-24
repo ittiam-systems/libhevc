@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -62,12 +63,24 @@ class DecHelper {
       mRefMd5Path = path;
       return *this;
     }
+    Builder& setOutputMd5Path(const std::string& path) {
+      mOutputMd5Path = path;
+      return *this;
+    }
+    Builder& setOutputSyncFramesPath(const std::string& path) {
+      mOutputSyncFramesPath = path;
+      return *this;
+    }
     Builder& setEnableHbd(bool enableHbd) {
       mEnableHbd = enableHbd;
       return *this;
     }
     Builder& setThumbnailMode(bool thumbnailMode) {
       mThumbnailMode = thumbnailMode;
+      return *this;
+    }
+    Builder& setNumLoops(size_t numLoops) {
+      mNumLoops = numLoops;
       return *this;
     }
 
@@ -81,8 +94,11 @@ class DecHelper {
     std::optional<std::string> mInputFilePath;
     std::optional<std::string> mOutputFilePath;
     std::optional<std::string> mRefMd5Path;
+    std::optional<std::string> mOutputMd5Path;
+    std::optional<std::string> mOutputSyncFramesPath;
     bool mEnableHbd = true;
     bool mThumbnailMode = false;
+    size_t mNumLoops = 1;
     friend class DecHelper;
   };
 
@@ -106,6 +122,8 @@ class DecHelper {
   size_t width() const { return mWidth; }
   size_t height() const { return mHeight; }
   bool isHeaderDecoded() const { return mHeaderDecoded; }
+  size_t numFramesDecoded() const { return mFramesDecoded; }
+  size_t numRefMd5s() const { return mRefMd5s.size(); }
 
  private:
   DecHelper() = default;  // Private constructor, instantiated only via Builder
@@ -126,8 +144,12 @@ class DecHelper {
   std::optional<std::string> mOutputFilePath;
   std::optional<std::string> mRefMd5Path;
   std::vector<std::string> mRefMd5s;
+  std::ofstream mOutputMd5File;
+  std::ofstream mOutputSyncFramesFile;
   bool mEnableHbd = true;
   bool mThumbnailMode = false;
+  size_t mNumLoops = 1;
+  size_t mFramesDecoded = 0;
 
   BitsFile mBitsFile;
   RawFile mOutFile;

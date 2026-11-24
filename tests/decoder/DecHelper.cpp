@@ -130,6 +130,10 @@ static bool setDecoderConfig(void* codec, IVD_VIDEO_DECODE_MODE_T decMode,
 }
 
 std::unique_ptr<DecHelper> DecHelper::Builder::build() {
+  if (mNumLoops == 0) {
+    return nullptr;
+  }
+
   std::unique_ptr<DecHelper> helper(new DecHelper());
   helper->mFormat = mFormat;
   helper->mCores = mCores;
@@ -139,6 +143,7 @@ std::unique_ptr<DecHelper> DecHelper::Builder::build() {
   helper->mRefMd5Path = mRefMd5Path;
   helper->mEnableHbd = mEnableHbd;
   helper->mThumbnailMode = mThumbnailMode;
+  helper->mNumLoops = mNumLoops;
 
   // Load and parse expected reference MD5s if the path is provided
   if (mRefMd5Path.has_value()) {
@@ -168,6 +173,23 @@ std::unique_ptr<DecHelper> DecHelper::Builder::build() {
   // Open output YUV file if path is provided
   if (mOutputFilePath.has_value()) {
     if (!helper->mOutFile.open(*mOutputFilePath, false)) {
+      return nullptr;
+    }
+  }
+
+  // Open output MD5 file if path is provided
+  if (mOutputMd5Path.has_value()) {
+    helper->mOutputMd5File.open(*mOutputMd5Path);
+    if (!helper->mOutputMd5File.is_open()) {
+      return nullptr;
+    }
+  }
+
+  // Open output sync-frame bitstream file if path is provided
+  if (mOutputSyncFramesPath.has_value()) {
+    helper->mOutputSyncFramesFile.open(*mOutputSyncFramesPath,
+                                       std::ios::binary);
+    if (!helper->mOutputSyncFramesFile.is_open()) {
       return nullptr;
     }
   }
@@ -324,8 +346,25 @@ bool DecHelper::decodeHeader(size_t& bytesConsumed) {
   bytesConsumed = decodeOp.s_ivd_video_decode_op_t.u4_num_bytes_consumed;
 
   if (ret != IV_SUCCESS ||
-      decodeOp.s_ivd_video_decode_op_t.u4_error_code != 0 ||
-      decodeOp.s_ivd_video_decode_op_t.u4_pic_wd == 0 ||
+      decodeOp.s_ivd_video_decode_op_t.u4_error_code != 0) {
+    return false;
+  }
+
+  if (mOutputSyncFramesFile.is_open() && bytesConsumed > 0) {
+    if (bytesConsumed > mInputBuf.size()) {
+      bytesConsumed = 0;
+      return false;
+    }
+    mOutputSyncFramesFile.write(
+        reinterpret_cast<const char*>(mInputBuf.data()),
+        static_cast<std::streamsize>(bytesConsumed));
+    if (!mOutputSyncFramesFile.good()) {
+      bytesConsumed = 0;
+      return false;
+    }
+  }
+
+  if (decodeOp.s_ivd_video_decode_op_t.u4_pic_wd == 0 ||
       decodeOp.s_ivd_video_decode_op_t.u4_pic_ht == 0) {
     return false;
   }
@@ -403,21 +442,33 @@ bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
 
   bytesConsumed = decodeOp.s_ivd_video_decode_op_t.u4_num_bytes_consumed;
 
+  bool isSyncFrame =
+      !noInput && (decodeOp.s_ivd_video_decode_op_t.e_pic_type == IV_I_FRAME ||
+                   decodeOp.s_ivd_video_decode_op_t.e_pic_type == IV_IDR_FRAME);
+
+  if (mOutputSyncFramesFile.is_open() && isSyncFrame && bytesConsumed > 0) {
+    if (bytesConsumed > mInputBuf.size() - mInputBuf.offset()) {
+      return false;
+    }
+    mOutputSyncFramesFile.write(
+        reinterpret_cast<const char*>(mInputBuf.data() + mInputBuf.offset()),
+        static_cast<std::streamsize>(bytesConsumed));
+    if (!mOutputSyncFramesFile.good()) {
+      return false;
+    }
+  }
+
   // Check if a frame has been decoded and is ready for display
   if (decodeOp.s_ivd_video_decode_op_t.u4_output_present == 1) {
-    const iv_yuv_buf_t& dispBuf =
-        decodeOp.s_ivd_video_decode_op_t.s_disp_frm_buf;
-
     frameReady = true;
 
-    if (mThumbnailMode &&
-        decodeOp.s_ivd_video_decode_op_t.e_pic_type != IV_I_FRAME &&
-        decodeOp.s_ivd_video_decode_op_t.e_pic_type != IV_IDR_FRAME) {
+    if (mThumbnailMode && !isSyncFrame) {
       return false;
     }
 
     // Process the decoded frame directly inside decodeFrame
     processDecodedFrame(mOutputBuf, frameIndex);
+    mFramesDecoded = frameIndex;
   }
 
   return true;
@@ -490,57 +541,82 @@ void DecHelper::processDecodedFrame(RawBuf& buf, size_t& frameIndex) {
     mOutFile.write(buf);
   }
 
-  if (frameIndex < mRefMd5s.size()) {
+  bool needRefMd5 = frameIndex < mRefMd5s.size();
+  bool needOutMd5 = mOutputMd5File.is_open();
+  if (needRefMd5 || needOutMd5) {
     std::string computedMd5 = computeFrameMd5(buf);
-    EXPECT_THAT(computedMd5, Eq(mRefMd5s[frameIndex]))
-        << "MD5 mismatch at decoded frame " << frameIndex << " of file "
-        << *mInputFilePath;
+    if (needRefMd5) {
+      EXPECT_THAT(computedMd5, Eq(mRefMd5s[frameIndex]))
+          << "MD5 mismatch at decoded frame " << frameIndex << " of file "
+          << *mInputFilePath;
+    }
+    if (needOutMd5) {
+      mOutputMd5File << computedMd5 << " " << (frameIndex + 1) << "\n";
+    }
   }
   frameIndex++;
 }
 
 bool DecHelper::decodeFile() {
   size_t frameIndex = 0;
+  mFramesDecoded = 0;
 
-  size_t inputFileOffset = 0;
   size_t inputFrameSize = mInputBuf.capacity();
-  while (!mBitsFile.isEof()) {
-    size_t bytesRead = mBitsFile.read(mInputBuf, inputFrameSize);
-    if (bytesRead == 0) break;
+  for (size_t loop = 0; loop < mNumLoops; ++loop) {
+    size_t inputFileOffset = 0;
+    mBitsFile.seek(0);
+    while (!mBitsFile.isEof()) {
+      size_t bytesRead = mBitsFile.read(mInputBuf, inputFrameSize);
+      if (bytesRead == 0) break;
 
-    size_t consumed = 0;
-    if (!mHeaderDecoded) {
-      if (!decodeHeader(consumed)) {
-        if (consumed == 0) {
+      size_t consumed = 0;
+      if (!mHeaderDecoded) {
+        if (!decodeHeader(consumed)) {
+          if (consumed == 0) {
+            return false;
+          }
+        }
+        inputFrameSize = mInputBuf.capacity();
+      } else {
+        bool frameReady = false;
+
+        if (!decodeFrame(consumed, frameReady, frameIndex)) {
           return false;
         }
+        if (mThumbnailMode && frameReady) {
+          return true;
+        }
+        if (consumed == 0 && !frameReady) {
+          break;
+        }
       }
-      inputFrameSize = mInputBuf.capacity();
-    } else {
-      bool frameReady = false;
-
-      if (!decodeFrame(consumed, frameReady, frameIndex)) {
-        return false;
-      }
-      if (mThumbnailMode && frameReady) {
-        return true;
-      }
-      if (consumed == 0 && !frameReady) {
-        break;
-      }
+      inputFileOffset += consumed;
+      mBitsFile.seek(inputFileOffset);
     }
-    inputFileOffset += consumed;
-    mBitsFile.seek(inputFileOffset);
-  }
 
-  if (!mHeaderDecoded) {
-    return false;
+    if (!mHeaderDecoded) {
+      return false;
+    }
   }
 
   // Flush remaining frames (invokes processDecodedFrame internally for all
   // remaining frames)
   if (!flushDecoder(frameIndex)) {
     return false;
+  }
+
+  if (mOutputMd5File.is_open()) {
+    mOutputMd5File.flush();
+    if (!mOutputMd5File.good()) {
+      return false;
+    }
+  }
+
+  if (mOutputSyncFramesFile.is_open()) {
+    mOutputSyncFramesFile.flush();
+    if (!mOutputSyncFramesFile.good()) {
+      return false;
+    }
   }
 
   return true;
