@@ -153,6 +153,7 @@ static UWORD32 ihevcd_map_error(IHEVCD_ERROR_T e_error)
         case IHEVCD_NO_FREE_PICBUF:
         case IHEVCD_SLICE_IN_HEADER_MODE:
         case IHEVCD_END_OF_SEQUENCE:
+        case IVD_DEC_FRM_SKIPPED:
             break;
         default:
             break;
@@ -476,6 +477,7 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
 
     WORD32 proc_idx = 0;
     WORD32 prev_proc_idx = 0;
+    WORD32 frm_skipped = 0;
 
     /* Initialize error code */
     ps_codec->i4_error_code = 0;
@@ -805,8 +807,10 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
             }
         }
 
-        if(IHEVCD_IGNORE_SLICE == ret)
+        if((IHEVCD_IGNORE_SLICE == ret) || ((WORD32)IVD_DEC_FRM_SKIPPED == ret))
         {
+            if((WORD32)IVD_DEC_FRM_SKIPPED == ret)
+                frm_skipped = 1;
             ps_codec->pu1_inp_bitsbuf += (nal_ofst + nal_len);
             ps_codec->i4_bytes_remaining -= (nal_ofst + nal_len);
 
@@ -1100,6 +1104,18 @@ WORD32 ihevcd_decode(iv_obj_t *ps_codec_obj, void *pv_api_ip, void *pv_api_op)
              * open-GOP leading pictures. */
             ps_codec->s_parse.i4_abs_pic_order_cnt = DEFAULT_POC;
         }
+    }
+
+    /* Report IVD_DEC_FRM_SKIPPED only when disable_ref_retention skipped
+     * slice(s) without producing a picture or encountering another error,
+     * so preceding skipped slices do not fail a decoded I-frame or mask
+     * header/slice errors (e.g., IVD_RES_CHANGED). Mapped without
+     * IVD_FATALERROR in ihevcd_map_error(). */
+    if((0 == ps_codec->i4_pic_present) && (0 == ps_codec->i4_error_code) &&
+       (IHEVCD_SUCCESS == ret) && frm_skipped)
+    {
+        ps_codec->i4_error_code = IVD_DEC_FRM_SKIPPED;
+        ret = IV_FAIL;
     }
     ihevcd_fill_outargs(ps_codec, ps_hevcd_dec_ip, ps_hevcd_dec_op);
 

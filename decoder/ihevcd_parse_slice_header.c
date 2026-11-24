@@ -407,7 +407,7 @@ IHEVCD_ERROR_T ihevcd_parse_slice_header(codec_t *ps_codec,
 
         if(ps_codec->u4_disable_ref_retention &&
            (ISLICE != ps_slice_hdr->i1_slice_type))
-            return IHEVCD_IGNORE_SLICE;
+            return (IHEVCD_ERROR_T)IVD_DEC_FRM_SKIPPED;
 
 
         if(ps_pps->i1_output_flag_present_flag)
