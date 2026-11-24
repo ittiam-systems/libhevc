@@ -142,7 +142,7 @@ std::unique_ptr<DecHelper> DecHelper::Builder::build() {
   helper->mOutputFilePath = mOutputFilePath;
   helper->mRefMd5Path = mRefMd5Path;
   helper->mEnableHbd = mEnableHbd;
-  helper->mThumbnailMode = mThumbnailMode;
+  helper->mDisableRefRetention = mDisableRefRetention;
   helper->mNumLoops = mNumLoops;
 
   // Load and parse expected reference MD5s if the path is provided
@@ -240,7 +240,7 @@ bool DecHelper::initDecoder() {
   createIp.u4_enable_frame_info = 0;
   createIp.u4_enable_yuv_formats = 15;  // Supports all chroma formats
   createIp.u4_enable_hbd = mEnableHbd;
-  createIp.u4_disable_ref_retention = mThumbnailMode;
+  createIp.u4_disable_ref_retention = mDisableRefRetention;
   createIp.u4_keep_threads_active = 1;
 
   IV_API_CALL_STATUS_T ret =
@@ -436,11 +436,15 @@ bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
 
   IV_API_CALL_STATUS_T ret = ihevcd_cxa_api_function(
       static_cast<iv_obj_t*>(mCodec), &decodeIp, &decodeOp);
+  bytesConsumed = decodeOp.s_ivd_video_decode_op_t.u4_num_bytes_consumed;
   if (ret != IV_SUCCESS) {
+    if (mDisableRefRetention && !noInput &&
+        decodeOp.s_ivd_video_decode_op_t.u4_output_present == 0 &&
+        decodeOp.s_ivd_video_decode_op_t.u4_error_code == IVD_DEC_FRM_SKIPPED) {
+      return true;
+    }
     return false;
   }
-
-  bytesConsumed = decodeOp.s_ivd_video_decode_op_t.u4_num_bytes_consumed;
 
   bool isSyncFrame =
       !noInput && (decodeOp.s_ivd_video_decode_op_t.e_pic_type == IV_I_FRAME ||
@@ -462,7 +466,7 @@ bool DecHelper::decodeFrame(size_t& bytesConsumed, bool& frameReady,
   if (decodeOp.s_ivd_video_decode_op_t.u4_output_present == 1) {
     frameReady = true;
 
-    if (mThumbnailMode && !isSyncFrame) {
+    if (mDisableRefRetention && !isSyncFrame) {
       return false;
     }
 
@@ -582,9 +586,6 @@ bool DecHelper::decodeFile() {
 
         if (!decodeFrame(consumed, frameReady, frameIndex)) {
           return false;
-        }
-        if (mThumbnailMode && frameReady) {
-          return true;
         }
         if (consumed == 0 && !frameReady) {
           break;
