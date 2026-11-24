@@ -75,8 +75,8 @@ class DecHelper {
       mEnableHbd = enableHbd;
       return *this;
     }
-    Builder& setThumbnailMode(bool thumbnailMode) {
-      mThumbnailMode = thumbnailMode;
+    Builder& setDisableRefRetention(bool disableRefRetention) {
+      mDisableRefRetention = disableRefRetention;
       return *this;
     }
     Builder& setNumLoops(size_t numLoops) {
@@ -97,7 +97,7 @@ class DecHelper {
     std::optional<std::string> mOutputMd5Path;
     std::optional<std::string> mOutputSyncFramesPath;
     bool mEnableHbd = true;
-    bool mThumbnailMode = false;
+    bool mDisableRefRetention = false;
     size_t mNumLoops = 1;
     friend class DecHelper;
   };
@@ -147,7 +147,7 @@ class DecHelper {
   std::ofstream mOutputMd5File;
   std::ofstream mOutputSyncFramesFile;
   bool mEnableHbd = true;
-  bool mThumbnailMode = false;
+  bool mDisableRefRetention = false;
   size_t mNumLoops = 1;
   size_t mFramesDecoded = 0;
 
