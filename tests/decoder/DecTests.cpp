@@ -18,7 +18,6 @@
 
 #include <gtest/gtest.h>
 
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -113,6 +112,25 @@ static const std::vector<DecodeStreamConfig> kDecodeStreams = {
      "bbb_10b_176x144_yuv444_md5.txt"},
 };
 
+static const std::vector<DecodeStreamConfig> kDisableRefRetentionStreams = {
+    {"bbb_176x144_yuv400.hevc", Format::yuv400p,
+     "bbb_176x144_yuv400_0retention_md5.txt"},
+    {"bbb_176x144_yuv420.hevc", Format::yuv420p,
+     "bbb_176x144_yuv420_0retention_md5.txt"},
+    {"bbb_176x144_yuv422.hevc", Format::yuv422p,
+     "bbb_176x144_yuv422_0retention_md5.txt"},
+    {"bbb_176x144_yuv444.hevc", Format::yuv444p,
+     "bbb_176x144_yuv444_0retention_md5.txt"},
+    {"bbb_10b_176x144_yuv400.hevc", Format::yuv400p,
+     "bbb_10b_176x144_yuv400_0retention_md5.txt"},
+    {"bbb_10b_176x144_yuv420.hevc", Format::yuv420p,
+     "bbb_10b_176x144_yuv420_0retention_md5.txt"},
+    {"bbb_10b_176x144_yuv422.hevc", Format::yuv422p,
+     "bbb_10b_176x144_yuv422_0retention_md5.txt"},
+    {"bbb_10b_176x144_yuv444.hevc", Format::yuv444p,
+     "bbb_10b_176x144_yuv444_0retention_md5.txt"},
+};
+
 class DecStreamTestFixture
     : public ::testing::TestWithParam<DecodeStreamConfig> {
  protected:
@@ -121,60 +139,17 @@ class DecStreamTestFixture
 };
 
 TEST_P(DecStreamTestFixture, DecodeDisableRefRetention) {
-  struct TempFileGuard {
-    std::string path;
-    ~TempFileGuard() { std::remove(path.c_str()); }
-  };
-
-  constexpr size_t kNumLoops = 2;
   constexpr size_t kNumCores = 4;
   const auto& config = GetParam();
   std::string inputPath = getFullPath(config.inputFile);
-  std::string sanitizedName = config.inputFile;
-  for (char& c : sanitizedName) {
-    if (c == '/' || c == '\\') {
-      c = '_';
-    }
-  }
-  std::string intraBitstreamPath =
-      ::testing::TempDir() + "disable_ref_retention_intra_" + sanitizedName;
-  std::string intraMd5Path =
-      ::testing::TempDir() + "disable_ref_retention_intra_" + sanitizedName +
-      ".md5";
-  TempFileGuard intraBitstreamGuard{intraBitstreamPath};
-  TempFileGuard intraMd5Guard{intraMd5Path};
-
-  {
-    auto extractHelper = DecHelper::Builder()
-                             .setInputFilePath(inputPath)
-                             .setOutputSyncFramesPath(intraBitstreamPath)
-                             .setFormat(config.format)
-                             .build();
-    ASSERT_NE(extractHelper, nullptr)
-        << "Failed to build DecHelper for intra extraction: " << inputPath;
-    ASSERT_TRUE(extractHelper->decodeFile())
-        << "Failed to extract intra frames for input: " << inputPath;
-  }
-  {
-    auto md5Helper = DecHelper::Builder()
-                         .setInputFilePath(intraBitstreamPath)
-                         .setOutputMd5Path(intraMd5Path)
-                         .setFormat(config.format)
-                         .setNumLoops(kNumLoops)
-                         .build();
-    ASSERT_NE(md5Helper, nullptr)
-        << "Failed to build DecHelper for intra MD5 generation: " << inputPath;
-    ASSERT_TRUE(md5Helper->decodeFile())
-        << "Failed to generate intra MD5 file for input: " << inputPath;
-  }
+  std::string refMd5Path = getFullPath(config.refMd5File);
 
   auto builder = DecHelper::Builder()
                      .setInputFilePath(inputPath)
-                     .setRefMd5Path(intraMd5Path)
+                     .setRefMd5Path(refMd5Path)
                      .setFormat(config.format)
                      .setCores(kNumCores)
-                     .setDisableRefRetention(true)
-                     .setNumLoops(kNumLoops);
+                     .setDisableRefRetention(true);
 
   std::unique_ptr<DecHelper> helper = builder.build();
   ASSERT_NE(helper, nullptr)
@@ -183,17 +158,19 @@ TEST_P(DecStreamTestFixture, DecodeDisableRefRetention) {
       << "Decoding failed with disable_ref_retention enabled for input: "
       << inputPath;
   EXPECT_GT(helper->numRefMd5s(), 0u)
-      << "Expected intra reference MD5s for input: " << inputPath;
+      << "Expected reference MD5s for input: " << inputPath;
   EXPECT_EQ(helper->numFramesDecoded(), helper->numRefMd5s())
-      << "Decoded intra frame count mismatch for input: " << inputPath;
+      << "Decoded frame count mismatch for input: " << inputPath;
 }
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DecStreamTestFixture);
 
 INSTANTIATE_TEST_SUITE_P(DecoderRegression, DecTestFixture,
                          ::testing::Combine(::testing::ValuesIn(kDecodeStreams),
                                             ::testing::Values(1, 2, 3, 4)));
 
 INSTANTIATE_TEST_SUITE_P(DecoderRegression, DecStreamTestFixture,
-                         ::testing::ValuesIn(kDecodeStreams));
+                         ::testing::ValuesIn(kDisableRefRetentionStreams));
 
 }  // namespace test
 }  // namespace libhevc

@@ -20,7 +20,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -63,14 +62,6 @@ class DecHelper {
       mRefMd5Path = path;
       return *this;
     }
-    Builder& setOutputMd5Path(const std::string& path) {
-      mOutputMd5Path = path;
-      return *this;
-    }
-    Builder& setOutputSyncFramesPath(const std::string& path) {
-      mOutputSyncFramesPath = path;
-      return *this;
-    }
     Builder& setEnableHbd(bool enableHbd) {
       mEnableHbd = enableHbd;
       return *this;
@@ -94,8 +85,6 @@ class DecHelper {
     std::optional<std::string> mInputFilePath;
     std::optional<std::string> mOutputFilePath;
     std::optional<std::string> mRefMd5Path;
-    std::optional<std::string> mOutputMd5Path;
-    std::optional<std::string> mOutputSyncFramesPath;
     bool mEnableHbd = true;
     bool mDisableRefRetention = false;
     size_t mNumLoops = 1;
@@ -144,8 +133,6 @@ class DecHelper {
   std::optional<std::string> mOutputFilePath;
   std::optional<std::string> mRefMd5Path;
   std::vector<std::string> mRefMd5s;
-  std::ofstream mOutputMd5File;
-  std::ofstream mOutputSyncFramesFile;
   bool mEnableHbd = true;
   bool mDisableRefRetention = false;
   size_t mNumLoops = 1;
